@@ -114,6 +114,7 @@ pub mod nr;
 
 /// Performs a semihosting operation
 #[inline(always)]
+#[cfg(target_arch = "arm")]
 pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
     asm!("bkpt 0xAB"
          : "+{r0}"(nr)
@@ -121,4 +122,9 @@ pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
          : "memory"
          : "volatile");
     nr
+}
+
+#[cfg(not(target_arch = "arm"))]
+pub unsafe fn syscall<T>(_nr: usize, _arg: &T) -> usize {
+    0
 }
