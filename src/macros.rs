@@ -19,8 +19,8 @@ macro_rules! syscall {
 /// Macro for printing to the **host's** standard output
 #[macro_export]
 macro_rules! hprint {
-    ($s:expr) => ($crate::io::_write_str($s));
-    ($($arg:tt)*) => ($crate::io::_write_fmt(format_args!($($arg)*)));
+    ($s:expr) => ($crate::io::write_str($s));
+    ($($arg:tt)*) => ($crate::io::write_fmt(format_args!($($arg)*)));
 }
 
 /// Macro for printing to the **host's** standard output, with a newline.

@@ -107,9 +107,8 @@
 
 #[macro_use]
 mod macros;
-#[doc(hidden)]
-pub mod io;
 
+pub mod io;
 pub mod nr;
 
 /// Performs a semihosting operation

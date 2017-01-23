@@ -35,11 +35,17 @@ impl Write for Stdout {
     }
 }
 
-pub fn _write_str(s: &str) {
-    Stdout.write_str(s).ok();
+/// Write a `buffer` to the host's stdout
+pub fn write(buffer: &[u8]) {
+    Stdout.write_all(buffer)
 }
 
-pub fn _write_fmt(args: fmt::Arguments) {
-
+/// Write `fmt::Arguments` to the host's stdout
+pub fn write_fmt(args: fmt::Arguments) {
     Stdout.write_fmt(args).ok();
+}
+
+/// Write a `string` to the host's stdout
+pub fn write_str(string: &str) {
+    Stdout.write_all(string.as_bytes())
 }
