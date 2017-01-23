@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.1] - 2017-01-22
+
 ### Added
 
 - Expose a family of `write` functions to write to the host's stdout without

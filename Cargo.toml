@@ -6,6 +6,6 @@ keywords = ["semihosting", "arm", "cortex-m"]
 license = "MIT OR Apache-2.0"
 name = "cortex-m-semihosting"
 repository = "https://github.com/japaric/cortex-m-semihosting"
-version = "0.1.0"
+version = "0.1.1"
 
 [dependencies]
