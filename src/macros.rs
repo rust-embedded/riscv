@@ -26,7 +26,7 @@ macro_rules! hprint {
 /// Macro for printing to the **host's** standard output, with a newline.
 #[macro_export]
 macro_rules! hprintln {
-    () => (print!("\n"));
+    () => (hprint!("\n"));
     ($fmt:expr) => (hprint!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (hprint!(concat!($fmt, "\n"), $($arg)*));
 }
