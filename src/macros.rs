@@ -16,6 +16,22 @@ macro_rules! syscall {
                                            $a3 as usize, $a4 as usize])
     };
 }
+
+/// Macro for printing to the **host's** standard stderr
+#[macro_export]
+macro_rules! ehprint {
+    ($s:expr) => ($crate::io::ewrite_str($s));
+    ($($arg:tt)*) => ($crate::io::ewrite_fmt(format_args!($($arg)*)));
+}
+
+/// Macro for printing to the **host's** standard error, with a newline.
+#[macro_export]
+macro_rules! ehprintln {
+    () => (ehprint!("\n"));
+    ($fmt:expr) => (ehprint!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (ehprint!(concat!($fmt, "\n"), $($arg)*));
+}
+
 /// Macro for printing to the **host's** standard output
 #[macro_export]
 macro_rules! hprint {
