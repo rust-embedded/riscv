@@ -28,7 +28,7 @@
 //!
 //! Target program:
 //!
-//! ```
+//! ```rust,ignore
 //! fn main() {
 //!     // File descriptor (on the host)
 //!     const STDOUT: usize = 1;
