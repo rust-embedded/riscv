@@ -22,3 +22,5 @@ pub const TMPNAM: usize = 0x0d;
 pub const WRITE0: usize = 0x04;
 pub const WRITE: usize = 0x05;
 pub const WRITEC: usize = 0x03;
+pub const ENTER_SVC: usize = 0x17;
+pub const REPORT_EXCEPTION: usize = 0x18;

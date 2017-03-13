@@ -110,11 +110,12 @@ mod macros;
 
 pub mod io;
 pub mod nr;
+pub mod debug;
 
 /// Performs a semihosting operation
 #[inline(always)]
 #[cfg(target_arch = "arm")]
-pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
+pub unsafe fn syscall<T: Sized>(mut nr: usize, arg: T) -> usize {
     asm!("bkpt 0xAB"
          : "+{r0}"(nr)
          : "{r1}"(arg)
@@ -124,6 +125,6 @@ pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
 }
 
 #[cfg(not(target_arch = "arm"))]
-pub unsafe fn syscall<T>(_nr: usize, _arg: &T) -> usize {
+pub unsafe fn syscall<T: Sized>(_nr: usize, _arg: T) -> usize {
     0
 }

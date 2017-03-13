@@ -1,8 +1,11 @@
 /// Variable argument version of `syscall`
 #[macro_export]
 macro_rules! syscall {
+    ($nr:ident) => {
+        $crate::syscall($crate::nr::$nr, 0usize)
+    };
     ($nr:ident, $a1:expr) => {
-        $crate::syscall($crate::nr::$nr, &($a1 as usize))
+        $crate::syscall($crate::nr::$nr, $a1 as usize)
     };
     ($nr:ident, $a1:expr, $a2:expr) => {
         $crate::syscall($crate::nr::$nr, &[$a1 as usize, $a2 as usize])
