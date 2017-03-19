@@ -1,5 +1,31 @@
 //! Interacting with debugging agent
+//!
+//! # Example
+//!
+//! This example will show how to terminate the QEMU session. The program
+//! should be running under QEMU with semihosting enabled
+//! (use `-semihosting` flag).
+//!
+//! Target program:
+//!
+//! ```
+//! #[macro_use]
+//! extern crate cortex_m_semihosting;
+//! use cortex_m_semihosting::debug;
+//!
+//! fn main() {
+//!     if 2 == 2 {
+//!         // report success
+//!         debug::exit(0);
+//!     } else {
+//!         // report failure
+//!         debug::exit(1);
+//!     }
+//! }
+//!
 
+/// This values are taken from section 5.5.2 of
+/// "ADS Debug Target Guide" (DUI0058)
 pub enum Exception {
     // Hardware reason codes
     BranchThroughZero = 0x20000,
@@ -26,7 +52,13 @@ pub enum Exception {
 /// Reports to the debugger that the execution has completed.
 ///
 /// If `status` is not 0 then an error is reported.
-/// This call may not return.
+///
+/// This call can be used to terminate QEMU session, and report back success
+/// or failure.
+///
+/// This call should not return. However, it is possible for the debugger
+/// to request that the application continue. In that case this call
+/// returns normally.
 ///
 pub fn exit(status: i8) {
     if status == 0 {
@@ -38,7 +70,12 @@ pub fn exit(status: i8) {
 
 /// Report an exception to the debugger directly.
 ///
-/// This call may not return.
+/// Exception handlers can use this SWI at the end of handler chains
+/// as the default action, to indicate that the exception has not been handled.
+///
+/// This call should not return. However, it is possible for the debugger
+/// to request that the application continue. In that case this call
+/// returns normally.
 ///
 /// # Arguments
 ///
@@ -47,6 +84,6 @@ pub fn exit(status: i8) {
 pub fn report_exception(reason: Exception) {
     let code = reason as usize;
     unsafe {
-        syscall!(REPORT_EXCEPTION, code);
+        syscall1!(REPORT_EXCEPTION, code);
     }
 }
