@@ -29,6 +29,9 @@
 //! Target program:
 //!
 //! ```
+//! #[macro_use]
+//! extern crate cortex_m_semihosting;
+//!
 //! fn main() {
 //!     // File descriptor (on the host)
 //!     const STDOUT: usize = 1;
@@ -110,8 +113,9 @@ mod macros;
 
 pub mod io;
 pub mod nr;
+pub mod debug;
 
-/// Performs a semihosting operation
+/// Performs a semihosting operation, takes a pointer to an argument block
 #[inline(always)]
 #[cfg(target_arch = "arm")]
 pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
@@ -123,7 +127,26 @@ pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
     nr
 }
 
+/// Performs a semihosting operation, takes a pointer to an argument block
 #[cfg(not(target_arch = "arm"))]
 pub unsafe fn syscall<T>(_nr: usize, _arg: &T) -> usize {
+    0
+}
+
+/// Performs a semihosting operation, takes one integer as an argument
+#[inline(always)]
+#[cfg(target_arch = "arm")]
+pub unsafe fn syscall1(mut nr: usize, arg: usize) -> usize {
+    asm!("bkpt 0xAB"
+         : "+{r0}"(nr)
+         : "{r1}"(arg)
+         : "memory"
+         : "volatile");
+    nr
+}
+
+/// Performs a semihosting operation, takes one integer as an argument
+#[cfg(not(target_arch = "arm"))]
+pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
     0
 }
