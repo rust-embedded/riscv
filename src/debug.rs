@@ -11,21 +11,21 @@
 //! ```
 //! #[macro_use]
 //! extern crate cortex_m_semihosting;
-//! use cortex_m_semihosting::debug;
+//! use cortex_m_semihosting::debug::{self, EXIT_SUCCESS, EXIT_FAILURE};
 //!
 //! fn main() {
 //!     if 2 == 2 {
 //!         // report success
-//!         debug::exit(0);
+//!         debug::exit(EXIT_SUCCESS);
 //!     } else {
 //!         // report failure
-//!         debug::exit(1);
+//!         debug::exit(EXIT_FAILURE);
 //!     }
 //! }
 //!
 
 /// This values are taken from section 5.5.2 of
-/// "ADS Debug Target Guide" (DUI0058)
+/// ADS Debug Target Guide (DUI0058).
 pub enum Exception {
     // Hardware reason codes
     BranchThroughZero = 0x20000,
@@ -49,22 +49,29 @@ pub enum Exception {
     OSSpecific = 0x20029,
 }
 
+/// Status enum for `exit` syscall.
+pub type ExitStatus = Result<(), ()>;
+
+/// Successful execution of a program.
+pub const EXIT_SUCCESS: ExitStatus = Ok(());
+
+/// Unsuccessful execution of a program.
+pub const EXIT_FAILURE: ExitStatus = Err(());
+
 /// Reports to the debugger that the execution has completed.
 ///
-/// If `status` is not 0 then an error is reported.
-///
-/// This call can be used to terminate QEMU session, and report back success
-/// or failure.
+/// This call can be used to terminate QEMU session and report back success
+/// or failure. If you need to pass more than one type of error, consider
+/// using `report_exception` syscall instead.
 ///
 /// This call should not return. However, it is possible for the debugger
 /// to request that the application continue. In that case this call
 /// returns normally.
 ///
-pub fn exit(status: i8) {
-    if status == 0 {
-        report_exception(Exception::ApplicationExit);
-    } else {
-        report_exception(Exception::RunTimeErrorUnknown);
+pub fn exit(status: ExitStatus) {
+    match status {
+        EXIT_SUCCESS => report_exception(Exception::ApplicationExit),
+        EXIT_FAILURE => report_exception(Exception::RunTimeErrorUnknown),
     }
 }
 
@@ -79,7 +86,7 @@ pub fn exit(status: i8) {
 ///
 /// # Arguments
 ///
-/// * `reason` - A reason code reported back to the debugger
+/// * `reason` - A reason code reported back to the debugger.
 ///
 pub fn report_exception(reason: Exception) {
     let code = reason as usize;
