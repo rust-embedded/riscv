@@ -57,12 +57,10 @@
 //! ```
 //!
 //! The OpenOCD logs will be redirected to `/tmp/openocd.log`. You can view
-//! those logs in "real time" using `watch` + `tail`
+//! those logs in "real time" using `tail`
 //!
 //! ``` text
-//! $ watch 'tail /tmp/openocd.log'
-//! Every 2.0s: tail /tmp/openocd.log
-//!
+//! $ tail -f /tmp/openocd.log
 //! Info : Unable to match requested speed 1000 kHz, using 950 kHz
 //! Info : Unable to match requested speed 1000 kHz, using 950 kHz
 //! Info : clock speed 950 kHz
@@ -70,6 +68,10 @@
 //! Info : using stlink api v2
 //! Info : nrf51.cpu: hardware has 4 breakpoints, 2 watchpoints
 //! ```
+//!
+//! Alternatively you could omit the `-l` flag from the `openocd` call, and the
+//! `tail -f` command but the OpenOCD output will have intermingled in it logs
+//! from its normal operation.
 //!
 //! Then, we run the program:
 //!
