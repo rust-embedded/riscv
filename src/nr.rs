@@ -1,5 +1,8 @@
 //! Semihosting operations
 
+// TODO document
+#![allow(missing_docs)]
+
 pub const CLOCK: usize = 0x10;
 pub const CLOSE: usize = 0x05;
 pub const ELAPSED: usize = 0x30;

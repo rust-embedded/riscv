@@ -26,6 +26,8 @@
 
 /// This values are taken from section 5.5.2 of
 /// ADS Debug Target Guide (DUI0058).
+// TODO document
+#[allow(missing_docs)]
 pub enum Exception {
     // Hardware reason codes
     BranchThroughZero = 0x20000,
