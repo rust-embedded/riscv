@@ -34,7 +34,7 @@
 //!
 //! fn main() {
 //!     // File descriptor (on the host)
-//!     const STDOUT: usize = 1;
+//!     const STDOUT: usize = 1; // NOTE the host stdout may not always be fd 1
 //!     static MSG: &'static [u8] = b"Hello, world!\n";
 //!
 //!     // Signature: fn write(fd: usize, ptr: *const u8, len: usize) -> usize
@@ -107,15 +107,17 @@
 //!
 //! [pdf]: http://infocenter.arm.com/help/topic/com.arm.doc.dui0471e/DUI0471E_developing_for_arm_processors.pdf
 
+#![deny(missing_docs)]
+#![deny(warnings)]
 #![feature(asm)]
 #![no_std]
 
 #[macro_use]
 mod macros;
 
-pub mod io;
-pub mod nr;
 pub mod debug;
+pub mod hio;
+pub mod nr;
 
 /// Performs a semihosting operation, takes a pointer to an argument block
 #[inline(always)]
