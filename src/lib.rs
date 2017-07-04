@@ -14,9 +14,6 @@
 //! [sc]: https://en.wikipedia.org/wiki/System_call
 //! [`sc`]: https://crates.io/crates/sc
 //!
-//! And since the most used semihosting operation is writing to the host's
-//! stdout, convenience `hprint` and `hprintln` macros are provided.
-//!
 //! # Forewarning
 //!
 //! Semihosting operations are *very* slow. Like, each WRITE operation can take
@@ -39,9 +36,6 @@
 //!
 //!     // Signature: fn write(fd: usize, ptr: *const u8, len: usize) -> usize
 //!     let r = unsafe { syscall!(WRITE, STDOUT, MSG.as_ptr(), MSG.len()) };
-//!
-//!     // (Or you could have just written `hprintln!("Hello, world!")`)
-//!     // ..
 //! }
 //! ```
 //!
