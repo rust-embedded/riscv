@@ -25,7 +25,6 @@ before_cache:
 branches:
   only:
     - auto
-    - master
     - try
 
 notifications:
