@@ -41,6 +41,10 @@ impl fmt::Write for HStdout {
 
 /// Construct a new handle to the host's standard error.
 pub fn hstderr() -> Result<HStderr, ()> {
+    // There is actually no stderr access in ARM Semihosting documentation. Use
+    // convention used in libgloss.
+    // See: libgloss/arm/syscalls.c, line 139.
+    // https://sourceware.org/git/gitweb.cgi?p=newlib-cygwin.git;a=blob;f=libgloss/arm/syscalls.c#l139
     open(":tt\0", nr::open::W_APPEND).map(|fd| HStderr { fd })
 }
 

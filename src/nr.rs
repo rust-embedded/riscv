@@ -28,17 +28,30 @@ pub const WRITEC: usize = 0x03;
 pub const ENTER_SVC: usize = 0x17;
 pub const REPORT_EXCEPTION: usize = 0x18;
 
+/// Values for the mode parameter of the OPEN syscall.
 pub mod open {
+    /// Mode corresponding to fopen "r" mode.
     pub const R: usize = 0;
-    pub const R_TEXT: usize = 1;
+    /// Mode corresponding to fopen "rb" mode.
+    pub const R_BINARY: usize = 1;
+    /// Mode corresponding to fopen "r+" mode.
     pub const RW: usize = 2;
-    pub const RW_TEXT: usize = 3;
+    /// Mode corresponding to fopen "r+b" mode.
+    pub const RW_BINARY: usize = 3;
+    /// Mode corresponding to fopen "w" mode.
     pub const W_TRUNC: usize = 4;
-    pub const W_TRUNC_TEXT: usize = 5;
+    /// Mode corresponding to fopen "wb" mode.
+    pub const W_TRUNC_BINARY: usize = 5;
+    /// Mode corresponding to fopen "w+" mode.
     pub const RW_TRUNC: usize = 6;
-    pub const RW_TRUNC_TEXT: usize = 7;
+    /// Mode corresponding to fopen "w+b" mode.
+    pub const RW_TRUNC_BINARY: usize = 7;
+    /// Mode corresponding to fopen "a" mode.
     pub const W_APPEND: usize = 8;
-    pub const W_APPEND_TEXT: usize = 9;
+    /// Mode corresponding to fopen "ab" mode.
+    pub const W_APPEND_BINARY: usize = 9;
+    /// Mode corresponding to fopen "a+" mode.
     pub const RW_APPEND: usize = 10;
-    pub const RW_APPEND_TEXT: usize = 11;
+    /// Mode corresponding to fopen "a+b" mode.
+    pub const RW_APPEND_BINARY: usize = 11;
 }
