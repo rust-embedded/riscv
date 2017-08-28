@@ -4,7 +4,7 @@
 #![allow(missing_docs)]
 
 pub const CLOCK: usize = 0x10;
-pub const CLOSE: usize = 0x05;
+pub const CLOSE: usize = 0x02;
 pub const ELAPSED: usize = 0x30;
 pub const ERRNO: usize = 0x13;
 pub const FLEN: usize = 0x0c;
