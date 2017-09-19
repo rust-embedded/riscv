@@ -1,0 +1,13 @@
+[package]
+name = "riscv"
+version = "0.1.0"
+repository = "https://github.com/dvc94ch/riscv"
+authors = ["David Craven <david@craven.ch>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Low level access to RISCV processors"
+keywords = ["riscv", "register", "peripheral"]
+license = "ISC"
+
+[dependencies]
+bare-metal = "0.1.0"
+volatile-register = "0.2.0"
