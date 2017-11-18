@@ -1,6 +1,6 @@
 [package]
 name = "riscv-rt"
-version = "0.1.1"
+version = "0.1.2"
 repository = "https://github.com/dvc94ch/riscv-rt"
 authors = ["David Craven <david@craven.ch>"]
 categories = ["embedded", "no-std"]
@@ -9,5 +9,5 @@ keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
 
 [dependencies]
-r0 = "0.2.1"
-riscv = "0.1.1"
+r0 = "^0.2.1"
+riscv = "^0.1.1"
