@@ -1,5 +1,6 @@
 //! Functions for accessing Control and Status Registers
 
+#[cfg(target_arch = "riscv")]
 macro_rules! csr_asm {
     ($op:ident, $csr:expr, $value:expr) => (
         {
@@ -14,6 +15,14 @@ macro_rules! csr_asm {
             res
         }
     )
+}
+
+
+#[cfg(not(target_arch = "riscv"))]
+macro_rules! csr_asm {
+    ($op:ident, $csr:expr, $value:expr) => {
+        0
+    }
 }
 
 macro_rules! r {
