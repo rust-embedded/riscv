@@ -9,5 +9,5 @@ keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 
 [dependencies]
-bare-metal = "0.1.1"
-volatile-register = "0.2.0"
+bare-metal = "^0.1.1"
+volatile-register = "^0.2.0"
