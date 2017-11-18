@@ -202,8 +202,7 @@ extern "C" {
 /// It initializes DWARF call frame information, the stack pointer, the
 /// frame pointer (needed for closures to work in start_rust) and the global
 /// pointer. Then it calls _start_rust.
-// FIXME: .option push, .option norelax and .option pop directives aren't
-// supported by the llvm backend yet.
+#[cfg(target_arch = "riscv")]
 global_asm!(r#"
 .section .init
 .globl _start
@@ -244,6 +243,7 @@ pub extern "C" fn start_rust() -> ! {
     // TODO: Enable FPU when available
 
     // Set mtvec to _start_trap
+    #[cfg(target_arch = "riscv")]
     unsafe {
         // csr::mtvec.write(|w| w.bits(_start_trap));
         asm!("csrrw zero, 0x305, $0"
@@ -271,6 +271,7 @@ pub extern "C" fn start_rust() -> ! {
 ///
 /// Saves caller saved registers ra, t0..6, a0..7, calls _start_trap_rust,
 /// restores caller saved registers and then returns.
+#[cfg(target_arch = "riscv")]
 global_asm!(r#"
   .section .trap
   .align 4
