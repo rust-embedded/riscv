@@ -283,8 +283,9 @@ impl mcause::R {
     #[inline(always)]
     /// Trap Cause
     pub fn cause(&self) -> Trap {
-        let code = self.bits() & !(1 << 31);
-        match self.bits() & (1 << 31) == 1 << 31 {
+        let bits = self.bits();
+        let code = bits & !(1 << 31);
+        match bits & (1 << 31) == 1 << 31 {
             true => Trap::Interrupt(Interrupt::from(code)),
             false => Trap::Exception(Exception::from(code)),
         }
