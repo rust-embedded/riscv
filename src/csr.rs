@@ -168,7 +168,7 @@ csr!(mcounteren, MCOUNTEREN, 0x306, rw);
 /// Machine Trap Handling
 csr!(mscratch, MSCRATCH, 0x340, rw);
 csr!(mepc, MEPC, 0x341, rw);
-csr!(mcause, MCAUSE, 0x342, rw);
+csr!(mcause, MCAUSE, 0x342, r);
 csr!(mtval, MTVAL, 0x343, rw);
 csr!(mip, MIP, 0x344, r);
 /// Machine Protection and Translation
