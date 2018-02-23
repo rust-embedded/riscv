@@ -10,6 +10,4 @@ license = "ISC"
 
 [dependencies]
 r0 = "^0.2.1"
-
-[dependencies.riscv]
-git = "https://github.com/dvc94ch/riscv"
+riscv = { path = "../riscv" }
