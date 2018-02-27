@@ -1,10 +1,10 @@
-//! Semihosting for ARM Cortex-M processors
+//! Semihosting for RISCV processors
 //!
 //! # What is semihosting?
 //!
-//! "Semihosting is a mechanism that enables code running on an ARM target to
+//! "Semihosting is a mechanism that enables code running on a RISCV target to
 //!  communicate and use the Input/Output facilities on a host computer that is
-//!  running a debugger." - ARM
+//!  running a debugger." - RISCV
 //!
 //! # Interface
 //!
@@ -27,7 +27,7 @@
 //!
 //! ```
 //! #[macro_use]
-//! extern crate cortex_m_semihosting;
+//! extern crate riscv_semihosting;
 //!
 //! fn main() {
 //!     // File descriptor (on the host)
@@ -113,38 +113,57 @@ pub mod debug;
 pub mod hio;
 pub mod nr;
 
+/// The hint that differentiates the semihosting call.
+// WARNING: This variable is hardcoded in the asm! Don't forget to update
+// if it changes.
+pub const RISCV_SEMIHOSTING_CALL_NUMBER: usize = 7;
+
 /// Performs a semihosting operation, takes a pointer to an argument block
-#[inline(always)]
-#[cfg(target_arch = "arm")]
+#[inline]
+#[cfg(target_arch = "riscv")]
 pub unsafe fn syscall<T>(mut nr: usize, arg: &T) -> usize {
-    asm!("bkpt 0xAB"
-         : "+{r0}"(nr)
-         : "{r1}"(arg)
+    // .option push
+    // .option norvc
+    asm!(r"
+      slli x0, x0, 0x1f
+      ebreak
+      srai x0, x0, 0x7
+    "
+         : "+{x10}"(nr)
+         : "{x11}"(arg)
          : "memory"
          : "volatile");
+    // .option pop
     nr
 }
 
 /// Performs a semihosting operation, takes a pointer to an argument block
-#[cfg(not(target_arch = "arm"))]
+#[cfg(not(target_arch = "riscv"))]
 pub unsafe fn syscall<T>(_nr: usize, _arg: &T) -> usize {
     0
 }
 
 /// Performs a semihosting operation, takes one integer as an argument
-#[inline(always)]
-#[cfg(target_arch = "arm")]
+#[inline]
+#[cfg(target_arch = "riscv")]
 pub unsafe fn syscall1(mut nr: usize, arg: usize) -> usize {
-    asm!("bkpt 0xAB"
-         : "+{r0}"(nr)
-         : "{r1}"(arg)
+    // .option push
+    // .option norvc
+    asm!(r"
+      slli x0, x0, 0x1f
+      ebreak
+      srai x0, x0, 0x7
+    "
+         : "+{x10}"(nr)
+         : "{x11}"(arg)
          : "memory"
          : "volatile");
+    // .option pop
     nr
 }
 
 /// Performs a semihosting operation, takes one integer as an argument
-#[cfg(not(target_arch = "arm"))]
+#[cfg(not(target_arch = "riscv"))]
 pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
     0
 }
