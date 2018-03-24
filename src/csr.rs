@@ -32,14 +32,14 @@ macro_rules! r {
         }
 
         impl super::$TYPE {
-            #[inline(always)]
+            #[inline]
             pub fn read(&self) -> R {
                 R { bits: csr_asm!(csrrs, $CSR, 0) as u32 }
             }
         }
 
         impl R {
-            #[inline(always)]
+            #[inline]
             pub fn bits(&self) -> u32 {
                 self.bits
             }
@@ -74,17 +74,17 @@ macro_rules! w {
         }
 
         impl W {
-            #[inline(always)]
+            #[inline]
             pub fn bits(&mut self, value: u32) -> &mut W {
                 self.bits = value;
                 self
             }
-            #[inline(always)]
+            #[inline]
             pub fn set_bits(&mut self, value: u32) -> &mut W {
                 self.bits |= value;
                 self
             }
-            #[inline(always)]
+            #[inline]
             pub fn clear_bits(&mut self, value: u32) -> &mut W {
                 self.bits &= !value;
                 self
@@ -280,7 +280,7 @@ impl Exception {
 
 
 impl mcause::R {
-    #[inline(always)]
+    #[inline]
     /// Trap Cause
     pub fn cause(&self) -> Trap {
         let bits = self.bits();
@@ -291,7 +291,7 @@ impl mcause::R {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     /// Is trap cause an interrupt.
     pub fn is_interrupt(&self) -> bool {
         match self.cause() {
@@ -300,7 +300,7 @@ impl mcause::R {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     /// Is trap cause an exception.
     pub fn is_exception(&self) -> bool {
         match self.cause() {
@@ -328,43 +328,43 @@ pub enum SPP {
 
 
 impl mstatus::R {
-    #[inline(always)]
+    #[inline]
     /// User Interrupt Enable
     pub fn uie(&self) -> bool {
         self.bits() & (1 << 0) == 1 << 0
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Interrupt Enable
     pub fn sie(&self) -> bool {
         self.bits() & (1 << 1) == 1 << 1
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Interrupt Enable
     pub fn mie(&self) -> bool {
         self.bits() & (1 << 3) == 1 << 3
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Previous Interrupt Enable
     pub fn upie(&self) -> bool {
         self.bits() & (1 << 4) == 1 << 4
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Previous Interrupt Enable
     pub fn spie(&self) -> bool {
         self.bits() & (1 << 5) == 1 << 5
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Previous Interrupt Enable
     pub fn mpie(&self) -> bool {
         self.bits() & (1 << 7) == 1 << 7
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Previous Privilege Mode
     pub fn spp(&self) -> SPP {
         match self.bits() & (1 << 8) == (1 << 8) {
@@ -373,7 +373,7 @@ impl mstatus::R {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Previous Privilege Mode
     pub fn mpp(&self) -> MPP {
         match (self.bits() & (0b11 << 11)) >> 11 {
@@ -386,49 +386,49 @@ impl mstatus::R {
 }
 
 impl mstatus::W {
-    #[inline(always)]
+    #[inline]
     /// User Interrupt Enable
     pub fn uie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 0)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Interrupt Enable
     pub fn sie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 1)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Interrupt Enable
     pub fn mie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 3)
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Previous Interrupt Enable
     pub fn upie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 4)
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Previous Interrupt Enable
     pub fn spie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 5)
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Previous Interrupt Enable
     pub fn mpie(&mut self) -> &mut mstatus::W {
         self.set_bits(1 << 7)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Previous Privilege Mode
     pub fn spp(&mut self, value: SPP) -> &mut mstatus::W {
         self.set_bits((value as u32) << 8)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Previous Privilege Mode
     pub fn mpp(&mut self, value: MPP) -> &mut mstatus::W {
         self.set_bits((value as u32) << 11)
@@ -437,55 +437,55 @@ impl mstatus::W {
 
 /// Machine Interrupt Enable CSR (mie) is ReadWrite.
 impl mie::R {
-    #[inline(always)]
+    #[inline]
     /// User Software Interrupt Enable
     pub fn usoft(&self) -> bool {
         self.bits() & (1 << 0) == 1 << 0
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Software Interrupt Enable
     pub fn ssoft(&self) -> bool {
         self.bits() & (1 << 1) == 1 << 1
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Software Interrupt Enable
     pub fn msoft(&self) -> bool {
         self.bits() & (1 << 3) == 1 << 3
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Timer Interrupt Enable
     pub fn utimer(&self) -> bool {
         self.bits() & (1 << 4) == 1 << 4
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Timer Interrupt Enable
     pub fn stimer(&self) -> bool {
         self.bits() & (1 << 5) == 1 << 5
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Timer Interrupt Enable
     pub fn mtimer(&self) -> bool {
         self.bits() & (1 << 7) == 1 << 7
     }
 
-    #[inline(always)]
+    #[inline]
     /// User External Interrupt Enable
     pub fn uext(&self) -> bool {
         self.bits() & (1 << 8) == 1 << 8
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor External Interrupt Enable
     pub fn sext(&self) -> bool {
         self.bits() & (1 << 9) == 1 << 9
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine External Interrupt Enable
     pub fn mext(&self) -> bool {
         self.bits() & (1 << 11) == 1 << 11
@@ -493,55 +493,55 @@ impl mie::R {
 }
 
 impl mie::W {
-    #[inline(always)]
+    #[inline]
     /// User Software Interrupt Enable
     pub fn usoft(&mut self) -> &mut mie::W {
         self.set_bits(1 << 0)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Software Interrupt Enable
     pub fn ssoft(&mut self) -> &mut mie::W {
         self.set_bits(1 << 1)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Software Interrupt Enable
     pub fn msoft(&mut self) -> &mut mie::W {
         self.set_bits(1 << 3)
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Timer Interrupt Enable
     pub fn utimer(&mut self) -> &mut mie::W {
         self.set_bits(1 << 4)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Timer Interrupt Enable
     pub fn stimer(&mut self) -> &mut mie::W {
         self.set_bits(1 << 5)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Timer Interrupt Enable
     pub fn mtimer(&mut self) -> &mut mie::W {
         self.set_bits(1 << 7)
     }
 
-    #[inline(always)]
+    #[inline]
     /// User External Interrupt Enable
     pub fn uext(&mut self) -> &mut mie::W {
         self.set_bits(1 << 8)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor External Interrupt Enable
     pub fn sext(&mut self) -> &mut mie::W {
         self.set_bits(1 << 9)
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine External Interrupt Enable
     pub fn mext(&mut self) -> &mut mie::W {
         self.set_bits(1 << 11)
@@ -550,55 +550,55 @@ impl mie::W {
 
 /// Machine Interrupt Pending CSR (mip) is ReadOnly.
 impl mip::R {
-    #[inline(always)]
+    #[inline]
     /// User Software Interrupt Enable
     pub fn usoft(&self) -> bool {
         self.bits() & (1 << 0) == 1 << 0
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Software Interrupt Enable
     pub fn ssoft(&self) -> bool {
         self.bits() & (1 << 1) == 1 << 1
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Software Interrupt Enable
     pub fn msoft(&self) -> bool {
         self.bits() & (1 << 3) == 1 << 3
     }
 
-    #[inline(always)]
+    #[inline]
     /// User Timer Interrupt Enable
     pub fn utimer(&self) -> bool {
         self.bits() & (1 << 4) == 1 << 4
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor Timer Interrupt Enable
     pub fn stimer(&self) -> bool {
         self.bits() & (1 << 5) == 1 << 5
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine Timer Interrupt Enable
     pub fn mtimer(&self) -> bool {
         self.bits() & (1 << 7) == 1 << 7
     }
 
-    #[inline(always)]
+    #[inline]
     /// User External Interrupt Enable
     pub fn uext(&self) -> bool {
         self.bits() & (1 << 8) == 1 << 8
     }
 
-    #[inline(always)]
+    #[inline]
     /// Supervisor External Interrupt Enable
     pub fn sext(&self) -> bool {
         self.bits() & (1 << 9) == 1 << 9
     }
 
-    #[inline(always)]
+    #[inline]
     /// Machine External Interrupt Enable
     pub fn mext(&self) -> bool {
         self.bits() & (1 << 11) == 1 << 11

@@ -2,7 +2,7 @@
 
 macro_rules! instruction {
     ($fnname:ident, $asm:expr) => (
-        #[inline(always)]
+        #[inline]
         pub fn $fnname() {
             match () {
                 #[cfg(target_arch = "riscv")]

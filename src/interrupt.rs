@@ -4,7 +4,7 @@
 pub use bare_metal::{CriticalSection, Mutex, Nr};
 
 /// Disables all interrupts
-#[inline(always)]
+#[inline]
 pub fn disable() {
     match () {
         #[cfg(target_arch = "riscv")]
@@ -19,7 +19,7 @@ pub fn disable() {
 /// # Safety
 ///
 /// - Do not call this function inside an `interrupt::free` critical section
-#[inline(always)]
+#[inline]
 pub unsafe fn enable() {
     match () {
         #[cfg(target_arch = "riscv")]
