@@ -174,8 +174,8 @@ extern crate r0;
 
 mod lang_items;
 
-use riscv::{asm, csr};
-pub use riscv::csr::{Trap, Interrupt, Exception};
+use riscv::asm;
+use riscv::register::{mcause, mstatus, mtvec};
 
 extern "C" {
     // NOTE `rustc` forces this signature on us. See `src/lang_items.rs`
@@ -245,12 +245,7 @@ pub extern "C" fn start_rust() -> ! {
     // Set mtvec to _start_trap
     #[cfg(target_arch = "riscv")]
     unsafe {
-        // csr::mtvec.write(|w| w.bits(_start_trap));
-        asm!("csrrw zero, 0x305, $0"
-             :
-             : "r"(&_start_trap)
-             :
-             : "volatile");
+        mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
     }
 
     // Neither `argc` or `argv` make sense in bare metal context so we
@@ -331,9 +326,11 @@ _start_trap:
 #[export_name = "_start_trap_rust"]
 pub extern "C" fn start_trap_rust() {
     // dispatch trap to handler
-    trap_handler(csr::mcause.read().cause());
+    trap_handler(mcause::read().cause());
     // mstatus, remain in M-mode after mret
-    csr::mstatus.set(|w| w.mpp(csr::MPP::Machine));
+    unsafe {
+        mstatus::set_mpp(mstatus::MPP::Machine);
+    }
 }
 
 
@@ -341,4 +338,4 @@ pub extern "C" fn start_trap_rust() {
 #[used]
 #[no_mangle]
 #[linkage = "weak"]
-fn trap_handler(_: Trap) {}
+fn trap_handler(_: mcause::Trap) {}
