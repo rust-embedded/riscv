@@ -2,13 +2,14 @@
 
 // NOTE: Adapted from cortex-m/src/interrupt.rs
 pub use bare_metal::{CriticalSection, Mutex, Nr};
+use register::mstatus;
 
 /// Disables all interrupts
 #[inline]
-pub fn disable() {
+pub unsafe fn disable() {
     match () {
         #[cfg(target_arch = "riscv")]
-        () => ::csr::mstatus.clear(|w| w.mie()),
+        () => mstatus::clear_mie(),
         #[cfg(not(target_arch = "riscv"))]
         () => {}
     }
@@ -23,7 +24,7 @@ pub fn disable() {
 pub unsafe fn enable() {
     match () {
         #[cfg(target_arch = "riscv")]
-        () => ::csr::mstatus.set(|w| w.mie()),
+        () => mstatus::set_mie(),
         #[cfg(not(target_arch = "riscv"))]
         () => {}
     }
@@ -36,17 +37,17 @@ pub fn free<F, R>(f: F) -> R
 where
     F: FnOnce(&CriticalSection) -> R,
 {
-    let mstatus = ::csr::mstatus.read();
+    let mstatus = mstatus::read();
 
     // disable interrupts
-    disable();
+    unsafe { disable(); }
 
     let r = f(unsafe { &CriticalSection::new() });
 
     // If the interrupts were active before our `disable` call, then re-enable
     // them. Otherwise, keep them disabled
     if mstatus.mie() {
-        unsafe { enable() }
+        unsafe { enable(); }
     }
 
     r

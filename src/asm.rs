@@ -17,16 +17,10 @@ macro_rules! instruction {
 }
 
 
-/// User Level ISA instructions
-instruction!(nop, "addi zero, zero, 0");
+/// Priviledged ISA Instructions
 instruction!(ecall, "ecall");
 instruction!(ebreak, "ebreak");
-instruction!(fence, "fence iorw, iorw");
-instruction!(fencei, "fence.i");
-
-/// Priviledged ISA Instructions
-instruction!(wfi, "wfi");
 instruction!(uret, "uret");
 instruction!(sret, "sret");
 instruction!(mret, "mret");
-instruction!(sfencevma, "sfence.vma");
+instruction!(wfi, "wfi");

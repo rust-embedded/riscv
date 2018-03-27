@@ -14,5 +14,5 @@
 extern crate bare_metal;
 
 pub mod asm;
-pub mod csr;
 pub mod interrupt;
+pub mod register;
