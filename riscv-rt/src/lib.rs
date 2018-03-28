@@ -175,7 +175,7 @@ extern crate r0;
 mod lang_items;
 
 use riscv::asm;
-use riscv::register::{mcause, mstatus, mtvec};
+use riscv::register::{mcause, mstatus};
 
 extern "C" {
     // NOTE `rustc` forces this signature on us. See `src/lang_items.rs`
@@ -245,7 +245,12 @@ pub extern "C" fn start_rust() -> ! {
     // Set mtvec to _start_trap
     #[cfg(target_arch = "riscv")]
     unsafe {
-        mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
+        //mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
+        asm!("csrrw zero, 0x305, $0"
+             :
+             : "r"(&_start_trap)
+             :
+             : "volatile");
     }
 
     // Neither `argc` or `argv` make sense in bare metal context so we
