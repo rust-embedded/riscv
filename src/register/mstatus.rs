@@ -102,7 +102,7 @@ pub fn read() -> Mstatus {
 unsafe fn set(bits: usize) {
     match () {
         #[cfg(target_arch = "riscv")]
-        () => asm!("csrrs x0, 0x305, $0" :: "r"(bits) :: "volatile"),
+        () => asm!("csrrs x0, 0x300, $0" :: "r"(bits) :: "volatile"),
         #[cfg(not(target_arch = "riscv"))]
         () => unimplemented!(),
     }
@@ -114,7 +114,7 @@ unsafe fn set(bits: usize) {
 unsafe fn clear(bits: usize) {
     match () {
         #[cfg(target_arch = "riscv")]
-        () => asm!("csrrc x0, 0x305, $0" :: "r"(bits) :: "volatile"),
+        () => asm!("csrrc x0, 0x300, $0" :: "r"(bits) :: "volatile"),
         #[cfg(not(target_arch = "riscv"))]
         () => unimplemented!(),
     }
