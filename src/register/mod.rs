@@ -13,6 +13,7 @@
 pub mod mcause;
 pub mod mcycle;
 pub mod mcycleh;
+pub mod mepc;
 pub mod mie;
 pub mod mip;
 pub mod minstret;

@@ -65,7 +65,7 @@
 - [x] mtvec
 - [ ] mcounteren
 - [ ] mscratch
-- [ ] mepc
+- [x] mepc
 - [x] mcause
 - [ ] mtval
 - [x] mip
