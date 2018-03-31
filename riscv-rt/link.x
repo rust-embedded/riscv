@@ -25,15 +25,15 @@ SECTIONS
     . = ALIGN(4);
   } > FLASH
 
-  .bss : ALIGN(4)
+  PROVIDE(_sbss = ORIGIN(RAM));
+  .bss _sbss : ALIGN(4)
   {
-    _sbss = .;
     *(.bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
   } > RAM
 
-  .data : ALIGN(4)
+  .data _ebss : ALIGN(4)
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
@@ -43,6 +43,25 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;
   } > RAM AT > FLASH /* LLD fails on AT > FLASH */
+
+  PROVIDE(_heap_size = 0);
+
+  /* fictitious region that represents the memory available for the heap */
+  .heap _edata (INFO) : ALIGN(4)
+  {
+    _sheap = .;
+    . += _heap_size;
+    . = ALIGN(4);
+    _eheap = .;
+  }
+
+  /* fictitious region that represents the memory available for the stack */
+  .stack _eheap (INFO) : ALIGN(4)
+  {
+    _estack = .;
+    . = _stack_start;
+    _sstack = .;
+  }
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
@@ -55,8 +74,6 @@ SECTIONS
     _egot = .;
   } > RAM AT > FLASH /* LLD fails on AT > FLASH */
 
-  /* The heap starts right after the .bss + .data section ends */
-  _sheap = _edata;
 
   /* Due to an unfortunate combination of legacy concerns,
      toolchain drawbacks, and insufficient attention to detail,
