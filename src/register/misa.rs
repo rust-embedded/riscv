@@ -24,7 +24,7 @@ impl Misa {
         let value = match () {
             #[cfg(target_pointer_width = "32")]
             () => (self.bits >> 30) as u8,
-            #[cfg(target_pointer_widht = "64")]
+            #[cfg(target_pointer_width = "64")]
             () => (self.bits >> 62) as u8,
         };
         match value {
