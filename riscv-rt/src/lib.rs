@@ -160,7 +160,7 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![feature(asm)]
-#![feature(compiler_builtins_lib)]
+#![cfg_attr(needs_cb, feature(compiler_builtins_lib))]
 #![feature(const_fn)]
 #![feature(global_asm)]
 #![feature(lang_items)]
@@ -168,6 +168,7 @@
 #![feature(naked_functions)]
 #![feature(used)]
 
+#[cfg(needs_cb)]
 extern crate compiler_builtins;
 extern crate riscv;
 extern crate r0;
