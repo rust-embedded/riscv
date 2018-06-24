@@ -73,22 +73,6 @@ SECTIONS
     KEEP(*(.got .got.*));
     _egot = .;
   } > RAM AT > FLASH /* LLD fails on AT > FLASH */
-
-
-  /* Due to an unfortunate combination of legacy concerns,
-     toolchain drawbacks, and insufficient attention to detail,
-     rustc has no choice but to mark .debug_gdb_scripts as allocatable.
-     We really do not want to upload it to our target, so we
-     remove the allocatable bit. Unfortunately, it appears
-     that the only way to do this in a linker script is
-     the extremely obscure "INFO" output section type specifier. */
-  /* a rustc hack will force the program to read the first byte of this section,
-     so we'll set the (fake) start address of this section to something we're
-     sure can be read at runtime: the start of the .text section */
-  /* LLD fails to parse _stext (INFO) */
-  .debug_gdb_scripts _stext (INFO) : {
-    KEEP(*(.debug_gdb_scripts))
-  }
 }
 
 /* Do not exceed this mark in the error messages below                | */
