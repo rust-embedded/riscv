@@ -3,13 +3,8 @@
 use riscv::asm;
 
 /// Default panic handler
-#[lang = "panic_fmt"]
-unsafe extern "C" fn panic_fmt(
-    _: ::core::fmt::Arguments, // fmt
-    _: &'static str, // file
-    _: u32, // line
-    _: u32, // col
-) -> ! {
+#[panic_implementation]
+fn panic_fmt(_info: &core::panic::PanicInfo) -> ! {
     asm::ebreak();
     loop {}
 }

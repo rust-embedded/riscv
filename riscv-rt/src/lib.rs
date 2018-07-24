@@ -162,13 +162,14 @@
 #![feature(asm)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
+#![feature(extern_prelude)]
 #![feature(global_asm)]
 #![feature(lang_items)]
 #![feature(linkage)]
 #![feature(naked_functions)]
+#![feature(panic_implementation)]
 #![feature(used)]
 
-extern crate compiler_builtins;
 extern crate riscv;
 extern crate r0;
 
@@ -340,7 +341,15 @@ pub extern "C" fn start_trap_rust() {
 
 
 /// Default Trap Handler
-#[used]
 #[no_mangle]
 #[linkage = "weak"]
-fn trap_handler(_: mcause::Trap) {}
+pub fn trap_handler(_: mcause::Trap) {}
+
+// Make sure there is an abort when linking
+#[cfg(target_arch = "riscv")]
+global_asm!(r#"
+.section .init
+.globl abort
+abort:
+  jal zero, _start
+"#);
