@@ -203,7 +203,7 @@ extern "C" {
 /// It initializes DWARF call frame information, the stack pointer, the
 /// frame pointer (needed for closures to work in start_rust) and the global
 /// pointer. Then it calls _start_rust.
-#[cfg(target_arch = "riscv")]
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 global_asm!(r#"
 .section .init
 .globl _start
@@ -244,7 +244,7 @@ pub extern "C" fn start_rust() -> ! {
     // TODO: Enable FPU when available
 
     // Set mtvec to _start_trap
-    #[cfg(target_arch = "riscv")]
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     unsafe {
         //mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
         asm!("csrrw zero, 0x305, $0"
@@ -272,7 +272,7 @@ pub extern "C" fn start_rust() -> ! {
 ///
 /// Saves caller saved registers ra, t0..6, a0..7, calls _start_trap_rust,
 /// restores caller saved registers and then returns.
-#[cfg(target_arch = "riscv")]
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 global_asm!(r#"
   .section .trap
   .align 4
@@ -346,7 +346,7 @@ pub extern "C" fn start_trap_rust() {
 pub fn trap_handler(_: mcause::Trap) {}
 
 // Make sure there is an abort when linking
-#[cfg(target_arch = "riscv")]
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 global_asm!(r#"
 .section .init
 .globl abort
