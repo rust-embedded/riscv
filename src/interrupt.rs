@@ -8,9 +8,9 @@ use register::mstatus;
 #[inline]
 pub unsafe fn disable() {
     match () {
-        #[cfg(target_arch = "riscv")]
+        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => mstatus::clear_mie(),
-        #[cfg(not(target_arch = "riscv"))]
+        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => {}
     }
 }
@@ -23,9 +23,9 @@ pub unsafe fn disable() {
 #[inline]
 pub unsafe fn enable() {
     match () {
-        #[cfg(target_arch = "riscv")]
+        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => mstatus::set_mie(),
-        #[cfg(not(target_arch = "riscv"))]
+        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => {}
     }
 }

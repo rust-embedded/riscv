@@ -22,7 +22,7 @@ impl Mvendorid {
 #[inline]
 pub fn read() -> Option<Mvendorid> {
     match () {
-        #[cfg(target_arch = "riscv")]
+        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => {
             let r: usize;
             unsafe {
@@ -36,7 +36,7 @@ pub fn read() -> Option<Mvendorid> {
                 Some(Mvendorid { bits: r })
             }
         }
-        #[cfg(not(target_arch = "riscv"))]
+        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => unimplemented!(),
     }
 }

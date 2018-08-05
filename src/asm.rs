@@ -5,11 +5,11 @@ macro_rules! instruction {
         #[inline]
         pub fn $fnname() {
             match () {
-                #[cfg(target_arch = "riscv")]
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => unsafe {
                     asm!($asm :::: "volatile");
                 },
-                #[cfg(not(target_arch = "riscv"))]
+                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => {}
             }
         }
