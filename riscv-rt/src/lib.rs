@@ -180,7 +180,7 @@ use riscv::register::{mcause, mstatus};
 
 extern "C" {
     // NOTE `rustc` forces this signature on us. See `src/lang_items.rs`
-    fn main(argc: isize, argv: *const *const u8) -> isize;
+    fn main() -> isize;
 
     // Boundaries of the .bss section
     static mut _ebss: u32;
@@ -257,7 +257,7 @@ pub extern "C" fn start_rust() -> ! {
     // Neither `argc` or `argv` make sense in bare metal context so we
     // just stub them
     unsafe {
-        main(0, ::core::ptr::null());
+        main();
     }
 
     // If `main` returns, then we go into "reactive" mode and simply attend
