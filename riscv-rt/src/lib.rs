@@ -166,7 +166,6 @@
 #![feature(global_asm)]
 #![feature(lang_items)]
 #![feature(linkage)]
-#![feature(naked_functions)]
 #![feature(panic_implementation)]
 #![feature(used)]
 
@@ -232,7 +231,6 @@ _start:
 ///
 /// Zeros bss section, initializes data section and calls main. This function
 /// never returns.
-#[naked]
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
 pub extern "C" fn start_rust() -> ! {
