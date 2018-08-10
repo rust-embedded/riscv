@@ -55,10 +55,15 @@
 //!
 //! ``` ignore,no_run
 //! #![no_std]
+//! #![no_main]
 //!
+//! #[macro_use(entry)]
 //! extern crate riscv_rt;
 //!
-//! fn main() {
+//! // use `main` as the entry point of this application
+//! entry!(main);
+//!
+//! fn main() -> ! {
 //!     // do something here
 //! }
 //! ```
@@ -174,13 +179,9 @@ extern crate r0;
 
 mod lang_items;
 
-use riscv::asm;
 use riscv::register::{mcause, mstatus};
 
 extern "C" {
-    // NOTE `rustc` forces this signature on us. See `src/lang_items.rs`
-    fn main() -> isize;
-
     // Boundaries of the .bss section
     static mut _ebss: u32;
     static mut _sbss: u32;
@@ -234,6 +235,11 @@ _start:
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
 pub extern "C" fn start_rust() -> ! {
+    extern "C" {
+        // This symbol will be provided by the user via the `entry!` macro
+        fn main() -> !;
+    }
+
     unsafe {
         r0::zero_bss(&mut _sbss, &mut _ebss);
         r0::init_data(&mut _sdata, &mut _edata, &_sidata);
@@ -252,17 +258,34 @@ pub extern "C" fn start_rust() -> ! {
              : "volatile");
     }
 
-    // Neither `argc` or `argv` make sense in bare metal context so we
-    // just stub them
     unsafe {
         main();
     }
+}
 
-    // If `main` returns, then we go into "reactive" mode and simply attend
-    // interrupts as they occur.
-    loop {
-        asm::wfi();
-    }
+
+/// Macro to define the entry point of the program
+///
+/// **NOTE** This macro must be invoked once and must be invoked from an accessible module, ideally
+/// from the root of the crate.
+///
+/// Usage: `entry!(path::to::entry::point)`
+///
+/// The specified function will be called by the reset handler *after* RAM has been initialized.
+///
+/// The signature of the specified function must be `fn() -> !` (never ending function).
+#[macro_export]
+macro_rules! entry {
+    ($path:expr) => {
+        #[inline(never)]
+        #[export_name = "main"]
+        pub extern "C" fn __impl_main() -> ! {
+            // validate the signature of the program entry point
+            let f: fn() -> ! = $path;
+
+            f()
+        }
+    };
 }
 
 
