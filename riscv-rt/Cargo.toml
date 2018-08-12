@@ -1,7 +1,7 @@
 [package]
 name = "riscv-rt"
-version = "0.1.3"
-repository = "https://github.com/dvc94ch/riscv-rt"
+version = "0.2.0"
+repository = "https://github.com/rust-embedded/riscv-rt"
 authors = ["David Craven <david@craven.ch>"]
 categories = ["embedded", "no-std"]
 description = "Minimal runtime / startup for RISCV CPU's"
@@ -9,5 +9,5 @@ keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
 
 [dependencies]
-r0 = "^0.2.1"
-riscv = { path = "../riscv" }
+r0 = "0.2.2"
+riscv = "0.3.0"
