@@ -11,3 +11,6 @@ license = "ISC"
 [dependencies]
 r0 = "0.2.2"
 riscv = "0.3.0"
+
+[features]
+inline-asm = []
