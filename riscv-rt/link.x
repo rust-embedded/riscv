@@ -7,7 +7,7 @@ SECTIONS
 {
   PROVIDE(_stext = ORIGIN(FLASH));
 
-  .text _stext : ALIGN(4)
+  .text ALIGN(_stext,4) :
   {
     /* Put reset handler first in .text section so it ends up as the entry */
     /* point of the program. */
@@ -19,21 +19,20 @@ SECTIONS
     *(.text .text.*);
   } > FLASH
 
-  .rodata : ALIGN(4)
+  .rodata ALIGN(4) :
   {
     *(.rodata .rodata.*);
-    . = ALIGN(4);
   } > FLASH
 
   PROVIDE(_sbss = ORIGIN(RAM));
-  .bss _sbss : ALIGN(4)
+  .bss ALIGN(_sbss,4) :
   {
     *(.bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
   } > RAM
 
-  .data _ebss : ALIGN(4)
+  .data _ebss :
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
