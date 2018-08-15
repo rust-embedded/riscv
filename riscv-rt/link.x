@@ -24,15 +24,15 @@ SECTIONS
     *(.rodata .rodata.*);
   } > FLASH
 
-  PROVIDE(_sbss = ORIGIN(RAM));
-  .bss ALIGN(_sbss,4) :
+  .bss :
   {
+    _sbss = .;
     *(.bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
   } > RAM
 
-  .data _ebss :
+  .data : AT(LOADADDR(.rodata) + SIZEOF(.rodata))
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
@@ -41,37 +41,35 @@ SECTIONS
     *(.data .data.*);
     . = ALIGN(4);
     _edata = .;
-  } > RAM AT > FLASH /* LLD fails on AT > FLASH */
+  } > RAM
 
   PROVIDE(_heap_size = 0);
 
   /* fictitious region that represents the memory available for the heap */
-  .heap _edata (INFO) : ALIGN(4)
+  .heap (INFO) :
   {
     _sheap = .;
     . += _heap_size;
     . = ALIGN(4);
     _eheap = .;
-  }
+  } > RAM
 
   /* fictitious region that represents the memory available for the stack */
-  .stack _eheap (INFO) : ALIGN(4)
+  .stack (INFO) :
   {
     _estack = .;
     . = _stack_start;
     _sstack = .;
-  }
+  } > RAM
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
      relocatable code in the input files and raise an error if relocatable code
      is found */
-  .got :
+  .got (INFO) :
   {
-    _sgot = .;
     KEEP(*(.got .got.*));
-    _egot = .;
-  } > RAM AT > FLASH /* LLD fails on AT > FLASH */
+  }
 
   /* Discard .eh_frame, we are not doing unwind on panic so it is not needed */
   /DISCARD/ :
@@ -81,7 +79,7 @@ SECTIONS
 }
 
 /* Do not exceed this mark in the error messages below                | */
-ASSERT(_sgot == _egot, "
+ASSERT(SIZEOF(.got) == 0, "
 .got section detected in the input files. Dynamic relocations are not
 supported. If you are linking to C code compiled using the `gcc` crate
 then modify your build script to compile the C code _without_ the
