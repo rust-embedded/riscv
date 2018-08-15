@@ -72,6 +72,12 @@ SECTIONS
     KEEP(*(.got .got.*));
     _egot = .;
   } > RAM AT > FLASH /* LLD fails on AT > FLASH */
+
+  /* Discard .eh_frame, we are not doing unwind on panic so it is not needed */
+  /DISCARD/ :
+  {
+    *(.eh_frame);
+  }
 }
 
 /* Do not exceed this mark in the error messages below                | */
