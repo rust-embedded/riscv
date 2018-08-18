@@ -205,7 +205,7 @@ extern "C" {
 /// pointer. Then it calls _start_rust.
 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 global_asm!(r#"
-.section .init
+.section .init, "ax"
 .globl _start
 _start:
   .cfi_startproc
@@ -295,7 +295,7 @@ macro_rules! entry {
 /// restores caller saved registers and then returns.
 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 global_asm!(r#"
-  .section .trap
+  .section .trap, "ax"
   .align 4
   .global _start_trap
 
