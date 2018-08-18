@@ -3,12 +3,10 @@
 macro_rules! instruction {
     ($fnname:ident, $asm:expr) => (
         #[inline]
-        pub fn $fnname() {
+        pub unsafe fn $fnname() {
             match () {
                 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-                () => unsafe {
-                    asm!($asm :::: "volatile");
-                },
+                () => asm!($asm :::: "volatile"),
                 #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => {}
             }
