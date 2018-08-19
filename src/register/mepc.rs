@@ -2,7 +2,7 @@
 
 /// Reads the CSR
 #[inline]
-pub fn read() -> u32 {
+pub fn read() -> usize {
     match () {
         #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => {
@@ -10,7 +10,7 @@ pub fn read() -> u32 {
             unsafe {
                 asm!("csrrs $0, 0x341, x0" : "=r"(r) ::: "volatile");
             }
-            r as u32
+            r
         },
         #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => unimplemented!(),
