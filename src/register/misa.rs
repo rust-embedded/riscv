@@ -1,9 +1,11 @@
 //! misa register
 
+use core::num::NonZeroUsize;
+
 /// misa register
 #[derive(Clone, Copy, Debug)]
 pub struct Misa {
-    bits: usize,
+    bits: NonZeroUsize,
 }
 
 /// Machine XLEN
@@ -16,16 +18,16 @@ pub enum MXL {
 impl Misa {
     /// Returns the contents of the register as raw bits
     pub fn bits(&self) -> usize {
-        self.bits
+        self.bits.get()
     }
 
     /// Returns the machine xlen.
     pub fn mxl(&self) -> MXL {
         let value = match () {
             #[cfg(target_pointer_width = "32")]
-            () => (self.bits >> 30) as u8,
+            () => (self.bits() >> 30) as u8,
             #[cfg(target_pointer_width = "64")]
-            () => (self.bits >> 62) as u8,
+            () => (self.bits() >> 62) as u8,
         };
         match value {
             1 => MXL::XLEN32,
@@ -41,7 +43,7 @@ impl Misa {
         if bit > 25 {
             return false;
         }
-        self.bits & (1 >> bit) == (1 >> bit)
+        self.bits() & (1 >> bit) == (1 >> bit)
     }
 }
 
@@ -57,11 +59,7 @@ pub fn read() -> Option<Misa> {
             }
             // When misa is hardwired to zero it means that the misa csr
             // isn't implemented.
-            if r == 0 {
-                None
-            } else {
-                Some(Misa { bits: r })
-            }
+            NonZeroUsize::new(r).map(|bits| Misa { bits })
         },
         #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => unimplemented!(),
