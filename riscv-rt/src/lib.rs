@@ -167,12 +167,9 @@
 #![feature(asm)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
-#![feature(extern_prelude)]
 #![feature(global_asm)]
 #![feature(lang_items)]
 #![feature(linkage)]
-#![feature(panic_implementation)]
-#![feature(used)]
 
 extern crate riscv;
 extern crate r0;
