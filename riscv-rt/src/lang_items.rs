@@ -3,8 +3,8 @@
 use riscv::asm;
 
 /// Default panic handler
-#[panic_implementation]
-fn panic_fmt(_info: &core::panic::PanicInfo) -> ! {
+#[panic_handler]
+fn panic(_info: &core::panic::PanicInfo) -> ! {
     asm::ebreak();
     loop {}
 }
