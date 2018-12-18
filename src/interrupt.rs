@@ -11,7 +11,7 @@ pub unsafe fn disable() {
         #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => mstatus::clear_mie(),
         #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => {}
+        () => unimplemented!(),
     }
 }
 
@@ -26,7 +26,7 @@ pub unsafe fn enable() {
         #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         () => mstatus::set_mie(),
         #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => {}
+        () => unimplemented!(),
     }
 }
 
