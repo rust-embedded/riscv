@@ -8,7 +8,7 @@ macro_rules! instruction {
                 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => asm!($asm :::: "volatile"),
                 #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-                () => {}
+                () => unimplemented!(),
             }
         }
     )
