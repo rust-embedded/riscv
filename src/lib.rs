@@ -12,6 +12,7 @@
 #![feature(const_fn)]
 
 extern crate bare_metal;
+extern crate bit_field;
 
 pub mod asm;
 pub mod interrupt;
