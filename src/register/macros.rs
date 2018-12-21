@@ -17,6 +17,25 @@ macro_rules! read_csr {
     };
 }
 
+macro_rules! read_csr_rv32 {
+    ($csr_number:expr) => {
+        /// Reads the CSR
+        #[inline]
+        #[cfg(target_arch = "riscv32")]
+        unsafe fn _read() -> usize {
+            let r: usize;
+            asm!("csrrs $0, $1, x0" : "=r"(r) : "i"($csr_number) :: "volatile");
+            r
+        }
+
+        #[inline]
+        #[cfg(not(target_arch = "riscv32"))]
+        unsafe fn _read() -> usize {
+            unimplemented!()
+        }
+    };
+}
+
 macro_rules! read_csr_as {
     ($register:ident, $csr_number:expr) => {
         read_csr!($csr_number);
@@ -28,9 +47,22 @@ macro_rules! read_csr_as {
         }
     };
 }
+
 macro_rules! read_csr_as_usize {
     ($csr_number:expr) => {
         read_csr!($csr_number);
+
+        /// Reads the CSR
+        #[inline]
+        pub fn read() -> usize {
+            unsafe{ _read() }
+        }
+    };
+}
+
+macro_rules! read_csr_as_usize_rv32 {
+    ($csr_number:expr) => {
+        read_csr_rv32!($csr_number);
 
         /// Reads the CSR
         #[inline]
