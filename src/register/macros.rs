@@ -2,7 +2,7 @@ macro_rules! read_csr {
     ($csr_number:expr) => {
         /// Reads the CSR
         #[inline]
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+        #[cfg(riscv)]
         unsafe fn _read() -> usize {
             let r: usize;
             asm!("csrrs $0, $1, x0" : "=r"(r) : "i"($csr_number) :: "volatile");
@@ -10,7 +10,7 @@ macro_rules! read_csr {
         }
 
         #[inline]
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+        #[cfg(not(riscv))]
         unsafe fn _read() -> usize {
             unimplemented!()
         }
@@ -21,7 +21,7 @@ macro_rules! read_csr_rv32 {
     ($csr_number:expr) => {
         /// Reads the CSR
         #[inline]
-        #[cfg(target_arch = "riscv32")]
+        #[cfg(riscv32)]
         unsafe fn _read() -> usize {
             let r: usize;
             asm!("csrrs $0, $1, x0" : "=r"(r) : "i"($csr_number) :: "volatile");
@@ -29,7 +29,7 @@ macro_rules! read_csr_rv32 {
         }
 
         #[inline]
-        #[cfg(not(target_arch = "riscv32"))]
+        #[cfg(not(riscv32))]
         unsafe fn _read() -> usize {
             unimplemented!()
         }
@@ -76,13 +76,13 @@ macro_rules! write_csr {
     ($csr_number:expr) => {
         /// Writes the CSR
         #[inline]
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+        #[cfg(riscv)]
         unsafe fn _write(bits: usize) {
             asm!("csrrw x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile");
         }
 
         #[inline]
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+        #[cfg(not(riscv))]
         unsafe fn _write(_bits: usize) {
             unimplemented!()
         }
@@ -105,13 +105,13 @@ macro_rules! set {
     ($csr_number:expr) => {
         /// Set the CSR
         #[inline]
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+        #[cfg(riscv)]
         unsafe fn _set(bits: usize) {
             asm!("csrrs x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile");
         }
 
         #[inline]
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+        #[cfg(not(riscv))]
         unsafe fn _set(_bits: usize) {
             unimplemented!()
         }
@@ -122,13 +122,13 @@ macro_rules! clear {
     ($csr_number:expr) => {
         /// Clear the CSR
         #[inline]
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+        #[cfg(riscv)]
         unsafe fn _clear(bits: usize) {
             asm!("csrrc x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile");
         }
 
         #[inline]
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+        #[cfg(not(riscv))]
         unsafe fn _clear(_bits: usize) {
             unimplemented!()
         }

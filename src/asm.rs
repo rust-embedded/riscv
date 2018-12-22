@@ -5,9 +5,9 @@ macro_rules! instruction {
         #[inline]
         pub unsafe fn $fnname() {
             match () {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #[cfg(riscv)]
                 () => asm!($asm :::: "volatile"),
-                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+                #[cfg(not(riscv))]
                 () => unimplemented!(),
             }
         }
@@ -22,11 +22,11 @@ instruction!(sfence_vma_all, "sfence.vma");
 
 
 #[inline]
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+#[cfg(riscv)]
 pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     asm!("sfence.vma $0, $1" :: "r"(asid), "r"(addr) :: "volatile");
 }
 
 #[inline]
-#[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+#[cfg(not(riscv))]
 pub fn sfence_vma(_asid: usize, _addr: usize) {}

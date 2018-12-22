@@ -1,6 +1,6 @@
 //! satp register
 
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+#[cfg(riscv)]
 use bit_field::BitField;
 
 /// satp register
@@ -18,7 +18,7 @@ impl Satp {
 
     /// Current address-translation scheme
     #[inline]
-    #[cfg(target_arch = "riscv32")]
+    #[cfg(riscv32)]
     pub fn mode(&self) -> Mode {
         match self.bits.get_bit(31) {
             false => Mode::Bare,
@@ -28,7 +28,7 @@ impl Satp {
 
     /// Current address-translation scheme
     #[inline]
-    #[cfg(target_arch = "riscv64")]
+    #[cfg(riscv64)]
     pub fn mode(&self) -> Mode {
         match self.bits.get_bits(60..64) {
             0 => Mode::Bare,
@@ -42,40 +42,40 @@ impl Satp {
 
     /// Address space identifier
     #[inline]
-    #[cfg(target_arch = "riscv32")]
+    #[cfg(riscv32)]
     pub fn asid(&self) -> usize {
         self.bits.get_bits(22..31)
     }
 
     /// Address space identifier
     #[inline]
-    #[cfg(target_arch = "riscv64")]
+    #[cfg(riscv64)]
     pub fn asid(&self) -> usize {
         self.bits.get_bits(44..60)
     }
 
     /// Physical page number
     #[inline]
-    #[cfg(target_arch = "riscv32")]
+    #[cfg(riscv32)]
     pub fn ppn(&self) -> usize {
         self.bits.get_bits(0..22)
     }
 
     /// Physical page number
     #[inline]
-    #[cfg(target_arch = "riscv64")]
+    #[cfg(riscv64)]
     pub fn ppn(&self) -> usize {
         self.bits.get_bits(0..44)
     }
 }
 
-#[cfg(target_arch = "riscv32")]
+#[cfg(riscv32)]
 pub enum Mode {
     Bare = 0,
     Sv32 = 1,
 }
 
-#[cfg(target_arch = "riscv64")]
+#[cfg(riscv64)]
 pub enum Mode {
     Bare = 0,
     Sv39 = 8,
@@ -88,7 +88,7 @@ read_csr_as!(Satp, 0x180);
 write_csr!(0x180);
 
 #[inline]
-#[cfg(target_arch = "riscv32")]
+#[cfg(riscv32)]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
     let mut bits = 0usize;
     bits.set_bits(31..32, mode as usize);
@@ -98,7 +98,7 @@ pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
 }
 
 #[inline]
-#[cfg(target_arch = "riscv64")]
+#[cfg(riscv64)]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
     let mut bits = 0usize;
     bits.set_bits(60..64, mode as usize);

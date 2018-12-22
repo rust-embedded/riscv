@@ -123,14 +123,14 @@ set_clear_csr!(set_sum, clear_sum, 1 << 18);
 
 /// Supervisor Previous Privilege Mode
 #[inline]
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+#[cfg(riscv)]
 pub unsafe fn set_spp(spp: SPP) {
     _set((spp as usize) << 8);
 }
 
 /// The status of the floating-point unit
 #[inline]
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+#[cfg(riscv)]
 pub unsafe fn set_fs(fs: FS) {
     _set((fs as usize) << 13);
 }
