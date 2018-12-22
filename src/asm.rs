@@ -5,8 +5,12 @@ macro_rules! instruction {
         #[inline]
         pub unsafe fn $fnname() {
             match () {
-                #[cfg(riscv)]
+                #[cfg(all(riscv, feature = "inline-asm"))]
                 () => asm!($asm :::: "volatile"),
+
+                #[cfg(all(riscv, not(feature = "inline-asm")))]
+                () => unimplemented!(),
+
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
             }
@@ -22,11 +26,16 @@ instruction!(sfence_vma_all, "sfence.vma");
 
 
 #[inline]
-#[cfg(riscv)]
+#[allow(unused_variables)]
 pub unsafe fn sfence_vma(asid: usize, addr: usize) {
-    asm!("sfence.vma $0, $1" :: "r"(asid), "r"(addr) :: "volatile");
-}
+    match () {
+        #[cfg(all(riscv, feature = "inline-asm"))]
+        () => asm!("sfence.vma $0, $1" :: "r"(asid), "r"(addr) :: "volatile"),
 
-#[inline]
-#[cfg(not(riscv))]
-pub fn sfence_vma(_asid: usize, _addr: usize) {}
+        #[cfg(all(riscv, not(feature = "inline-asm")))]
+        () => unimplemented!(),
+
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
+    }
+}
