@@ -24,6 +24,14 @@ matrix:
       rust: nightly
       if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
 
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: stable
+      if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
+
+    - env: TARGET=riscv32imac-unknown-none-elf
+      rust: stable
+      if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
+
 before_install: set -e
 
 install:
