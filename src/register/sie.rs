@@ -52,9 +52,9 @@ impl Sie {
     }
 }
 
-read_csr_as!(Sie, 0x104);
-set!(0x104);
-clear!(0x104);
+read_csr_as!(Sie, 0x104, __read_sie);
+set!(0x104, __set_sie);
+clear!(0x104, __clear_sie);
 
 /// User Software Interrupt Enable
 set_clear_csr!(set_usoft, clear_usoft, 1 << 0);

@@ -115,4 +115,4 @@ impl Scause {
     }
 }
 
-read_csr_as!(Scause, 0x142);
+read_csr_as!(Scause, 0x142, __read_scause);

@@ -84,8 +84,8 @@ pub enum Mode {
     Sv64 = 11,
 }
 
-read_csr_as!(Satp, 0x180);
-write_csr!(0x180);
+read_csr_as!(Satp, 0x180, __read_satp);
+write_csr!(0x180, __write_satp);
 
 #[inline]
 #[cfg(riscv32)]

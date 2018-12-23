@@ -1,7 +1,7 @@
 //! Assembly instructions
 
 macro_rules! instruction {
-    ($fnname:ident, $asm:expr) => (
+    ($fnname:ident, $asm:expr, $asm_fn:ident) => (
         #[inline]
         pub unsafe fn $fnname() {
             match () {
@@ -9,7 +9,13 @@ macro_rules! instruction {
                 () => asm!($asm :::: "volatile"),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn();
+                    }
+
+                    $asm_fn();
+                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -20,9 +26,9 @@ macro_rules! instruction {
 
 
 /// Priviledged ISA Instructions
-instruction!(ebreak, "ebreak");
-instruction!(wfi, "wfi");
-instruction!(sfence_vma_all, "sfence.vma");
+instruction!(ebreak, "ebreak", __ebreak);
+instruction!(wfi, "wfi", __wfi);
+instruction!(sfence_vma_all, "sfence.vma", __sfence_vma_all);
 
 
 #[inline]
@@ -33,7 +39,13 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
         () => asm!("sfence.vma $0, $1" :: "r"(asid), "r"(addr) :: "volatile"),
 
         #[cfg(all(riscv, not(feature = "inline-asm")))]
-        () => unimplemented!(),
+        () => {
+            extern "C" {
+                fn __sfence_vma(asid: usize, addr: usize);
+            }
+
+            __sfence_vma(asid, addr);
+        }
 
         #[cfg(not(riscv))]
         () => unimplemented!(),

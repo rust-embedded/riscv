@@ -20,7 +20,7 @@ impl Mvendorid {
     }
 }
 
-read_csr!(0xF11);
+read_csr!(0xF11, __read_mvendorid);
 
 /// Reads the CSR
 #[inline]

@@ -34,8 +34,8 @@ impl Stvec {
     }
 }
 
-read_csr_as!(Stvec, 0x105);
-write_csr!(0x105);
+read_csr_as!(Stvec, 0x105, __read_stvec);
+write_csr!(0x105, __write_stvec);
 
 /// Writes the CSR
 #[inline]

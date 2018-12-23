@@ -1,5 +1,5 @@
 macro_rules! read_csr {
-    ($csr_number:expr) => {
+    ($csr_number:expr, $asm_fn: ident) => {
         /// Reads the CSR
         #[inline]
         unsafe fn _read() -> usize {
@@ -12,7 +12,13 @@ macro_rules! read_csr {
                 }
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn() -> usize;
+                    }
+
+                    $asm_fn()
+                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -22,7 +28,7 @@ macro_rules! read_csr {
 }
 
 macro_rules! read_csr_rv32 {
-    ($csr_number:expr) => {
+    ($csr_number:expr, $asm_fn: ident) => {
         /// Reads the CSR
         #[inline]
         unsafe fn _read() -> usize {
@@ -35,7 +41,13 @@ macro_rules! read_csr_rv32 {
                 }
 
                 #[cfg(all(riscv32, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn() -> usize;
+                    }
+
+                    $asm_fn()
+                }
 
                 #[cfg(not(riscv32))]
                 () => unimplemented!(),
@@ -45,8 +57,8 @@ macro_rules! read_csr_rv32 {
 }
 
 macro_rules! read_csr_as {
-    ($register:ident, $csr_number:expr) => {
-        read_csr!($csr_number);
+    ($register:ident, $csr_number:expr, $asm_fn: ident) => {
+        read_csr!($csr_number, $asm_fn);
 
         /// Reads the CSR
         #[inline]
@@ -57,8 +69,8 @@ macro_rules! read_csr_as {
 }
 
 macro_rules! read_csr_as_usize {
-    ($csr_number:expr) => {
-        read_csr!($csr_number);
+    ($csr_number:expr, $asm_fn: ident) => {
+        read_csr!($csr_number, $asm_fn);
 
         /// Reads the CSR
         #[inline]
@@ -69,8 +81,8 @@ macro_rules! read_csr_as_usize {
 }
 
 macro_rules! read_csr_as_usize_rv32 {
-    ($csr_number:expr) => {
-        read_csr_rv32!($csr_number);
+    ($csr_number:expr, $asm_fn: ident) => {
+        read_csr_rv32!($csr_number, $asm_fn);
 
         /// Reads the CSR
         #[inline]
@@ -81,7 +93,7 @@ macro_rules! read_csr_as_usize_rv32 {
 }
 
 macro_rules! write_csr {
-    ($csr_number:expr) => {
+    ($csr_number:expr, $asm_fn: ident) => {
         /// Writes the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -91,7 +103,13 @@ macro_rules! write_csr {
                 () => asm!("csrrw x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn(bits: usize);
+                    }
+
+                    $asm_fn(bits);
+                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -101,8 +119,8 @@ macro_rules! write_csr {
 }
 
 macro_rules! write_csr_as_usize {
-    ($csr_number:expr) => {
-        write_csr!($csr_number);
+    ($csr_number:expr, $asm_fn: ident) => {
+        write_csr!($csr_number, $asm_fn);
 
         /// Writes the CSR
         #[inline]
@@ -113,7 +131,7 @@ macro_rules! write_csr_as_usize {
 }
 
 macro_rules! set {
-    ($csr_number:expr) => {
+    ($csr_number:expr, $asm_fn: ident) => {
         /// Set the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -123,7 +141,13 @@ macro_rules! set {
                 () => asm!("csrrs x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn(bits: usize);
+                    }
+
+                    $asm_fn(bits);
+                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -133,7 +157,7 @@ macro_rules! set {
 }
 
 macro_rules! clear {
-    ($csr_number:expr) => {
+    ($csr_number:expr, $asm_fn: ident) => {
         /// Clear the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -143,7 +167,13 @@ macro_rules! clear {
                 () => asm!("csrrc x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => unimplemented!(),
+                () => {
+                    extern "C" {
+                        fn $asm_fn(bits: usize);
+                    }
+
+                    $asm_fn(bits);
+                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
