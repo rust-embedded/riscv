@@ -79,9 +79,9 @@ impl Mstatus {
 }
 
 
-read_csr_as!(Mstatus, 0x300);
-set!(0x300);
-clear!(0x300);
+read_csr_as!(Mstatus, 0x300, __read_mstatus);
+set!(0x300, __set_mstatus);
+clear!(0x300, __clear_mstatus);
 
 /// User Interrupt Enable
 set_clear_csr!(set_uie, clear_uie, 1 << 0);

@@ -52,4 +52,4 @@ impl Sip {
     }
 }
 
-read_csr_as!(Sip, 0x144);
+read_csr_as!(Sip, 0x144, __read_sip);

@@ -68,4 +68,4 @@ impl Mip {
     }
 }
 
-read_csr_as!(Mip, 0x344);
+read_csr_as!(Mip, 0x344, __read_mip);
