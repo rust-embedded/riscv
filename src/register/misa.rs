@@ -47,21 +47,13 @@ impl Misa {
     }
 }
 
+read_csr!(0x301);
+
 /// Reads the CSR
 #[inline]
 pub fn read() -> Option<Misa> {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => {
-            let r: usize;
-            unsafe {
-                asm!("csrrs $0, 0x301, x0" : "=r"(r) ::: "volatile");
-            }
-            // When misa is hardwired to zero it means that the misa csr
-            // isn't implemented.
-            NonZeroUsize::new(r).map(|bits| Misa { bits })
-        },
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
+    let r = unsafe{ _read() };
+    // When misa is hardwired to zero it means that the misa csr
+    // isn't implemented.
+    NonZeroUsize::new(r).map(|bits| Misa { bits })
 }

@@ -68,71 +68,9 @@ impl Mie {
     }
 }
 
-/// Reads the CSR
-#[inline]
-pub fn read() -> Mie {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => {
-            let r: usize;
-            unsafe {
-                asm!("csrrs $0, 0x304, x0" : "=r"(r) ::: "volatile");
-            }
-            Mie { bits: r }
-        }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
-}
-
-/// Sets the CSR
-#[cfg_attr(not(any(target_arch = "riscv32", target_arch = "riscv64")), allow(unused_variables))]
-#[inline]
-unsafe fn set(bits: usize) {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => asm!("csrrs x0, 0x304, $0" :: "r"(bits) :: "volatile"),
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
-}
-
-/// Clears the CSR
-#[cfg_attr(not(any(target_arch = "riscv32", target_arch = "riscv64")), allow(unused_variables))]
-#[inline]
-unsafe fn clear(bits: usize) {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => asm!("csrrc x0, 0x304, $0" :: "r"(bits) :: "volatile"),
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
-}
-
-macro_rules! set_csr {
-    ($set_field:ident, $e:expr) => {
-        #[inline]
-        pub unsafe fn $set_field() {
-            set($e);
-        }
-    }
-}
-
-macro_rules! clear_csr {
-    ($clear_field:ident, $e:expr) => {
-        #[inline]
-        pub unsafe fn $clear_field() {
-            clear($e);
-        }
-    }
-}
-
-macro_rules! set_clear_csr {
-    ($set_field:ident, $clear_field:ident, $e:expr) => {
-        set_csr!($set_field, $e);
-        clear_csr!($clear_field, $e);
-    }
-}
+read_csr_as!(Mie, 0x304);
+set!(0x304);
+clear!(0x304);
 
 /// User Software Interrupt Enable
 set_clear_csr!(set_usoft, clear_usoft, 1 << 0);

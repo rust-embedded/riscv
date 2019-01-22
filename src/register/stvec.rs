@@ -39,7 +39,6 @@ write_csr!(0x105);
 
 /// Writes the CSR
 #[inline]
-#[cfg_attr(not(any(target_arch = "riscv32", target_arch = "riscv64")), allow(unused_variables))]
 pub unsafe fn write(addr: usize, mode: TrapMode) {
     _write(addr + mode as usize);
 }

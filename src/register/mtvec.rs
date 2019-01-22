@@ -34,32 +34,13 @@ impl Mtvec {
     }
 }
 
-/// Reads the CSR
-#[inline]
-pub fn read() -> Mtvec {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => {
-            let r: usize;
-            unsafe {
-                asm!("csrrs $0, 0x305, x0" : "=r"(r) ::: "volatile");
-            }
-            Mtvec { bits: r }
-        }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
-}
+read_csr_as!(Mtvec, 0x305);
+
+write_csr!(0x305);
 
 /// Writes the CSR
-#[cfg_attr(not(any(target_arch = "riscv32", target_arch = "riscv64")), allow(unused_variables))]
 #[inline]
 pub unsafe fn write(addr: usize, mode: TrapMode) {
     let bits = addr + mode as usize;
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => asm!("csrrw x0, 0x305, $0" :: "r"(bits) :: "volatile"),
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
+    _write(bits);
 }

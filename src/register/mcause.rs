@@ -136,19 +136,4 @@ impl Mcause {
     }
 }
 
-/// Reads the CSR
-#[inline]
-pub fn read() -> Mcause {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => {
-            let r: usize;
-            unsafe {
-                asm!("csrrs $0, 0x342, x0" : "=r"(r) ::: "volatile");
-            }
-            Mcause { bits: r }
-        }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
-    }
-}
+read_csr_as!(Mcause, 0x342);
