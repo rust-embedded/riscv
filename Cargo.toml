@@ -4,7 +4,7 @@ version = "0.3.0"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["David Craven <david@craven.ch>"]
 categories = ["embedded", "hardware-support", "no-std"]
-description = "Low level access to RISCV processors"
+description = "Low level access to RISC-V processors"
 keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 

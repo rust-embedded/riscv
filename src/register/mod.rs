@@ -1,4 +1,4 @@
-//! RISCV CSR's
+//! RISC-V CSR's
 //!
 //! The following registers are not available on 64-bit implementations.
 //!

@@ -1,4 +1,4 @@
-//! Low level access to RISCV processors
+//! Low level access to RISC-V processors
 //!
 //! This crate provides:
 //!
