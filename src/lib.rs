@@ -1,10 +1,10 @@
-//! Low level access to RISCV processors
+//! Low level access to RISC-V processors
 //!
 //! This crate provides:
 //!
 //! - Access to core registers like mstatus or mcause.
 //! - Interrupt manipulation mechanisms.
-//! - Safe wrappers around assembly instructions like `mret`.
+//! - Wrappers around assembly instructions like `WFI`.
 
 #![no_std]
 #![deny(warnings)]
