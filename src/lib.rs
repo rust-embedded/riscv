@@ -4,7 +4,7 @@
 //!
 //! - Access to core registers like mstatus or mcause.
 //! - Interrupt manipulation mechanisms.
-//! - Safe wrappers around assembly instructions like `mret`.
+//! - Wrappers around assembly instructions like `WFI`.
 
 #![no_std]
 #![deny(warnings)]
