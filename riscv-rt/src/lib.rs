@@ -168,13 +168,10 @@
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
 #![feature(global_asm)]
-#![feature(lang_items)]
 #![feature(linkage)]
 
 extern crate riscv;
 extern crate r0;
-
-mod lang_items;
 
 use riscv::register::{mcause, mstatus, mtvec};
 
