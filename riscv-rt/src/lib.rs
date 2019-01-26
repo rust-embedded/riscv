@@ -176,7 +176,7 @@ extern crate r0;
 
 mod lang_items;
 
-use riscv::register::{mcause, mstatus};
+use riscv::register::{mcause, mstatus, mtvec};
 
 extern "C" {
     // Boundaries of the .bss section
@@ -244,18 +244,10 @@ pub extern "C" fn start_rust() -> ! {
 
     // TODO: Enable FPU when available
 
-    // Set mtvec to _start_trap
-    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     unsafe {
-        //mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
-        asm!("csrrw zero, 0x305, $0"
-             :
-             : "r"(&_start_trap)
-             :
-             : "volatile");
-    }
+        // Set mtvec to _start_trap
+        mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
 
-    unsafe {
         main();
     }
 }
