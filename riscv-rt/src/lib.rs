@@ -166,12 +166,11 @@
 #![deny(warnings)]
 #![feature(compiler_builtins_lib)]
 #![feature(const_fn)]
-#![feature(linkage)]
 
 extern crate riscv;
 extern crate r0;
 
-use riscv::register::{mcause, mstatus, mtvec};
+use riscv::register::{mstatus, mtvec};
 
 extern "C" {
     // Boundaries of the .bss section
@@ -252,10 +251,15 @@ macro_rules! entry {
 #[link_section = ".trap.rust"]
 #[export_name = "_start_trap_rust"]
 pub extern "C" fn start_trap_rust() {
-    // dispatch trap to handler
-    trap_handler(mcause::read().cause());
-    // mstatus, remain in M-mode after mret
+    extern "C" {
+        fn trap_handler();
+    }
+
     unsafe {
+        // dispatch trap to handler
+        trap_handler();
+
+        // mstatus, remain in M-mode after mret
         mstatus::set_mpp(mstatus::MPP::Machine);
     }
 }
@@ -263,5 +267,4 @@ pub extern "C" fn start_trap_rust() {
 
 /// Default Trap Handler
 #[no_mangle]
-#[linkage = "weak"]
-pub fn trap_handler(_: mcause::Trap) {}
+pub fn default_trap_handler() {}
