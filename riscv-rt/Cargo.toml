@@ -4,7 +4,7 @@ version = "0.3.0"
 repository = "https://github.com/rust-embedded/riscv-rt"
 authors = ["David Craven <david@craven.ch>"]
 categories = ["embedded", "no-std"]
-description = "Minimal runtime / startup for RISCV CPU's"
+description = "Minimal runtime / startup for RISC-V CPU's"
 keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
 

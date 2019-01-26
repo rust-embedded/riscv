@@ -1,4 +1,4 @@
-//! Minimal startup / runtime for RISCV CPU's
+//! Minimal startup / runtime for RISC-V CPU's
 //!
 //! # Features
 //!
