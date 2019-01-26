@@ -164,8 +164,6 @@
 #![no_std]
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![feature(compiler_builtins_lib)]
-#![feature(const_fn)]
 
 extern crate riscv;
 extern crate r0;
