@@ -133,29 +133,32 @@
 //! _stack_start = ORIGIN(CCRAM) + LENGTH(CCRAM);
 //! ```
 //!
+//! ### `_heap_size`
+//!
+//! This symbol provides the size of a heap region. The default value is 0. You can set `_heap_size`
+//! to a non-zero value if you are planning to use heap allocations.
+//!
 //! ### `_sheap`
 //!
 //! This symbol is located in RAM right after the `.bss` and `.data` sections.
 //! You can use the address of this symbol as the start address of a heap
-//! region. This symbol is 4 byte aligned so that address will be a multiple of
-//! 4.
+//! region. This symbol is 4 byte aligned so that address will be a multiple of 4.
 //!
 //! #### Example
 //!
 //! ```
 //! extern crate some_allocator;
 //!
-//! // Size of the heap in bytes
-//! const SIZE: usize = 1024;
-//!
 //! extern "C" {
-//!     static mut _sheap: u8;
+//!     static _sheap: u8;
+//!     static _heap_size: u8;
 //! }
 //!
 //! fn main() {
 //!     unsafe {
-//!         let start_address = &mut _sheap as *mut u8;
-//!         some_allocator::initialize(start_address, SIZE);
+//!         let heap_bottom = &_sheap as *const u8 as usize;
+//!         let heap_size = &_heap_size as *const u8 as usize;
+//!         some_allocator::initialize(heap_bottom, heap_size);
 //!     }
 //! }
 //! ```
