@@ -22,7 +22,7 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-rt = "0.3.0"
+//! riscv-rt = "0.4.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
