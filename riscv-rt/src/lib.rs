@@ -8,16 +8,6 @@
 //!
 //! - Before main initialization of the FPU (for targets that have a FPU).
 //!
-//! - A `panic_fmt` implementation that just calls abort that you can opt into
-//!   through the "abort-on-panic" Cargo feature. If you don't use this feature
-//!   you'll have to provide the `panic_fmt` lang item yourself. Documentation
-//!   [here][1]
-//!
-//! [1]: https://doc.rust-lang.org/unstable-book/language-features/lang-items.html
-//!
-//! - A minimal `start` lang item to support the standard `fn main()`
-//!   interface. (The processor goes to sleep after returning from `main`)
-//!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
 //!   be supplied through a `memory.x` file (see example below).
