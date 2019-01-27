@@ -8,6 +8,8 @@
 //!
 //! - Before main initialization of the FPU (for targets that have a FPU).
 //!
+//! - An `entry!` macro to declare the entry point of the program.
+//!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
 //!   be supplied through a `memory.x` file (see example below).
