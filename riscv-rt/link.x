@@ -3,6 +3,8 @@ INCLUDE memory.x
 
 PROVIDE(_stack_start = ORIGIN(RAM) + LENGTH(RAM));
 
+PROVIDE(trap_handler = default_trap_handler);
+
 SECTIONS
 {
   PROVIDE(_stext = ORIGIN(FLASH));
