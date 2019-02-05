@@ -1,4 +1,4 @@
-//! Minimal startup / runtime for RISCV CPU's
+//! Minimal startup / runtime for RISC-V CPU's
 //!
 //! # Features
 //!
@@ -8,15 +8,7 @@
 //!
 //! - Before main initialization of the FPU (for targets that have a FPU).
 //!
-//! - A `panic_fmt` implementation that just calls abort that you can opt into
-//!   through the "abort-on-panic" Cargo feature. If you don't use this feature
-//!   you'll have to provide the `panic_fmt` lang item yourself. Documentation
-//!   [here][1]
-//!
-//! [1]: https://doc.rust-lang.org/unstable-book/language-features/lang-items.html
-//!
-//! - A minimal `start` lang item to support the standard `fn main()`
-//!   interface. (The processor goes to sleep after returning from `main`)
+//! - An `entry!` macro to declare the entry point of the program.
 //!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
@@ -29,25 +21,17 @@
 //!
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
-//! [dependencies.riscv-rt]
-//! version = "0.1.0"
-//!
-//! $ # tell Xargo which standard crates to build
-//! $ edit Xargo.toml && cat $_
-//! [dependencies.core]
-//! stage = 0
-//!
-//! [dependencies.compiler_builtins]
-//! features = ["mem"]
-//! stage = 1
+//! [dependencies]
+//! riscv-rt = "0.4.0"
+//! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
 //! $ edit memory.x && cat $_
 //! MEMORY
 //! {
 //!   /* NOTE K = KiBi = 1024 bytes */
-//!   FLASH : ORIGIN = 0x08000000, LENGTH = 128K
-//!   RAM : ORIGIN = 0x20000000, LENGTH = 8K
+//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
+//!   RAM : ORIGIN = 0x80000000, LENGTH = 16K
 //! }
 //!
 //! $ edit src/main.rs && cat $_
@@ -57,31 +41,65 @@
 //! #![no_std]
 //! #![no_main]
 //!
-//! #[macro_use(entry)]
-//! extern crate riscv_rt;
+//! extern crate panic_halt;
+//!
+//! use riscv_rt::entry;
 //!
 //! // use `main` as the entry point of this application
 //! entry!(main);
 //!
 //! fn main() -> ! {
 //!     // do something here
+//!     loop { }
 //! }
 //! ```
 //!
 //! ``` text
-//! $ cargo install xargo
+//! $ mkdir .cargo && edit .cargo/config && cat $_
+//! [target.riscv32imac-unknown-none-elf]
+//! rustflags = [
+//!   "-C", "link-arg=-Tlink.x"
+//! ]
 //!
-//! $ xargo rustc --target riscv32-unknown-none -- \
-//!    -C link-arg=-Tlink.x -C linker=riscv32-unknown-elf-ld -Z linker-flavor=ld
+//! [build]
+//! target = "riscv32imac-unknown-none-elf"
+//! $ edit build.rs && cat $_
+//! ```
+//!
+//! ``` ignore,no_run
+//! use std::env;
+//! use std::fs::File;
+//! use std::io::Write;
+//! use std::path::Path;
+//!
+//! /// Put the linker script somewhere the linker can find it.
+//! fn main() {
+//!     let out_dir = env::var("OUT_DIR").expect("No out dir");
+//!     let dest_path = Path::new(&out_dir);
+//!     let mut f = File::create(&dest_path.join("memory.x"))
+//!         .expect("Could not create file");
+//!
+//!     f.write_all(include_bytes!("memory.x"))
+//!         .expect("Could not write file");
+//!
+//!     println!("cargo:rustc-link-search={}", dest_path.display());
+//!
+//!     println!("cargo:rerun-if-changed=memory.x");
+//!     println!("cargo:rerun-if-changed=build.rs");
+//! }
+//! ```
+//!
+//! ``` text
+//! $ cargo build
 //!
 //! $ riscv32-unknown-elf-objdump -Cd $(find target -name app) | head
 //!
 //! Disassembly of section .text:
 //!
-//! 20400000 <_start>:
-//! 20400000:	800011b7    lui	gp,0x80001
-//! 20400004:	80018193    addi	gp,gp,-2048 # 80000800 <_stack_start+0xffffc800>
-//! 20400008:	80004137    lui	sp,0x80004
+//! 20000000 <_start>:
+//! 20000000:	800011b7          	lui	gp,0x80001
+//! 20000004:	80018193          	addi	gp,gp,-2048 # 80000800 <_stack_start+0xffffc800>
+//! 20000008:	80004137          	lui	sp,0x80004
 //! ```
 //!
 //! # Symbol interfaces
@@ -133,29 +151,32 @@
 //! _stack_start = ORIGIN(CCRAM) + LENGTH(CCRAM);
 //! ```
 //!
+//! ### `_heap_size`
+//!
+//! This symbol provides the size of a heap region. The default value is 0. You can set `_heap_size`
+//! to a non-zero value if you are planning to use heap allocations.
+//!
 //! ### `_sheap`
 //!
 //! This symbol is located in RAM right after the `.bss` and `.data` sections.
 //! You can use the address of this symbol as the start address of a heap
-//! region. This symbol is 4 byte aligned so that address will be a multiple of
-//! 4.
+//! region. This symbol is 4 byte aligned so that address will be a multiple of 4.
 //!
 //! #### Example
 //!
 //! ```
 //! extern crate some_allocator;
 //!
-//! // Size of the heap in bytes
-//! const SIZE: usize = 1024;
-//!
 //! extern "C" {
-//!     static mut _sheap: u8;
+//!     static _sheap: u8;
+//!     static _heap_size: u8;
 //! }
 //!
 //! fn main() {
 //!     unsafe {
-//!         let start_address = &mut _sheap as *mut u8;
-//!         some_allocator::initialize(start_address, SIZE);
+//!         let heap_bottom = &_sheap as *const u8 as usize;
+//!         let heap_size = &_heap_size as *const u8 as usize;
+//!         some_allocator::initialize(heap_bottom, heap_size);
 //!     }
 //! }
 //! ```
