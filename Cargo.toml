@@ -2,7 +2,10 @@
 name = "riscv"
 version = "0.4.0"
 repository = "https://github.com/rust-embedded/riscv"
-authors = ["David Craven <david@craven.ch>"]
+authors = [
+    "The RISC-V Team <risc-v@teams.rust-embedded.org>",
+    "David Craven <david@craven.ch>",
+]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Low level access to RISC-V processors"
 keywords = ["riscv", "register", "peripheral"]
