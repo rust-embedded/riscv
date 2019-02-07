@@ -2,10 +2,7 @@
 name = "riscv-rt"
 version = "0.4.0"
 repository = "https://github.com/rust-embedded/riscv-rt"
-authors = [
-    "The RISC-V Team <risc-v@teams.rust-embedded.org>",
-    "David Craven <david@craven.ch>",
-]
+authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
 description = "Minimal runtime / startup for RISC-V CPU's"
 keywords = ["riscv", "runtime", "startup"]
