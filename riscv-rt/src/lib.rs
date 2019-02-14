@@ -229,7 +229,7 @@ pub extern "C" fn start_rust() -> ! {
 
     unsafe {
         // Set mtvec to _start_trap
-        mtvec::write(_start_trap as usize, mtvec::TrapMode::Direct);
+        mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
 
         main();
     }
