@@ -108,18 +108,24 @@ read_csr_as!(Sstatus, 0x100, __read_sstatus);
 set!(0x100, __set_sstatus);
 clear!(0x100, __clear_sstatus);
 
-/// User Interrupt Enable
-set_clear_csr!(set_uie, clear_uie, 1 << 0);
-/// Supervisor Interrupt Enable
-set_clear_csr!(set_sie, clear_sie, 1 << 1);
-/// User Previous Interrupt Enable
-set_csr!(set_upie, 1 << 4);
-/// Supervisor Previous Interrupt Enable
-set_csr!(set_spie, 1 << 5);
-/// Make eXecutable Readable
-set_clear_csr!(set_mxr, clear_mxr, 1 << 19);
-/// Permit Supervisor User Memory access
-set_clear_csr!(set_sum, clear_sum, 1 << 18);
+set_clear_csr!(
+    /// User Interrupt Enable
+    , set_uie, clear_uie, 1 << 0);
+set_clear_csr!(
+    /// Supervisor Interrupt Enable
+    , set_sie, clear_sie, 1 << 1);
+set_csr!(
+    /// User Previous Interrupt Enable
+    , set_upie, 1 << 4);
+set_csr!(
+    /// Supervisor Previous Interrupt Enable
+    , set_spie, 1 << 5);
+set_clear_csr!(
+    /// Make eXecutable Readable
+    , set_mxr, clear_mxr, 1 << 19);
+set_clear_csr!(
+    /// Permit Supervisor User Memory access
+    , set_sum, clear_sum, 1 << 18);
 
 /// Supervisor Previous Privilege Mode
 #[inline]
