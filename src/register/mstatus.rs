@@ -83,18 +83,24 @@ read_csr_as!(Mstatus, 0x300, __read_mstatus);
 set!(0x300, __set_mstatus);
 clear!(0x300, __clear_mstatus);
 
-/// User Interrupt Enable
-set_clear_csr!(set_uie, clear_uie, 1 << 0);
-/// Supervisor Interrupt Enable
-set_clear_csr!(set_sie, clear_sie, 1 << 1);
-/// Machine Interrupt Enable
-set_clear_csr!(set_mie, clear_mie, 1 << 3);
-/// User Previous Interrupt Enable
-set_csr!(set_upie, 1 << 4);
-/// Supervisor Previous Interrupt Enable
-set_csr!(set_spie, 1 << 5);
-/// Machine Previous Interrupt Enable
-set_csr!(set_mpie, 1 << 7);
+set_clear_csr!(
+    /// User Interrupt Enable
+    , set_uie, clear_uie, 1 << 0);
+set_clear_csr!(
+    /// Supervisor Interrupt Enable
+    , set_sie, clear_sie, 1 << 1);
+set_clear_csr!(
+    /// Machine Interrupt Enable
+    , set_mie, clear_mie, 1 << 3);
+set_csr!(
+    /// User Previous Interrupt Enable
+    , set_upie, 1 << 4);
+set_csr!(
+    /// Supervisor Previous Interrupt Enable
+    , set_spie, 1 << 5);
+set_csr!(
+    /// Machine Previous Interrupt Enable
+    , set_mpie, 1 << 7);
 /// Supervisor Previous Privilege Mode
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {

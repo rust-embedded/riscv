@@ -183,7 +183,8 @@ macro_rules! clear {
 }
 
 macro_rules! set_csr {
-    ($set_field:ident, $e:expr) => {
+    ($(#[$attr:meta])*, $set_field:ident, $e:expr) => {
+        $(#[$attr])*
         #[inline]
         pub unsafe fn $set_field() {
             _set($e);
@@ -192,7 +193,8 @@ macro_rules! set_csr {
 }
 
 macro_rules! clear_csr {
-    ($clear_field:ident, $e:expr) => {
+    ($(#[$attr:meta])*, $clear_field:ident, $e:expr) => {
+        $(#[$attr])*
         #[inline]
         pub unsafe fn $clear_field() {
             _clear($e);
@@ -201,8 +203,8 @@ macro_rules! clear_csr {
 }
 
 macro_rules! set_clear_csr {
-    ($set_field:ident, $clear_field:ident, $e:expr) => {
-        set_csr!($set_field, $e);
-        clear_csr!($clear_field, $e);
+    ($(#[$attr:meta])*, $set_field:ident, $clear_field:ident, $e:expr) => {
+        set_csr!($(#[$attr])*, $set_field, $e);
+        clear_csr!($(#[$attr])*, $clear_field, $e);
     }
 }
