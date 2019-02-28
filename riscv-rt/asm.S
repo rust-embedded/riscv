@@ -36,7 +36,6 @@ _start:
     restores caller saved registers and then returns.
 */
 .section .trap, "ax"
-.align 4
 .global _start_trap
 
 _start_trap:

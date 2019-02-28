@@ -15,6 +15,7 @@ SECTIONS
     /* point of the program. */
     KEEP(*(.init));
     KEEP(*(.init.rust));
+    . = ALIGN(4);
     KEEP(*(.trap));
     KEEP(*(.trap.rust));
 
