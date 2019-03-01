@@ -1,5 +1,7 @@
 //! mie register
 
+use bit_field::BitField;
+
 /// mie register
 #[derive(Clone, Copy, Debug)]
 pub struct Mie {
@@ -16,55 +18,55 @@ impl Mie {
     /// User Software Interrupt Enable
     #[inline]
     pub fn usoft(&self) -> bool {
-        self.bits & (1 << 0) == 1 << 0
+        self.bits.get_bit(0)
     }
 
     /// Supervisor Software Interrupt Enable
     #[inline]
     pub fn ssoft(&self) -> bool {
-        self.bits & (1 << 1) == 1 << 1
+        self.bits.get_bit(1)
     }
 
     /// Machine Software Interrupt Enable
     #[inline]
     pub fn msoft(&self) -> bool {
-        self.bits & (1 << 3) == 1 << 3
+        self.bits.get_bit(3)
     }
 
     /// User Timer Interrupt Enable
     #[inline]
     pub fn utimer(&self) -> bool {
-        self.bits & (1 << 4) == 1 << 4
+        self.bits.get_bit(4)
     }
 
     /// Supervisor Timer Interrupt Enable
     #[inline]
     pub fn stimer(&self) -> bool {
-        self.bits & (1 << 5) == 1 << 5
+        self.bits.get_bit(5)
     }
 
     /// Machine Timer Interrupt Enable
     #[inline]
     pub fn mtimer(&self) -> bool {
-        self.bits & (1 << 7) == 1 << 7
+        self.bits.get_bit(7)
     }
 
     /// User External Interrupt Enable
     #[inline]
     pub fn uext(&self) -> bool {
-        self.bits & (1 << 8) == 1 << 8
+        self.bits.get_bit(8)
     }
 
     /// Supervisor External Interrupt Enable
     #[inline]
     pub fn sext(&self) -> bool {
-        self.bits & (1 << 9) == 1 << 9
+        self.bits.get_bit(9)
     }
 
     /// Machine External Interrupt Enable
     #[inline]
     pub fn mext(&self) -> bool {
-        self.bits & (1 << 11) == 1 << 11
+        self.bits.get_bit(11)
     }
 }
 
