@@ -208,3 +208,25 @@ macro_rules! set_clear_csr {
         clear_csr!($(#[$attr])*, $clear_field, $e);
     }
 }
+
+macro_rules! read_composite_csr {
+    ($hi:expr, $lo:expr) => {
+        /// Reads the CSR as a 64-bit value
+        #[inline]
+        pub fn read64() -> u64 {
+            match () {
+                #[cfg(riscv32)]
+                () => loop {
+                    let hi = $hi;
+                    let lo = $lo;
+                    if hi == $hi {
+                        return ((hi as u64) << 32) | lo as u64;
+                    }
+                },
+
+                #[cfg(not(riscv32))]
+                () => $lo as u64,
+            }
+        }
+    }
+}
