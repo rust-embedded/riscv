@@ -9,6 +9,7 @@
 //! - Before main initialization of the FPU (for targets that have a FPU).
 //!
 //! - `#[entry]` to declare the entry point of the program
+//! - `#[pre_init]` to run code *before* `static` variables are initialized
 //!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
@@ -180,6 +181,14 @@
 //!     }
 //! }
 //! ```
+//!
+//! ## `pre_init!`
+//!
+//! A user-defined function can be run at the start of the reset handler, before RAM is
+//! initialized. The macro `pre_init!` can be called to set the function to be run. The function is
+//! intended to perform actions that cannot wait the time it takes for RAM to be initialized, such
+//! as disabling a watchdog. As the function is called before RAM is initialized, any access of
+//! static variables will result in undefined behavior.
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
@@ -190,7 +199,7 @@ extern crate riscv;
 extern crate riscv_rt_macros as macros;
 extern crate r0;
 
-pub use macros::entry;
+pub use macros::{entry, pre_init};
 
 use riscv::register::{mstatus, mtvec};
 
@@ -217,25 +226,26 @@ extern "C" {
 /// never returns.
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
-pub extern "C" fn start_rust() -> ! {
+pub unsafe extern "C" fn start_rust() -> ! {
     extern "Rust" {
         // This symbol will be provided by the user via `#[entry]`
         fn main() -> !;
+
+        // This symbol will be provided by the user via `#[pre_init]`
+        fn __pre_init();
     }
 
-    unsafe {
-        r0::zero_bss(&mut _sbss, &mut _ebss);
-        r0::init_data(&mut _sdata, &mut _edata, &_sidata);
-    }
+    __pre_init();
+
+    r0::zero_bss(&mut _sbss, &mut _ebss);
+    r0::init_data(&mut _sdata, &mut _edata, &_sidata);
 
     // TODO: Enable FPU when available
 
-    unsafe {
-        // Set mtvec to _start_trap
-        mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
+    // Set mtvec to _start_trap
+    mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
 
-        main();
-    }
+    main();
 }
 
 
@@ -265,3 +275,7 @@ pub extern "C" fn start_trap_rust() {
 /// Default Trap Handler
 #[no_mangle]
 pub fn default_trap_handler() {}
+
+#[doc(hidden)]
+#[no_mangle]
+pub unsafe extern "Rust" fn default_pre_init() {}

@@ -5,6 +5,11 @@ PROVIDE(_stack_start = ORIGIN(RAM) + LENGTH(RAM));
 
 PROVIDE(trap_handler = default_trap_handler);
 
+/* # Pre-initialization function */
+/* If the user overrides this using the `#[pre_init]` attribute or by creating a `__pre_init` function,
+   then the function this points to will be called before the RAM is initialized. */
+PROVIDE(__pre_init = default_pre_init);
+
 SECTIONS
 {
   PROVIDE(_stext = ORIGIN(FLASH));
