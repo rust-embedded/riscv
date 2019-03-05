@@ -53,7 +53,7 @@ use proc_macro::TokenStream;
 ///
 /// ``` no_run
 /// # #![no_main]
-/// # use cortex_m_rt_macros::entry;
+/// # use riscv_rt_macros::entry;
 /// #[entry]
 /// fn main() -> ! {
 ///     loop {
@@ -66,7 +66,7 @@ use proc_macro::TokenStream;
 ///
 /// ``` no_run
 /// # #![no_main]
-/// # use cortex_m_rt_macros::entry;
+/// # use riscv_rt_macros::entry;
 /// #[entry]
 /// fn main() -> ! {
 ///     static mut FOO: u32 = 0;
@@ -169,7 +169,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # Syntax
 ///
 /// ```
-/// # use cortex_m_rt_macros::exception;
+/// # use riscv_rt_macros::exception;
 /// #[exception]
 /// fn SysTick() {
 ///     // ..
@@ -228,11 +228,11 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// - Setting the `HardFault` handler
 ///
 /// ```
-/// # extern crate cortex_m_rt;
-/// # extern crate cortex_m_rt_macros;
-/// # use cortex_m_rt_macros::exception;
+/// # extern crate riscv_rt;
+/// # extern crate riscv_rt_macros;
+/// # use riscv_rt_macros::exception;
 /// #[exception]
-/// fn HardFault(ef: &cortex_m_rt::ExceptionFrame) -> ! {
+/// fn HardFault(ef: &riscv_rt::ExceptionFrame) -> ! {
 ///     // prints the exception frame as a panic message
 ///     panic!("{:#?}", ef);
 /// }
@@ -243,7 +243,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// - Setting the default handler
 ///
 /// ```
-/// # use cortex_m_rt_macros::exception;
+/// # use riscv_rt_macros::exception;
 /// #[exception]
 /// fn DefaultHandler(irqn: i16) {
 ///     println!("IRQn = {}", irqn);
@@ -255,7 +255,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// - Overriding the `SysTick` handler
 ///
 /// ```
-/// extern crate cortex_m_rt as rt;
+/// extern crate riscv_rt as rt;
 ///
 /// use rt::exception;
 ///
@@ -403,10 +403,10 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
                 #[link_section = ".HardFault.user"]
                 #(#attrs)*
                 pub #unsafety extern "C" fn #hash(#arg) -> ! {
-                    extern crate cortex_m_rt;
+                    extern crate riscv_rt;
 
                     // further type check of the input argument
-                    let #pat: &cortex_m_rt::ExceptionFrame = #pat;
+                    let #pat: &riscv_rt::ExceptionFrame = #pat;
                     #(#stmts)*
                 }
             )
@@ -470,10 +470,10 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
                 #[export_name = #ident_s]
                 #(#attrs)*
                 pub #unsafety extern "C" fn #hash() {
-                    extern crate cortex_m_rt;
+                    extern crate riscv_rt;
 
                     // check that this exception actually exists
-                    cortex_m_rt::Exception::#ident;
+                    riscv_rt::Exception::#ident;
 
                     #(#vars)*
 
@@ -492,7 +492,7 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 /// the root of the crate you'll be fine. This reachability restriction doesn't apply to Rust 1.31
 /// and newer releases.
 ///
-/// **NOTE**: This attribute is exposed by `cortex-m-rt` only when the `device` feature is enabled.
+/// **NOTE**: This attribute is exposed by `riscv-rt` only when the `device` feature is enabled.
 /// However, that export is not meant to be used directly -- using it will result in a compilation
 /// error. You should instead use the device crate (usually generated using `svd2rust`) re-export of
 /// that attribute. You need to use the re-export to have the compiler check that the interrupt
@@ -503,7 +503,7 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ``` ignore
 /// extern crate device;
 ///
-/// // the attribute comes from the device crate not from cortex-m-rt
+/// // the attribute comes from the device crate not from riscv-rt
 /// use device::interrupt;
 ///
 /// #[interrupt]
@@ -656,7 +656,7 @@ pub fn interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # Examples
 ///
 /// ```
-/// # use cortex_m_rt_macros::pre_init;
+/// # use riscv_rt_macros::pre_init;
 /// #[pre_init]
 /// unsafe fn before_main() {
 ///     // do something here
