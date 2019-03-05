@@ -1,0 +1,28 @@
+[package]
+authors = ["Jorge Aparicio <jorge@japaric.io>"]
+categories = ["embedded", "no-std"]
+description = "Attributes re-exported in `cortex-m-rt`"
+documentation = "https://docs.rs/cortex-m-rt"
+keywords = ["arm", "cortex-m", "runtime", "startup"]
+license = "MIT OR Apache-2.0"
+name = "cortex-m-rt-macros"
+repository = "https://github.com/japaric/cortex-m-rt"
+version = "0.1.5"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.6.8"
+proc-macro2 = "0.4.20"
+
+[dependencies.syn]
+features = ["extra-traits", "full"]
+version = "0.15.13"
+
+[dependencies.rand]
+version = "0.5.5"
+default-features = false
+
+[dev-dependencies]
+cortex-m-rt = { path = "..", version = "0.6.0" }
