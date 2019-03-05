@@ -12,12 +12,10 @@ extern crate syn;
 use proc_macro2::Span;
 use rand::Rng;
 use rand::SeedableRng;
-use std::collections::HashSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 use syn::{
-    parse, spanned::Spanned, AttrStyle, Attribute, FnArg, Ident, Item, ItemFn, ItemStatic,
-    PathArguments, ReturnType, Stmt, Type, Visibility,
+    parse, spanned::Spanned, FnArg, Ident, ItemFn, ReturnType, Type, Visibility,
 };
 
 static CALL_COUNT: AtomicUsize = AtomicUsize::new(0);
@@ -42,11 +40,6 @@ use proc_macro::TokenStream;
 /// The entry point will be called by the reset handler. The program can't reference to the entry
 /// point, much less invoke it.
 ///
-/// `static mut` variables declared within the entry point are safe to access. The compiler can't
-/// prove this is safe so the attribute will help by making a transformation to the source code: for
-/// this reason a variable like `static mut FOO: u32` will become `let FOO: &'static mut u32;`. Note
-/// that `&'static mut` references have move semantics.
-///
 /// # Examples
 ///
 /// - Simple entry point
@@ -56,26 +49,6 @@ use proc_macro::TokenStream;
 /// # use riscv_rt_macros::entry;
 /// #[entry]
 /// fn main() -> ! {
-///     loop {
-///         /* .. */
-///     }
-/// }
-/// ```
-///
-/// - `static mut` variables local to the entry point are safe to modify.
-///
-/// ``` no_run
-/// # #![no_main]
-/// # use riscv_rt_macros::entry;
-/// #[entry]
-/// fn main() -> ! {
-///     static mut FOO: u32 = 0;
-///
-///     let foo: &'static mut u32 = FOO;
-///     assert_eq!(*foo, 0);
-///     *foo = 1;
-///     assert_eq!(*foo, 1);
-///
 ///     loop {
 ///         /* .. */
 ///     }
@@ -120,39 +93,12 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let attrs = f.attrs;
     let unsafety = f.unsafety;
     let hash = random_ident();
-    let (statics, stmts) = match extract_static_muts(f.block.stmts) {
-        Err(e) => return e.to_compile_error().into(),
-        Ok(x) => x,
-    };
-
-    let vars = statics
-        .into_iter()
-        .map(|var| {
-            let (ref cfgs, ref attrs) = extract_cfgs(var.attrs);
-            let ident = var.ident;
-            let ty = var.ty;
-            let expr = var.expr;
-
-            quote!(
-                #[allow(non_snake_case)]
-                #(#cfgs)*
-                let #ident: &'static mut #ty = unsafe {
-                    #(#attrs)*
-                    #(#cfgs)*
-                    static mut #ident: #ty = #expr;
-
-                    &mut #ident
-                };
-            )
-        })
-        .collect::<Vec<_>>();
+    let stmts = f.block.stmts;
 
     quote!(
         #[export_name = "main"]
         #(#attrs)*
         pub #unsafety fn #hash() -> ! {
-            #(#vars)*
-
             #(#stmts)*
         }
     )
@@ -209,19 +155,12 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// handler is servicing a device specific exception (interrupt).
 ///
 /// `#[exception] fn Name(..` overrides the default handler for the exception with the given `Name`.
-/// These handlers must have signature `[unsafe] fn() [-> !]`. When overriding these other exception
-/// it's possible to add state to them by declaring `static mut` variables at the beginning of the
-/// body of the function. These variables will be safe to access from the function body.
+/// These handlers must have signature `[unsafe] fn() [-> !]`.
 ///
 /// # Properties
 ///
 /// Exception handlers can only be called by the hardware. Other parts of the program can't refer to
 /// the exception handlers, much less invoke them as if they were functions.
-///
-/// `static mut` variables declared within an exception handler are safe to access and can be used
-/// to preserve state across invocations of the handler. The compiler can't prove this is safe so
-/// the attribute will help by making a transformation to the source code: for this reason a
-/// variable like `static mut FOO: u32` will become `let FOO: &mut u32;`.
 ///
 /// # Examples
 ///
@@ -247,26 +186,6 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 /// #[exception]
 /// fn DefaultHandler(irqn: i16) {
 ///     println!("IRQn = {}", irqn);
-/// }
-///
-/// # fn main() {}
-/// ```
-///
-/// - Overriding the `SysTick` handler
-///
-/// ```
-/// extern crate riscv_rt as rt;
-///
-/// use rt::exception;
-///
-/// #[exception]
-/// fn SysTick() {
-///     static mut COUNT: i32 = 0;
-///
-///     // `COUNT` is safe to access and has type `&mut i32`
-///     *COUNT += 1;
-///
-///     println!("{}", COUNT);
 /// }
 ///
 /// # fn main() {}
@@ -439,33 +358,6 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
                 .into();
             }
 
-            let (statics, stmts) = match extract_static_muts(stmts) {
-                Err(e) => return e.to_compile_error().into(),
-                Ok(x) => x,
-            };
-
-            let vars = statics
-                .into_iter()
-                .map(|var| {
-                    let (ref cfgs, ref attrs) = extract_cfgs(var.attrs);
-                    let ident = var.ident;
-                    let ty = var.ty;
-                    let expr = var.expr;
-
-                    quote!(
-                        #[allow(non_snake_case)]
-                        #(#cfgs)*
-                        let #ident: &mut #ty = unsafe {
-                            #(#attrs)*
-                            #(#cfgs)*
-                            static mut #ident: #ty = #expr;
-
-                            &mut #ident
-                        };
-                    )
-                })
-                .collect::<Vec<_>>();
-
             quote!(
                 #[export_name = #ident_s]
                 #(#attrs)*
@@ -474,8 +366,6 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 
                     // check that this exception actually exists
                     riscv_rt::Exception::#ident;
-
-                    #(#vars)*
 
                     #(#stmts)*
                 }
@@ -517,9 +407,7 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # Usage
 ///
 /// `#[interrupt] fn Name(..` overrides the default handler for the interrupt with the given `Name`.
-/// These handlers must have signature `[unsafe] fn() [-> !]`. It's possible to add state to these
-/// handlers by declaring `static mut` variables at the beginning of the body of the function. These
-/// variables will be safe to access from the function body.
+/// These handlers must have signature `[unsafe] fn() [-> !]`.
 ///
 /// If the interrupt handler has not been overridden it will be dispatched by the default exception
 /// handler (`DefaultHandler`).
@@ -528,31 +416,6 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 ///
 /// Interrupts handlers can only be called by the hardware. Other parts of the program can't refer
 /// to the interrupt handlers, much less invoke them as if they were functions.
-///
-/// `static mut` variables declared within an interrupt handler are safe to access and can be used
-/// to preserve state across invocations of the handler. The compiler can't prove this is safe so
-/// the attribute will help by making a transformation to the source code: for this reason a
-/// variable like `static mut FOO: u32` will become `let FOO: &mut u32;`.
-///
-/// # Examples
-///
-/// - Using state within an interrupt handler
-///
-/// ``` ignore
-/// extern crate device;
-///
-/// use device::interrupt;
-///
-/// #[interrupt]
-/// fn TIM2() {
-///     static mut COUNT: i32 = 0;
-///
-///     // `COUNT` is safe to access and has type `&mut i32`
-///     *COUNT += 1;
-///
-///     println!("{}", COUNT);
-/// }
-/// ```
 #[proc_macro_attribute]
 pub fn interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
     let f: ItemFn = syn::parse(input).expect("`#[interrupt]` must be applied to a function");
@@ -598,41 +461,12 @@ pub fn interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
         .into();
     }
 
-    let (statics, stmts) = match extract_static_muts(stmts) {
-        Err(e) => return e.to_compile_error().into(),
-        Ok(x) => x,
-    };
-
-    let vars = statics
-        .into_iter()
-        .map(|var| {
-            let (ref cfgs, ref attrs) = extract_cfgs(var.attrs);
-            let ident = var.ident;
-            let ty = var.ty;
-            let expr = var.expr;
-
-            quote!(
-                #[allow(non_snake_case)]
-                #(#cfgs)*
-                let #ident: &mut #ty = unsafe {
-                    #(#attrs)*
-                    #(#cfgs)*
-                    static mut #ident: #ty = #expr;
-
-                    &mut #ident
-                };
-            )
-        })
-        .collect::<Vec<_>>();
-
     let hash = random_ident();
     quote!(
         #[export_name = #ident_s]
         #(#attrs)*
         pub #unsafety extern "C" fn #hash() {
             interrupt::#ident;
-
-            #(#vars)*
 
             #(#stmts)*
         }
@@ -744,64 +578,4 @@ fn random_ident() -> Ident {
             .collect::<String>(),
         Span::call_site(),
     )
-}
-
-/// Extracts `static mut` vars from the beginning of the given statements
-fn extract_static_muts(stmts: Vec<Stmt>) -> Result<(Vec<ItemStatic>, Vec<Stmt>), parse::Error> {
-    let mut istmts = stmts.into_iter();
-
-    let mut seen = HashSet::new();
-    let mut statics = vec![];
-    let mut stmts = vec![];
-    while let Some(stmt) = istmts.next() {
-        match stmt {
-            Stmt::Item(Item::Static(var)) => {
-                if var.mutability.is_some() {
-                    if seen.contains(&var.ident) {
-                        return Err(parse::Error::new(
-                            var.ident.span(),
-                            format!("the name `{}` is defined multiple times", var.ident),
-                        ));
-                    }
-
-                    seen.insert(var.ident.clone());
-                    statics.push(var);
-                } else {
-                    stmts.push(Stmt::Item(Item::Static(var)));
-                }
-            }
-            _ => {
-                stmts.push(stmt);
-                break;
-            }
-        }
-    }
-
-    stmts.extend(istmts);
-
-    Ok((statics, stmts))
-}
-
-fn extract_cfgs(attrs: Vec<Attribute>) -> (Vec<Attribute>, Vec<Attribute>) {
-    let mut cfgs = vec![];
-    let mut not_cfgs = vec![];
-
-    for attr in attrs {
-        if eq(&attr, "cfg") {
-            cfgs.push(attr);
-        } else {
-            not_cfgs.push(attr);
-        }
-    }
-
-    (cfgs, not_cfgs)
-}
-
-/// Returns `true` if `attr.path` matches `name`
-fn eq(attr: &Attribute, name: &str) -> bool {
-    attr.style == AttrStyle::Outer && attr.path.segments.len() == 1 && {
-        let pair = attr.path.segments.first().unwrap();
-        let segment = pair.value();
-        segment.arguments == PathArguments::None && segment.ident.to_string() == name
-    }
 }
