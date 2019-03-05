@@ -8,7 +8,7 @@
 //!
 //! - Before main initialization of the FPU (for targets that have a FPU).
 //!
-//! - An `entry!` macro to declare the entry point of the program.
+//! - `#[entry]` to declare the entry point of the program
 //!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
@@ -46,8 +46,8 @@
 //! use riscv_rt::entry;
 //!
 //! // use `main` as the entry point of this application
-//! entry!(main);
-//!
+//! // `main` is not allowed to return
+//! #[entry]
 //! fn main() -> ! {
 //!     // do something here
 //!     loop { }
@@ -187,7 +187,10 @@
 #![deny(warnings)]
 
 extern crate riscv;
+extern crate riscv_rt_macros as macros;
 extern crate r0;
+
+pub use macros::entry;
 
 use riscv::register::{mstatus, mtvec};
 
@@ -215,8 +218,8 @@ extern "C" {
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
 pub extern "C" fn start_rust() -> ! {
-    extern "C" {
-        // This symbol will be provided by the user via the `entry!` macro
+    extern "Rust" {
+        // This symbol will be provided by the user via `#[entry]`
         fn main() -> !;
     }
 
@@ -233,31 +236,6 @@ pub extern "C" fn start_rust() -> ! {
 
         main();
     }
-}
-
-
-/// Macro to define the entry point of the program
-///
-/// **NOTE** This macro must be invoked once and must be invoked from an accessible module, ideally
-/// from the root of the crate.
-///
-/// Usage: `entry!(path::to::entry::point)`
-///
-/// The specified function will be called by the reset handler *after* RAM has been initialized.
-///
-/// The signature of the specified function must be `fn() -> !` (never ending function).
-#[macro_export]
-macro_rules! entry {
-    ($path:expr) => {
-        #[inline(never)]
-        #[export_name = "main"]
-        pub extern "C" fn __impl_main() -> ! {
-            // validate the signature of the program entry point
-            let f: fn() -> ! = $path;
-
-            f()
-        }
-    };
 }
 
 
