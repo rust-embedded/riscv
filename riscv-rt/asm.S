@@ -13,14 +13,12 @@ _start:
     .cfi_startproc
     .cfi_undefined ra
 
-    // .option push
-    // .option norelax
-    lui gp, %hi(__global_pointer$)
-    addi gp, gp, %lo(__global_pointer$)
-    // .option pop
+    .option push
+    .option norelax
+    la gp, __global_pointer$
+    .option pop
 
-    lui sp, %hi(_stack_start)
-    addi sp, sp, %lo(_stack_start)
+    la sp, _stack_start
 
     add s0, sp, zero
 
