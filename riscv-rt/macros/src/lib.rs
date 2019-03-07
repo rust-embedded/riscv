@@ -29,9 +29,8 @@ use proc_macro::TokenStream;
 /// private modules between the item and the root of the crate); if the item is in the root of the
 /// crate you'll be fine. This reachability restriction doesn't apply to Rust 1.31 and newer releases.
 ///
-/// The specified function will be called by the reset handler *after* RAM has been initialized. In
-/// the case of the `thumbv7em-none-eabihf` target the FPU will also be enabled before the function
-/// is called.
+/// The specified function will be called by the reset handler *after* RAM has been initialized.
+/// If present, the FPU will also be enabled before the function is called.
 ///
 /// The type of the specified function must be `[unsafe] fn() -> !` (never ending function)
 ///
