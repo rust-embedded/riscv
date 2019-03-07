@@ -1,0 +1,31 @@
+[package]
+authors = [
+    "The RISC-V Team <risc-v@teams.rust-embedded.org>",
+    "Jorge Aparicio <jorge@japaric.io>",
+]
+categories = ["embedded", "no-std"]
+description = "Attributes re-exported in `riscv-rt`"
+documentation = "https://docs.rs/riscv-rt"
+keywords = ["riscv", "runtime", "startup"]
+license = "MIT OR Apache-2.0"
+name = "riscv-rt-macros"
+repository = "https://github.com/rust-embedded/riscv-rt"
+version = "0.1.5"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "0.6.8"
+proc-macro2 = "0.4.20"
+
+[dependencies.syn]
+features = ["extra-traits", "full"]
+version = "0.15.13"
+
+[dependencies.rand]
+version = "0.5.5"
+default-features = false
+
+[dev-dependencies]
+riscv-rt = { path = "..", version = "0.4.0" }
