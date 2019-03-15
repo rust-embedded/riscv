@@ -210,6 +210,10 @@ pub use macros::{entry, pre_init};
 
 use riscv::register::{mstatus, mtvec};
 
+#[export_name = "error: riscv-rt appears more than once in the dependency graph"]
+#[doc(hidden)]
+pub static __ONCE__: () = ();
+
 extern "C" {
     // Boundaries of the .bss section
     static mut _ebss: u32;
