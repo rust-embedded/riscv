@@ -11,5 +11,6 @@ if [ -n "${TARGET:-}" ]; then
 fi
 
 if [ -n "${CHECK_BLOBS:-}" ]; then
+    PATH="$PATH:$PWD/gcc/bin"
     ./check-blobs.sh
 fi
