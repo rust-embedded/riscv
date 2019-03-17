@@ -24,6 +24,8 @@ __sfence_vma:
     sfence.vma a0, a1
     ret
 
+REG_READ_WRITE(fcsr, 0x003)
+REG_SET_CLEAR(fcsr, 0x003)
 
 // M-mode registers
 REG_READ(mcause, 0x342)
