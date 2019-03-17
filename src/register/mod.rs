@@ -13,6 +13,8 @@
 #[macro_use]
 mod macros;
 
+pub mod fcsr;
+
 pub mod mcause;
 pub mod mcycle;
 pub mod mcycleh;
