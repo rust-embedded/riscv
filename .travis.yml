@@ -22,11 +22,11 @@ matrix:
 
 
 install:
-  - bash ci/install.sh
+  - ci/install.sh
   - export PATH="$PATH:$PWD/gcc/bin"
 
 script:
-  - bash ci/script.sh
+  - ci/script.sh
 
 
 cache: cargo
