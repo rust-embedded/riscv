@@ -2,7 +2,7 @@
 //!
 //! This crate provides:
 //!
-//! - Access to core registers like mstatus or mcause.
+//! - Access to core registers like `mstatus` or `mcause`.
 //! - Interrupt manipulation mechanisms.
 //! - Wrappers around assembly instructions like `WFI`.
 
