@@ -7,6 +7,7 @@ env:
 rust:
   - nightly
   - stable
+  - 1.30.0 # MSRV
 
 if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
 
