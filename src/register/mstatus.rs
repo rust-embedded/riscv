@@ -49,43 +49,43 @@ impl Mstatus {
     /// User Interrupt Enable
     #[inline]
     pub fn uie(&self) -> bool {
-        self.bits & (1 << 0) == 1 << 0
+        self.bits.get_bit(0)
     }
 
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
-        self.bits & (1 << 1) == 1 << 1
+        self.bits.get_bit(1)
     }
 
     /// Machine Interrupt Enable
     #[inline]
     pub fn mie(&self) -> bool {
-        self.bits & (1 << 3) == 1 << 3
+        self.bits.get_bit(3)
     }
 
     /// User Previous Interrupt Enable
     #[inline]
     pub fn upie(&self) -> bool {
-        self.bits & (1 << 4) == 1 << 4
+        self.bits.get_bit(4)
     }
 
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
-        self.bits & (1 << 5) == 1 << 5
+        self.bits.get_bit(5)
     }
 
     /// User Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
-        self.bits & (1 << 7) == 1 << 7
+        self.bits.get_bit(7)
     }
 
     /// Supervisor Previous Privilege Mode
     #[inline]
     pub fn spp(&self) -> SPP {
-        match self.bits & (1 << 8) == (1 << 8) {
+        match self.bits.get_bit(8) {
             true => SPP::Supervisor,
             false => SPP::User,
         }
@@ -94,7 +94,7 @@ impl Mstatus {
     /// Machine Previous Privilege Mode
     #[inline]
     pub fn mpp(&self) -> MPP {
-        match (self.bits & (0b11 << 11)) >> 11 {
+        match self.bits.get_bits(11..13) {
             0b00 => MPP::User,
             0b01 => MPP::Supervisor,
             0b11 => MPP::Machine,
@@ -141,26 +141,33 @@ clear!(0x300, __clear_mstatus);
 set_clear_csr!(
     /// User Interrupt Enable
     , set_uie, clear_uie, 1 << 0);
+
 set_clear_csr!(
     /// Supervisor Interrupt Enable
     , set_sie, clear_sie, 1 << 1);
+
 set_clear_csr!(
     /// Machine Interrupt Enable
     , set_mie, clear_mie, 1 << 3);
+
 set_csr!(
     /// User Previous Interrupt Enable
     , set_upie, 1 << 4);
+
 set_csr!(
     /// Supervisor Previous Interrupt Enable
     , set_spie, 1 << 5);
+
 set_csr!(
     /// Machine Previous Interrupt Enable
     , set_mpie, 1 << 7);
+
 /// Supervisor Previous Privilege Mode
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {
     _set((spp as usize) << 8);
 }
+
 /// Machine Previous Privilege Mode
 #[inline]
 pub unsafe fn set_mpp(mpp: MPP) {
