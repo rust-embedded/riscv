@@ -1,10 +1,35 @@
 //! mstatus register
 // TODO: Virtualization, Memory Privilege and Extension Context Fields
 
+use bit_field::BitField;
+
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
 pub struct Mstatus {
     bits: usize,
+}
+
+/// Additional extension state
+pub enum XS {
+    /// All off
+    AllOff = 0,
+
+    /// None dirty or clean, some on
+    NoneDirtyOrClean = 1,
+
+    /// None dirty, some clean
+    NoneDirtySomeClean = 2,
+
+    /// Some dirty
+    SomeDirty = 3,
+}
+
+/// Floating-point extension state
+pub enum FS {
+    Off = 0,
+    Initial = 1,
+    Clean = 2,
+    Dirty = 3,
 }
 
 /// Machine Previous Privilege Mode
@@ -76,10 +101,40 @@ impl Mstatus {
             _ => unreachable!(),
         }
     }
+
+    /// Floating-point extension state
+    ///
+    /// Encodes the status of the floating-point unit,
+    /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
+    #[inline]
+    pub fn fs(&self) -> FS {
+        match self.bits.get_bits(13..15) {
+            0b00 => FS::Off,
+            0b01 => FS::Initial,
+            0b10 => FS::Clean,
+            0b11 => FS::Dirty,
+            _ => unreachable!(),
+        }
+    }
+
+    /// Additional extension state
+    ///
+    /// Encodes the status of additional user-mode extensions and associated state.
+    #[inline]
+    pub fn xs(&self) -> XS {
+        match self.bits.get_bits(15..17) {
+            0b00 => XS::AllOff,
+            0b01 => XS::NoneDirtyOrClean,
+            0b10 => XS::NoneDirtySomeClean,
+            0b11 => XS::SomeDirty,
+            _ => unreachable!(),
+        }
+    }
 }
 
 
 read_csr_as!(Mstatus, 0x300, __read_mstatus);
+write_csr!(0x300, __write_mstatus);
 set!(0x300, __set_mstatus);
 clear!(0x300, __clear_mstatus);
 
@@ -110,4 +165,13 @@ pub unsafe fn set_spp(spp: SPP) {
 #[inline]
 pub unsafe fn set_mpp(mpp: MPP) {
     _set((mpp as usize) << 11);
+}
+
+/// Floating-point extension state
+#[inline]
+pub unsafe fn set_fs(fs: FS) {
+    let mut value = _read();
+    value &= !(0b11 << 13);
+    value |= (fs as usize) << 13;
+    _write(value);
 }
