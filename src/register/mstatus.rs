@@ -165,13 +165,18 @@ set_csr!(
 /// Supervisor Previous Privilege Mode
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {
-    _set((spp as usize) << 8);
+    match spp {
+        SPP::Supervisor => _set(1 << 8),
+        SPP::User => _clear(1 << 8),
+    }
 }
 
 /// Machine Previous Privilege Mode
 #[inline]
 pub unsafe fn set_mpp(mpp: MPP) {
-    _set((mpp as usize) << 11);
+    let mut value = _read();
+    value.set_bits(11..13, mpp as usize);
+    _write(value);
 }
 
 /// Floating-point extension state
