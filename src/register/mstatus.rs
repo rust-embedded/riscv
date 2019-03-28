@@ -183,7 +183,6 @@ pub unsafe fn set_mpp(mpp: MPP) {
 #[inline]
 pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
-    value &= !(0b11 << 13);
-    value |= (fs as usize) << 13;
+    value.set_bits(13..15, fs as usize);
     _write(value);
 }
