@@ -105,6 +105,7 @@ impl Sstatus {
 }
 
 read_csr_as!(Sstatus, 0x100, __read_sstatus);
+write_csr!(0x100, __write_sstatus);
 set!(0x100, __set_sstatus);
 clear!(0x100, __clear_sstatus);
 
@@ -131,12 +132,17 @@ set_clear_csr!(
 #[inline]
 #[cfg(riscv)]
 pub unsafe fn set_spp(spp: SPP) {
-    _set((spp as usize) << 8);
+    match spp {
+        SPP::Supervisor => _set(1 << 8),
+        SPP::User => _clear(1 << 8),
+    }
 }
 
 /// The status of the floating-point unit
 #[inline]
 #[cfg(riscv)]
 pub unsafe fn set_fs(fs: FS) {
-    _set((fs as usize) << 13);
+    let mut value = _read();
+    value.set_bits(13..15, fs as usize);
+    _write(value);
 }
