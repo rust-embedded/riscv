@@ -18,8 +18,23 @@ _start:
     la gp, __global_pointer$
     .option pop
 
-    la sp, _stack_start
+    // Check hart id
+    csrr a2, mhartid
+    lui t0, %hi(_max_hart_id)
+    add t0, t0, %lo(_max_hart_id)
+    bgtu a2, t0, abort
 
+    // Allocate stacks
+    la sp, _stack_start
+    lui t0, %hi(_hart_stack_size)
+    add t0, t0, %lo(_hart_stack_size)
+    mul t0, a2, t0
+    sub sp, sp, t0
+
+    // Park non-zero harts
+    bnez a2, abort
+
+    // Set frame pointer
     add s0, sp, zero
 
     jal zero, _start_rust
