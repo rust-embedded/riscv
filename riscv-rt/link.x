@@ -1,5 +1,7 @@
 PROVIDE(_stext = ORIGIN(REGION_TEXT));
 PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
+PROVIDE(_max_hart_id = 0);
+PROVIDE(_hart_stack_size = 2K);
 PROVIDE(_heap_size = 0);
 
 PROVIDE(trap_handler = default_trap_handler);
@@ -130,6 +132,10 @@ BUG(riscv-rt): start of .heap is not 4-byte aligned");
 ASSERT(_stext + SIZEOF(.text) < ORIGIN(REGION_TEXT) + LENGTH(REGION_TEXT), "
 ERROR(riscv-rt): The .text section must be placed inside the REGION_TEXT region.
 Set _stext to an address smaller than 'ORIGIN(REGION_TEXT) + LENGTH(REGION_TEXT)'");
+
+ASSERT(SIZEOF(.stack) > (_max_hart_id + 1) * _hart_stack_size, "
+ERROR(riscv-rt): .stack section is too small for allocating stacks for all the harts.
+Consider changing `_max_hart_id` or `_hart_stack_size`.");
 
 ASSERT(SIZEOF(.got) == 0, "
 .got section detected in the input files. Dynamic relocations are not
