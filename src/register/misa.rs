@@ -43,7 +43,7 @@ impl Misa {
         if bit > 25 {
             return false;
         }
-        self.bits() & (1 >> bit) == (1 >> bit)
+        self.bits() & (1 << bit) == (1 << bit)
     }
 }
 
