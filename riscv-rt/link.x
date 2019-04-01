@@ -1,4 +1,6 @@
+PROVIDE(_stext = ORIGIN(REGION_TEXT));
 PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
+PROVIDE(_heap_size = 0);
 
 PROVIDE(trap_handler = default_trap_handler);
 
@@ -16,8 +18,6 @@ PHDRS
 
 SECTIONS
 {
-  PROVIDE(_stext = ORIGIN(REGION_TEXT));
-
   .text.dummy ORIGIN(REGION_TEXT) :
   {
     /* This section is intended to make _stext address work */
@@ -59,8 +59,6 @@ SECTIONS
     . = ALIGN(4);
     _ebss = .;
   } > REGION_BSS :virtual
-
-  PROVIDE(_heap_size = 0);
 
   /* fictitious region that represents the memory available for the heap */
   .heap (INFO) :
