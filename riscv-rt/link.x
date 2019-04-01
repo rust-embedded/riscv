@@ -21,6 +21,11 @@ SECTIONS
 {
   PROVIDE(_stext = ORIGIN(FLASH));
 
+  .text.dummy ORIGIN(FLASH) :
+  {
+    /* This section is intended to make _stext address work */
+  } > FLASH :ram
+
   .text ALIGN(_stext,4) :
   {
     /* Put reset handler first in .text section so it ends up as the entry */
