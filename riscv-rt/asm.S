@@ -83,4 +83,4 @@ _start_trap:
 .section .init
 .globl abort
 abort:
-    jal zero, _start
+    j abort
