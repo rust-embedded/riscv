@@ -93,10 +93,49 @@ SECTIONS
   }
 }
 
-/* Do not exceed this mark in the error messages below                | */
+/* Do not exceed this mark in the error messages above                                    | */
+ASSERT(ORIGIN(REGION_TEXT) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_TEXT must be 4-byte aligned");
+
+ASSERT(ORIGIN(REGION_RODATA) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_RODATA must be 4-byte aligned");
+
+ASSERT(ORIGIN(REGION_DATA) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_DATA must be 4-byte aligned");
+
+ASSERT(ORIGIN(REGION_HEAP) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_HEAP must be 4-byte aligned");
+
+ASSERT(ORIGIN(REGION_TEXT) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_TEXT must be 4-byte aligned");
+
+ASSERT(ORIGIN(REGION_STACK) % 4 == 0, "
+ERROR(riscv-rt): the start of the REGION_STACK must be 4-byte aligned");
+
+ASSERT(_stext % 4 == 0, "
+ERROR(riscv-rt): `_stext` must be 4-byte aligned");
+
+ASSERT(_sdata % 4 == 0 && _edata % 4 == 0, "
+BUG(riscv-rt): .data is not 4-byte aligned");
+
+ASSERT(_sidata % 4 == 0, "
+BUG(riscv-rt): the LMA of .data is not 4-byte aligned");
+
+ASSERT(_sbss % 4 == 0 && _ebss % 4 == 0, "
+BUG(riscv-rt): .bss is not 4-byte aligned");
+
+ASSERT(_sheap % 4 == 0, "
+BUG(riscv-rt): start of .heap is not 4-byte aligned");
+
+ASSERT(_stext + SIZEOF(.text) < ORIGIN(REGION_TEXT) + LENGTH(REGION_TEXT), "
+ERROR(riscv-rt): The .text section must be placed inside the REGION_TEXT region.
+Set _stext to an address smaller than 'ORIGIN(REGION_TEXT) + LENGTH(REGION_TEXT)'");
+
 ASSERT(SIZEOF(.got) == 0, "
 .got section detected in the input files. Dynamic relocations are not
 supported. If you are linking to C code compiled using the `gcc` crate
 then modify your build script to compile the C code _without_ the
 -fPIC flag. See the documentation of the `gcc::Config.fpic` method for
 details.");
+
+/* Do not exceed this mark in the error messages above                                    | */
