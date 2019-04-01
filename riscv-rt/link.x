@@ -10,6 +10,13 @@ PROVIDE(trap_handler = default_trap_handler);
    then the function this points to will be called before the RAM is initialized. */
 PROVIDE(__pre_init = default_pre_init);
 
+PHDRS
+{
+    flash PT_LOAD;
+    ram_init PT_LOAD;
+    ram PT_NULL;
+}
+
 SECTIONS
 {
   PROVIDE(_stext = ORIGIN(FLASH));
@@ -25,22 +32,14 @@ SECTIONS
     KEEP(*(.trap.rust));
 
     *(.text .text.*);
-  } > FLASH
+  } > FLASH :flash
 
   .rodata ALIGN(4) :
   {
     *(.rodata .rodata.*);
-  } > FLASH
+  } > FLASH :flash
 
-  .bss :
-  {
-    _sbss = .;
-    *(.bss .bss.*);
-    . = ALIGN(4);
-    _ebss = .;
-  } > RAM
-
-  .data : AT(LOADADDR(.rodata) + SIZEOF(.rodata))
+  .data ALIGN(4) :
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
@@ -49,7 +48,15 @@ SECTIONS
     *(.data .data.*);
     . = ALIGN(4);
     _edata = .;
-  } > RAM
+  } > RAM AT > FLASH :ram_init
+
+  .bss :
+  {
+    _sbss = .;
+    *(.bss .bss.*);
+    . = ALIGN(4);
+    _ebss = .;
+  } > RAM :ram
 
   PROVIDE(_heap_size = 0);
 
@@ -60,7 +67,7 @@ SECTIONS
     . += _heap_size;
     . = ALIGN(4);
     _eheap = .;
-  } > RAM
+  } > RAM :ram
 
   /* fictitious region that represents the memory available for the stack */
   .stack (INFO) :
@@ -68,7 +75,7 @@ SECTIONS
     _estack = .;
     . = _stack_start;
     _sstack = .;
-  } > RAM
+  } > RAM :ram
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
