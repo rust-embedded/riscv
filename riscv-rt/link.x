@@ -1,7 +1,4 @@
-/* NOTE: Adapted from cortex-m/link.x */
-INCLUDE memory.x
-
-PROVIDE(_stack_start = ORIGIN(RAM) + LENGTH(RAM));
+PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
 
 PROVIDE(trap_handler = default_trap_handler);
 
@@ -12,19 +9,19 @@ PROVIDE(__pre_init = default_pre_init);
 
 PHDRS
 {
-    flash PT_LOAD;
-    ram_init PT_LOAD;
-    ram PT_NULL;
+    load PT_LOAD;
+    ram_load PT_LOAD;
+    virtual PT_NULL;
 }
 
 SECTIONS
 {
-  PROVIDE(_stext = ORIGIN(FLASH));
+  PROVIDE(_stext = ORIGIN(REGION_TEXT));
 
-  .text.dummy ORIGIN(FLASH) :
+  .text.dummy ORIGIN(REGION_TEXT) :
   {
     /* This section is intended to make _stext address work */
-  } > FLASH :ram
+  } > REGION_TEXT :virtual
 
   .text ALIGN(_stext,4) :
   {
@@ -37,12 +34,12 @@ SECTIONS
     KEEP(*(.trap.rust));
 
     *(.text .text.*);
-  } > FLASH :flash
+  } > REGION_TEXT :load
 
   .rodata ALIGN(4) :
   {
     *(.rodata .rodata.*);
-  } > FLASH :flash
+  } > REGION_RODATA :load
 
   .data ALIGN(4) :
   {
@@ -53,7 +50,7 @@ SECTIONS
     *(.data .data.*);
     . = ALIGN(4);
     _edata = .;
-  } > RAM AT > FLASH :ram_init
+  } > REGION_DATA AT > REGION_RODATA :ram_load
 
   .bss :
   {
@@ -61,7 +58,7 @@ SECTIONS
     *(.bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
-  } > RAM :ram
+  } > REGION_BSS :virtual
 
   PROVIDE(_heap_size = 0);
 
@@ -72,7 +69,7 @@ SECTIONS
     . += _heap_size;
     . = ALIGN(4);
     _eheap = .;
-  } > RAM :ram
+  } > REGION_HEAP :virtual
 
   /* fictitious region that represents the memory available for the stack */
   .stack (INFO) :
@@ -80,7 +77,7 @@ SECTIONS
     _estack = .;
     . = _stack_start;
     _sstack = .;
-  } > RAM :ram
+  } > REGION_STACK :virtual
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
