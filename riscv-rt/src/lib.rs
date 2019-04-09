@@ -208,7 +208,7 @@ extern crate r0;
 
 pub use macros::{entry, pre_init};
 
-use riscv::register::{mstatus, mtvec, misa, fcsr};
+use riscv::register::{mstatus, mtvec};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
@@ -251,15 +251,7 @@ pub unsafe extern "C" fn start_rust() -> ! {
     r0::zero_bss(&mut _sbss, &mut _ebss);
     r0::init_data(&mut _sdata, &mut _edata, &_sidata);
 
-    // Initialize FPU when available
-    if let Some(isa) = misa::read() {
-        if isa.has_extension('F') || isa.has_extension('D') {
-            fcsr::clear_flags();
-            fcsr::set_rounding_mode(fcsr::RoundingMode::RoundToNearestEven);
-            mstatus::set_fs(mstatus::FS::Dirty);
-            // TODO: fill registers with zeros
-        }
-    }
+    // TODO: Enable FPU when available
 
     // Set mtvec to _start_trap
     mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
