@@ -71,6 +71,10 @@ _start:
     // Set frame pointer
     add s0, sp, zero
 
+    // Set trap handler
+    la t0, _start_trap
+    csrw mtvec, t0
+
     // Park non-zero harts
     bnez a2, abort
 

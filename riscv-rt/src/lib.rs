@@ -208,7 +208,7 @@ extern crate r0;
 
 pub use macros::{entry, pre_init};
 
-use riscv::register::{mstatus, mtvec};
+use riscv::register::mstatus;
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
@@ -225,9 +225,6 @@ extern "C" {
 
     // Initial values of the .data section (stored in Flash)
     static _sidata: u32;
-
-    // Address of _start_trap
-    static _start_trap: u32;
 }
 
 
@@ -252,9 +249,6 @@ pub unsafe extern "C" fn start_rust() -> ! {
     r0::init_data(&mut _sdata, &mut _edata, &_sidata);
 
     // TODO: Enable FPU when available
-
-    // Set mtvec to _start_trap
-    mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
 
     main();
 }
