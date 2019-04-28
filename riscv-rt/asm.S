@@ -68,11 +68,11 @@ _start:
     mul t0, a2, t0
     sub sp, sp, t0
 
-    // Park non-zero harts
-    bnez a2, abort
-
     // Set frame pointer
     add s0, sp, zero
+
+    // Park non-zero harts
+    bnez a2, abort
 
     jal zero, _start_rust
 
