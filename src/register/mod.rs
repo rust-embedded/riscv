@@ -15,14 +15,17 @@ mod macros;
 
 pub mod fcsr;
 
+pub mod marchid;
 pub mod mcause;
 pub mod mcycle;
 pub mod mcycleh;
 pub mod mepc;
+pub mod mhartid;
 pub mod mie;
-pub mod mip;
+pub mod mimpid;
 pub mod minstret;
 pub mod minstreth;
+pub mod mip;
 pub mod misa;
 pub mod mstatus;
 pub mod mtvec;
