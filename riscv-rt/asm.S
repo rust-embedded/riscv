@@ -13,8 +13,6 @@ _start:
     .cfi_startproc
     .cfi_undefined ra
 
-    csrw mideleg, 0
-    csrw medeleg, 0
     csrw mie, 0
     csrw mip, 0
 
