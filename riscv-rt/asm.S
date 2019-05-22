@@ -73,9 +73,6 @@ _start:
     la t0, _start_trap
     csrw mtvec, t0
 
-    // Park non-zero harts
-    bnez a2, abort
-
     jal zero, _start_rust
 
     .cfi_endproc

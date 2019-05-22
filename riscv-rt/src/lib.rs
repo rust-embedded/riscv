@@ -241,12 +241,16 @@ pub unsafe extern "C" fn start_rust() -> ! {
 
         // This symbol will be provided by the user via `#[pre_init]`
         fn __pre_init();
+
+        fn _mp_hook() -> bool;
     }
 
-    __pre_init();
+    if _mp_hook() {
+        __pre_init();
 
-    r0::zero_bss(&mut _sbss, &mut _ebss);
-    r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+        r0::zero_bss(&mut _sbss, &mut _ebss);
+        r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+    }
 
     // TODO: Enable FPU when available
 
@@ -284,3 +288,15 @@ pub fn default_trap_handler() {}
 #[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "Rust" fn default_pre_init() {}
+
+#[doc(hidden)]
+#[no_mangle]
+pub extern "Rust" fn default_mp_hook() -> bool {
+    use riscv::register::mhartid;
+    match mhartid::read() {
+        0 => true,
+        _ => loop {
+            unsafe { riscv::asm::wfi() }
+        },
+    }
+}
