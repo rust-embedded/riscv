@@ -15,3 +15,8 @@ riscv-rt-macros = { path = "macros", version = "0.1.5" }
 
 [features]
 inline-asm = ["riscv/inline-asm"]
+
+[dev-dependencies]
+riscv = "0.5.3"
+riscv-rt = "0.5.0"
+panic-halt = "0.2.0"
