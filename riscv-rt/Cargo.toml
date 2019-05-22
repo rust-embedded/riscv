@@ -1,6 +1,6 @@
 [package]
 name = "riscv-rt"
-version = "0.5.0"
+version = "0.6.0"
 repository = "https://github.com/rust-embedded/riscv-rt"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
@@ -18,5 +18,5 @@ inline-asm = ["riscv/inline-asm"]
 
 [dev-dependencies]
 riscv = "0.5.3"
-riscv-rt = "0.5.0"
+riscv-rt = "0.6.0"
 panic-halt = "0.2.0"
