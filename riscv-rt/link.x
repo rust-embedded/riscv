@@ -14,8 +14,8 @@ PROVIDE(__pre_init = default_pre_init);
 /* # Multi-processing hook function
    fn _mp_hook() -> bool;
 
-   This function is called from all the harts and should return true only for one hart,
-   which will perform memory initialization. For other harts it should return false
+   This function is called from all the harts and must return true only for one hart,
+   which will perform memory initialization. For other harts it must return false
    and implement wake-up in platform-dependent way (e.g. after waiting for a user interrupt).
 */
 PROVIDE(_mp_hook = default_mp_hook);
