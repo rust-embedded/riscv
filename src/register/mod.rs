@@ -67,10 +67,10 @@ pub mod mtvec;
 
 
 // Machine Trap Handling
-// TODO: mscratch
+pub mod mscratch;
 pub mod mepc;
 pub mod mcause;
-// TODO: mtval
+pub mod mtval;
 pub mod mip;
 
 
