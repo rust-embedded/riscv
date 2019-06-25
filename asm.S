@@ -40,6 +40,9 @@ REG_READ_WRITE(mstatus, 0x300)
 REG_SET_CLEAR(mstatus, 0x300)
 REG_READ_WRITE(mtvec, 0x305)
 REG_READ(mvendorid, 0xF11)
+REG_READ(marchid, 0xF12)
+REG_READ(mimpid, 0xF13)
+REG_READ(mhartid, 0xF14)
 
 // S-mode registers
 REG_READ_WRITE(satp, 0x180)
