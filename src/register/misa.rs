@@ -9,6 +9,7 @@ pub struct Misa {
 }
 
 /// Machine XLEN
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MXL {
     XLEN32,
     XLEN64,

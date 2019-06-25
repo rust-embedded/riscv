@@ -70,12 +70,14 @@ impl Satp {
 }
 
 #[cfg(riscv32)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Mode {
     Bare = 0,
     Sv32 = 1,
 }
 
 #[cfg(riscv64)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Mode {
     Bare = 0,
     Sv39 = 8,

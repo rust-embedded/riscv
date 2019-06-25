@@ -10,6 +10,7 @@ pub struct Mstatus {
 }
 
 /// Additional extension state
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum XS {
     /// All off
     AllOff = 0,
@@ -25,6 +26,7 @@ pub enum XS {
 }
 
 /// Floating-point extension state
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FS {
     Off = 0,
     Initial = 1,
@@ -33,6 +35,7 @@ pub enum FS {
 }
 
 /// Machine Previous Privilege Mode
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MPP {
     Machine = 3,
     Supervisor = 1,
@@ -40,6 +43,7 @@ pub enum MPP {
 }
 
 /// Supervisor Previous Privilege Mode
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum SPP {
     Supervisor = 1,
     User = 0,
