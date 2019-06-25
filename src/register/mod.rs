@@ -13,33 +13,82 @@
 #[macro_use]
 mod macros;
 
+// TODO: User Trap Setup
+
+
+// TODO: User Trap Handling
+
+
+// User Floating-Point CSRs
+// TODO: frm, fflags
 pub mod fcsr;
 
-pub mod marchid;
-pub mod mcause;
-pub mod mcycle;
-pub mod mcycleh;
-pub mod mepc;
-pub mod mhartid;
-pub mod mie;
-pub mod mimpid;
-pub mod minstret;
-pub mod minstreth;
-pub mod mip;
-pub mod misa;
-pub mod mstatus;
-pub mod mtvec;
-pub mod mvendorid;
 
-pub mod sstatus;
-pub mod stvec;
-pub mod sie;
-pub mod sip;
-pub mod scause;
-pub mod stval;
-pub mod satp;
-pub mod sscratch;
-pub mod sepc;
-
+// User Counter/Timers
+// TODO: cycle[h], instret[h], hpmcounter*[h]
 pub mod time;
 pub mod timeh;
+
+
+// Supervisor Trap Setup
+// TODO: sedeleg, sideleg
+pub mod sstatus;
+pub mod sie;
+pub mod stvec;
+// TODO: scounteren
+
+
+// Supervisor Trap Handling
+pub mod sscratch;
+pub mod sepc;
+pub mod scause;
+pub mod stval;
+pub mod sip;
+
+
+// Supervisor Protection and Translation
+pub mod satp;
+
+
+// Machine Information Registers
+pub mod mvendorid;
+pub mod marchid;
+pub mod mimpid;
+pub mod mhartid;
+
+
+// Machine Trap Setup
+pub mod mstatus;
+pub mod misa;
+// TODO: medeleg, mideleg
+pub mod mie;
+pub mod mtvec;
+// TODO: mcounteren
+
+
+// Machine Trap Handling
+// TODO: mscratch
+pub mod mepc;
+pub mod mcause;
+// TODO: mtval
+pub mod mip;
+
+
+// TODO: Machine Protection and Translation
+
+// Machine Counter/Timers
+pub mod mcycle;
+pub mod minstret;
+// TODO: mhpmcounter*
+pub mod mcycleh;
+pub mod minstreth;
+// TODO: mhpmcounter*h
+
+
+// TODO: Machine Counter Setup
+
+
+// TODO: Debug/Trace Registers (shared with Debug Mode)
+
+
+// TODO: Debug Mode Registers
