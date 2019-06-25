@@ -25,8 +25,10 @@ pub mod fcsr;
 
 
 // User Counter/Timers
-// TODO: cycle[h], instret[h], hpmcounter*[h]
+// TODO: cycle[h], instret[h]
 pub mod time;
+mod hpmcounterx;
+pub use self::hpmcounterx::*;
 pub mod timeh;
 
 
@@ -79,13 +81,15 @@ pub mod mip;
 // Machine Counter/Timers
 pub mod mcycle;
 pub mod minstret;
-// TODO: mhpmcounter*
+mod mhpmcounterx;
+pub use self::mhpmcounterx::*;
 pub mod mcycleh;
 pub mod minstreth;
-// TODO: mhpmcounter*h
 
 
-// TODO: Machine Counter Setup
+// Machine Counter Setup
+mod mhpmeventx;
+pub use self::mhpmeventx::*;
 
 
 // TODO: Debug/Trace Registers (shared with Debug Mode)
