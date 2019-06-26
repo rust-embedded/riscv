@@ -76,7 +76,12 @@ pub mod mtval;
 pub mod mip;
 
 
-// TODO: Machine Protection and Translation
+// Machine Protection and Translation
+mod pmpcfgx;
+pub use self::pmpcfgx::*;
+mod pmpaddrx;
+pub use self::pmpaddrx::*;
+
 
 // Machine Counter/Timers
 pub mod mcycle;
