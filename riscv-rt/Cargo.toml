@@ -18,5 +18,4 @@ inline-asm = ["riscv/inline-asm"]
 
 [dev-dependencies]
 riscv = "0.5.3"
-riscv-rt = "0.6.0"
 panic-halt = "0.2.0"
