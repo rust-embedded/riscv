@@ -13,14 +13,14 @@
 //!
 //! - Before main initialization of the `.bss` and `.data` sections.
 //!
-//! - Before main initialization of the FPU (for targets that have a FPU).
-//!
 //! - `#[entry]` to declare the entry point of the program
 //! - `#[pre_init]` to run code *before* `static` variables are initialized
 //!
 //! - A linker script that encodes the memory layout of a generic RISC-V
 //!   microcontroller. This linker script is missing some information that must
-//!   be supplied through a `memory.x` file (see example below).
+//!   be supplied through a `memory.x` file (see example below). This file
+//!   must be supplied using rustflags and listed *before* `link.x`. Arbitrary
+//!   filename can be use instead of `memory.x`.
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
 //!
@@ -30,17 +30,23 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-rt = "0.4.0"
+//! riscv-rt = "0.6.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
 //! $ edit memory.x && cat $_
 //! MEMORY
 //! {
-//!   /* NOTE K = KiBi = 1024 bytes */
-//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
 //!   RAM : ORIGIN = 0x80000000, LENGTH = 16K
+//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
 //! }
+//!
+//! REGION_ALIAS("REGION_TEXT", FLASH);
+//! REGION_ALIAS("REGION_RODATA", FLASH);
+//! REGION_ALIAS("REGION_DATA", RAM);
+//! REGION_ALIAS("REGION_BSS", RAM);
+//! REGION_ALIAS("REGION_HEAP", RAM);
+//! REGION_ALIAS("REGION_STACK", RAM);
 //!
 //! $ edit src/main.rs && cat $_
 //! ```
@@ -66,7 +72,8 @@
 //! $ mkdir .cargo && edit .cargo/config && cat $_
 //! [target.riscv32imac-unknown-none-elf]
 //! rustflags = [
-//!   "-C", "link-arg=-Tlink.x"
+//!   "-C", "link-arg=-Tmemory.x",
+//!   "-C", "link-arg=-Tlink.x",
 //! ]
 //!
 //! [build]
@@ -124,14 +131,27 @@
 //!
 //! The main information that this file must provide is the memory layout of
 //! the device in the form of the `MEMORY` command. The command is documented
-//! [here][2], but at a minimum you'll want to create two memory regions: one
-//! for Flash memory and another for RAM.
+//! [here][2], but at a minimum you'll want to create at least one memory region.
 //!
 //! [2]: https://sourceware.org/binutils/docs/ld/MEMORY.html
 //!
-//! The program instructions (the `.text` section) will be stored in the memory
-//! region named FLASH, and the program `static` variables (the sections `.bss`
-//! and `.data`) will be allocated in the memory region named RAM.
+//! To support different relocation models (RAM-only, FLASH+RAM) multiple regions are used:
+//!
+//! - `REGION_TEXT` - for `.init`, `.trap` and `.text` sections
+//! - `REGION_RODATA` - for `.rodata` section and storing initial values for `.data` section
+//! - `REGION_DATA` - for `.data` section
+//! - `REGION_BSS` - for `.bss` section
+//! - `REGION_HEAP` - for the heap area
+//! - `REGION_STACK` - for hart stacks
+//!
+//! Specific aliases for these regions must be defined in `memory.x` file (see example below).
+//!
+//! ### `_stext`
+//!
+//! This symbol provides the loading address of `.text` section. This value can be changed
+//! to override the loading address of the firmware (for example, in case of bootloader present).
+//!
+//! If omitted this symbol value will default to `ORIGIN(REGION_TEXT)`.
 //!
 //! ### `_stack_start`
 //!
@@ -140,24 +160,48 @@
 //! valid RAM address plus one (this *is* an invalid address but the processor
 //! will decrement the stack pointer *before* using its value as an address).
 //!
-//! If omitted this symbol value will default to `ORIGIN(RAM) + LENGTH(RAM)`.
+//! In case of multiple harts present, this address defines the initial stack pointer for hart 0.
+//! Stack pointer for hart `N` is calculated as  `_stack_start - N * _hart_stack_size`.
+//!
+//! If omitted this symbol value will default to `ORIGIN(REGION_STACK) + LENGTH(REGION_STACK)`.
 //!
 //! #### Example
 //!
 //! Allocating the call stack on a different RAM region.
 //!
-//! ```
+//! ``` text
 //! MEMORY
 //! {
-//!   /* call stack will go here */
-//!   CCRAM : ORIGIN = 0x10000000, LENGTH = 8K
-//!   FLASH : ORIGIN = 0x08000000, LENGTH = 256K
-//!   /* static variables will go here */
-//!   RAM : ORIGIN = 0x20000000, LENGTH = 40K
+//!   L2_LIM : ORIGIN = 0x08000000, LENGTH = 1M
+//!   RAM : ORIGIN = 0x80000000, LENGTH = 16K
+//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
 //! }
 //!
-//! _stack_start = ORIGIN(CCRAM) + LENGTH(CCRAM);
+//! REGION_ALIAS("REGION_TEXT", FLASH);
+//! REGION_ALIAS("REGION_RODATA", FLASH);
+//! REGION_ALIAS("REGION_DATA", RAM);
+//! REGION_ALIAS("REGION_BSS", RAM);
+//! REGION_ALIAS("REGION_HEAP", RAM);
+//! REGION_ALIAS("REGION_STACK", L2_LIM);
+//!
+//! _stack_start = ORIGIN(L2_LIM) + LENGTH(L2_LIM);
 //! ```
+//!
+//! ### `_max_hart_id`
+//!
+//! This symbol defines the maximum hart id suppoted. All harts with id
+//! greater than `_max_hart_id` will be redirected to `abort()`.
+//!
+//! This symbol is supposed to be redefined in platform support crates for
+//! multi-core targets.
+//!
+//! If omitted this symbol value will default to 0 (single core).
+//!
+//! ### `_hart_stack_size`
+//!
+//! This symbol defines stack area size for *one* hart.
+//!
+//! If omitted this symbol value will default to 2K.
 //!
 //! ### `_heap_size`
 //!
@@ -172,7 +216,7 @@
 //!
 //! #### Example
 //!
-//! ```
+//! ``` no_run
 //! extern crate some_allocator;
 //!
 //! extern "C" {
@@ -189,13 +233,22 @@
 //! }
 //! ```
 //!
-//! ## `pre_init!`
+//! ### `_mp_hook`
 //!
-//! A user-defined function can be run at the start of the reset handler, before RAM is
-//! initialized. The macro `pre_init!` can be called to set the function to be run. The function is
-//! intended to perform actions that cannot wait the time it takes for RAM to be initialized, such
-//! as disabling a watchdog. As the function is called before RAM is initialized, any access of
-//! static variables will result in undefined behavior.
+//! This function is called from all the harts and must return true only for one hart,
+//! which will perform memory initialization. For other harts it must return false
+//! and implement wake-up in platform-dependent way (e.g. after waiting for a user interrupt).
+//!
+//! This function can be redefined in the following way:
+//!
+//! ``` no_run
+//! #[export_name = "_mp_hook"]
+//! pub extern "Rust" fn mp_hook() -> bool {
+//!    // ...
+//! }
+//! ```
+//!
+//! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
@@ -208,7 +261,11 @@ extern crate r0;
 
 pub use macros::{entry, pre_init};
 
-use riscv::register::{mstatus, mtvec};
+use riscv::register::mstatus;
+
+#[export_name = "error: riscv-rt appears more than once in the dependency graph"]
+#[doc(hidden)]
+pub static __ONCE__: () = ();
 
 extern "C" {
     // Boundaries of the .bss section
@@ -221,9 +278,6 @@ extern "C" {
 
     // Initial values of the .data section (stored in Flash)
     static _sidata: u32;
-
-    // Address of _start_trap
-    static _start_trap: u32;
 }
 
 
@@ -240,17 +294,18 @@ pub unsafe extern "C" fn start_rust() -> ! {
 
         // This symbol will be provided by the user via `#[pre_init]`
         fn __pre_init();
+
+        fn _mp_hook() -> bool;
     }
 
-    __pre_init();
+    if _mp_hook() {
+        __pre_init();
 
-    r0::zero_bss(&mut _sbss, &mut _ebss);
-    r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+        r0::zero_bss(&mut _sbss, &mut _ebss);
+        r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+    }
 
     // TODO: Enable FPU when available
-
-    // Set mtvec to _start_trap
-    mtvec::write(&_start_trap as *const _ as usize, mtvec::TrapMode::Direct);
 
     main();
 }
@@ -279,10 +334,22 @@ pub extern "C" fn start_trap_rust() {
 }
 
 
-/// Default Trap Handler
+#[doc(hidden)]
 #[no_mangle]
 pub fn default_trap_handler() {}
 
 #[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "Rust" fn default_pre_init() {}
+
+#[doc(hidden)]
+#[no_mangle]
+pub extern "Rust" fn default_mp_hook() -> bool {
+    use riscv::register::mhartid;
+    match mhartid::read() {
+        0 => true,
+        _ => loop {
+            unsafe { riscv::asm::wfi() }
+        },
+    }
+}

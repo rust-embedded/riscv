@@ -1,6 +1,6 @@
 [package]
 name = "riscv-rt"
-version = "0.5.0"
+version = "0.6.0"
 repository = "https://github.com/rust-embedded/riscv-rt"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
@@ -10,8 +10,12 @@ license = "ISC"
 
 [dependencies]
 r0 = "0.2.2"
-riscv = "0.5.0"
-riscv-rt-macros = { path = "macros", version = "0.1.5" }
+riscv = "0.5.3"
+riscv-rt-macros = { path = "macros", version = "0.1.6" }
 
 [features]
 inline-asm = ["riscv/inline-asm"]
+
+[dev-dependencies]
+riscv = "0.5.3"
+panic-halt = "0.2.0"
