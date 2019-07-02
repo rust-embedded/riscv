@@ -4,15 +4,15 @@
 
 # `riscv-rt`
 
-> Minimal runtime / startup for RISCV CPU's.
+> Minimal runtime / startup for RISC-V CPU's.
 
-This project is developed and maintained by the [RISCV team][team].
+This project is developed and maintained by the [RISC-V team][team].
 
 ## [Documentation](https://docs.rs/crate/riscv-rt)
 
 ## License
 
-Copyright 2018 [RISCV team][team]
+Copyright 2018 [RISC-V team][team]
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
@@ -29,7 +29,7 @@ THIS SOFTWARE.
 ## Code of Conduct
 
 Contribution to this crate is organized under the terms of the [Rust Code of
-Conduct][CoC], the maintainer of this crate, the [RISCV team][team], promises
+Conduct][CoC], the maintainer of this crate, the [RISC-V team][team], promises
 to intervene to uphold that code of conduct.
 
 [CoC]: CODE_OF_CONDUCT.md
