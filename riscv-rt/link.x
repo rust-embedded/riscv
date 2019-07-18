@@ -66,7 +66,7 @@ SECTIONS
   .bss :
   {
     _sbss = .;
-    *(.bss .bss.*);
+    *(.sbss .sbss.* .bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
   } > REGION_BSS :virtual
