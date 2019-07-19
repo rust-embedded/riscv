@@ -50,6 +50,11 @@ SECTIONS
   .rodata : ALIGN(4)
   {
     *(.rodata .rodata.*);
+
+    /* 4-byte align the end (VMA) of this section.
+       This is required by LLD to ensure the LMA of the following .data
+       section will have the correct alignment. */
+    . = ALIGN(4);
   } > REGION_RODATA :load
 
   .data : ALIGN(4)
