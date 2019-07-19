@@ -34,7 +34,7 @@ SECTIONS
     /* This section is intended to make _stext address work */
   } > REGION_TEXT :virtual
 
-  .text ALIGN(_stext,4) :
+  .text _stext :
   {
     /* Put reset handler first in .text section so it ends up as the entry */
     /* point of the program. */
@@ -47,12 +47,12 @@ SECTIONS
     *(.text .text.*);
   } > REGION_TEXT :load
 
-  .rodata ALIGN(4) :
+  .rodata : ALIGN(4)
   {
     *(.rodata .rodata.*);
   } > REGION_RODATA :load
 
-  .data ALIGN(4) :
+  .data : ALIGN(4)
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
