@@ -69,30 +69,30 @@ SECTIONS
     _edata = .;
   } > REGION_DATA AT > REGION_RODATA :ram_load
 
-  .bss :
+  .bss (NOLOAD) :
   {
     _sbss = .;
     *(.sbss .sbss.* .bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
-  } > REGION_BSS :virtual
+  } > REGION_BSS
 
   /* fictitious region that represents the memory available for the heap */
-  .heap (INFO) :
+  .heap (NOLOAD) :
   {
     _sheap = .;
     . += _heap_size;
     . = ALIGN(4);
     _eheap = .;
-  } > REGION_HEAP :virtual
+  } > REGION_HEAP
 
   /* fictitious region that represents the memory available for the stack */
-  .stack (INFO) :
+  .stack (NOLOAD) :
   {
     _estack = .;
     . = _stack_start;
     _sstack = .;
-  } > REGION_STACK :virtual
+  } > REGION_STACK
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
