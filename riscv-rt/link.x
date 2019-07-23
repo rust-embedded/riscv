@@ -20,21 +20,15 @@ PROVIDE(__pre_init = default_pre_init);
 */
 PROVIDE(_mp_hook = default_mp_hook);
 
-PHDRS
-{
-    load PT_LOAD;
-    ram_load PT_LOAD;
-    virtual PT_NULL;
-}
-
 SECTIONS
 {
-  .text.dummy ORIGIN(REGION_TEXT) :
+  .text.dummy (NOLOAD) :
   {
     /* This section is intended to make _stext address work */
-  } > REGION_TEXT :virtual
+    . = _stext;
+  } > REGION_TEXT
 
-  .text ALIGN(_stext,4) :
+  .text _stext :
   {
     /* Put reset handler first in .text section so it ends up as the entry */
     /* point of the program. */
@@ -45,48 +39,54 @@ SECTIONS
     KEEP(*(.trap.rust));
 
     *(.text .text.*);
-  } > REGION_TEXT :load
+  } > REGION_TEXT
 
-  .rodata ALIGN(4) :
+  .rodata : ALIGN(4)
   {
     *(.rodata .rodata.*);
-  } > REGION_RODATA :load
 
-  .data ALIGN(4) :
+    /* 4-byte align the end (VMA) of this section.
+       This is required by LLD to ensure the LMA of the following .data
+       section will have the correct alignment. */
+    . = ALIGN(4);
+  } > REGION_RODATA
+
+  .data : ALIGN(4)
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
     /* Must be called __global_pointer$ for linker relaxations to work. */
     PROVIDE(__global_pointer$ = . + 0x800);
+    *(.sdata .sdata.*);
     *(.data .data.*);
     . = ALIGN(4);
     _edata = .;
-  } > REGION_DATA AT > REGION_RODATA :ram_load
+  } > REGION_DATA AT > REGION_RODATA
 
-  .bss :
+  .bss (NOLOAD) :
   {
     _sbss = .;
     *(.sbss .sbss.* .bss .bss.*);
     . = ALIGN(4);
     _ebss = .;
-  } > REGION_BSS :virtual
+  } > REGION_BSS
 
   /* fictitious region that represents the memory available for the heap */
-  .heap (INFO) :
+  .heap (NOLOAD) :
   {
     _sheap = .;
     . += _heap_size;
     . = ALIGN(4);
     _eheap = .;
-  } > REGION_HEAP :virtual
+  } > REGION_HEAP
 
   /* fictitious region that represents the memory available for the stack */
-  .stack (INFO) :
+  .stack (NOLOAD) :
   {
     _estack = .;
     . = _stack_start;
     _sstack = .;
-  } > REGION_STACK :virtual
+  } > REGION_STACK
 
   /* fake output .got section */
   /* Dynamic relocations are unsupported. This section is only used to detect
