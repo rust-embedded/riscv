@@ -64,6 +64,7 @@ impl Flags {
 }
 
 /// Rounding Mode
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RoundingMode {
     RoundToNearestEven = 0b000,
     RoundTowardsZero = 0b001,

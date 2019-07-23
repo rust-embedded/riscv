@@ -7,6 +7,7 @@ pub struct Stvec {
 }
 
 /// Trap mode
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TrapMode {
     Direct = 0,
     Vectored = 1,

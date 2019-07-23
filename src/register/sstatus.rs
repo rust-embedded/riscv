@@ -10,14 +10,14 @@ pub struct Sstatus {
 }
 
 /// Supervisor Previous Privilege Mode
-#[derive(Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum SPP {
     Supervisor = 1,
     User = 0,
 }
 
 /// Floating-point unit Status
-#[derive(Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum FS {
     Off = 0,
     Initial = 1,

@@ -10,14 +10,14 @@ pub struct Scause {
 }
 
 /// Trap Cause
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Trap {
     Interrupt(Interrupt),
     Exception(Exception),
 }
 
 /// Interrupt
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Interrupt {
     UserSoft,
     SupervisorSoft,
@@ -29,7 +29,7 @@ pub enum Interrupt {
 }
 
 /// Exception
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Exception {
     InstructionMisaligned,
     InstructionFault,
