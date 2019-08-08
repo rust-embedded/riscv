@@ -57,7 +57,7 @@ SECTIONS
     _sdata = .;
     /* Must be called __global_pointer$ for linker relaxations to work. */
     PROVIDE(__global_pointer$ = . + 0x800);
-    *(.sdata .sdata.*);
+    *(.sdata .sdata.* .sdata2 .sdata2.*);
     *(.data .data.*);
     . = ALIGN(4);
     _edata = .;
