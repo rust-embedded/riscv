@@ -1,11 +1,11 @@
-//! mstatus register
+//! ustatus register
 // TODO: Virtualization, Memory Privilege and Extension Context Fields
 
 use bit_field::BitField;
 use core::mem::size_of;
 pub use super::mstatus::{XS, FS};
 
-/// mstatus register
+/// ustatus register
 #[derive(Clone, Copy, Debug)]
 pub struct Ustatus {
     bits: usize,
