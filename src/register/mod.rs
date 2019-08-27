@@ -13,11 +13,18 @@
 #[macro_use]
 mod macros;
 
-// TODO: User Trap Setup
+// User Trap Setup
+// TODO: sedeleg, sideleg
+pub mod ustatus;
+pub mod uie;
+pub mod utvec;
 
-
-// TODO: User Trap Handling
-
+// User Trap Handling
+pub mod uscratch;
+pub mod uepc;
+pub mod ucause;
+pub mod utval;
+pub mod uip;
 
 // User Floating-Point CSRs
 // TODO: frm, fflags

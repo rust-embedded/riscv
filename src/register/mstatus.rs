@@ -2,6 +2,7 @@
 // TODO: Virtualization, Memory Privilege and Extension Context Fields
 
 use bit_field::BitField;
+use core::mem::size_of;
 
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
@@ -80,7 +81,7 @@ impl Mstatus {
         self.bits.get_bit(5)
     }
 
-    /// User Previous Interrupt Enable
+    /// Machine Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
         self.bits.get_bit(7)
@@ -133,6 +134,13 @@ impl Mstatus {
             0b11 => XS::SomeDirty,
             _ => unreachable!(),
         }
+    }
+
+    /// Whether either the FS field or XS field
+    /// signals the presence of some dirty state
+    #[inline]
+    pub fn sd(&self) -> bool {
+        self.bits.get_bit(size_of::<usize>() * 8 - 1)
     }
 }
 

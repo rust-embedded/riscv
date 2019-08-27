@@ -2,6 +2,7 @@
 
 use bit_field::BitField;
 use core::mem::size_of;
+pub use super::mstatus::FS;
 
 /// Supervisor Status Register
 #[derive(Clone, Copy, Debug)]
@@ -14,15 +15,6 @@ pub struct Sstatus {
 pub enum SPP {
     Supervisor = 1,
     User = 0,
-}
-
-/// Floating-point unit Status
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum FS {
-    Off = 0,
-    Initial = 1,
-    Clean = 2,
-    Dirty = 3,
 }
 
 impl Sstatus {
