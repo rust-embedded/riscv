@@ -57,4 +57,4 @@ impl Ucause {
     }
 }
 
-read_csr_as!(Ucause, 0x042, __read_mcause);
+read_csr_as!(Ucause, 0x042, __read_ucause);

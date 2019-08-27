@@ -34,9 +34,9 @@ impl Uie {
     }
 }
 
-read_csr_as!(Uie, 0x004, __read_sie);
-set!(0x004, __set_sie);
-clear!(0x004, __clear_sie);
+read_csr_as!(Uie, 0x004, __read_uie);
+set!(0x004, __set_uie);
+clear!(0x004, __clear_uie);
 
 set_clear_csr!(
     /// User Software Interrupt Enable
