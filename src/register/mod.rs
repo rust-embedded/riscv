@@ -14,7 +14,6 @@
 mod macros;
 
 // User Trap Setup
-// TODO: sedeleg, sideleg
 pub mod ustatus;
 pub mod uie;
 pub mod utvec;
