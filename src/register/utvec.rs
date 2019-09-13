@@ -4,11 +4,11 @@ pub use crate::register::mtvec::TrapMode;
 
 /// stvec register
 #[derive(Clone, Copy, Debug)]
-pub struct Stvec {
+pub struct Utvec {
     bits: usize,
 }
 
-impl Stvec {
+impl Utvec {
     /// Returns the contents of the register as raw bits
     pub fn bits(&self) -> usize {
         self.bits
@@ -30,8 +30,8 @@ impl Stvec {
     }
 }
 
-read_csr_as!(Stvec, 0x105, __read_stvec);
-write_csr!(0x105, __write_stvec);
+read_csr_as!(Utvec, 0x005, __read_utvec);
+write_csr!(0x005, __write_utvec);
 
 /// Writes the CSR
 #[inline]

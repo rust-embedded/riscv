@@ -59,7 +59,6 @@ impl Interrupt {
     }
 }
 
-
 impl Exception {
     pub fn from(nr: usize) -> Self {
         match nr {
