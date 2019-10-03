@@ -30,7 +30,7 @@ pub extern "Rust" fn user_mp_hook() -> bool {
                 }
             }
 
-            // Start listening for software interrupts
+            // Stop listening for software interrupts
             mie::clear_msoft();
 
             // Clear IPI
