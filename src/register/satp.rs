@@ -87,7 +87,7 @@ pub enum Mode {
 }
 
 read_csr_as!(Satp, 0x180, __read_satp);
-write_csr!(0x180, __write_satp);
+write_csr_as_usize!(0x180, __write_satp);
 
 #[inline]
 #[cfg(riscv32)]
