@@ -25,7 +25,7 @@ SECTIONS
   .text.dummy (NOLOAD) :
   {
     /* This section is intended to make _stext address work */
-    . = _stext;
+    . = ABSOLUTE(_stext);
   } > REGION_TEXT
 
   .text _stext :
@@ -84,7 +84,7 @@ SECTIONS
   .stack (NOLOAD) :
   {
     _estack = .;
-    . = _stack_start;
+    . = ABSOLUTE(_stack_start);
     _sstack = .;
   } > REGION_STACK
 
