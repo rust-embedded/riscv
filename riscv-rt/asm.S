@@ -128,6 +128,7 @@ _start_trap:
     STORE a6, 14*REGBYTES(sp)
     STORE a7, 15*REGBYTES(sp)
 
+    add a0, sp, zero
     jal ra, _start_trap_rust
 
     LOAD ra, 0*REGBYTES(sp)
