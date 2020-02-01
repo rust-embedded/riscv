@@ -331,7 +331,6 @@
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
 #![deny(missing_docs)]
-#![deny(warnings)]
 
 extern crate riscv;
 extern crate riscv_rt_macros as macros;
