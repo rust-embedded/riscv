@@ -4,7 +4,18 @@ PROVIDE(_max_hart_id = 0);
 PROVIDE(_hart_stack_size = 2K);
 PROVIDE(_heap_size = 0);
 
-PROVIDE(trap_handler = default_trap_handler);
+PROVIDE(UserSoft = DefaultHandler);
+PROVIDE(SupervisorSoft = DefaultHandler);
+PROVIDE(MachineSoft = DefaultHandler);
+PROVIDE(UserTimer = DefaultHandler);
+PROVIDE(SupervisorTimer = DefaultHandler);
+PROVIDE(MachineTimer = DefaultHandler);
+PROVIDE(UserExternal = DefaultHandler);
+PROVIDE(SupervisorExternal = DefaultHandler);
+PROVIDE(MachineExternal = DefaultHandler);
+
+PROVIDE(DefaultHandler = DefaultInterruptHandler);
+PROVIDE(ExceptionHandler = DefaultExceptionHandler);
 
 /* # Pre-initialization function */
 /* If the user overrides this using the `#[pre_init]` attribute or by creating a `__pre_init` function,
