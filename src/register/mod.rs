@@ -68,7 +68,8 @@ pub mod mhartid;
 // Machine Trap Setup
 pub mod mstatus;
 pub mod misa;
-// TODO: medeleg, mideleg
+// TODO: medeleg
+pub mod mideleg;
 pub mod mie;
 pub mod mtvec;
 // TODO: mcounteren
