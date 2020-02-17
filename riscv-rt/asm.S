@@ -133,7 +133,7 @@ _start_trap:
 
 
 /* Make sure there is an abort when linking */
-.section .init
+.section .text
 .globl abort
 abort:
     j abort
