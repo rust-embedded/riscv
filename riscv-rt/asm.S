@@ -12,6 +12,25 @@
 .global _start
 
 _start:
+    /* Jump to the absolute address defined by the linker script. */
+    // for 32bit
+    .if __riscv_xlen == 32
+    lui ra, %hi(_abs_start)
+    jr %lo(_abs_start)(ra)
+    .endif
+
+    // for 64bit
+    .if __riscv_xlen == 64
+1:
+    auipc ra, %pcrel_hi(1f)
+    ld ra, %pcrel_lo(1b)(ra)
+    jr ra
+    .align  3
+1:
+    .dword _abs_start
+    .endif
+
+_abs_start:
     .cfi_startproc
     .cfi_undefined ra
 
