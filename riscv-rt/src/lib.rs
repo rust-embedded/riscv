@@ -2,10 +2,8 @@
 //!
 //! # Minimum Supported Rust Version (MSRV)
 //!
-//! This crate is guaranteed to compile on stable Rust 1.31 and up. It *might*
+//! This crate is guaranteed to compile on stable Rust 1.38 and up. It *might*
 //! compile with older versions but that may change in any new patch release.
-//! Note that `riscv64imac-unknown-none-elf` and `riscv64gc-unknown-none-elf` targets
-//! are not supported on stable yet.
 //!
 //! # Features
 //!

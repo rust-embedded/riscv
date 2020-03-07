@@ -3,7 +3,7 @@ language: rust
 rust:
 - nightly
 - stable
-- 1.31.0 # MSRV
+- 1.38.0 # MSRV
 
 env:
 - TARGET=x86_64-unknown-linux-gnu
@@ -12,12 +12,6 @@ env:
 - TARGET=riscv64imac-unknown-none-elf
 
 if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
-
-matrix:
-  exclude:
-    - rust: 1.31.0 # MSRV
-      env: TARGET=riscv64imac-unknown-none-elf
-
 
 before_install: set -e
 
