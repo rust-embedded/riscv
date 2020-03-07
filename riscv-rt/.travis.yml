@@ -14,8 +14,6 @@ if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_req
 
 matrix:
   exclude:
-    - rust: stable
-      env: TARGET=riscv64imac-unknown-none-elf
     - rust: 1.31.0 # MSRV
       env: TARGET=riscv64imac-unknown-none-elf
 
