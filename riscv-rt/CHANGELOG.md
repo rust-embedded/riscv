@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.7.0] - 2020-03-10
+
 ### Added
 
 - Assure address of PC at startup
@@ -25,4 +27,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set MSRV to 1.38
 
 
-[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.7.0...HEAD
+[v0.7.0]: https://github.com/rust-embedded/riscv/compare/v0.6.1...v0.7.0
