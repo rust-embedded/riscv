@@ -1,4 +1,13 @@
-#include "asm.h"
+#if __riscv_xlen == 64
+# define STORE    sd
+# define LOAD     ld
+# define LOG_REGBYTES 3
+#else
+# define STORE    sw
+# define LOAD     lw
+# define LOG_REGBYTES 2
+#endif
+#define REGBYTES (1 << LOG_REGBYTES)
 
 /*
     Entry point of all programs (_start).
@@ -84,7 +93,18 @@ _abs_start:
     la sp, _stack_start
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)
+#ifdef __riscv_mul
     mul t0, a2, t0
+#else
+    beqz a2, 2f  // Jump if single-hart
+    mv t1, a2
+    mv t2, t0
+1:
+    add t0, t0, t2
+    addi t1, t1, -1
+    bnez t1, 1b
+2:
+#endif
     sub sp, sp, t0
 
     // Set frame pointer
