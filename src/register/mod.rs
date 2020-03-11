@@ -108,3 +108,7 @@ pub use self::mhpmeventx::*;
 
 
 // TODO: Debug Mode Registers
+
+
+// Vexriscv custom CSRs
+pub mod vexriscv;
