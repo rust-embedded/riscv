@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added vexriscv-specific registers
+
 ## [v0.5.5] - 2020-02-28
 
 ### Added
