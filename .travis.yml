@@ -12,6 +12,8 @@ rust:
 if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
 
 matrix:
+  allow_failures:
+    - rust: nightly
   include:
     - env: TARGET=riscv64imac-unknown-none-elf
       rust: nightly
