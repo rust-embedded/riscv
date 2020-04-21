@@ -29,7 +29,10 @@ install:
 script:
   - ci/script.sh
 
-cache: cargo
+cache:
+  cargo: true
+  directories:
+    - gcc
 
 branches:
   only:
