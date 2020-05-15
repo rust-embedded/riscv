@@ -13,7 +13,7 @@ bare-metal = ">=0.2.0,<0.2.5"
 bit_field = "0.9.0"
 
 [build-dependencies]
-riscv-target = "0.1"
+riscv-target = "0.1.2"
 
 [features]
 inline-asm = []
