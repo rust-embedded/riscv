@@ -25,7 +25,6 @@ macro_rules! instruction {
     )
 }
 
-
 instruction!(
     /// `EBREAK` instruction wrapper
     ///
@@ -46,7 +45,6 @@ instruction!(
     /// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
     /// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
     , sfence_vma_all, "sfence.vma", __sfence_vma_all);
-
 
 /// `SFENCE.VMA` instruction wrapper
 ///

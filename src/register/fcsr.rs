@@ -107,7 +107,9 @@ clear!(0x003, __clear_fcsr);
 /// Reads the CSR
 #[inline]
 pub fn read() -> FCSR {
-    FCSR { bits: unsafe{ _read() as u32 } }
+    FCSR {
+        bits: unsafe { _read() as u32 },
+    }
 }
 
 /// Writes the CSR

@@ -25,7 +25,7 @@ read_csr!(0xF11, __read_mvendorid);
 /// Reads the CSR
 #[inline]
 pub fn read() -> Option<Mvendorid> {
-    let r = unsafe{ _read() };
+    let r = unsafe { _read() };
     // When mvendorid is hardwired to zero it means that the mvendorid
     // csr isn't implemented.
     NonZeroUsize::new(r).map(|bits| Mvendorid { bits })

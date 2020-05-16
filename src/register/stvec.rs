@@ -25,7 +25,7 @@ impl Stvec {
         match mode {
             0 => TrapMode::Direct,
             1 => TrapMode::Vectored,
-            _ => unimplemented!()
+            _ => unimplemented!(),
         }
     }
 }

@@ -7,16 +7,16 @@ macro_rules! reg {
             read_csr_as_usize!($addr, $readf);
             write_csr_as_usize!($addr, $writef);
         }
-    }
+    };
 }
 
-reg!(0x323, mhpmevent3,  __read_mhpmevent3,  __write_mhpmevent3);
-reg!(0x324, mhpmevent4,  __read_mhpmevent4,  __write_mhpmevent4);
-reg!(0x325, mhpmevent5,  __read_mhpmevent5,  __write_mhpmevent5);
-reg!(0x326, mhpmevent6,  __read_mhpmevent6,  __write_mhpmevent6);
-reg!(0x327, mhpmevent7,  __read_mhpmevent7,  __write_mhpmevent7);
-reg!(0x328, mhpmevent8,  __read_mhpmevent8,  __write_mhpmevent8);
-reg!(0x329, mhpmevent9,  __read_mhpmevent9,  __write_mhpmevent9);
+reg!(0x323, mhpmevent3, __read_mhpmevent3, __write_mhpmevent3);
+reg!(0x324, mhpmevent4, __read_mhpmevent4, __write_mhpmevent4);
+reg!(0x325, mhpmevent5, __read_mhpmevent5, __write_mhpmevent5);
+reg!(0x326, mhpmevent6, __read_mhpmevent6, __write_mhpmevent6);
+reg!(0x327, mhpmevent7, __read_mhpmevent7, __write_mhpmevent7);
+reg!(0x328, mhpmevent8, __read_mhpmevent8, __write_mhpmevent8);
+reg!(0x329, mhpmevent9, __read_mhpmevent9, __write_mhpmevent9);
 reg!(0x32A, mhpmevent10, __read_mhpmevent10, __write_mhpmevent10);
 reg!(0x32B, mhpmevent11, __read_mhpmevent11, __write_mhpmevent11);
 reg!(0x32C, mhpmevent12, __read_mhpmevent12, __write_mhpmevent12);
