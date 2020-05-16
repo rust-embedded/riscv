@@ -16,12 +16,13 @@ fn main() {
         let mut target = Target::from_target_str(&target);
         target.retain_extensions("imc");
 
-        let target = target.to_string();    
+        let target = target.to_string();
 
         fs::copy(
             format!("bin/{}.a", target),
             out_dir.join(format!("lib{}.a", name)),
-        ).unwrap();
+        )
+        .unwrap();
 
         println!("cargo:rustc-link-lib=static={}", name);
         println!("cargo:rustc-link-search={}", out_dir.display());

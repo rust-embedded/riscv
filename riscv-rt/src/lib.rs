@@ -330,9 +330,9 @@
 #![no_std]
 #![deny(missing_docs)]
 
+extern crate r0;
 extern crate riscv;
 extern crate riscv_rt_macros as macros;
-extern crate r0;
 
 pub use macros::{entry, pre_init};
 
@@ -355,7 +355,6 @@ extern "C" {
     static _sidata: u32;
 }
 
-
 /// Rust entry point (_start_rust)
 ///
 /// Zeros bss section, initializes data section and calls main. This function
@@ -363,6 +362,7 @@ extern "C" {
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
 pub unsafe extern "C" fn start_rust() -> ! {
+    #[rustfmt::skip]
     extern "Rust" {
         // This symbol will be provided by the user via `#[entry]`
         fn main() -> !;
@@ -406,7 +406,6 @@ pub struct TrapFrame {
     pub a6: usize,
     pub a7: usize,
 }
-
 
 /// Trap entry point rust (_start_trap_rust)
 ///
@@ -501,25 +500,41 @@ pub union Vector {
 #[no_mangle]
 pub static __INTERRUPTS: [Vector; 12] = [
     Vector { handler: UserSoft },
-    Vector { handler: SupervisorSoft },
+    Vector {
+        handler: SupervisorSoft,
+    },
     Vector { reserved: 0 },
-    Vector { handler: MachineSoft },
+    Vector {
+        handler: MachineSoft,
+    },
     Vector { handler: UserTimer },
-    Vector { handler: SupervisorTimer },
+    Vector {
+        handler: SupervisorTimer,
+    },
     Vector { reserved: 0 },
-    Vector { handler: MachineTimer },
-    Vector { handler: UserExternal },
-    Vector { handler: SupervisorExternal },
+    Vector {
+        handler: MachineTimer,
+    },
+    Vector {
+        handler: UserExternal,
+    },
+    Vector {
+        handler: SupervisorExternal,
+    },
     Vector { reserved: 0 },
-    Vector { handler: MachineExternal },
+    Vector {
+        handler: MachineExternal,
+    },
 ];
 
 #[doc(hidden)]
 #[no_mangle]
+#[rustfmt::skip]
 pub unsafe extern "Rust" fn default_pre_init() {}
 
 #[doc(hidden)]
 #[no_mangle]
+#[rustfmt::skip]
 pub extern "Rust" fn default_mp_hook() -> bool {
     use riscv::register::mhartid;
     match mhartid::read() {

@@ -5,11 +5,12 @@ extern crate panic_halt;
 extern crate riscv;
 extern crate riscv_rt;
 
-use riscv::register::{mie, mip, mhartid};
 use riscv::asm::wfi;
+use riscv::register::{mhartid, mie, mip};
 use riscv_rt::entry;
 
 #[export_name = "_mp_hook"]
+#[rustfmt::skip]
 pub extern "Rust" fn user_mp_hook() -> bool {
     let hartid = mhartid::read();
     if hartid == 0 {
@@ -52,5 +53,5 @@ fn main() -> ! {
         }
     }
 
-    loop { }
+    loop {}
 }
