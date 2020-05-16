@@ -13,18 +13,26 @@ env:
 
 if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
 
-before_install: set -e
+matrix:
+  allow_failures:
+    - rust: nightly
+  include:
+    - env: CHECK_BLOBS=1
+      rust:
+      language: bash
+      if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
+
 
 install:
-  - bash ci/install.sh
-  - export PATH="$PATH:$PWD/gcc/bin"
+  - ci/install.sh
 
 script:
-  - bash ci/script.sh
+  - ci/script.sh
 
-after_script: set +e
-
-cache: cargo
+cache:
+  cargo: true
+  directories:
+    - gcc
 
 branches:
   only:
