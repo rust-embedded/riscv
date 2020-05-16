@@ -1,4 +1,7 @@
 // NOTE: Adapted from cortex-m/build.rs
+extern crate riscv_target;
+
+use riscv_target::Target;
 use std::env;
 use std::fs;
 use std::io::Write;
@@ -10,6 +13,11 @@ fn main() {
     let name = env::var("CARGO_PKG_NAME").unwrap();
 
     if target.starts_with("riscv") {
+        let mut target = Target::from_target_str(&target);
+        target.retain_extensions("imc");
+
+        let target = target.to_string();    
+
         fs::copy(
             format!("bin/{}.a", target),
             out_dir.join(format!("lib{}.a", name)),
