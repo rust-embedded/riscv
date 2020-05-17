@@ -21,6 +21,9 @@ matrix:
       rust:
       language: bash
       if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
+    - env: RUSTFMT=1
+      rust: stable
+      if: (branch = staging OR branch = trying OR branch = master) OR (type = pull_request AND branch = master)
 
 
 install:
