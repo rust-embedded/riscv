@@ -9,5 +9,5 @@ use riscv_rt::entry;
 #[entry]
 fn main() -> ! {
     // do something here
-    loop { }
+    loop {}
 }
