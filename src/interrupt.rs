@@ -40,14 +40,18 @@ where
     let mstatus = mstatus::read();
 
     // disable interrupts
-    unsafe { disable(); }
+    unsafe {
+        disable();
+    }
 
     let r = f(unsafe { &CriticalSection::new() });
 
     // If the interrupts were active before our `disable` call, then re-enable
     // them. Otherwise, keep them disabled
     if mstatus.mie() {
-        unsafe { enable(); }
+        unsafe {
+            enable();
+        }
     }
 
     r

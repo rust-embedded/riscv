@@ -144,7 +144,6 @@ impl Mstatus {
     }
 }
 
-
 read_csr_as!(Mstatus, 0x300, __read_mstatus);
 write_csr!(0x300, __write_mstatus);
 set!(0x300, __set_mstatus);

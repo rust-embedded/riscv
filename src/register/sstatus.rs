@@ -1,8 +1,8 @@
 //! sstatus register
 
+pub use super::mstatus::FS;
 use bit_field::BitField;
 use core::mem::size_of;
-pub use super::mstatus::FS;
 
 /// Supervisor Status Register
 #[derive(Clone, Copy, Debug)]
