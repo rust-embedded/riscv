@@ -18,3 +18,7 @@ if [ -n "${CHECK_BLOBS:-}" ]; then
     PATH="$PATH:$PWD/gcc/bin"
     ./check-blobs.sh
 fi
+
+if [ -n "${RUSTFMT:-}" ]; then
+    cargo fmt -- --check
+fi
