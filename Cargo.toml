@@ -9,8 +9,8 @@ keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 
 [dependencies]
-bare-metal = ">=0.2.0,<0.2.5"
-bit_field = "0.9.0"
+bare-metal = "0.2.5"
+bit_field = "0.10.0"
 
 [build-dependencies]
 riscv-target = "0.1.2"
