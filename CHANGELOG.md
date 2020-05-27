@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Updated Minimum Supported Rust Version to 1.31.0
+
 ## [v0.5.6] - 2020-03-14
 
 ### Added
