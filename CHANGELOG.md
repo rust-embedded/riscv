@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Updated Minimum Supported Rust Version to 1.31.0
+- Use `llvm_asm!` instead of `asm!`
 
 ## [v0.5.6] - 2020-03-14
 
