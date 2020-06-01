@@ -416,7 +416,7 @@ pub struct TrapFrame {
 #[export_name = "_start_trap_rust"]
 pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
-        fn ExceptionHandler(trap_frame: &TrapFrame) -> !;
+        fn ExceptionHandler(trap_frame: &TrapFrame);
         fn DefaultHandler();
     }
 
