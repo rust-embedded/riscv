@@ -30,6 +30,8 @@ _start:
 
     // for 64bit
     .if __riscv_xlen == 64
+.option push
+.option norelax // to prevent an unsupported R_RISCV_ALIGN relocation from being generated
 1:
     auipc ra, %pcrel_hi(1f)
     ld ra, %pcrel_lo(1b)(ra)
@@ -37,6 +39,7 @@ _start:
     .align  3
 1:
     .dword _abs_start
+.option pop
     .endif
 
 _abs_start:
