@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add support to initialize custom interrupt controllers.
+
 ## [v0.7.0] - 2020-03-10
 
 ### Added
