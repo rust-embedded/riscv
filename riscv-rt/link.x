@@ -22,6 +22,7 @@ PROVIDE(ExceptionHandler = DefaultExceptionHandler);
    then the function this points to will be called before the RAM is initialized. */
 PROVIDE(__pre_init = default_pre_init);
 
+/* A PAC/HAL defined routine that should initialize custom interrupt controller if needed. */
 PROVIDE(_setup_interrupts = default_setup_interrupts);
 
 /* # Multi-processing hook function
