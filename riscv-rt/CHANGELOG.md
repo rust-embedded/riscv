@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add support to initialize custom interrupt controllers.
 
 ### Changed
+
  - Exception handler may return now
 
 ## [v0.7.0] - 2020-03-10
