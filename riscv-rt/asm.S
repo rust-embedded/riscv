@@ -173,6 +173,7 @@ _start_trap:
 .section .text
 .global default_setup_interrupts
 
+.global default_setup_interrupts
 default_setup_interrupts:
     // Set trap handler
     la t0, _start_trap
