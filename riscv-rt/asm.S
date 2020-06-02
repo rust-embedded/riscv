@@ -125,6 +125,7 @@ _abs_start:
 */
 .section .trap, "ax"
 .global _start_trap
+/* Make it .weak so PAC/HAL can provide their own if needed. */
 .weak _start_trap
 
 _start_trap:
