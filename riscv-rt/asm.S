@@ -171,6 +171,8 @@ _start_trap:
     mret
 
 .section .text
+.global default_setup_interrupts
+
 default_setup_interrupts:
     // Set trap handler
     la t0, _start_trap
