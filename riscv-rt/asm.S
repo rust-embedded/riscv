@@ -113,14 +113,9 @@ _abs_start:
     // Set frame pointer
     add s0, sp, zero
 
-    // Set trap handler
-    la t0, _start_trap
-    csrw mtvec, t0
-
     jal zero, _start_rust
 
     .cfi_endproc
-
 
 /*
     Trap entry point (_start_trap)
@@ -130,6 +125,7 @@ _abs_start:
 */
 .section .trap, "ax"
 .global _start_trap
+.weak _start_trap
 
 _start_trap:
     addi sp, sp, -16*REGBYTES
@@ -174,9 +170,14 @@ _start_trap:
     addi sp, sp, 16*REGBYTES
     mret
 
+.section .text
+default_setup_interrupts:
+    // Set trap handler
+    la t0, _start_trap
+    csrw mtvec, t0
+    ret
 
 /* Make sure there is an abort when linking */
-.section .text
 .globl abort
 abort:
     j abort

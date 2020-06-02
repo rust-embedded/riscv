@@ -22,6 +22,8 @@ PROVIDE(ExceptionHandler = DefaultExceptionHandler);
    then the function this points to will be called before the RAM is initialized. */
 PROVIDE(__pre_init = default_pre_init);
 
+PROVIDE(_setup_interrupts = default_setup_interrupts);
+
 /* # Multi-processing hook function
    fn _mp_hook() -> bool;
 
@@ -46,8 +48,8 @@ SECTIONS
     KEEP(*(.init));
     KEEP(*(.init.rust));
     . = ALIGN(4);
-    KEEP(*(.trap));
-    KEEP(*(.trap.rust));
+    (*(.trap));
+    (*(.trap.rust));
 
     *(.text .text.*);
   } > REGION_TEXT

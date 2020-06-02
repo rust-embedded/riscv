@@ -370,6 +370,8 @@ pub unsafe extern "C" fn start_rust() -> ! {
         // This symbol will be provided by the user via `#[pre_init]`
         fn __pre_init();
 
+        fn _setup_interrupts();
+
         fn _mp_hook() -> bool;
     }
 
@@ -381,6 +383,8 @@ pub unsafe extern "C" fn start_rust() -> ! {
     }
 
     // TODO: Enable FPU when available
+
+    _setup_interrupts();
 
     main();
 }
