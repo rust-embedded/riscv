@@ -17,6 +17,7 @@ matrix:
   allow_failures:
     - rust: nightly
 
+  include:
     - env: CHECK_BLOBS=1
       rust:
       language: bash
