@@ -98,6 +98,3 @@ pub use self::mhpmeventx::*;
 // TODO: Debug/Trace Registers (shared with Debug Mode)
 
 // TODO: Debug Mode Registers
-
-// Vexriscv custom CSRs
-pub mod vexriscv;

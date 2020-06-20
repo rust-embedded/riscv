@@ -273,10 +273,3 @@ RW(0x7A3, tdata3)   // Third Debug/Trace trigger data register
 RW(0x7B0, dcsr)     // Debug control and status register
 RW(0x7B1, dpc)      // Debug PC
 RW(0x7B2, dscratch) // Debug scratch register
-
-// VexRiscv custom registers
-RW(0xBC0, vmim)     // Machine IRQ Mask
-RO(0xFC0, vmip)     // Machine IRQ Pending
-RW(0x9C0, vsim)     // Supervisor IRQ Mask
-RO(0xDC0, vsip)     // Supervisor IRQ Pending
-RO(0xCC0, vdci)     // DCache Info
