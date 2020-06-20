@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Updated Minimum Supported Rust Version to 1.31.0
 - Use `llvm_asm!` instead of `asm!`
 
+### Removed
+
+- vexriscv-specific registers were moved to the `vexriscv` crate
+
 ## [v0.5.6] - 2020-03-14
 
 ### Added
