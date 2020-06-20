@@ -20,12 +20,12 @@ impl Utvec {
     }
 
     /// Returns the trap-vector mode
-    pub fn trap_mode(&self) -> TrapMode {
+    pub fn trap_mode(&self) -> Option<TrapMode> {
         let mode = self.bits & 0b11;
         match mode {
-            0 => TrapMode::Direct,
-            1 => TrapMode::Vectored,
-            _ => unimplemented!(),
+            0 => Some(TrapMode::Direct),
+            1 => Some(TrapMode::Vectored),
+            _ => None,
         }
     }
 }

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `Mtvec::trap_mode()` not returns `Option<TrapMode>` (breaking change)
+- `Mtvec::trap_mode()`, `Stvec::trap_mode()` and `Utvec::trap_mode()` functions now return `Option<TrapMode>` (breaking change)
 - Updated Minimum Supported Rust Version to 1.42.0
 - Use `llvm_asm!` instead of `asm!`
 
