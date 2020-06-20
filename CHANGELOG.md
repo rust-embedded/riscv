@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - `Mtvec::trap_mode()` not returns `Option<TrapMode>` (breaking change)
-- Updated Minimum Supported Rust Version to 1.31.0
+- Updated Minimum Supported Rust Version to 1.42.0
 - Use `llvm_asm!` instead of `asm!`
 
 ### Removed
