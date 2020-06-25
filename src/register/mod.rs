@@ -61,11 +61,11 @@ pub mod mimpid;
 pub mod mvendorid;
 
 // Machine Trap Setup
-pub mod misa;
-pub mod mstatus;
 pub mod medeleg;
 pub mod mideleg;
 pub mod mie;
+pub mod misa;
+pub mod mstatus;
 pub mod mtvec;
 // TODO: mcounteren
 
