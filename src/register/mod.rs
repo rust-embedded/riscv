@@ -63,7 +63,7 @@ pub mod mvendorid;
 // Machine Trap Setup
 pub mod misa;
 pub mod mstatus;
-// TODO: medeleg
+pub mod medeleg;
 pub mod mideleg;
 pub mod mie;
 pub mod mtvec;
