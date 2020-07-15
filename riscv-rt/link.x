@@ -111,11 +111,8 @@ SECTIONS
     KEEP(*(.got .got.*));
   }
 
-  /* Discard .eh_frame, we are not doing unwind on panic so it is not needed */
-  /DISCARD/ :
-  {
-    *(.eh_frame);
-  }
+  .eh_frame (INFO) : { KEEP(*(.eh_frame)) }
+  .eh_frame_hdr (INFO) : { *(.eh_frame_hdr) }
 }
 
 /* Do not exceed this mark in the error messages above                                    | */
