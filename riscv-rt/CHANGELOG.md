@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Preserve `.eh_frame` and `.eh_frame_hdr` sections
+- Place `.srodata` and `.srodata.*` sections in `.rodata`
 
 ## [v0.7.1] - 2020-06-02
 
