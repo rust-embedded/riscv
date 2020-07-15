@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Preserve `.eh_frame` and `.eh_frame_hdr` sections
+
 ## [v0.7.1] - 2020-06-02
 
 ### Added
