@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Update `riscv` to version 0.6
+- Update Minimum Supported Rust Version to 1.42.0
+
 ## [v0.7.2] - 2020-07-16
 
 ### Changed
@@ -22,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
- - Exception handler may return now
+- Exception handler may return now
 
 ## [v0.7.0] - 2020-03-10
 
