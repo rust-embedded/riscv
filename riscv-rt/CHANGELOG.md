@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.8.0] - 2020-07-18
+
 ### Changed
 
 - Update `riscv` to version 0.6
@@ -49,7 +51,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set MSRV to 1.38
 
 
-[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/rust-embedded/riscv/compare/v0.7.2...v0.8.0
 [v0.7.2]: https://github.com/rust-embedded/riscv/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/rust-embedded/riscv/compare/v0.7.0...v0.7.1
 [v0.7.0]: https://github.com/rust-embedded/riscv/compare/v0.6.1...v0.7.0
