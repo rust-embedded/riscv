@@ -58,14 +58,15 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
     // check the function signature
-    let valid_signature = f.constness.is_none()
+    let valid_signature = f.sig.constness.is_none()
+        && f.sig.asyncness.is_none()
         && f.vis == Visibility::Inherited
-        && f.abi.is_none()
-        && f.decl.inputs.is_empty()
-        && f.decl.generics.params.is_empty()
-        && f.decl.generics.where_clause.is_none()
-        && f.decl.variadic.is_none()
-        && match f.decl.output {
+        && f.sig.abi.is_none()
+        && f.sig.inputs.is_empty()
+        && f.sig.generics.params.is_empty()
+        && f.sig.generics.where_clause.is_none()
+        && f.sig.variadic.is_none()
+        && match f.sig.output {
             ReturnType::Default => false,
             ReturnType::Type(_, ref ty) => match **ty {
                 Type::Never(_) => true,
@@ -90,7 +91,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 
     // XXX should we blacklist other attributes?
     let attrs = f.attrs;
-    let unsafety = f.unsafety;
+    let unsafety = f.sig.unsafety;
     let hash = random_ident();
     let stmts = f.block.stmts;
 
@@ -133,15 +134,16 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
     // check the function signature
-    let valid_signature = f.constness.is_none()
+    let valid_signature = f.sig.constness.is_none()
+        && f.sig.asyncness.is_none()
         && f.vis == Visibility::Inherited
-        && f.unsafety.is_some()
-        && f.abi.is_none()
-        && f.decl.inputs.is_empty()
-        && f.decl.generics.params.is_empty()
-        && f.decl.generics.where_clause.is_none()
-        && f.decl.variadic.is_none()
-        && match f.decl.output {
+        && f.sig.unsafety.is_some()
+        && f.sig.abi.is_none()
+        && f.sig.inputs.is_empty()
+        && f.sig.generics.params.is_empty()
+        && f.sig.generics.where_clause.is_none()
+        && f.sig.variadic.is_none()
+        && match f.sig.output {
             ReturnType::Default => true,
             ReturnType::Type(_, ref ty) => match **ty {
                 Type::Tuple(ref tuple) => tuple.elems.is_empty(),
@@ -166,7 +168,7 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
 
     // XXX should we blacklist other attributes?
     let attrs = f.attrs;
-    let ident = f.ident;
+    let ident = f.sig.ident;
     let block = f.block;
 
     quote!(
