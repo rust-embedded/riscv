@@ -55,281 +55,281 @@ impl Mcounteren {
 
     /// User "time[h]" Enable
     #[inline]
-    pub fn tm(&self) -> state {
+    pub fn tm(&self) -> State {
         match self.bits.get_bit(1) {
-            true => state::Enabled,
-            false => state::Disabled,
+            true => State::Enabled,
+            false => State::Disabled,
         }
     }
 
     /// User "instret[h]" Enable
     #[inline]
-    pub fn ir(&self) -> state {
+    pub fn ir(&self) -> State {
         match self.bits.get_bit(2) {
-            true => state::Enabled,
-            false => state::Disabled,
+            true => State::Enabled,
+            false => State::Disabled,
         }
     }
 
 
         /// User "hpm3" Enable
         #[inline]
-        pub fn hpm3(&self) -> state {
+        pub fn hpm3(&self) -> State {
             match self.bits.get_bit(3) {
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm4" Enable
         #[inline]
-        pub fn hpm4(&self) -> bool {
+        pub fn hpm4(&self) -> State {
             match self.bits.get_bit(4){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm5" Enable
         #[inline]
-        pub fn hpm5(&self) -> bool {
+        pub fn hpm5(&self) -> State {
             match self.bits.get_bit(5){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm6" Enable
         #[inline]
-        pub fn hpm6(&self) -> bool {
+        pub fn hpm6(&self) -> State {
             match self.bits.get_bit(6){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm7" Enable
         #[inline]
-        pub fn hpm7(&self) -> bool {
+        pub fn hpm7(&self) -> State {
             match self.bits.get_bit(7){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm8" Enable
         #[inline]
-        pub fn hpm8(&self) -> bool {
+        pub fn hpm8(&self) -> State {
             match self.bits.get_bit(8){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm9" Enable
         #[inline]
-        pub fn hpm9(&self) -> bool {
+        pub fn hpm9(&self) -> State {
             match self.bits.get_bit(9){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm10" Enable
         #[inline]
-        pub fn hpm10(&self) -> bool {
+        pub fn hpm10(&self) -> State {
             match self.bits.get_bit(10){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm11" Enable
         #[inline]
-        pub fn hpm11(&self) -> bool {
+        pub fn hpm11(&self) -> State {
             match self.bits.get_bit(11){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm12" Enable
         #[inline]
-        pub fn hpm12(&self) -> bool {
+        pub fn hpm12(&self) -> State {
             match self.bits.get_bit(12){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm13" Enable
         #[inline]
-        pub fn hpm13(&self) -> bool {
+        pub fn hpm13(&self) -> State {
             match self.bits.get_bit(13){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm14" Enable
         #[inline]
-        pub fn hpm14(&self) -> bool {
+        pub fn hpm14(&self) -> State {
             match self.bits.get_bit(14){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm15" Enable
         #[inline]
-        pub fn hpm15(&self) -> bool {
+        pub fn hpm15(&self) -> State {
             match self.bits.get_bit(15){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm16" Enable
         #[inline]
-        pub fn hpm16(&self) -> bool {
+        pub fn hpm16(&self) -> State {
             match self.bits.get_bit(16){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm17" Enable
         #[inline]
-        pub fn hpm17(&self) -> bool {
+        pub fn hpm17(&self) -> State {
             match self.bits.get_bit(17){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm18" Enable
         #[inline]
-        pub fn hpm18(&self) -> bool {
+        pub fn hpm18(&self) -> State {
             match self.bits.get_bit(18){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm19" Enable
         #[inline]
-        pub fn hpm19(&self) -> bool {
+        pub fn hpm19(&self) -> State {
             match self.bits.get_bit(19){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm20" Enable
         #[inline]
-        pub fn hpm20(&self) -> bool {
+        pub fn hpm20(&self) -> State {
             match self.bits.get_bit(20){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm21" Enable
         #[inline]
-        pub fn hpm21(&self) -> bool {
+        pub fn hpm21(&self) -> State {
             match self.bits.get_bit(21){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm22" Enable
         #[inline]
-        pub fn hpm22(&self) -> bool {
+        pub fn hpm22(&self) -> State {
             match self.bits.get_bit(22){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm23" Enable
         #[inline]
-        pub fn hpm23(&self) -> bool {
+        pub fn hpm23(&self) -> State {
             match self.bits.get_bit(23){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm24" Enable
         #[inline]
-        pub fn hpm24(&self) -> bool {
+        pub fn hpm24(&self) -> State {
             match self.bits.get_bit(24){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm25" Enable
         #[inline]
-        pub fn hpm25(&self) -> bool {
+        pub fn hpm25(&self) -> State {
             match self.bits.get_bit(25){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm26" Enable
         #[inline]
-        pub fn hpm26(&self) -> bool {
+        pub fn hpm26(&self) -> State {
             match self.bits.get_bit(26){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm27" Enable
         #[inline]
-        pub fn hpm27(&self) -> bool {
+        pub fn hpm27(&self) -> State {
             match self.bits.get_bit(27){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm24" Enable
         #[inline]
-        pub fn hpm28(&self) -> bool {
+        pub fn hpm28(&self) -> State {
             match self.bits.get_bit(28){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm29" Enable
         #[inline]
-        pub fn hpm29(&self) -> bool {
+        pub fn hpm29(&self) -> State {
             match self.bits.get_bit(29){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm30" Enable
         #[inline]
-        pub fn hpm30(&self) -> bool {
+        pub fn hpm30(&self) -> State {
             match self.bits.get_bit(30){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
         /// User "hpm31" Enable
         #[inline]
-        pub fn hpm31(&self) -> bool {
+        pub fn hpm31(&self) -> State {
             match self.bits.get_bit(31){
-                true => state::Enabled,
-                false => state::Disabled,
+                true => State::Enabled,
+                false => State::Disabled,
             }
         }
 
@@ -451,7 +451,7 @@ impl Mcounteren {
 
     set_clear_csr!(
     /// User hpmcounter27 Enable
-    , set_hpm27, clear_hpm24, 1 << 27);
+    , set_hpm27, clear_hpm27, 1 << 27);
 
     set_clear_csr!(
     /// User hpmcounter28 Enable
