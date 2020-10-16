@@ -35,12 +35,12 @@ pub mod cycle;
 pub mod instret;
 pub mod time;
 mod hpmcounterx;
+
 pub use self::hpmcounterx::*;
+
 pub mod cycleh;
 pub mod instreth;
 pub mod timeh;
-
-
 
 
 // Supervisor Trap Setup
@@ -89,8 +89,11 @@ pub mod mip;
 
 // Machine Protection and Translation
 mod pmpcfgx;
+
 pub use self::pmpcfgx::*;
+
 mod pmpaddrx;
+
 pub use self::pmpaddrx::*;
 
 
@@ -98,15 +101,15 @@ pub use self::pmpaddrx::*;
 pub mod mcycle;
 pub mod minstret;
 mod mhpmcounterx;
+
 pub use self::mhpmcounterx::*;
+
 pub mod mcycleh;
 pub mod minstreth;
 
 
 // Machine Counter Setup
 mod mhpmeventx;
-
-
 
 
 pub use self::mhpmeventx::*;
