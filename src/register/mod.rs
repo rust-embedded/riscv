@@ -48,7 +48,7 @@ pub mod timeh;
 pub mod sstatus;
 pub mod sie;
 pub mod stvec;
-// TODO: scounteren
+pub mod scounteren;
 
 
 // Supervisor Trap Handling

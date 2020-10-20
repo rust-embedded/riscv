@@ -1,19 +1,20 @@
-//! mcounteren register
+//! scounteren register
 
 use bit_field::BitField;
 
-/// mcounteren register
+/// scounteren register
 #[derive(Clone, Copy, Debug)]
-pub struct Mcounteren {
+pub struct Scounteren {
     bits: usize,
 }
 
-impl Mcounteren {
+impl Scounteren {
     /// User "cycle[h]" Enable
     #[inline]
     pub fn cy(&self) -> bool {
         self.bits.get_bit(0)
     }
+
 
     /// User "time[h]" Enable
     #[inline]
@@ -35,12 +36,10 @@ impl Mcounteren {
     }
 }
 
-read_csr_as!(Mcounteren, 0x306, __read_mcounteren);
-write_csr!(0x306, __write_mcounteren);
-set!(0x306, __set_mcounteren);
-clear!(0x306, __clear_mcounteren);
-
-
+read_csr_as!(Scounteren, 0x106, __read_scounteren);
+write_csr!(0x106, __write_scounteren);
+set!(0x106, __set_scounteren);
+clear!(0x106, __clear_scounteren);
 
 set_clear_csr!(
 /// User cycle Enable
