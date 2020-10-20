@@ -15,7 +15,6 @@ impl Scounteren {
         self.bits.get_bit(0)
     }
 
-
     /// User "time[h]" Enable
     #[inline]
     pub fn tm(&self) -> bool {

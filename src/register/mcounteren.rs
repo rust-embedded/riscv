@@ -40,8 +40,6 @@ write_csr!(0x306, __write_mcounteren);
 set!(0x306, __set_mcounteren);
 clear!(0x306, __clear_mcounteren);
 
-
-
 set_clear_csr!(
 /// User cycle Enable
     , set_cy, clear_cy, 1 << 0);
