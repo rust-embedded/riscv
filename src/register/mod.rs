@@ -30,7 +30,6 @@ pub mod utval;
 pub mod fcsr;
 
 // User Counter/Timers
-
 pub mod cycle;
 pub mod cycleh;
 mod hpmcounterx;
