@@ -9,25 +9,25 @@ pub struct Mcounteren {
 }
 
 impl Mcounteren {
-    /// User "cycle[h]" Enable
+    /// Supervisor "cycle[h]" Enable
     #[inline]
     pub fn cy(&self) -> bool {
         self.bits.get_bit(0)
     }
 
-    /// User "time[h]" Enable
+    /// Supervisor "time[h]" Enable
     #[inline]
     pub fn tm(&self) -> bool {
         self.bits.get_bit(1)
     }
 
-    /// User "instret[h]" Enable
+    /// Supervisor "instret[h]" Enable
     #[inline]
     pub fn ir(&self) -> bool {
         self.bits.get_bit(2)
     }
 
-    /// User "hpm[x]" Enable (bits 3-31)
+    /// Supervisor "hpm[x]" Enable (bits 3-31)
     #[inline]
     pub fn hpm(&self, index: usize) -> bool {
         assert!(3 <= index && index < 32);
@@ -41,15 +41,15 @@ set!(0x306, __set_mcounteren);
 clear!(0x306, __clear_mcounteren);
 
 set_clear_csr!(
-/// User cycle Enable
+/// Supervisor cycle Enable
     , set_cy, clear_cy, 1 << 0);
 
 set_clear_csr!(
-/// User time Enable
+/// Supervisor time Enable
     , set_tm, clear_tm, 1 << 1);
 
 set_clear_csr!(
-/// User instret Enable
+/// Supervisor instret Enable
     , set_ir, clear_ir, 1 << 2);
 
 #[inline]
