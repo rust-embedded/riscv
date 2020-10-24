@@ -41,10 +41,10 @@ pub mod timeh;
 
 // Supervisor Trap Setup
 // TODO: sedeleg, sideleg
+pub mod scounteren;
 pub mod sie;
 pub mod sstatus;
 pub mod stvec;
-pub mod scounteren;
 
 // Supervisor Trap Handling
 pub mod scause;
@@ -63,13 +63,13 @@ pub mod mimpid;
 pub mod mvendorid;
 
 // Machine Trap Setup
+pub mod mcounteren;
 pub mod medeleg;
 pub mod mideleg;
 pub mod mie;
 pub mod misa;
 pub mod mstatus;
 pub mod mtvec;
-pub mod mcounteren;
 
 // Machine Trap Handling
 pub mod mcause;
@@ -91,7 +91,6 @@ mod mhpmcounterx;
 pub use self::mhpmcounterx::*;
 pub mod minstret;
 pub mod minstreth;
-
 
 // Machine Counter Setup
 mod mhpmeventx;
