@@ -30,19 +30,21 @@ pub mod utval;
 pub mod fcsr;
 
 // User Counter/Timers
-// TODO: cycle[h], instret[h]
-pub mod time;
-#[rustfmt::skip] // long macro use
+pub mod cycle;
+pub mod cycleh;
 mod hpmcounterx;
 pub use self::hpmcounterx::*;
+pub mod instret;
+pub mod instreth;
+pub mod time;
 pub mod timeh;
 
 // Supervisor Trap Setup
 // TODO: sedeleg, sideleg
+pub mod scounteren;
 pub mod sie;
 pub mod sstatus;
 pub mod stvec;
-// TODO: scounteren
 
 // Supervisor Trap Handling
 pub mod scause;
@@ -61,13 +63,13 @@ pub mod mimpid;
 pub mod mvendorid;
 
 // Machine Trap Setup
+pub mod mcounteren;
 pub mod medeleg;
 pub mod mideleg;
 pub mod mie;
 pub mod misa;
 pub mod mstatus;
 pub mod mtvec;
-// TODO: mcounteren
 
 // Machine Trap Handling
 pub mod mcause;
@@ -84,11 +86,10 @@ pub use self::pmpaddrx::*;
 
 // Machine Counter/Timers
 pub mod mcycle;
-#[rustfmt::skip] // long macro use
-mod mhpmcounterx;
-pub mod minstret;
-pub use self::mhpmcounterx::*;
 pub mod mcycleh;
+mod mhpmcounterx;
+pub use self::mhpmcounterx::*;
+pub mod minstret;
 pub mod minstreth;
 
 // Machine Counter Setup
