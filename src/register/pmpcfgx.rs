@@ -55,7 +55,7 @@ pub mod pmpcfg0 {
 
         #[inline]
         fn range(&self, byte: usize) -> Range {
-            match byte.get_bits(3..5) {
+            match byte.get_bits(4..6) {
                 0 => Range::OFF,
                 1 => Range::TOR,
                 2 => Range::NA4,
@@ -66,7 +66,7 @@ pub mod pmpcfg0 {
 
         #[inline]
         fn permission(&self, byte: usize) -> Permission {
-            match byte.get_bits(3..5) {
+            match byte.get_bits(0..4) {
                 0 => Permission::NONE,
                 1 => Permission::R,
                 2 => Permission::W,
@@ -122,7 +122,7 @@ pub mod pmpcfg0 {
     #[inline]
     pub unsafe fn clear_lock(index: usize) {
         assert!(index < 8);
-        _set(1 << (7 + (index * 8)));
+        _clear(1 << (7 + (index * 8)));
     }
 }
 
