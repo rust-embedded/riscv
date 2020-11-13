@@ -39,18 +39,13 @@ pub mod pmpcfg0 {
         ///Returns the pmp byte associated with the index
         #[inline]
         pub fn pmp_byte(&self, index: usize) -> usize {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
             assert!(index < 8);
-            match index {
-                0 => self.bits.get_bits(0..8),
-                1 => self.bits.get_bits(8..16),
-                2 => self.bits.get_bits(16..24),
-                3 => self.bits.get_bits(24..32),
-                4 => self.bits.get_bits(32..40),
-                5 => self.bits.get_bits(40..48),
-                6 => self.bits.get_bits(48..56),
-                7 => self.bits.get_bits(56..64),
-                _ => panic!(),
-            }
+
+            self.bits.get_bits(8 * index..8 * (index + 1))
         }
 
         #[inline]
@@ -60,22 +55,22 @@ pub mod pmpcfg0 {
                 1 => Range::TOR,
                 2 => Range::NA4,
                 3 => Range::NAPOT,
-                _ => panic!(),
+                _ => unreachable!(),
             }
         }
 
         #[inline]
-        fn permission(&self, byte: usize) -> Permission {
-            match byte.get_bits(0..4) {
-                0 => Permission::NONE,
-                1 => Permission::R,
-                2 => Permission::W,
-                3 => Permission::RW,
-                4 => Permission::X,
-                5 => Permission::RX,
-                6 => Permission::WX,
-                7 => Permission::RWX,
-                _ => panic!(),
+        fn permission(&self, byte: usize) -> Option<Permission> {
+            match byte.get_bits(0..3) {
+                0 => Some(Permission::NONE),
+                1 => Some(Permission::R),
+                2 => Some(Permission::W),
+                3 => Some(Permission::RW),
+                4 => Some(Permission::X),
+                5 => Some(Permission::RX),
+                6 => Some(Permission::WX),
+                7 => Some(Permission::RWX),
+                _ => None,
             }
         }
 
@@ -84,7 +79,7 @@ pub mod pmpcfg0 {
         pub fn pmp_cfg(&self, index: usize) -> Pmpconfig {
             assert!(index < 8);
             let byte = self.pmp_byte(index);
-            let p = self.permission(byte);
+            let p = self.permission(byte).unwrap();
             let r = self.range(byte);
             let l = byte.get_bit(7);
 
