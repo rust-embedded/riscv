@@ -83,10 +83,10 @@ pub mod pmpcfg0 {
             #[cfg(riscv64)]
             assert!(index < 8);
 
-            PmpByte { byte:self.bits.get_bits(8 * index..8 * (index + 1)) as u8 }
+            PmpByte {
+                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
+            }
         }
-
-
 
         ///Returns pmp[x]cfg configuration structure
         #[inline]
