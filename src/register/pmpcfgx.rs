@@ -31,26 +31,14 @@ pub mod pmpcfg0 {
     }
 
     #[derive(Clone, Copy, Debug)]
-    pub struct Pmpcfg0 {
-        bits: usize,
+    pub struct PmpByte {
+        byte: u8,
     }
 
-    impl Pmpcfg0 {
-        ///Returns the pmp byte associated with the index
+    impl PmpByte {
         #[inline]
-        pub fn pmp_byte(&self, index: usize) -> usize {
-            #[cfg(riscv32)]
-            assert!(index < 4);
-
-            #[cfg(riscv64)]
-            assert!(index < 8);
-
-            self.bits.get_bits(8 * index..8 * (index + 1))
-        }
-
-        #[inline]
-        fn range(&self, byte: usize) -> Range {
-            match byte.get_bits(4..6) {
+        fn range(&self) -> Range {
+            match self.byte.get_bits(4..=5) {
                 0 => Range::OFF,
                 1 => Range::TOR,
                 2 => Range::NA4,
@@ -60,9 +48,9 @@ pub mod pmpcfg0 {
         }
 
         #[inline]
-        fn permission(&self, byte: usize) -> Option<Permission> {
-            match byte.get_bits(0..3) {
-                0 => Some(Permission::NONE),
+        fn permission(&self) -> Option<Permission> {
+            match self.byte.get_bits(0..=2) {
+                0 => None,
                 1 => Some(Permission::R),
                 2 => Some(Permission::W),
                 3 => Some(Permission::RW),
@@ -74,14 +62,39 @@ pub mod pmpcfg0 {
             }
         }
 
+        #[inline]
+        fn locked(&self) -> bool {
+            self.byte.get_bit(7)
+        }
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    pub struct Pmpcfg0 {
+        bits: usize,
+    }
+
+    impl Pmpcfg0 {
+        ///Returns the pmp byte associated with the index
+        #[inline]
+        fn pmp_byte(&self, index: usize) -> PmpByte {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
+            assert!(index < 8);
+
+            PmpByte { byte:self.bits.get_bits(8 * index..8 * (index + 1)) as u8 }
+        }
+
+
+
         ///Returns pmp[x]cfg configuration structure
         #[inline]
         pub fn pmp_cfg(&self, index: usize) -> Pmpconfig {
-            assert!(index < 8);
             let byte = self.pmp_byte(index);
-            let p = self.permission(byte).unwrap();
-            let r = self.range(byte);
-            let l = byte.get_bit(7);
+            let p = byte.permission().unwrap();
+            let r = byte.range();
+            let l = byte.locked();
 
             Pmpconfig {
                 permission: p,
@@ -98,25 +111,45 @@ pub mod pmpcfg0 {
 
     #[inline]
     pub unsafe fn set_permissions(permission: Permission, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
+
+        #[cfg(riscv64)]
         assert!(index < 8);
-        _set((permission as usize) << (index * 8));
+
+        _write((permission as usize) << (index * 8));
     }
 
     #[inline]
     pub unsafe fn set_range(range: Range, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
+
+        #[cfg(riscv64)]
         assert!(index < 8);
-        _set((range as usize) << (3 + (index * 8)));
+
+        _write((range as usize) << (3 + (index * 8)));
     }
 
     #[inline]
     pub unsafe fn set_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
+
+        #[cfg(riscv64)]
         assert!(index < 8);
+
         _set(1 << (7 + (index * 8)));
     }
 
     #[inline]
     pub unsafe fn clear_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
+
+        #[cfg(riscv64)]
         assert!(index < 8);
+
         _clear(1 << (7 + (index * 8)));
     }
 }
