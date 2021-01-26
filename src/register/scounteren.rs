@@ -9,25 +9,25 @@ pub struct Scounteren {
 }
 
 impl Scounteren {
-    /// User "cycle[h]" Enable
+    /// User "cycle\[h\]" Enable
     #[inline]
     pub fn cy(&self) -> bool {
         self.bits.get_bit(0)
     }
 
-    /// User "time[h]" Enable
+    /// User "time\[h\]" Enable
     #[inline]
     pub fn tm(&self) -> bool {
         self.bits.get_bit(1)
     }
 
-    /// User "instret[h]" Enable
+    /// User "instret\[h]\" Enable
     #[inline]
     pub fn ir(&self) -> bool {
         self.bits.get_bit(2)
     }
 
-    /// User "hpm[x]" Enable (bits 3-31)
+    /// User "hpm\[x\]" Enable (bits 3-31)
     #[inline]
     pub fn hpm(&self, index: usize) -> bool {
         assert!(3 <= index && index < 32);
