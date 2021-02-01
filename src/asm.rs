@@ -31,6 +31,11 @@ instruction!(
     /// Generates a breakpoint exception.
     , ebreak, "ebreak", __ebreak);
 instruction!(
+    /// `NOP` instruction wrapper
+    ///
+    /// A no-operation. Useful to prevent delays from being optimized away.
+    , nop, "nop", __nop);
+instruction!(
     /// `WFI` instruction wrapper
     ///
     /// Provides a hint to the implementation that the current hart can be stalled until an interrupt might need servicing.

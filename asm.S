@@ -12,6 +12,12 @@ __wfi:
     wfi
     ret
 
+.section .text.__nop
+.global __nop
+__nop:
+        nop
+        ret
+
 .section .text.__sfence_vma_all
 .global __sfence_vma_all
 __sfence_vma_all:
