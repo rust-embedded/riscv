@@ -132,22 +132,24 @@ pub unsafe fn set(cause: Trap) {
             Interrupt::SupervisorTimer => 5,
             Interrupt::UserExternal => 8,
             Interrupt::SupervisorExternal => 9,
-            Interrupt::Unknown => panic!("unknown interrupt")
-        }, 
-        Trap::Exception(e) => (match e {
-            Exception::InstructionMisaligned => 0,
-            Exception::InstructionFault => 1,
-            Exception::IllegalInstruction => 2,
-            Exception::Breakpoint => 3,
-            Exception::LoadFault => 5,
-            Exception::StoreMisaligned => 6,
-            Exception::StoreFault => 7,
-            Exception::UserEnvCall => 8,
-            Exception::InstructionPageFault => 12,
-            Exception::LoadPageFault => 13,
-            Exception::StorePageFault => 15,
-            Exception::Unknown => panic!("unknown exception")
-        } | (1 << (size_of::<usize>() * 8 - 1))),
+            Interrupt::Unknown => panic!("unknown interrupt"),
+        },
+        Trap::Exception(e) => {
+            (match e {
+                Exception::InstructionMisaligned => 0,
+                Exception::InstructionFault => 1,
+                Exception::IllegalInstruction => 2,
+                Exception::Breakpoint => 3,
+                Exception::LoadFault => 5,
+                Exception::StoreMisaligned => 6,
+                Exception::StoreFault => 7,
+                Exception::UserEnvCall => 8,
+                Exception::InstructionPageFault => 12,
+                Exception::LoadPageFault => 13,
+                Exception::StorePageFault => 15,
+                Exception::Unknown => panic!("unknown exception"),
+            } | (1 << (size_of::<usize>() * 8 - 1)))
+        }
     };
     _write(bits);
 }

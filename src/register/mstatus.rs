@@ -166,9 +166,9 @@ impl Mstatus {
 
     /// Timeout Wait
     ///
-    /// Indicates that if WFI instruction should be intercepted. 
-    /// 
-    /// If this bit is set, when WFI is executed in S-mode, and it does not complete 
+    /// Indicates that if WFI instruction should be intercepted.
+    ///
+    /// If this bit is set, when WFI is executed in S-mode, and it does not complete
     /// within an implementation specific, bounded time limit, the WFI instruction will cause
     /// an illegal instruction trap; or could always cause trap then the time limit is zero.
     ///
@@ -189,7 +189,7 @@ impl Mstatus {
         self.bits.get_bit(22)
     }
 
-    /* 
+    /*
         FIXME: There are MBE and SBE bits in 1.12; once Privileged Specification version 1.12
         is ratified, there should be read functions of these bits as well.
     */
