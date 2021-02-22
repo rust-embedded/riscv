@@ -13,6 +13,6 @@ if [ -n "${CHECK_BLOBS:-}" ]; then
     fi
 fi
 
-if [ -n "${RUSTFMT:-}" ]; then
+if [ -n "${CHECK_RUSTFMT:-}" ]; then
     rustup component add rustfmt
 fi
