@@ -1,4 +1,5 @@
 //! mstatus register
+
 // FIXME: in 1.12 spec there will be `SBE` and `MBE` bits.
 // They allows to execute supervisor in given big endian,
 // they would be in a new register `mstatush` in RV32; we should implement `mstatush`
