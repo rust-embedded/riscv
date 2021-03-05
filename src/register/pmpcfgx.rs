@@ -1,72 +1,73 @@
 /// Physical memory protection configuration
+use bit_field::BitField;
 
+#[derive(Clone, Copy, Debug)]
+pub enum Permission {
+    NONE = 0,
+    R = 1,
+    W = 2,
+    RW = 3,
+    X = 4,
+    RX = 5,
+    WX = 6,
+    RWX = 7,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Range {
+    OFF = 0,
+    TOR = 1,
+    NA4 = 2,
+    NAPOT = 3,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Pmpconfig {
+    pub permission: Permission,
+    pub range_type: Range,
+    pub locked: bool,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct PmpByte {
+    byte: u8,
+}
+
+impl PmpByte {
+    #[inline]
+    fn range(&self) -> Range {
+        match self.byte.get_bits(4..=5) {
+            0 => Range::OFF,
+            1 => Range::TOR,
+            2 => Range::NA4,
+            3 => Range::NAPOT,
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    fn permission(&self) -> Option<Permission> {
+        match self.byte.get_bits(0..=2) {
+            0 => None,
+            1 => Some(Permission::R),
+            2 => Some(Permission::W),
+            3 => Some(Permission::RW),
+            4 => Some(Permission::X),
+            5 => Some(Permission::RX),
+            6 => Some(Permission::WX),
+            7 => Some(Permission::RWX),
+            _ => None,
+        }
+    }
+
+    #[inline]
+    fn locked(&self) -> bool {
+        self.byte.get_bit(7)
+    }
+}
 pub mod pmpcfg0 {
+    use crate::register::{Permission, PmpByte, Pmpconfig, Range};
     use bit_field::BitField;
-
-    #[derive(Clone, Copy, Debug)]
-    pub enum Permission {
-        NONE = 0,
-        R = 1,
-        W = 2,
-        RW = 3,
-        X = 4,
-        RX = 5,
-        WX = 6,
-        RWX = 7,
-    }
-
-    #[derive(Clone, Copy, Debug)]
-    pub enum Range {
-        OFF = 0,
-        TOR = 1,
-        NA4 = 2,
-        NAPOT = 3,
-    }
-
-    #[derive(Clone, Copy, Debug)]
-    pub struct Pmpconfig {
-        pub permission: Permission,
-        pub range_type: Range,
-        pub locked: bool,
-    }
-
-    #[derive(Clone, Copy, Debug)]
-    pub struct PmpByte {
-        byte: u8,
-    }
-
-    impl PmpByte {
-        #[inline]
-        fn range(&self) -> Range {
-            match self.byte.get_bits(4..=5) {
-                0 => Range::OFF,
-                1 => Range::TOR,
-                2 => Range::NA4,
-                3 => Range::NAPOT,
-                _ => unreachable!(),
-            }
-        }
-
-        #[inline]
-        fn permission(&self) -> Option<Permission> {
-            match self.byte.get_bits(0..=2) {
-                0 => None,
-                1 => Some(Permission::R),
-                2 => Some(Permission::W),
-                3 => Some(Permission::RW),
-                4 => Some(Permission::X),
-                5 => Some(Permission::RX),
-                6 => Some(Permission::WX),
-                7 => Some(Permission::RWX),
-                _ => None,
-            }
-        }
-
-        #[inline]
-        fn locked(&self) -> bool {
-            self.byte.get_bit(7)
-        }
-    }
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg0 {
@@ -88,7 +89,7 @@ pub mod pmpcfg0 {
             }
         }
 
-        ///Returns pmp[x]cfg configuration structure
+        ///Returns pmpxcfg configuration structure
         #[inline]
         pub fn pmp_cfg(&self, index: usize) -> Pmpconfig {
             let byte = self.pmp_byte(index);
