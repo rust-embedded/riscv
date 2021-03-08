@@ -118,11 +118,13 @@ read_csr_as!(Scause, 0x142, __read_scause);
 write_csr!(0x142, __write_scause);
 
 /// Writes the CSR
+#[inline]
 pub unsafe fn write(bits: usize) {
     _write(bits)
 }
 
 /// Set supervisor cause register to corresponding cause.
+#[inline]
 pub unsafe fn set(cause: Trap) {
     let bits = match cause {
         Trap::Interrupt(i) => match i {

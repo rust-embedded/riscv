@@ -18,6 +18,7 @@ read_csr_as!(Ucause, 0x042, __read_ucause);
 write_csr!(0x042, __write_ucause);
 
 /// Writes the CSR
+#[inline]
 pub unsafe fn write(bits: usize) {
     _write(bits)
 }
