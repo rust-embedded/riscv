@@ -84,7 +84,7 @@ pub enum Mode {
 pub enum Mode {
     /// No translation or protection
     Bare = 0,
-    /// Page-based 32-bit virtual addressing
+    /// Page-based 39-bit virtual addressing
     Sv39 = 8,
     /// Page-based 48-bit virtual addressing
     Sv48 = 9,
