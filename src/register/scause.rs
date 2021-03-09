@@ -127,31 +127,31 @@ pub unsafe fn write(bits: usize) {
 #[inline]
 pub unsafe fn set(cause: Trap) {
     let bits = match cause {
-        Trap::Interrupt(i) => match i {
-            Interrupt::UserSoft => 0,
-            Interrupt::SupervisorSoft => 1,
-            Interrupt::UserTimer => 4,
-            Interrupt::SupervisorTimer => 5,
-            Interrupt::UserExternal => 8,
-            Interrupt::SupervisorExternal => 9,
-            Interrupt::Unknown => panic!("unknown interrupt"),
-        },
-        Trap::Exception(e) => {
-            (match e {
-                Exception::InstructionMisaligned => 0,
-                Exception::InstructionFault => 1,
-                Exception::IllegalInstruction => 2,
-                Exception::Breakpoint => 3,
-                Exception::LoadFault => 5,
-                Exception::StoreMisaligned => 6,
-                Exception::StoreFault => 7,
-                Exception::UserEnvCall => 8,
-                Exception::InstructionPageFault => 12,
-                Exception::LoadPageFault => 13,
-                Exception::StorePageFault => 15,
-                Exception::Unknown => panic!("unknown exception"),
+        Trap::Interrupt(i) => {
+            (match i {
+                Interrupt::UserSoft => 0,
+                Interrupt::SupervisorSoft => 1,
+                Interrupt::UserTimer => 4,
+                Interrupt::SupervisorTimer => 5,
+                Interrupt::UserExternal => 8,
+                Interrupt::SupervisorExternal => 9,
+                Interrupt::Unknown => panic!("unknown interrupt"),
             } | (1 << (size_of::<usize>() * 8 - 1)))
-        }
+        } // interrupt bit is 1
+        Trap::Exception(e) => match e {
+            Exception::InstructionMisaligned => 0,
+            Exception::InstructionFault => 1,
+            Exception::IllegalInstruction => 2,
+            Exception::Breakpoint => 3,
+            Exception::LoadFault => 5,
+            Exception::StoreMisaligned => 6,
+            Exception::StoreFault => 7,
+            Exception::UserEnvCall => 8,
+            Exception::InstructionPageFault => 12,
+            Exception::LoadPageFault => 13,
+            Exception::StorePageFault => 15,
+            Exception::Unknown => panic!("unknown exception"),
+        }, // interrupt bit is 0
     };
     _write(bits);
 }
