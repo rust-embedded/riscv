@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Build targets on `docs.rs` are now RISC-V targets other than default ones
+
 ## [v0.6.0] - 2020-06-20
 
 ### Changed

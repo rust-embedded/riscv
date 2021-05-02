@@ -8,6 +8,13 @@ description = "Low level access to RISC-V processors"
 keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 
+[package.metadata.docs.rs]
+default-target = "riscv64imac-unknown-none-elf"
+targets = [
+    "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
+    "riscv64imac-unknown-none-elf", "riscv64gc-unknown-none-elf",
+]
+
 [dependencies]
 bare-metal = "0.2.5"
 bit_field = "0.10.0"
