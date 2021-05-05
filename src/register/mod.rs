@@ -40,8 +40,9 @@ pub mod time;
 pub mod timeh;
 
 // Supervisor Trap Setup
-// TODO: sedeleg, sideleg
 pub mod scounteren;
+pub mod sedeleg;
+pub mod sideleg;
 pub mod sie;
 pub mod sstatus;
 pub mod stvec;
