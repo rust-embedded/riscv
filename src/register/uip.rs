@@ -35,3 +35,15 @@ impl Uip {
 }
 
 read_csr_as!(Uip, 0x044, __read_uip);
+set!(0x044, __set_mip);
+clear!(0x044, __clear_mip);
+
+set_clear_csr!(
+    /// User Software Interrupt Pending
+    , set_usoft, clear_usoft, 1 << 0);
+set_clear_csr!(
+    /// User Timer Interrupt Pending
+    , set_utimer, clear_utimer, 1 << 4);
+set_clear_csr!(
+    /// User External Interrupt Pending
+    , set_uext, clear_uext, 1 << 8);

@@ -53,3 +53,24 @@ impl Sip {
 }
 
 read_csr_as!(Sip, 0x144, __read_sip);
+set!(0x144, __set_mip);
+clear!(0x144, __clear_mip);
+
+set_clear_csr!(
+    /// User Software Interrupt Pending
+    , set_usoft, clear_usoft, 1 << 0);
+set_clear_csr!(
+    /// Supervisor Software Interrupt Pending
+    , set_ssoft, clear_ssoft, 1 << 1);
+set_clear_csr!(
+    /// User Timer Interrupt Pending
+    , set_utimer, clear_utimer, 1 << 4);
+set_clear_csr!(
+    /// Supervisor Timer Interrupt Pending
+    , set_stimer, clear_stimer, 1 << 5);
+set_clear_csr!(
+    /// User External Interrupt Pending
+    , set_uext, clear_uext, 1 << 8);
+set_clear_csr!(
+    /// Supervisor External Interrupt Pending
+    , set_sext, clear_sext, 1 << 9);
