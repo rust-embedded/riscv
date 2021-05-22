@@ -21,6 +21,16 @@ impl Ustatus {
     pub fn upie(&self) -> bool {
         self.bits.get_bit(4)
     }
+
+    #[inline]
+    pub fn set_upie(&mut self, val: bool) {
+        self.bits.set_bit(4, val);
+    }
+
+    #[inline]
+    pub fn set_uie(&mut self, val: bool) {
+        self.bits.set_bit(0, val);
+    }
 }
 
 read_csr_as!(Ustatus, 0x000, __read_ustatus);
