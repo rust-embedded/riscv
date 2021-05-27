@@ -1,8 +1,12 @@
-//! stvec register
+/*!
+    # `utvec` register
+
+    `utvec` is a read/write register that holds trap vector configuration, consisting of a vector base address (BASE) and a vector mode (MODE).
+*/
 
 pub use crate::register::mtvec::TrapMode;
 
-/// stvec register
+/// utvec register
 #[derive(Clone, Copy, Debug)]
 pub struct Utvec {
     bits: usize,
@@ -33,6 +37,8 @@ impl Utvec {
 read_csr_as!(Utvec, 0x005, __read_utvec);
 write_csr!(0x005, __write_utvec);
 
+/// # Safety
+///
 /// Writes the CSR
 #[inline]
 pub unsafe fn write(addr: usize, mode: TrapMode) {

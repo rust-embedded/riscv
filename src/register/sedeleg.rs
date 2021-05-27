@@ -1,4 +1,12 @@
-//! sedeleg register
+/*!
+    # `sedeleg` register
+
+    For systems with both S-mode and the N extension, new CSR `sedeleg` is added. It has the same layout as the machine trap delegation register `medeleg`.
+
+    `sedeleg` allow S-mode to delegate traps to U-mode. Only bits corresponding to traps that have been delegated to S-mode are writable; the others are hardwired to zero. Setting a bit in `sedeleg` delegates the corresponding trap in U-mode to the U-mode trap handler.
+
+    Please note that specific hardware implementations may not fully support `sideleg`. Trying to read or write may cause **Illegal Instruction Exception**.
+*/
 
 use bit_field::BitField;
 

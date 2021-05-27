@@ -1,4 +1,13 @@
-//! ustatus register
+/*!
+    # `ustatus` register
+
+    `ustatus` is a read/write register, keeps track of and controls the hart’s current operating state.
+
+    Please note that the UIE and UPIE bits are mirrored in the `mstatus` and `sstatus` registers in the same bit positions. In some implementation, `ustatus` is a subset of `mstatus` like `sstatus`.
+
+    There are some methods like `set_uie` are implemented to form the value that will be written to the register.
+*/
+
 // TODO: Virtualization, Memory Privilege and Extension Context Fields
 
 use bit_field::BitField;

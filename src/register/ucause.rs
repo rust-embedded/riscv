@@ -1,4 +1,12 @@
-//! ucause register
+/*!
+    # `ucause` register
+
+    `ucause` register is a read/write register. When a trap is taken into U-mode, `ucause` is written with a code indicating the event that caused the trap.
+
+    Since normally interrupts related to S-mode and higher privilege are not delegated to U-mode, currently only interrupts related to U-mode like USI/UTI/UEI are supported.
+
+    In addition, *Environment call from S-mode* isn't supported currently.
+*/
 
 use bit_field::BitField;
 use core::mem::size_of;
@@ -111,12 +119,16 @@ impl Ucause {
 read_csr_as!(Ucause, 0x042, __read_ucause);
 write_csr!(0x042, __write_ucause);
 
+/// # Safety
+///
 /// Writes the CSR
 #[inline]
 pub unsafe fn write(bits: usize) {
     _write(bits)
 }
 
+/// # Safety
+///
 /// Set supervisor cause register to corresponding cause.
 #[inline]
 pub unsafe fn set(cause: Trap) {

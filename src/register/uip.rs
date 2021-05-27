@@ -1,4 +1,10 @@
-//! uip register
+/*!
+    # `uip` register
+
+    `uip` is a read/write register containing information on pending interrupts.
+
+    Please note that `uip` is a subset of `mip` register. Reading any field, or writing any writable field, of `uip` effects a read or write of the homonymous field of `mip`. If S-mode is implemented, the `uip` register is also a subset of the `sip` register.
+*/
 
 use bit_field::BitField;
 
