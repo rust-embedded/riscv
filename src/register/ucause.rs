@@ -119,17 +119,21 @@ impl Ucause {
 read_csr_as!(Ucause, 0x042, __read_ucause);
 write_csr!(0x042, __write_ucause);
 
+/// Writes the CSR
+///
 /// # Safety
 ///
-/// Writes the CSR
+/// May cause the software behave unexpectedly
 #[inline]
 pub unsafe fn write(bits: usize) {
     _write(bits)
 }
 
+/// Set supervisor cause register to corresponding cause.
+///
 /// # Safety
 ///
-/// Set supervisor cause register to corresponding cause.
+/// May cause the software behave unexpectedly
 #[inline]
 pub unsafe fn set(cause: Trap) {
     let bits = match cause {
