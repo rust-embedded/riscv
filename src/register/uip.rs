@@ -41,6 +41,7 @@ impl Uip {
 }
 
 read_csr_as!(Uip, 0x044, __read_uip);
+write_csr!(0x044, __write_uip);
 set!(0x044, __set_mip);
 clear!(0x044, __clear_mip);
 
@@ -53,3 +54,13 @@ set_clear_csr!(
 set_clear_csr!(
     /// User External Interrupt Pending
     , set_uext, clear_uext, 1 << 8);
+
+/// Writes the CSR
+///
+/// # Safety
+///
+/// May cause the software behave unexpectedly
+#[inline]
+pub unsafe fn write(bits: usize) {
+    _write(bits)
+}
