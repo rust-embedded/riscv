@@ -59,6 +59,154 @@ pub enum SPP {
 impl Mstatus {
     /// User Interrupt Enable
     #[inline]
+    pub fn set_uie(&mut self, value: bool) {
+        self.bits.set_bit(0, value);
+    }
+
+    /// Supervisor Interrupt Enable
+    #[inline]
+    pub fn set_sie(&mut self, value: bool) {
+        self.bits.set_bit(1, value);
+    }
+
+    /// Machine Interrupt Enable
+    #[inline]
+    pub fn set_mie(&mut self, value: bool) {
+        self.bits.set_bit(3, value);
+    }
+
+    /// User Previous Interrupt Enable
+    #[inline]
+    pub fn set_upie(&mut self, value: bool) {
+        self.bits.set_bit(4, value);
+    }
+
+    /// Supervisor Previous Interrupt Enable
+    #[inline]
+    pub fn set_spie(&mut self, value: bool) {
+        self.bits.set_bit(5, value);
+    }
+
+    /// Machine Previous Interrupt Enable
+    #[inline]
+    pub fn set_mpie(&mut self, value: bool) {
+        self.bits.set_bit(7, value);
+    }
+
+    /// Supervisor Previous Privilege Mode
+    #[inline]
+    pub fn set_spp(&mut self, spp: SPP) {
+        match spp {
+            SPP::Supervisor => self.bits.set_bit(8, true),
+            SPP::User => self.bits.set_bit(8, false),
+        };
+    }
+
+    /// Machine Previous Privilege Mode
+    #[inline]
+    pub fn set_mpp(&mut self, mpp: MPP) {
+        match mpp {
+            MPP::User => self.bits.set_bits(11..13, 0b00),
+            MPP::Supervisor => self.bits.set_bits(11..13, 0b01),
+            MPP::Machine => self.bits.set_bits(11..13, 0b11),
+        };
+    }
+
+    /// Floating-point extension state
+    ///
+    /// Encodes the status of the floating-point unit,
+    /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
+    #[inline]
+    pub fn set_fs(&mut self, fs: FS) {
+        match fs {
+            FS::Off => self.bits.set_bits(13..15, 0b00),
+            FS::Initial => self.bits.set_bits(13..15, 0b01),
+            FS::Clean => self.bits.set_bits(13..15, 0b10),
+            FS::Dirty => self.bits.set_bits(13..15, 0b11),
+        };
+    }
+
+    /// Additional extension state
+    ///
+    /// Encodes the status of additional user-mode extensions and associated state.
+    #[inline]
+    pub fn set_xs(&mut self, xs: XS) {
+        match xs {
+            XS::AllOff => self.bits.set_bits(15..17, 0b00),
+            XS::NoneDirtyOrClean => self.bits.set_bits(15..17, 0b01),
+            XS::NoneDirtySomeClean => self.bits.set_bits(15..17, 0b10),
+            XS::SomeDirty => self.bits.set_bits(15..17, 0b11),
+        };
+    }
+
+    /// Modify Memory PRiVilege
+    #[inline]
+    pub fn set_mprv(&mut self, value: bool) {
+        self.bits.set_bit(17, value);
+    }
+
+    /// Permit Supervisor User Memory access
+    #[inline]
+    pub fn set_sum(&mut self, value: bool) {
+        self.bits.set_bit(18, value);
+    }
+
+    /// Make eXecutable Readable
+    #[inline]
+    pub fn set_mxr(&mut self, value: bool) {
+        self.bits.set_bit(19, value);
+    }
+
+    /// Trap Virtual Memory
+    ///
+    /// If this bit is set, reads or writes to `satp` CSR or execute `sfence.vma`
+    /// instruction when in S-mode will raise an illegal instruction exception.
+    ///
+    /// TVM is hard-wired to 0 when S-mode is not supported.
+    #[inline]
+    pub fn set_tvm(&mut self, value: bool) {
+        self.bits.set_bit(20, value);
+    }
+
+    /// Timeout Wait
+    ///
+    /// Indicates that if WFI instruction should be intercepted.
+    ///
+    /// If this bit is set, when WFI is executed in S-mode, and it does not complete
+    /// within an implementation specific, bounded time limit, the WFI instruction will cause
+    /// an illegal instruction trap; or could always cause trap then the time limit is zero.
+    ///
+    /// TW is hard-wired to 0 when S-mode is not supported.
+    #[inline]
+    pub fn set_tw(&mut self, value: bool) {
+        self.bits.set_bit(21, value);
+    }
+
+    /// Trap SRET
+    ///
+    /// Indicates that if SRET instruction should be trapped to raise illegal
+    /// instruction exception.
+    ///
+    /// If S-mode is not supported, TSR bit is hard-wired to 0.
+    #[inline]
+    pub fn set_tsr(&mut self, value: bool) {
+        self.bits.set_bit(22, value);
+    }
+
+    /*
+        FIXME: There are MBE and SBE bits in 1.12; once Privileged Specification version 1.12
+        is ratified, there should be read functions of these bits as well.
+    */
+
+    /// Whether either the FS field or XS field
+    /// signals the presence of some dirty state
+    #[inline]
+    pub fn set_sd(&mut self, value: bool) {
+        self.bits.set_bit(size_of::<usize>() * 8 - 1, value);
+    }
+
+    /// User Interrupt Enable
+    #[inline]
     pub fn uie(&self) -> bool {
         self.bits.get_bit(0)
     }
