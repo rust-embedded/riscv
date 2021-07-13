@@ -1,6 +1,7 @@
 /// Physical memory protection configuration
 use bit_field::BitField;
 
+/// Permission enum contains all possible pmp register permission configurations
 #[derive(Clone, Copy, Debug)]
 pub enum Permission {
     NONE = 0,
@@ -13,6 +14,7 @@ pub enum Permission {
     RWX = 7,
 }
 
+/// Range enum contains all possible addressing modes for pmp registers
 #[derive(Clone, Copy, Debug)]
 pub enum Range {
     OFF = 0,
@@ -21,6 +23,7 @@ pub enum Range {
     NAPOT = 3,
 }
 
+/// Pmpconfig struct to hold pmp register's current settings
 #[derive(Clone, Copy, Debug)]
 pub struct Pmpconfig {
     pub permission: Permission,
@@ -66,8 +69,7 @@ impl PmpByte {
     }
 }
 pub mod pmpcfg0 {
-    use crate::register::{Permission, PmpByte, Pmpconfig, Range};
-    use bit_field::BitField;
+   use super::{PmpByte,Pmpconfig,Permission,Range,BitField};
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg0 {
