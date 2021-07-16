@@ -57,54 +57,54 @@ pub enum SPP {
 }
 
 impl Mstatus {
-    /// User Interrupt Enable
+    /// Set bit for User Interrupt Enable
     #[inline]
-    pub fn set_uie(&mut self, value: bool) {
+    pub fn bitset_uie(&mut self, value: bool) {
         self.bits.set_bit(0, value);
     }
 
     /// Supervisor Interrupt Enable
     #[inline]
-    pub fn set_sie(&mut self, value: bool) {
+    pub fn bitset_sie(&mut self, value: bool) {
         self.bits.set_bit(1, value);
     }
 
-    /// Machine Interrupt Enable
+    /// Set bit for Machine Interrupt Enable
     #[inline]
-    pub fn set_mie(&mut self, value: bool) {
+    pub fn bitset_mie(&mut self, value: bool) {
         self.bits.set_bit(3, value);
     }
 
-    /// User Previous Interrupt Enable
+    /// Set bit for User Previous Interrupt Enable
     #[inline]
-    pub fn set_upie(&mut self, value: bool) {
+    pub fn bitset_upie(&mut self, value: bool) {
         self.bits.set_bit(4, value);
     }
 
-    /// Supervisor Previous Interrupt Enable
+    /// Set bit for Supervisor Previous Interrupt Enable
     #[inline]
-    pub fn set_spie(&mut self, value: bool) {
+    pub fn bitset_spie(&mut self, value: bool) {
         self.bits.set_bit(5, value);
     }
 
-    /// Machine Previous Interrupt Enable
+    /// Set bit for Machine Previous Interrupt Enable
     #[inline]
-    pub fn set_mpie(&mut self, value: bool) {
+    pub fn bitset_mpie(&mut self, value: bool) {
         self.bits.set_bit(7, value);
     }
 
-    /// Supervisor Previous Privilege Mode
+    /// Set bit for Supervisor Previous Privilege Mode
     #[inline]
-    pub fn set_spp(&mut self, spp: SPP) {
+    pub fn bitset_spp(&mut self, spp: SPP) {
         match spp {
             SPP::Supervisor => self.bits.set_bit(8, true),
             SPP::User => self.bits.set_bit(8, false),
         };
     }
 
-    /// Machine Previous Privilege Mode
+    /// Set bit for Machine Previous Privilege Mode
     #[inline]
-    pub fn set_mpp(&mut self, mpp: MPP) {
+    pub fn bitset_mpp(&mut self, mpp: MPP) {
         match mpp {
             MPP::User => self.bits.set_bits(11..13, 0b00),
             MPP::Supervisor => self.bits.set_bits(11..13, 0b01),
@@ -112,12 +112,12 @@ impl Mstatus {
         };
     }
 
-    /// Floating-point extension state
+    /// Set bit for Floating-point extension state
     ///
     /// Encodes the status of the floating-point unit,
     /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
     #[inline]
-    pub fn set_fs(&mut self, fs: FS) {
+    pub fn bitset_fs(&mut self, fs: FS) {
         match fs {
             FS::Off => self.bits.set_bits(13..15, 0b00),
             FS::Initial => self.bits.set_bits(13..15, 0b01),
@@ -126,11 +126,11 @@ impl Mstatus {
         };
     }
 
-    /// Additional extension state
+    /// Set bit for Additional extension state
     ///
     /// Encodes the status of additional user-mode extensions and associated state.
     #[inline]
-    pub fn set_xs(&mut self, xs: XS) {
+    pub fn bitset_xs(&mut self, xs: XS) {
         match xs {
             XS::AllOff => self.bits.set_bits(15..17, 0b00),
             XS::NoneDirtyOrClean => self.bits.set_bits(15..17, 0b01),
@@ -139,36 +139,36 @@ impl Mstatus {
         };
     }
 
-    /// Modify Memory PRiVilege
+    /// Set bit for Modify Memory PRiVilege
     #[inline]
-    pub fn set_mprv(&mut self, value: bool) {
+    pub fn bitset_mprv(&mut self, value: bool) {
         self.bits.set_bit(17, value);
     }
 
-    /// Permit Supervisor User Memory access
+    /// Set bit for Permit Supervisor User Memory access
     #[inline]
-    pub fn set_sum(&mut self, value: bool) {
+    pub fn bitset_sum(&mut self, value: bool) {
         self.bits.set_bit(18, value);
     }
 
-    /// Make eXecutable Readable
+    /// Set bit for Make eXecutable Readable
     #[inline]
-    pub fn set_mxr(&mut self, value: bool) {
+    pub fn bitset_mxr(&mut self, value: bool) {
         self.bits.set_bit(19, value);
     }
 
-    /// Trap Virtual Memory
+    /// Set bit for Trap Virtual Memory
     ///
     /// If this bit is set, reads or writes to `satp` CSR or execute `sfence.vma`
     /// instruction when in S-mode will raise an illegal instruction exception.
     ///
     /// TVM is hard-wired to 0 when S-mode is not supported.
     #[inline]
-    pub fn set_tvm(&mut self, value: bool) {
+    pub fn bitset_tvm(&mut self, value: bool) {
         self.bits.set_bit(20, value);
     }
 
-    /// Timeout Wait
+    /// Set bit for Timeout Wait
     ///
     /// Indicates that if WFI instruction should be intercepted.
     ///
@@ -178,32 +178,33 @@ impl Mstatus {
     ///
     /// TW is hard-wired to 0 when S-mode is not supported.
     #[inline]
-    pub fn set_tw(&mut self, value: bool) {
+    pub fn bitset_tw(&mut self, value: bool) {
         self.bits.set_bit(21, value);
     }
 
-    /// Trap SRET
+    /// Set bit for Trap SRET
     ///
     /// Indicates that if SRET instruction should be trapped to raise illegal
     /// instruction exception.
     ///
     /// If S-mode is not supported, TSR bit is hard-wired to 0.
     #[inline]
-    pub fn set_tsr(&mut self, value: bool) {
+    pub fn bitset_tsr(&mut self, value: bool) {
         self.bits.set_bit(22, value);
+    }
+
+    /// Apply the bits into actual mstatus register.
+    #[inline]
+    pub fn apply(&self) {
+        unsafe {
+            _write(self.bits);
+        }
     }
 
     /*
         FIXME: There are MBE and SBE bits in 1.12; once Privileged Specification version 1.12
         is ratified, there should be read functions of these bits as well.
     */
-
-    /// Whether either the FS field or XS field
-    /// signals the presence of some dirty state
-    #[inline]
-    pub fn set_sd(&mut self, value: bool) {
-        self.bits.set_bit(size_of::<usize>() * 8 - 1, value);
-    }
 
     /// User Interrupt Enable
     #[inline]
