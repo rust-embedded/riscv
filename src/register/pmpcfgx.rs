@@ -69,12 +69,13 @@ impl PmpByte {
 /// Pmpcf0 struct contains pmp0cfg - pmp3cfg for 32-bit arch, or pmp0cfg - pmp7cfg for 64-bit arch
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg0 {
-    use super::PmpByte;
+    use super::{BitField, Permission, PmpByte, Range};
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg0 {
-        pub bits: u32,
+        pub bits: usize,
     }
+
     impl Pmpcfg0 {
         #[inline]
         pub fn get_byte(&self, index: usize) -> PmpByte {
@@ -88,55 +89,55 @@ pub mod pmpcfg0 {
                 byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
             }
         }
+    }
 
-        read_csr_as!(Pmpcfg0, 0x3A0, __read_pmpcfg0);
-        write_csr!(0x3A0, __write_pmpcfg0);
-        set!(0x3A0, __set_pmpcfg0);
-        clear!(0x3A0, __clear_pmpcfg0);
+    read_csr_as!(Pmpcfg0, 0x3A0, __read_pmpcfg0);
+    write_csr!(0x3A0, __write_pmpcfg0);
+    set!(0x3A0, __set_pmpcfg0);
+    clear!(0x3A0, __clear_pmpcfg0);
 
-        #[inline]
-        pub unsafe fn set_permissions(permission: Permission, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_permissions(permission: Permission, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((permission as usize) << (index * 8));
-        }
+        _write((permission as usize) << (index * 8));
+    }
 
-        #[inline]
-        pub unsafe fn set_range(range: Range, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_range(range: Range, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((range as usize) << (3 + (index * 8)));
-        }
+        _write((range as usize) << (3 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn set_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _set(1 << (7 + (index * 8)));
-        }
+        _set(1 << (7 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn clear_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn clear_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _clear(1 << (7 + (index * 8)));
-        }
+        _clear(1 << (7 + (index * 8)));
     }
 }
 
@@ -144,11 +145,11 @@ pub mod pmpcfg0 {
 /// Pmpcf1 struct contains pmp4cfg - pmp7cfg for 32-bit arch only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg1 {
-    use super::PmpByte;
+    use super::{BitField, Permission, PmpByte, Range};
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg1 {
-        pub bits: u32,
+        pub bits: usize,
     }
 
     impl Pmpcfg1 {
@@ -158,53 +159,55 @@ pub mod pmpcfg1 {
                 byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
             }
         }
+    }
 
-        read_csr_as_usize_rv32!(0x3A1, __read_pmpcfg1);
-        write_csr_as_usize_rv32!(0x3A1, __write_pmpcfg1);
+    read_csr_as!(Pmpcfg1, 0x3A1, __read_pmpcfg1);
+    write_csr!(0x3A1, __write_pmpcfg1);
+    set!(0x3A1, __set_pmpcfg1);
+    clear!(0x3A1, __clear_pmpcfg1);
 
-        #[inline]
-        pub unsafe fn set_permissions(permission: Permission, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_permissions(permission: Permission, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((permission as usize) << (index * 8));
-        }
+        _write((permission as usize) << (index * 8));
+    }
 
-        #[inline]
-        pub unsafe fn set_range(range: Range, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_range(range: Range, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((range as usize) << (3 + (index * 8)));
-        }
+        _write((range as usize) << (3 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn set_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _set(1 << (7 + (index * 8)));
-        }
+        _set(1 << (7 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn clear_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn clear_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _clear(1 << (7 + (index * 8)));
-        }
+        _clear(1 << (7 + (index * 8)));
     }
 }
 
@@ -212,12 +215,13 @@ pub mod pmpcfg1 {
 /// Pmpcf0 struct contains pmp8cfg - pmp11cfg for 32-bit arch, or pmp8cfg - pmp15cfg for 64-bit arch
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg2 {
-    use super::PmpByte;
+    use super::{BitField, Permission, PmpByte, Range};
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg2 {
-        pub bits: u32,
+        pub bits: usize,
     }
+
     impl Pmpcfg2 {
         #[inline]
         pub fn get_byte(&self, index: usize) -> PmpByte {
@@ -225,53 +229,55 @@ pub mod pmpcfg2 {
                 byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
             }
         }
+    }
 
-        read_csr_as_usize!(0x3A2, __read_pmpcfg2);
-        write_csr_as_usize!(0x3A2, __write_pmpcfg2);
+    read_csr_as!(Pmpcfg2, 0x3A2, __read_pmpcfg2);
+    write_csr!(0x3A2, __write_pmpcfg2);
+    set!(0x3A2, __set_pmpcfg2);
+    clear!(0x3A2, __clear_pmpcfg2);
 
-        #[inline]
-        pub unsafe fn set_permissions(permission: Permission, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_permissions(permission: Permission, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((permission as usize) << (index * 8));
-        }
+        _write((permission as usize) << (index * 8));
+    }
 
-        #[inline]
-        pub unsafe fn set_range(range: Range, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_range(range: Range, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((range as usize) << (3 + (index * 8)));
-        }
+        _write((range as usize) << (3 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn set_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _set(1 << (7 + (index * 8)));
-        }
+        _set(1 << (7 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn clear_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn clear_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _clear(1 << (7 + (index * 8)));
-        }
+        _clear(1 << (7 + (index * 8)));
     }
 }
 
@@ -279,11 +285,11 @@ pub mod pmpcfg2 {
 /// Pmpcf0 struct contains pmp12cfg - pmp15cfg for 32-bit arch only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg3 {
-    use super::PmpByte;
+    use super::{BitField, Permission, PmpByte, Range};
 
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg3 {
-        pub bits: u32,
+        pub bits: usize,
     }
     impl Pmpcfg3 {
         #[inline]
@@ -292,52 +298,53 @@ pub mod pmpcfg3 {
                 byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
             }
         }
+    }
 
-        read_csr_as_usize_rv32!(0x3A3, __read_pmpcfg3);
-        write_csr_as_usize_rv32!(0x3A3, __write_pmpcfg3);
+    read_csr_as!(Pmpcfg3, 0x3A3, __read_pmpcfg3);
+    write_csr!(0x3A3, __write_pmpcfg3);
+    set!(0x3A3, __set_pmpcfg3);
+    clear!(0x3A3, __clear_pmpcfg3);
 
-        #[inline]
-        pub unsafe fn set_permissions(permission: Permission, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_permissions(permission: Permission, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((permission as usize) << (index * 8));
-        }
+        _write((permission as usize) << (index * 8));
+    }
 
-        #[inline]
-        pub unsafe fn set_range(range: Range, index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_range(range: Range, index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _write((range as usize) << (3 + (index * 8)));
-        }
+        _write((range as usize) << (3 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn set_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn set_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
+        #[cfg(riscv64)]
+        assert!(index < 8);
 
-            _set(1 << (7 + (index * 8)));
-        }
+        _set(1 << (7 + (index * 8)));
+    }
 
-        #[inline]
-        pub unsafe fn clear_lock(index: usize) {
-            #[cfg(riscv32)]
-            assert!(index < 4);
+    #[inline]
+    pub unsafe fn clear_lock(index: usize) {
+        #[cfg(riscv32)]
+        assert!(index < 4);
 
-            #[cfg(riscv64)]
-            assert!(index < 8);
-
-            _clear(1 << (7 + (index * 8)));
-        }
+        #[cfg(riscv64)]
+        assert!(index < 8);
+        _clear(1 << (7 + (index * 8)));
     }
 }
