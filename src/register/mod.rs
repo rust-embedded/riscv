@@ -5,10 +5,10 @@
 //! - cycleh
 //! - timeh
 //! - instreth
-//! - hpmcounter[3-31]h
+//! - hpmcounter<3-31>h
 //! - mcycleh
 //! - minstreth
-//! - mhpmcounter[3-31]h
+//! - mhpmcounter<3-31>h
 
 #[macro_use]
 mod macros;

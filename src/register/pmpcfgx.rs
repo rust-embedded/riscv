@@ -1,7 +1,8 @@
 /// Physical memory protection configuration
 use bit_field::BitField;
 
-/// Permission enum contains all possible pmp register permission configurations
+/*************************************************************************************************/
+/// Permission enum contains all possible permission modes for pmp registers
 #[derive(Clone, Copy, Debug)]
 pub enum Permission {
     NONE = 0,
@@ -22,36 +23,34 @@ pub enum Range {
     NA4 = 2,
     NAPOT = 3,
 }
-
-/// Pmpconfig struct to hold pmp register's current settings
-#[derive(Clone, Copy, Debug)]
-pub struct Pmpconfig {
-    pub permission: Permission,
-    pub range_type: Range,
-    pub locked: bool,
-}
-
+/*************************************************************************************************/
+/// PmpByte holds the a single pmp configuration
 #[derive(Clone, Copy, Debug)]
 pub struct PmpByte {
-    byte: u8,
+    pub byte: u8,
+    //permission: Option<Permission>,
+    //range: Option<Range>,
+    //locked: bool
 }
+/// PmpByte methods to get a pmp configuration attributes
+impl PmpByte{
+    pub fn is_locked(&self) -> bool {
+        self.byte.get_bit(7)
+    }
 
-impl PmpByte {
-    #[inline]
-    fn range(&self) -> Range {
+    pub fn get_range(&self) -> Option<Range> {
         match self.byte.get_bits(4..=5) {
-            0 => Range::OFF,
-            1 => Range::TOR,
-            2 => Range::NA4,
-            3 => Range::NAPOT,
-            _ => unreachable!(),
+            0 => Some(Range::OFF),
+            1 => Some(Range::TOR),
+            2 => Some(Range::NA4),
+            3 => Some(Range::NAPOT),
+            _ => None,
         }
     }
 
-    #[inline]
-    fn permission(&self) -> Option<Permission> {
+    pub fn get_permission(&self) -> Option<Permission> {
         match self.byte.get_bits(0..=2) {
-            0 => None,
+            0 => Some(Permission::NONE),
             1 => Some(Permission::R),
             2 => Some(Permission::W),
             3 => Some(Permission::RW),
@@ -62,24 +61,21 @@ impl PmpByte {
             _ => None,
         }
     }
-
-    #[inline]
-    fn locked(&self) -> bool {
-        self.byte.get_bit(7)
-    }
 }
-pub mod pmpcfg0 {
-   use super::{PmpByte,Pmpconfig,Permission,Range,BitField};
+/*************************************************************************************************/
 
+/// Physical memory protection configuration
+pub mod pmpcfg0 {
+
+    /// Pmpcf0 struct contains pmp0cfg - pmp3cfg for 32-bit arch, or pmp0cfg - pmp7cfg for 64-bit arch
+    /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
     #[derive(Clone, Copy, Debug)]
     pub struct Pmpcfg0 {
-        bits: usize,
+        pub bits: u32,
     }
-
     impl Pmpcfg0 {
-        ///Returns the pmp byte associated with the index
         #[inline]
-        fn pmp_byte(&self, index: usize) -> PmpByte {
+        pub fn get_byte(&self,index:usize) -> PmpByte {
             #[cfg(riscv32)]
             assert!(index < 4);
 
@@ -87,22 +83,7 @@ pub mod pmpcfg0 {
             assert!(index < 8);
 
             PmpByte {
-                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-            }
-        }
-
-        ///Returns pmpxcfg configuration structure
-        #[inline]
-        pub fn pmp_cfg(&self, index: usize) -> Pmpconfig {
-            let byte = self.pmp_byte(index);
-            let p = byte.permission().unwrap();
-            let r = byte.range();
-            let l = byte.locked();
-
-            Pmpconfig {
-                permission: p,
-                range_type: r,
-                locked: l,
+                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8
             }
         }
     }
@@ -159,18 +140,59 @@ pub mod pmpcfg0 {
 
 /// Physical memory protection configuration, RV32 only
 pub mod pmpcfg1 {
+
+    #[derive(Clone, Copy, Debug)]
+    pub struct Pmpcfg1 {
+        pub bits: u32,
+    }
+    impl Pmpcfg1 {
+        #[inline]
+        pub fn get_byte(&self,index:usize) -> PmpByte {
+            PmpByte {
+                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8
+            }
+        }
+    }
+
     read_csr_as_usize_rv32!(0x3A1, __read_pmpcfg1);
     write_csr_as_usize_rv32!(0x3A1, __write_pmpcfg1);
 }
 
 /// Physical memory protection configuration
 pub mod pmpcfg2 {
+
+    #[derive(Clone, Copy, Debug)]
+    pub struct Pmpcfg2 {
+        pub bits: u32,
+    }
+    impl Pmpcfg2 {
+        #[inline]
+        pub fn get_byte(&self,index:usize) -> PmpByte {
+            PmpByte {
+                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8
+            }
+        }
+    }
+
     read_csr_as_usize!(0x3A2, __read_pmpcfg2);
     write_csr_as_usize!(0x3A2, __write_pmpcfg2);
 }
 
 /// Physical memory protection configuration, RV32 only
 pub mod pmpcfg3 {
+    #[derive(Clone, Copy, Debug)]
+    pub struct Pmpcfg3 {
+        pub bits: u32,
+    }
+    impl Pmpcfg3 {
+        #[inline]
+        pub fn get_byte(&self,index:usize) -> PmpByte {
+            PmpByte {
+                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8
+            }
+        }
+    }
+
     read_csr_as_usize_rv32!(0x3A3, __read_pmpcfg3);
     write_csr_as_usize_rv32!(0x3A3, __write_pmpcfg3);
 }
