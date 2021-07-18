@@ -41,7 +41,7 @@ jobs:
       - name: Check blobs
         run: ./check-blobs.sh
 
-  # On macOS and Windows, we at least make sure that all examples build and link.
+  # On macOS and Windows, we at least make sure that the crate builds and links.
   build-other:
     strategy:
       matrix:
