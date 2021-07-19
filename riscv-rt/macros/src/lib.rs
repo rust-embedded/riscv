@@ -14,9 +14,7 @@ use rand::Rng;
 use rand::SeedableRng;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
-use syn::{
-    parse, spanned::Spanned, Ident, ItemFn, ReturnType, Type, Visibility,
-};
+use syn::{parse, spanned::Spanned, Ident, ItemFn, ReturnType, Type, Visibility};
 
 static CALL_COUNT: AtomicUsize = AtomicUsize::new(0);
 
