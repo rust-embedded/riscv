@@ -187,7 +187,7 @@
 //!
 //! ### `_max_hart_id`
 //!
-//! This symbol defines the maximum hart id suppoted. All harts with id
+//! This symbol defines the maximum hart id supported. All harts with id
 //! greater than `_max_hart_id` will be redirected to `abort()`.
 //!
 //! This symbol is supposed to be redefined in platform support crates for
