@@ -63,7 +63,7 @@ impl Mstatus {
         self.bits.set_bit(0, value);
     }
 
-    /// Supervisor Interrupt Enable
+    /// Set bit for Supervisor Interrupt Enable
     #[inline]
     pub fn bitset_sie(&mut self, value: bool) {
         self.bits.set_bit(1, value);
