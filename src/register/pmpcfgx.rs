@@ -128,17 +128,6 @@ pub mod pmpcfg0 {
 
         _set(1 << (7 + (index * 8)));
     }
-
-    #[inline]
-    pub unsafe fn clear_lock(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        _clear(1 << (7 + (index * 8)));
-    }
 }
 
 /// Physical memory protection configuration
@@ -197,17 +186,6 @@ pub mod pmpcfg1 {
         assert!(index < 8);
 
         _set(1 << (7 + (index * 8)));
-    }
-
-    #[inline]
-    pub unsafe fn clear_lock(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        _clear(1 << (7 + (index * 8)));
     }
 }
 
@@ -268,17 +246,6 @@ pub mod pmpcfg2 {
 
         _set(1 << (7 + (index * 8)));
     }
-
-    #[inline]
-    pub unsafe fn clear_lock(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        _clear(1 << (7 + (index * 8)));
-    }
 }
 
 /// Physical memory protection configuration
@@ -336,15 +303,5 @@ pub mod pmpcfg3 {
         assert!(index < 8);
 
         _set(1 << (7 + (index * 8)));
-    }
-
-    #[inline]
-    pub unsafe fn clear_lock(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-        _clear(1 << (7 + (index * 8)));
     }
 }
