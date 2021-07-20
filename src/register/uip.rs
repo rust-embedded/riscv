@@ -1,4 +1,10 @@
-//! uip register
+/*!
+    # `uip` register
+
+    `uip` is a read/write register containing information on pending interrupts.
+
+    Please note that `uip` is a subset of `mip` register. Reading any field, or writing any writable field, of `uip` effects a read or write of the homonymous field of `mip`. If S-mode is implemented, the `uip` register is also a subset of the `sip` register.
+*/
 
 use bit_field::BitField;
 
@@ -35,3 +41,26 @@ impl Uip {
 }
 
 read_csr_as!(Uip, 0x044, __read_uip);
+write_csr!(0x044, __write_uip);
+set!(0x044, __set_mip);
+clear!(0x044, __clear_mip);
+
+set_clear_csr!(
+    /// User Software Interrupt Pending
+    , set_usoft, clear_usoft, 1 << 0);
+set_clear_csr!(
+    /// User Timer Interrupt Pending
+    , set_utimer, clear_utimer, 1 << 4);
+set_clear_csr!(
+    /// User External Interrupt Pending
+    , set_uext, clear_uext, 1 << 8);
+
+/// Writes the CSR
+///
+/// # Safety
+///
+/// May cause the software behave unexpectedly
+#[inline]
+pub unsafe fn write(bits: usize) {
+    _write(bits)
+}

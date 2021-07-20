@@ -1,4 +1,10 @@
-//! uie register
+/*!
+    # `uie` register
+
+    `uie` is a read/write register containing information on pending interrupts.
+
+    Please note that `uie` is a subset of `mip` register. Reading any field, or writing any writable field, of `uie` effects a read or write of the homonymous field of `mip`. If S-mode is implemented, the `uie` register is also a subset of the `sip` register.
+*/
 
 use bit_field::BitField;
 
