@@ -40,7 +40,7 @@ impl PmpByte {
 
     #[inline]
     pub fn get_range(&self) -> Option<Range> {
-        match self.byte.get_bits(4..=5) {
+        match self.byte.get_bits(3..=4) {
             0 => Some(Range::OFF),
             1 => Some(Range::TOR),
             2 => Some(Range::NA4),
