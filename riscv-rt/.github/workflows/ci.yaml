@@ -31,10 +31,10 @@ jobs:
       - name: Install riscv gcc
         run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf
       - name: Run CI script for riscv32imac-unknown-none-elf under ${{ matrix.rust }}
-        run: TARGET=riscv32imac-unknown-none-elf cargo check
+        run: cargo check --target riscv32imac-unknown-none-elf
       - name: Run CI script for riscv64imac-unknown-none-elf under ${{ matrix.rust }}
-        run: TARGET=riscv64imac-unknown-none-elf cargo check
+        run: cargo check --target riscv64imac-unknown-none-elf
       - name: Run CI script for riscv64gc-unknown-none-elf under ${{ matrix.rust }}
-        run: TARGET=riscv64gc-unknown-none-elf cargo check
+        run: cargo check --target riscv64gc-unknown-none-elf
       - name: Check blobs
         run: ./check-blobs.sh
