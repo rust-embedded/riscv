@@ -66,7 +66,7 @@ impl PmpByte {
 }
 
 /// Physical memory protection configuration
-/// Pmpcf0 struct contains pmp0cfg - pmp3cfg for 32-bit arch, or pmp0cfg - pmp7cfg for 64-bit arch
+/// Pmpcfg0 struct contains pmp0cfg - pmp3cfg for RV32, or pmp0cfg - pmp7cfg for RV64
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg0 {
     use super::{BitField, Permission, PmpByte, Range};
@@ -104,7 +104,7 @@ pub mod pmpcfg0 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((permission as usize) << (index * 8));
+        _set((permission as usize) << (index * 8));
     }
 
     #[inline]
@@ -115,7 +115,7 @@ pub mod pmpcfg0 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((range as usize) << (3 + (index * 8)));
+        _set((range as usize) << (3 + (index * 8)));
     }
 
     #[inline]
@@ -141,8 +141,8 @@ pub mod pmpcfg0 {
     }
 }
 
-/// Physical memory protection configuration, RV32 only
-/// Pmpcf1 struct contains pmp4cfg - pmp7cfg for 32-bit arch only
+/// Physical memory protection configuration
+/// Pmpcfg1 struct contains pmp4cfg - pmp7cfg for RV32 only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg1 {
     use super::{BitField, Permission, PmpByte, Range};
@@ -174,7 +174,7 @@ pub mod pmpcfg1 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((permission as usize) << (index * 8));
+        _set((permission as usize) << (index * 8));
     }
 
     #[inline]
@@ -185,7 +185,7 @@ pub mod pmpcfg1 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((range as usize) << (3 + (index * 8)));
+        _set((range as usize) << (3 + (index * 8)));
     }
 
     #[inline]
@@ -212,7 +212,7 @@ pub mod pmpcfg1 {
 }
 
 /// Physical memory protection configuration
-/// Pmpcf0 struct contains pmp8cfg - pmp11cfg for 32-bit arch, or pmp8cfg - pmp15cfg for 64-bit arch
+/// Pmpcfg0 struct contains pmp8cfg - pmp11cfg for RV32, or pmp8cfg - pmp15cfg for RV64
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg2 {
     use super::{BitField, Permission, PmpByte, Range};
@@ -244,7 +244,7 @@ pub mod pmpcfg2 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((permission as usize) << (index * 8));
+        _set((permission as usize) << (index * 8));
     }
 
     #[inline]
@@ -255,7 +255,7 @@ pub mod pmpcfg2 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((range as usize) << (3 + (index * 8)));
+        _set((range as usize) << (3 + (index * 8)));
     }
 
     #[inline]
@@ -281,8 +281,8 @@ pub mod pmpcfg2 {
     }
 }
 
-/// Physical memory protection configuration, RV32 only
-/// Pmpcf0 struct contains pmp12cfg - pmp15cfg for 32-bit arch only
+/// Physical memory protection configuration
+/// Pmpcfg0 struct contains pmp12cfg - pmp15cfg for RV32 only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg3 {
     use super::{BitField, Permission, PmpByte, Range};
@@ -313,7 +313,7 @@ pub mod pmpcfg3 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((permission as usize) << (index * 8));
+        _set((permission as usize) << (index * 8));
     }
 
     #[inline]
@@ -324,7 +324,7 @@ pub mod pmpcfg3 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _write((range as usize) << (3 + (index * 8)));
+        _set((range as usize) << (3 + (index * 8)));
     }
 
     #[inline]
