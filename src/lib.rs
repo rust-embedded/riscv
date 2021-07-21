@@ -22,4 +22,3 @@ extern crate bit_field;
 pub mod asm;
 pub mod interrupt;
 pub mod register;
-

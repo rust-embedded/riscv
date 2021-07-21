@@ -23,6 +23,26 @@ pub enum Range {
     NAPOT = 3,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct Pmpcfg {
+    pub bits: usize,
+}
+
+impl Pmpcfg {
+    #[inline]
+    pub fn get_byte(&self, index: usize) -> PmpByte {
+        #[cfg(riscv32)]
+        assert!(index < 4);
+
+        #[cfg(riscv64)]
+        assert!(index < 8);
+
+        PmpByte {
+            byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
+        }
+    }
+}
+
 /// PmpByte holds the a single pmp configuration
 #[derive(Clone, Copy, Debug)]
 pub struct PmpByte {
@@ -69,29 +89,9 @@ impl PmpByte {
 /// Pmpcfg0 struct contains pmp0cfg - pmp3cfg for RV32, or pmp0cfg - pmp7cfg for RV64
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg0 {
-    use super::{BitField, Permission, PmpByte, Range};
+    use super::{Permission, Pmpcfg, Range};
 
-    #[derive(Clone, Copy, Debug)]
-    pub struct Pmpcfg0 {
-        pub bits: usize,
-    }
-
-    impl Pmpcfg0 {
-        #[inline]
-        pub fn get_byte(&self, index: usize) -> PmpByte {
-            #[cfg(riscv32)]
-            assert!(index < 4);
-
-            #[cfg(riscv64)]
-            assert!(index < 8);
-
-            PmpByte {
-                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-            }
-        }
-    }
-
-    read_csr_as!(Pmpcfg0, 0x3A0, __read_pmpcfg0);
+    read_csr_as!(Pmpcfg, 0x3A0, __read_pmpcfg0);
     write_csr!(0x3A0, __write_pmpcfg0);
     set!(0x3A0, __set_pmpcfg0);
     clear!(0x3A0, __clear_pmpcfg0);
@@ -134,23 +134,9 @@ pub mod pmpcfg0 {
 /// Pmpcfg1 struct contains pmp4cfg - pmp7cfg for RV32 only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg1 {
-    use super::{BitField, Permission, PmpByte, Range};
+    use super::{Permission, Pmpcfg, Range};
 
-    #[derive(Clone, Copy, Debug)]
-    pub struct Pmpcfg1 {
-        pub bits: usize,
-    }
-
-    impl Pmpcfg1 {
-        #[inline]
-        pub fn get_byte(&self, index: usize) -> PmpByte {
-            PmpByte {
-                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-            }
-        }
-    }
-
-    read_csr_as!(Pmpcfg1, 0x3A1, __read_pmpcfg1);
+    read_csr_as!(Pmpcfg, 0x3A1, __read_pmpcfg1);
     write_csr!(0x3A1, __write_pmpcfg1);
     set!(0x3A1, __set_pmpcfg1);
     clear!(0x3A1, __clear_pmpcfg1);
@@ -193,23 +179,9 @@ pub mod pmpcfg1 {
 /// Pmpcfg0 struct contains pmp8cfg - pmp11cfg for RV32, or pmp8cfg - pmp15cfg for RV64
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg2 {
-    use super::{BitField, Permission, PmpByte, Range};
+    use super::{Permission, Pmpcfg, Range};
 
-    #[derive(Clone, Copy, Debug)]
-    pub struct Pmpcfg2 {
-        pub bits: usize,
-    }
-
-    impl Pmpcfg2 {
-        #[inline]
-        pub fn get_byte(&self, index: usize) -> PmpByte {
-            PmpByte {
-                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-            }
-        }
-    }
-
-    read_csr_as!(Pmpcfg2, 0x3A2, __read_pmpcfg2);
+    read_csr_as!(Pmpcfg, 0x3A2, __read_pmpcfg2);
     write_csr!(0x3A2, __write_pmpcfg2);
     set!(0x3A2, __set_pmpcfg2);
     clear!(0x3A2, __clear_pmpcfg2);
@@ -252,22 +224,9 @@ pub mod pmpcfg2 {
 /// Pmpcfg0 struct contains pmp12cfg - pmp15cfg for RV32 only
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg3 {
-    use super::{BitField, Permission, PmpByte, Range};
+    use super::{Permission, Pmpcfg, Range};
 
-    #[derive(Clone, Copy, Debug)]
-    pub struct Pmpcfg3 {
-        pub bits: usize,
-    }
-    impl Pmpcfg3 {
-        #[inline]
-        pub fn get_byte(&self, index: usize) -> PmpByte {
-            PmpByte {
-                byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-            }
-        }
-    }
-
-    read_csr_as!(Pmpcfg3, 0x3A3, __read_pmpcfg3);
+    read_csr_as!(Pmpcfg, 0x3A3, __read_pmpcfg3);
     write_csr!(0x3A3, __write_pmpcfg3);
     set!(0x3A3, __set_pmpcfg3);
     clear!(0x3A3, __clear_pmpcfg3);
