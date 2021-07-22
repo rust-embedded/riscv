@@ -4,23 +4,23 @@ use bit_field::BitField;
 /// Permission enum contains all possible permission modes for pmp registers
 #[derive(Clone, Copy, Debug)]
 pub enum Permission {
-    NONE = 0,
-    R = 1,
-    W = 2,
-    RW = 3,
-    X = 4,
-    RX = 5,
-    WX = 6,
-    RWX = 7,
+    NONE = 0b_000,
+    R = 0b_001,
+    W = 0b_010,
+    RW = 0b_011,
+    X = 0b_100,
+    RX = 0b_101,
+    WX = 0b_110,
+    RWX = 0b_111,
 }
 
 /// Range enum contains all possible addressing modes for pmp registers
 #[derive(Clone, Copy, Debug)]
 pub enum Range {
-    OFF = 0,
-    TOR = 1,
-    NA4 = 2,
-    NAPOT = 3,
+    OFF = 0b_00,
+    TOR = 0b_01,
+    NA4 = 0b_10,
+    NAPOT = 0b_11,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -28,50 +28,45 @@ pub struct Pmpcfg {
     pub bits: usize,
 }
 
+/// PmpByte holds the a single pmp configuration
+#[derive(Clone, Copy, Debug)]
+pub struct PmpEntry {
+    pub byte: usize,
+    pub index: usize,
+    pub permission: Option<Permission>,
+    pub range: Option<Range>,
+    pub locked: bool
+}
+
 impl Pmpcfg {
     #[inline]
-    pub fn get_byte(&self, index: usize) -> PmpByte {
+    pub fn get_config(&self, index: usize) -> PmpEntry {
         #[cfg(riscv32)]
         assert!(index < 4);
 
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        PmpByte {
-            byte: self.bits.get_bits(8 * index..8 * (index + 1)) as u8,
-        }
-    }
-}
-
-/// PmpByte holds the a single pmp configuration
-#[derive(Clone, Copy, Debug)]
-pub struct PmpByte {
-    pub byte: u8,
-    //permission: Option<Permission>,
-    //range: Option<Range>,
-    //locked: bool
-}
-/// PmpByte methods to get a pmp configuration attributes
-impl PmpByte {
-    #[inline]
-    pub fn is_locked(&self) -> bool {
-        self.byte.get_bit(7)
-    }
-
-    #[inline]
-    pub fn get_range(&self) -> Option<Range> {
-        match self.byte.get_bits(3..=4) {
-            0 => Some(Range::OFF),
-            1 => Some(Range::TOR),
-            2 => Some(Range::NA4),
-            3 => Some(Range::NAPOT),
-            _ => unreachable!(),
+        PmpEntry {
+            byte: self.get_byte(index),
+            index,
+            permission: self.get_permission(index),
+            range: self.get_range(index),
+            locked: self.is_locked(index)
         }
     }
 
+    /// PmpByte methods to get a pmp configuration attributes
+    pub fn get_byte(&self, index: usize) -> usize { self.bits.get_bits(8 * index..=(8 * index) + 7) as usize }
+
     #[inline]
-    pub fn get_permission(&self) -> Option<Permission> {
-        match self.byte.get_bits(0..=2) {
+    pub fn is_locked(&self, index: usize) -> bool {
+        self.bits.get_bit(7 + (8 * index))
+    }
+
+    #[inline]
+    pub fn get_permission(&self, index: usize) -> Option<Permission> {
+        match self.bits.get_bits(8 * index..=8 * index + 2) {
             0 => Some(Permission::NONE),
             1 => Some(Permission::R),
             2 => Some(Permission::W),
@@ -83,13 +78,24 @@ impl PmpByte {
             _ => unreachable!(),
         }
     }
-}
 
+    #[inline]
+    pub fn get_range(&self, index: usize) -> Option<Range> {
+        match self.bits.get_bits(8 * index + 3..=8 * index + 4) {
+            0 => Some(Range::OFF),
+            1 => Some(Range::TOR),
+            2 => Some(Range::NA4),
+            3 => Some(Range::NAPOT),
+            _ => unreachable!(),
+        }
+    }
+}
 /// Physical memory protection configuration
 /// Pmpcfg0 struct contains pmp0cfg - pmp3cfg for RV32, or pmp0cfg - pmp7cfg for RV64
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg0 {
     use super::{Permission, Pmpcfg, Range};
+    use bit_field::BitField;
 
     read_csr_as!(Pmpcfg, 0x3A0, __read_pmpcfg0);
     write_csr!(0x3A0, __write_pmpcfg0);
@@ -104,7 +110,9 @@ pub mod pmpcfg0 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((permission as usize) << (index * 8));
+        let mut value = _read();
+        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        _write(value);
     }
 
     #[inline]
@@ -115,7 +123,9 @@ pub mod pmpcfg0 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((range as usize) << (3 + (index * 8)));
+        let mut value = _read();
+        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        _write(value);
     }
 
     #[inline]
@@ -126,7 +136,7 @@ pub mod pmpcfg0 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set(1 << (7 + (index * 8)));
+        _set(1 << (7 + index * 8));
     }
 }
 
@@ -135,6 +145,7 @@ pub mod pmpcfg0 {
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg1 {
     use super::{Permission, Pmpcfg, Range};
+    use bit_field::BitField;
 
     read_csr_as!(Pmpcfg, 0x3A1, __read_pmpcfg1);
     write_csr!(0x3A1, __write_pmpcfg1);
@@ -149,7 +160,9 @@ pub mod pmpcfg1 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((permission as usize) << (index * 8));
+        let mut value = _read();
+        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        _write(value);
     }
 
     #[inline]
@@ -160,7 +173,9 @@ pub mod pmpcfg1 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((range as usize) << (3 + (index * 8)));
+        let mut value = _read();
+        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        _write(value);
     }
 
     #[inline]
@@ -171,7 +186,7 @@ pub mod pmpcfg1 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set(1 << (7 + (index * 8)));
+        _set(1 << (7 + index * 8));
     }
 }
 
@@ -180,6 +195,7 @@ pub mod pmpcfg1 {
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg2 {
     use super::{Permission, Pmpcfg, Range};
+    use bit_field::BitField;
 
     read_csr_as!(Pmpcfg, 0x3A2, __read_pmpcfg2);
     write_csr!(0x3A2, __write_pmpcfg2);
@@ -194,7 +210,9 @@ pub mod pmpcfg2 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((permission as usize) << (index * 8));
+        let mut value = _read();
+        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        _write(value);
     }
 
     #[inline]
@@ -205,7 +223,9 @@ pub mod pmpcfg2 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((range as usize) << (3 + (index * 8)));
+        let mut value = _read();
+        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        _write(value);
     }
 
     #[inline]
@@ -216,7 +236,7 @@ pub mod pmpcfg2 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set(1 << (7 + (index * 8)));
+        _set(1 << (7 + index * 8));
     }
 }
 
@@ -225,6 +245,7 @@ pub mod pmpcfg2 {
 /// get_byte() method retrieves a single pmp<x>cfg held in a PmpByte struct
 pub mod pmpcfg3 {
     use super::{Permission, Pmpcfg, Range};
+    use bit_field::BitField;
 
     read_csr_as!(Pmpcfg, 0x3A3, __read_pmpcfg3);
     write_csr!(0x3A3, __write_pmpcfg3);
@@ -239,7 +260,9 @@ pub mod pmpcfg3 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((permission as usize) << (index * 8));
+        let mut value = _read();
+        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        _write(value);
     }
 
     #[inline]
@@ -250,7 +273,9 @@ pub mod pmpcfg3 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set((range as usize) << (3 + (index * 8)));
+        let mut value = _read();
+        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        _write(value);
     }
 
     #[inline]
@@ -261,6 +286,6 @@ pub mod pmpcfg3 {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        _set(1 << (7 + (index * 8)));
+        _set(1 << (7 + index * 8));
     }
 }
