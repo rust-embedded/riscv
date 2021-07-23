@@ -35,7 +35,7 @@ pub struct PmpEntry {
     pub index: usize,
     pub permission: Option<Permission>,
     pub range: Option<Range>,
-    pub locked: bool
+    pub locked: bool,
 }
 
 impl Pmpcfg {
@@ -52,16 +52,18 @@ impl Pmpcfg {
             index,
             permission: self.get_permission(index),
             range: self.get_range(index),
-            locked: self.is_locked(index)
+            locked: self.is_locked(index),
         }
     }
 
     /// PmpByte methods to get a pmp configuration attributes
-    pub fn get_byte(&self, index: usize) -> usize { self.bits.get_bits(8 * index..=(8 * index) + 7) as usize }
+    pub fn get_byte(&self, index: usize) -> usize {
+        self.bits.get_bits(8 * index..=(8 * index) + 7) as usize
+    }
 
     #[inline]
     pub fn is_locked(&self, index: usize) -> bool {
-        self.bits.get_bit(7 + (8 * index))
+        self.bits.get_bit(7 + 8 * index)
     }
 
     #[inline]
@@ -111,7 +113,7 @@ pub mod pmpcfg0 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        value.set_bits(8 * index..=8 * index + 2, permission as usize);
         _write(value);
     }
 
@@ -124,7 +126,7 @@ pub mod pmpcfg0 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        value.set_bits(8 * index + 3..=8 * index + 4, range as usize);
         _write(value);
     }
 
@@ -161,7 +163,7 @@ pub mod pmpcfg1 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        value.set_bits(8 * index..=8 * index + 2, permission as usize);
         _write(value);
     }
 
@@ -174,7 +176,7 @@ pub mod pmpcfg1 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        value.set_bits(8 * index + 3..=8 * index + 4, range as usize);
         _write(value);
     }
 
@@ -211,7 +213,7 @@ pub mod pmpcfg2 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        value.set_bits(8 * index..=8 * index + 2, permission as usize);
         _write(value);
     }
 
@@ -224,7 +226,7 @@ pub mod pmpcfg2 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        value.set_bits(8 * index + 3..=8 * index + 4, range as usize);
         _write(value);
     }
 
@@ -261,7 +263,7 @@ pub mod pmpcfg3 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 2,permission as usize);
+        value.set_bits(8 * index..=8 * index + 2, permission as usize);
         _write(value);
     }
 
@@ -274,7 +276,7 @@ pub mod pmpcfg3 {
         assert!(index < 8);
 
         let mut value = _read();
-        value.set_bits(8 * index + 3..=8 * index + 4,range as usize);
+        value.set_bits(8 * index + 3..=8 * index + 4, range as usize);
         _write(value);
     }
 
