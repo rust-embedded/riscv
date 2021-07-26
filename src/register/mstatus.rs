@@ -142,6 +142,12 @@ impl Mstatus {
         }
     }
 
+    /// Modify Memory PRiVilege
+    #[inline]
+    pub fn mprv(&self) -> bool {
+        self.bits.get_bit(17)
+    }
+
     /// Permit Supervisor User Memory access
     #[inline]
     pub fn sum(&self) -> bool {
@@ -226,6 +232,9 @@ set_csr!(
 set_csr!(
     /// Machine Previous Interrupt Enable
     , set_mpie, 1 << 7);
+set_clear_csr!(
+    /// Modify Memory PRiVilege
+    , set_mprv, clear_mprv, 1 << 17);
 set_clear_csr!(
     /// Permit Supervisor User Memory access
     , set_sum, clear_sum, 1 << 18);
