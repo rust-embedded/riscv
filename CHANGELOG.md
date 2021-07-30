@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Update `bare-metal` to `v1.0.0` removing `Nr` trait
+
 ### Changed
 
 - Build targets on `docs.rs` are now RISC-V targets other than default ones
