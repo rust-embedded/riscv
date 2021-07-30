@@ -7,10 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-- Update `bare-metal` to `v1.0.0` removing `Nr` trait
+## [v0.7.0] - 2020-07-29
+
+### Added
+
+- Add `medeleg` register
+- Add `cycle[h]`, `instret[h]` and `mcounteren`
+- Add additional binaries for floating-point ABIs
+- Add support for `mxr`
+- Add support for `mprv`
 
 ### Changed
 
+- Fix `scause::set`
+- Various formatting and comment fixes
+- Update `bare-metal` to `v1.0.0` removing `Nr` trait
 - Build targets on `docs.rs` are now RISC-V targets other than default ones
 
 ## [v0.6.0] - 2020-06-20
