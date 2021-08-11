@@ -161,7 +161,7 @@ pub mod pmpcfg3 {
     use bit_field::BitField;
 
     read_csr_as!(Pmpcsr, 0x3A3, __read_pmpcfg3);
-    write_csr_as_usize_rv32!(0x3A3, __read_pmpcfg3);
+    write_csr_as_usize_rv32!(0x3A3, __write_pmpcfg3);
     set!(0x3A3, __set_pmpcfg3);
     clear!(0x3A3, __clear_pmpcfg3);
 
