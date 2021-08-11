@@ -80,7 +80,7 @@ impl Pmpcsr {
 
 /// Physical memory protection configuration
 /// pmpcfg0 struct contains pmp0cfg - pmp3cfg for RV32, and pmp0cfg - pmp7cfg for RV64
-mod pmpcfg0 {
+pub mod pmpcfg0 {
     use super::{Permission, Pmpcsr, Range};
     use bit_field::BitField;
 
@@ -107,7 +107,7 @@ mod pmpcfg0 {
 /// Physical memory protection configuration
 /// pmpcfg1 struct contains pmp4cfg - pmp7cfg for RV32 only
 #[cfg(riscv32)]
-mod pmpcfg1 {
+pub mod pmpcfg1 {
     use super::{Permission, Pmpcsr, Range};
     use bit_field::BitField;
 
