@@ -1,7 +1,7 @@
 //! Interrupts
 
 // NOTE: Adapted from cortex-m/src/interrupt.rs
-pub use bare_metal::{CriticalSection, Mutex, Nr};
+pub use bare_metal::{CriticalSection, Mutex};
 use register::mstatus;
 
 /// Disables all interrupts

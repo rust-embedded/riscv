@@ -1,6 +1,6 @@
 [package]
 name = "riscv"
-version = "0.6.0"
+version = "0.7.0"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
@@ -8,8 +8,15 @@ description = "Low level access to RISC-V processors"
 keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 
+[package.metadata.docs.rs]
+default-target = "riscv64imac-unknown-none-elf"
+targets = [
+    "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
+    "riscv64imac-unknown-none-elf", "riscv64gc-unknown-none-elf",
+]
+
 [dependencies]
-bare-metal = "0.2.5"
+bare-metal = "1.0.0"
 bit_field = "0.10.0"
 
 [build-dependencies]

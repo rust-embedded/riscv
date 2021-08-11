@@ -1,4 +1,5 @@
 //! instret register
+//!
 //! Shadow of minstret register
 //! must have `scounteren::ir` or `mcounteren::ir` bit enabled depending on whether
 //! S-mode is implemented or not

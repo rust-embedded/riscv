@@ -1,6 +1,5 @@
 //! satp register
 
-#[cfg(riscv)]
 use bit_field::BitField;
 
 /// satp register
@@ -18,7 +17,7 @@ impl Satp {
 
     /// Current address-translation scheme
     #[inline]
-    #[cfg(riscv32)]
+    #[cfg(target_pointer_width = "32")]
     pub fn mode(&self) -> Mode {
         match self.bits.get_bit(31) {
             false => Mode::Bare,
@@ -28,7 +27,7 @@ impl Satp {
 
     /// Current address-translation scheme
     #[inline]
-    #[cfg(riscv64)]
+    #[cfg(target_pointer_width = "64")]
     pub fn mode(&self) -> Mode {
         match self.bits.get_bits(60..64) {
             0 => Mode::Bare,
@@ -42,55 +41,65 @@ impl Satp {
 
     /// Address space identifier
     #[inline]
-    #[cfg(riscv32)]
+    #[cfg(target_pointer_width = "32")]
     pub fn asid(&self) -> usize {
         self.bits.get_bits(22..31)
     }
 
     /// Address space identifier
     #[inline]
-    #[cfg(riscv64)]
+    #[cfg(target_pointer_width = "64")]
     pub fn asid(&self) -> usize {
         self.bits.get_bits(44..60)
     }
 
     /// Physical page number
     #[inline]
-    #[cfg(riscv32)]
+    #[cfg(target_pointer_width = "32")]
     pub fn ppn(&self) -> usize {
         self.bits.get_bits(0..22)
     }
 
     /// Physical page number
     #[inline]
-    #[cfg(riscv64)]
+    #[cfg(target_pointer_width = "64")]
     pub fn ppn(&self) -> usize {
         self.bits.get_bits(0..44)
     }
 }
 
-#[cfg(riscv32)]
+/// 32-bit satp mode
+#[cfg(target_pointer_width = "32")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Mode {
+    /// No translation or protection
     Bare = 0,
+    /// Page-based 32-bit virtual addressing
     Sv32 = 1,
 }
 
-#[cfg(riscv64)]
+/// 64-bit satp mode
+#[cfg(target_pointer_width = "64")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Mode {
+    /// No translation or protection
     Bare = 0,
+    /// Page-based 39-bit virtual addressing
     Sv39 = 8,
+    /// Page-based 48-bit virtual addressing
     Sv48 = 9,
+    /// Page-based 57-bit virtual addressing
     Sv57 = 10,
+    /// Page-based 64-bit virtual addressing
     Sv64 = 11,
 }
 
 read_csr_as!(Satp, 0x180, __read_satp);
 write_csr_as_usize!(0x180, __write_satp);
 
+/// Sets the register to corresponding page table mode, physical page number and address space id.
 #[inline]
-#[cfg(riscv32)]
+#[cfg(target_pointer_width = "32")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
     let mut bits = 0usize;
     bits.set_bits(31..32, mode as usize);
@@ -99,8 +108,9 @@ pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
     _write(bits);
 }
 
+/// Sets the register to corresponding page table mode, physical page number and address space id.
 #[inline]
-#[cfg(riscv64)]
+#[cfg(target_pointer_width = "64")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
     let mut bits = 0usize;
     bits.set_bits(60..64, mode as usize);

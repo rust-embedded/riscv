@@ -114,15 +114,14 @@ set_csr!(
     /// Supervisor Previous Interrupt Enable
     , set_spie, 1 << 5);
 set_clear_csr!(
-    /// Make eXecutable Readable
-    , set_mxr, clear_mxr, 1 << 19);
-set_clear_csr!(
     /// Permit Supervisor User Memory access
     , set_sum, clear_sum, 1 << 18);
+set_clear_csr!(
+    /// Make eXecutable Readable
+    , set_mxr, clear_mxr, 1 << 19);
 
 /// Supervisor Previous Privilege Mode
 #[inline]
-#[cfg(riscv)]
 pub unsafe fn set_spp(spp: SPP) {
     match spp {
         SPP::Supervisor => _set(1 << 8),
@@ -132,7 +131,6 @@ pub unsafe fn set_spp(spp: SPP) {
 
 /// The status of the floating-point unit
 #[inline]
-#[cfg(riscv)]
 pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
     value.set_bits(13..15, fs as usize);

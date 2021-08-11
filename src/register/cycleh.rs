@@ -1,4 +1,5 @@
 //! cycleh register
+//!
 //! Shadow of mcycleh register (rv32)
 //! must have `scounteren::cy` or `mcounteren::cy` bit enabled depending on whether
 //! S-mode is implemented or not
