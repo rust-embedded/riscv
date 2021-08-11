@@ -11,7 +11,7 @@ fn main() {
 
     if target.starts_with("riscv") && env::var_os("CARGO_FEATURE_INLINE_ASM").is_none() {
         let mut target = Target::from_target_str(&target);
-        target.retain_extensions("ic");
+        target.retain_extensions("ifdc");
 
         let target = target.to_string();
 
