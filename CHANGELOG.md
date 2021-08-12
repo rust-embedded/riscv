@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- add enums for PMP configuration options (Range, Permission)
+- add set_pmp() and clear_pmp() functions to pmpcfg(x) modules 
 
 ## [v0.7.0] - 2020-07-29
 
