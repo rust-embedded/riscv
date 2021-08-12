@@ -23,7 +23,7 @@ pub enum Range {
     NAPOT = 0b11,
 }
 
-/// RV64 Pmpcfg holds the entire register (8 Pmp configurations)
+/// Pmp struct holds a readable configuration of a single pmp
 #[derive(Clone, Copy, Debug)]
 pub struct Pmp {
     /// raw bits
@@ -37,13 +37,12 @@ pub struct Pmp {
 }
 
 pub struct Pmpcsr {
-    /// Holds the raw contents of the PMP CSR
+    /// Holds the raw contents of the PMP CSR Register
     pub bits: usize,
 }
 
 impl Pmpcsr {
-    /// Take the register contents and translate into configurations held in a Pmpcfg struct
-    /// Takes `self` as a parameter and destroys the current Pmpcsr struct
+    /// Take the register contents and translates into a Pmp configuration struct
     #[inline]
     pub fn into_config(&self, index: usize) -> Pmp {
         #[cfg(riscv32)]
@@ -87,7 +86,7 @@ pub mod pmpcfg0 {
     read_csr_as!(Pmpcsr, 0x3A0, __read_pmpcfg0);
     write_csr_as_usize!(0x3A0, __write_pmpcfg0);
 
-    /// set the configuration for the defined index in pmpcfg3
+    /// sets a configuration for the defined index in pmpcfg0
     pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
         #[cfg(riscv32)]
         assert!(index < 4);
@@ -101,8 +100,8 @@ pub mod pmpcfg0 {
         _write(value)
     }
 
-    /// clear the configuration for the defined index in pmpcfg0
-    /// will not work when pmp is locked
+    /// clears the configuration for the defined index in pmpcfg0
+    /// cannot clear when pmp is locked
     pub unsafe fn clear_pmp(index: usize) {
         #[cfg(riscv32)]
         assert!(index < 4);
@@ -126,7 +125,7 @@ pub mod pmpcfg1 {
     read_csr_as!(Pmpcsr, 0x3A1, __read_pmpcfg1);
     write_csr_as_usize_rv32!(0x3A1, __write_pmpcfg1);
 
-    /// set the configuration for the defined index in pmpcfg3
+    /// sets a configuration for the defined index in pmpcfg1
     pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
         assert!(index < 4);
 
@@ -136,8 +135,8 @@ pub mod pmpcfg1 {
         _write(value)
     }
 
-    /// clear the configuration for the defined index in pmpcfg1
-    /// will not work when pmp is locked
+    /// clears the configuration for the defined index in pmpcfg1
+    /// cannot clear when pmp is locked
     pub unsafe fn clear_pmp(index: usize) {
         assert!(index < 4);
 
@@ -156,7 +155,7 @@ pub mod pmpcfg2 {
     read_csr_as!(Pmpcsr, 0x3A2, __read_pmpcfg2);
     write_csr_as_usize!(0x3A2, __write_pmpcfg2);
 
-    /// set the configuration for the defined index in pmpcfg3
+    /// sets a configuration for the defined index in pmpcfg2
     pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
         #[cfg(riscv32)]
         assert!(index < 4);
@@ -170,8 +169,8 @@ pub mod pmpcfg2 {
         _write(value)
     }
 
-    /// clear the configuration for the defined index in pmpcfg2
-    /// will not work when pmp is locked
+    /// clears the configuration for the defined index in pmpcfg2
+    /// cannot clear when pmp is locked
     pub unsafe fn clear_pmp(index: usize) {
         #[cfg(riscv32)]
         assert!(index < 4);
@@ -195,7 +194,7 @@ pub mod pmpcfg3 {
     read_csr_as!(Pmpcsr, 0x3A3, __read_pmpcfg3);
     write_csr_as_usize_rv32!(0x3A3, __write_pmpcfg3);
 
-    /// set the configuration for the defined index in pmpcfg3
+    /// sets a configuration for the defined index in pmpcfg3
     pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
         assert!(index < 4);
 
@@ -204,8 +203,8 @@ pub mod pmpcfg3 {
         value.set_bits(8 * index..=8 * index + 7, byte);
         _write(value)
     }
-    /// clear the configuration for the defined index in pmpcfg3
-    /// will not work when pmp is locked
+    /// clears the configuration for the defined index in pmpcfg3
+    /// cannot clear when pmp is locked
     pub unsafe fn clear_pmp(index: usize) {
         #[cfg(riscv32)]
         assert!(index < 4);
