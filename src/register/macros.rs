@@ -272,7 +272,7 @@ macro_rules! read_composite_csr {
 }
 
 macro_rules! set_pmp {
-     () => {
+    () => {
         /// Set the pmp configuration corresponding to the index
         #[inline]
         pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
