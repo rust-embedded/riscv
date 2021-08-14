@@ -86,33 +86,8 @@ pub mod pmpcfg0 {
     read_csr_as!(Pmpcsr, 0x3A0, __read_pmpcfg0);
     write_csr_as_usize!(0x3A0, __write_pmpcfg0);
 
-    /// sets a configuration for the defined index in pmpcfg0
-    pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        let mut value = _read();
-        let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
-        value.set_bits(8 * index..=8 * index + 7, byte);
-        _write(value)
-    }
-
-    /// clears the configuration for the defined index in pmpcfg0
-    /// cannot clear when pmp is locked
-    pub unsafe fn clear_pmp(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 7, 0);
-        _write(value);
-    }
+    set_pmp!(Range,Permission);
+    clear_pmp!();
 }
 
 /// Physical memory protection configuration
@@ -125,25 +100,8 @@ pub mod pmpcfg1 {
     read_csr_as!(Pmpcsr, 0x3A1, __read_pmpcfg1);
     write_csr_as_usize_rv32!(0x3A1, __write_pmpcfg1);
 
-    /// sets a configuration for the defined index in pmpcfg1
-    pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-        assert!(index < 4);
-
-        let mut value = _read();
-        let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
-        value.set_bits(8 * index..=8 * index + 7, byte);
-        _write(value)
-    }
-
-    /// clears the configuration for the defined index in pmpcfg1
-    /// cannot clear when pmp is locked
-    pub unsafe fn clear_pmp(index: usize) {
-        assert!(index < 4);
-
-        let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 7, 0);
-        _write(value);
-    }
+    set_pmp!(Range,Permission);
+    clear_pmp!();
 }
 
 /// Physical memory protection configuration
@@ -155,33 +113,8 @@ pub mod pmpcfg2 {
     read_csr_as!(Pmpcsr, 0x3A2, __read_pmpcfg2);
     write_csr_as_usize!(0x3A2, __write_pmpcfg2);
 
-    /// sets a configuration for the defined index in pmpcfg2
-    pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        let mut value = _read();
-        let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
-        value.set_bits(8 * index..=8 * index + 7, byte);
-        _write(value)
-    }
-
-    /// clears the configuration for the defined index in pmpcfg2
-    /// cannot clear when pmp is locked
-    pub unsafe fn clear_pmp(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 7, 0);
-        _write(value);
-    }
+    set_pmp!(Range,Permission);
+    clear_pmp!();
 }
 
 /// Physical memory protection configuration
@@ -194,26 +127,6 @@ pub mod pmpcfg3 {
     read_csr_as!(Pmpcsr, 0x3A3, __read_pmpcfg3);
     write_csr_as_usize_rv32!(0x3A3, __write_pmpcfg3);
 
-    /// sets a configuration for the defined index in pmpcfg3
-    pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-        assert!(index < 4);
-
-        let mut value = _read();
-        let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
-        value.set_bits(8 * index..=8 * index + 7, byte);
-        _write(value)
-    }
-    /// clears the configuration for the defined index in pmpcfg3
-    /// cannot clear when pmp is locked
-    pub unsafe fn clear_pmp(index: usize) {
-        #[cfg(riscv32)]
-        assert!(index < 4);
-
-        #[cfg(riscv64)]
-        assert!(index < 8);
-
-        let mut value = _read();
-        value.set_bits(8 * index..=8 * index + 7, 0);
-        _write(value);
-    }
+    set_pmp!(Range,Permission);
+    clear_pmp!();
 }
