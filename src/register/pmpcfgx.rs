@@ -23,7 +23,7 @@ pub enum Range {
     NAPOT = 0b11,
 }
 
-/// Pmp struct holds a readable configuration of a single pmp
+/// Pmp struct holds a high-level representation of a single pmp configuration
 #[derive(Clone, Copy, Debug)]
 pub struct Pmp {
     /// raw bits
@@ -37,12 +37,12 @@ pub struct Pmp {
 }
 
 pub struct Pmpcsr {
-    /// Holds the raw contents of the PMP CSR Register
+    /// Holds the raw contents of a PMP CSR Register
     pub bits: usize,
 }
 
 impl Pmpcsr {
-    /// Take the register contents and translates into a Pmp configuration struct
+    /// Take the register contents and translate into a Pmp configuration struct
     #[inline]
     pub fn into_config(&self, index: usize) -> Pmp {
         #[cfg(riscv32)]
