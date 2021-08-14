@@ -229,7 +229,7 @@ macro_rules! set_csr {
         pub unsafe fn $set_field() {
             _set($e);
         }
-    }
+    };
 }
 
 macro_rules! clear_csr {
@@ -239,7 +239,7 @@ macro_rules! clear_csr {
         pub unsafe fn $clear_field() {
             _clear($e);
         }
-    }
+    };
 }
 
 macro_rules! set_clear_csr {
