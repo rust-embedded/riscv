@@ -272,10 +272,10 @@ macro_rules! read_composite_csr {
 }
 
 macro_rules! set_pmp {
-     {$range:ty, $permission:ty} => {
+     () => {
         /// Set the pmp configuration corresponding to the index
         #[inline]
-        pub unsafe fn set_pmp(index: usize, range: $range, permission: $permission, locked: bool) {
+        pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
             #[cfg(riscv32)]
             assert!(index < 4);
 
