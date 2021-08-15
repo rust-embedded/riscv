@@ -6,10 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Add `#[cfg(riscv32)]` to `pmpcfg1` and `pmpcfg3` modules
+- Add enums `Range`, `Permission` for PMP configuration
+- Add `set_pmp()` and `clear_pmp()` functions to pmpcfg(x) modules
+- Add struct `Pmpcsr` and is returned from `pmpcfgx::read()`
 
 ### Changed
 
 - Use new `asm!` instead of `llvm_asm!`
+- Change `pmpcfgx::read()` macro to `read_csr_as!()` from `read_csr_as_usize!()` 
 
 ## [v0.7.0] - 2020-07-29
 

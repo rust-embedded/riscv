@@ -229,7 +229,7 @@ macro_rules! set_csr {
         pub unsafe fn $set_field() {
             _set($e);
         }
-    }
+    };
 }
 
 macro_rules! clear_csr {
@@ -239,7 +239,7 @@ macro_rules! clear_csr {
         pub unsafe fn $clear_field() {
             _clear($e);
         }
-    }
+    };
 }
 
 macro_rules! set_clear_csr {
@@ -267,6 +267,43 @@ macro_rules! read_composite_csr {
                 #[cfg(not(riscv32))]
                 () => $lo as u64,
             }
+        }
+    };
+}
+
+macro_rules! set_pmp {
+    () => {
+        /// Set the pmp configuration corresponding to the index
+        #[inline]
+        pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
+            assert!(index < 8);
+
+            let mut value = _read();
+            let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
+            value.set_bits(8 * index..=8 * index + 7, byte);
+            _write(value);
+        }
+    };
+}
+
+macro_rules! clear_pmp {
+    () => {
+        /// Clear the pmp configuration corresponding to the index
+        #[inline]
+        pub unsafe fn clear_pmp(index: usize) {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
+            assert!(index < 8);
+
+            let mut value = _read();
+            value.set_bits(8 * index..=8 * index + 7, 0);
+            _write(value);
         }
     };
 }
