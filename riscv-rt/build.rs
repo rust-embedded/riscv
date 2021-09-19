@@ -14,7 +14,7 @@ fn main() {
 
     if target.starts_with("riscv") {
         let mut target = Target::from_target_str(&target);
-        target.retain_extensions("imc");
+        target.retain_extensions("imfdc");
 
         let target = target.to_string();
 

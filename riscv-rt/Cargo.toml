@@ -10,7 +10,7 @@ license = "ISC"
 
 [dependencies]
 r0 = "1.0.0"
-riscv = "0.6"
+riscv = "0.7"
 riscv-rt-macros = { path = "macros", version = "0.1.6" }
 
 [features]
