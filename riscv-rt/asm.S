@@ -124,11 +124,9 @@ _abs_start:
     restores caller saved registers and then returns.
 */
 .section .trap, "ax"
-.global _start_trap
-/* Make it .weak so PAC/HAL can provide their own if needed. */
-.weak _start_trap
+.global default_start_trap
 
-_start_trap:
+default_start_trap:
     addi sp, sp, -16*REGBYTES
 
     STORE ra, 0*REGBYTES(sp)
