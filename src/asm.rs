@@ -58,15 +58,15 @@ instruction!(
 pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     match () {
         #[cfg(all(riscv, feature = "inline-asm"))]
-        () => asm!("sfence.vma {0}, {1}", in(reg) asid, in(reg) addr),
+        () => asm!("sfence.vma {0}, {1}", in(reg) addr, in(reg) asid),
 
         #[cfg(all(riscv, not(feature = "inline-asm")))]
         () => {
             extern "C" {
-                fn __sfence_vma(asid: usize, addr: usize);
+                fn __sfence_vma(addr: usize, asid: usize);
             }
 
-            __sfence_vma(asid, addr);
+            __sfence_vma(addr, asid);
         }
 
         #[cfg(not(riscv))]
