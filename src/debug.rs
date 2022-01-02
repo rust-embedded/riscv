@@ -8,10 +8,8 @@
 //!
 //! Target program:
 //!
-//! ```
-//! #[macro_use]
-//! extern crate cortex_m_semihosting;
-//! use cortex_m_semihosting::debug::{self, EXIT_SUCCESS, EXIT_FAILURE};
+//! ```no_run
+//! use riscv_semihosting::debug::{self, EXIT_SUCCESS, EXIT_FAILURE};
 //!
 //! fn main() {
 //!     if 2 == 2 {
