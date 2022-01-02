@@ -179,7 +179,7 @@
 //!
 //! [pdf]: http://infocenter.arm.com/help/topic/com.arm.doc.dui0471e/DUI0471E_developing_for_arm_processors.pdf
 
-#![cfg_attr(feature = "inline-asm", feature(llvm_asm))]
+#![cfg_attr(feature = "inline-asm", feature(asm))]
 #![deny(missing_docs)]
 #![no_std]
 
@@ -210,11 +210,22 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
         #[cfg(all(feature = "inline-asm", not(feature = "no-semihosting")))]
         () => {
             let mut nr = _nr;
-            llvm_asm!("
+            // The instructions below must always be uncompressed, otherwise
+            // it will be treated as a regular break, hence the norvc option.
+            //
+            // See https://github.com/riscv/riscv-semihosting-spec for more
+            // details.
+            asm!("
+                .option push
+                .option norvc
                 slli x0, x0, 0x1f
                 ebreak
                 srai x0, x0, 0x7
-            " : "+{a0}"(nr) : "{a1}"(_arg) :: "volatile");
+                .option pop
+            ",
+            inout("a0") nr,
+            in("a1") _arg,
+            );
             nr
         }
 
