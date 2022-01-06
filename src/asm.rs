@@ -26,6 +26,11 @@ macro_rules! instruction {
 }
 
 instruction!(
+    /// `nop` instruction wrapper
+    ///
+    /// Generates a no-operation.  Useful to prevent delay loops from being optimized away.
+    , nop, "nop", __nop);
+instruction!(
     /// `EBREAK` instruction wrapper
     ///
     /// Generates a breakpoint exception.
