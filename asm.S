@@ -1,5 +1,11 @@
 #include "asm.h"
 
+.section .text.__nop
+.global __nop
+__nop:
+    nop
+    ret
+
 .section .text.__ebreak
 .global __ebreak
 __ebreak:
