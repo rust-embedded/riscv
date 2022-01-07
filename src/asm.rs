@@ -89,6 +89,7 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
 /// timer-less initialization of peripherals if and only if accurate timing is not essential. In
 /// any other case please use a more accurate method to produce a delay.
 #[inline]
+#[allow(unused_variables)]
 pub unsafe fn delay(cycles: u32) {
     match () {
         #[cfg(all(riscv, feature = "inline-asm"))]
