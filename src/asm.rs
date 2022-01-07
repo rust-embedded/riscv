@@ -79,9 +79,15 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     }
 }
 
-/// Wrapper for assembly busy-loop delays
+/// Blocks the program for *at least* `cycles` CPU cycles.
 ///
+/// This is implemented in assembly so its execution time is independent of the optimization
+/// level, however it is dependent on the specific architecture and core configuration.
 ///
+/// NOTE that the delay can take much longer if interrupts are serviced during its execution
+/// and the execution time may vary with other factors. This delay is mainly useful for simple
+/// timer-less initialization of peripherals if and only if accurate timing is not essential. In
+/// any other case please use a more accurate method to produce a delay.
 #[inline]
 pub unsafe fn delay(cycles: u32) {
     match () {
