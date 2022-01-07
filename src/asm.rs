@@ -78,3 +78,34 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
         () => unimplemented!(),
     }
 }
+
+/// Wrapper for assembly busy-loop delays
+///
+///
+#[inline]
+pub unsafe fn delay(cycles: u32) {
+    match () {
+        #[cfg(all(riscv, feature = "inline-asm"))]
+        () => {
+            let real_cyc = 1 + cycles / 2;
+            asm!(
+            "1:",
+            "addi t1, t1, 1",
+            "bne t1, {0}, 1b",
+            in(reg) real_cyc
+            )
+        }
+
+        #[cfg(all(riscv, not(feature = "inline-asm")))]
+        () => {
+            extern "C" {
+                fn __delay(cycles: u32);
+            }
+
+            __delay(cycles);
+        }
+
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
+    }
+}

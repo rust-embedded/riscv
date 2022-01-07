@@ -6,6 +6,12 @@ __nop:
     nop
     ret
 
+.section .text.__delay
+.global __delay
+__delay:
+    delay
+    ret
+
 .section .text.__ebreak
 .global __ebreak
 __ebreak:
