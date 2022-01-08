@@ -95,7 +95,7 @@ pub unsafe fn delay(cycles: u32) {
         #[cfg(all(riscv, feature = "inline-asm"))]
         () => {
             let real_cyc = 1 + cycles / 2;
-            asm!(
+            core::arch::asm!(
             "1:",
             "addi {0}, {0}, -1",
             "bne {0}, zero, 1b",
