@@ -34,8 +34,8 @@ __sfence_vma:
 .global __delay
 __delay:
     1:
-    addi t1, t1, 1
-    bne t1, a0, 1b
+    addi a0, a0, -1
+    bne a0, zero, 1b
     ret
 
 // User Trap Setup

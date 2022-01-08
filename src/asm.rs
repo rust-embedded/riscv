@@ -97,9 +97,9 @@ pub unsafe fn delay(cycles: u32) {
             let real_cyc = 1 + cycles / 2;
             asm!(
             "1:",
-            "addi t1, t1, 1",
-            "bne t1, {0}, 1b",
-            in(reg) real_cyc
+            "addi {0}, {0}, -1",
+            "bne {0}, zero, 1b",
+            in(reg)
             )
         }
 
