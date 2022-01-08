@@ -99,7 +99,7 @@ pub unsafe fn delay(cycles: u32) {
             "1:",
             "addi {0}, {0}, -1",
             "bne {0}, zero, 1b",
-            in(reg)
+            in(real_cyc)
             )
         }
 
