@@ -30,6 +30,14 @@ __sfence_vma:
     sfence.vma a0, a1
     ret
 
+.section .text.__delay
+.global __delay
+__delay:
+    1:
+    addi t1, t1, 1
+    bne t1, a0, 1b
+    ret
+
 // User Trap Setup
 RW(0x000, ustatus)  // User status register
 RW(0x004, uie)      // User interrupt-enable register
