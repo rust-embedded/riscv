@@ -26,6 +26,11 @@ macro_rules! instruction {
 }
 
 instruction!(
+    /// `nop` instruction wrapper
+    ///
+    /// Generates a no-operation.  Useful to prevent delay loops from being optimized away.
+    , nop, "nop", __nop);
+instruction!(
     /// `EBREAK` instruction wrapper
     ///
     /// Generates a breakpoint exception.
@@ -67,6 +72,44 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
             }
 
             __sfence_vma(addr, asid);
+        }
+
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
+    }
+}
+
+/// Blocks the program for *at least* `cycles` CPU cycles.
+///
+/// This is implemented in assembly so its execution time is independent of the optimization
+/// level, however it is dependent on the specific architecture and core configuration.
+///
+/// NOTE that the delay can take much longer if interrupts are serviced during its execution
+/// and the execution time may vary with other factors. This delay is mainly useful for simple
+/// timer-less initialization of peripherals if and only if accurate timing is not essential. In
+/// any other case please use a more accurate method to produce a delay.
+#[inline]
+#[allow(unused_variables)]
+pub unsafe fn delay(cycles: u32) {
+    match () {
+        #[cfg(all(riscv, feature = "inline-asm"))]
+        () => {
+            let real_cyc = 1 + cycles / 2;
+            asm!(
+            "1:",
+            "addi {0}, {0}, -1",
+            "bne {0}, zero, 1b",
+            in(reg)
+            )
+        }
+
+        #[cfg(all(riscv, not(feature = "inline-asm")))]
+        () => {
+            extern "C" {
+                fn __delay(cycles: u32);
+            }
+
+            __delay(cycles);
         }
 
         #[cfg(not(riscv))]

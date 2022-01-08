@@ -18,10 +18,12 @@
 
 extern crate bare_metal;
 extern crate bit_field;
+extern crate embedded_hal;
 
 pub mod asm;
 pub mod interrupt;
 pub mod register;
+pub mod delay;
 
 #[macro_use]
 mod macros;
