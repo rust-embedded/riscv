@@ -12,8 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `set_pmp()` and `clear_pmp()` functions to pmpcfg(x) modules
 - Add struct `Pmpcsr` and is returned from `pmpcfgx::read()`
 - Add delay structure and methods using embedded-hal traits and `mcycle` register
-- add asm::delay function for assembly-based busy-loops
-- add asm::nop, a wrapper for implementing a `nop` instruction
+- Add `asm::delay()` function for assembly-based busy-loops
+- Add `asm::nop()`, a wrapper for implementing a `nop` instruction
 
 ### Changed
 
