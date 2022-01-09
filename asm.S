@@ -1,5 +1,11 @@
 #include "asm.h"
 
+.section .text.__nop
+.global __nop
+__nop:
+    nop
+    ret
+
 .section .text.__ebreak
 .global __ebreak
 __ebreak:
@@ -22,6 +28,14 @@ __sfence_vma_all:
 .global __sfence_vma
 __sfence_vma:
     sfence.vma a0, a1
+    ret
+
+.section .text.__delay
+.global __delay
+__delay:
+    1:
+    addi a0, a0, -1
+    bne a0, zero, 1b
     ret
 
 // User Trap Setup
