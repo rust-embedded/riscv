@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Enable float support for targets with extension sets F and D
+- Add ability to override trap handling mechanism
+
+### Changed
+
+- Update `riscv` to version 0.7
+- Update `quote` to version 1.0
+- Update `proc-macro2` to version 1.0
+- Update `rand` to version to version 0.7.3
+
 ## [v0.8.0] - 2020-07-18
 
 ### Changed
