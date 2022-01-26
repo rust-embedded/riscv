@@ -14,6 +14,8 @@ fn main() {
         target.retain_extensions("ifdc");
 
         let target = target.to_string();
+        // capture riscvNNxxxxx only
+        let target = target.split("-").next().unwrap();
 
         fs::copy(
             format!("bin/{}.a", target),
