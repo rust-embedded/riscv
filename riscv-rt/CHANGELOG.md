@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.8.1] - 2022-01-25
+
 ### Added
 
 - Enable float support for targets with extension sets F and D
@@ -63,7 +65,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set MSRV to 1.38
 
 
-[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.8.1..HEAD
+[v0.8.1]: https://github.com/rust-embedded/riscv/compare/v0.8.0...v0.8.1
 [v0.8.0]: https://github.com/rust-embedded/riscv/compare/v0.7.2...v0.8.0
 [v0.7.2]: https://github.com/rust-embedded/riscv/compare/v0.7.1...v0.7.2
 [v0.7.1]: https://github.com/rust-embedded/riscv/compare/v0.7.0...v0.7.1
