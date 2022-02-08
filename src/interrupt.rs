@@ -33,6 +33,7 @@ pub unsafe fn enable() {
 /// Execute closure `f` in an interrupt-free context.
 ///
 /// This as also known as a "critical section".
+#[inline]
 pub fn free<F, R>(f: F) -> R
 where
     F: FnOnce(&CriticalSection) -> R,
