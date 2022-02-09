@@ -10,6 +10,7 @@ pub struct Mimpid {
 
 impl Mimpid {
     /// Returns the contents of the register as raw bits
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits.get()
     }

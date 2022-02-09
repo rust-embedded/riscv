@@ -18,11 +18,13 @@ pub enum MXL {
 
 impl Misa {
     /// Returns the contents of the register as raw bits
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits.get()
     }
 
     /// Returns the machine xlen.
+    #[inline]
     pub fn mxl(&self) -> MXL {
         let value = match () {
             #[cfg(target_pointer_width = "32")]
@@ -39,6 +41,7 @@ impl Misa {
     }
 
     /// Returns true when the atomic extension is implemented.
+    #[inline]
     pub fn has_extension(&self, extension: char) -> bool {
         let bit = extension as u8 - 65;
         if bit > 25 {
