@@ -16,7 +16,7 @@ impl McycleDelay {
 }
 
 impl DelayUs<u64> for McycleDelay {
-    #[inline(always)]
+    #[inline]
     fn delay_us(&mut self, us: u64) {
         let t0 = mcycle::read64();
         let clock = (us * (self.ticks_second as u64)) / 1_000_000;
@@ -55,7 +55,7 @@ impl DelayUs<u8> for McycleDelay {
 }
 
 impl DelayMs<u32> for McycleDelay {
-    #[inline(always)]
+    #[inline]
     fn delay_ms(&mut self, ms: u32) {
         self.delay_us((ms as u64) * 1000)
     }
