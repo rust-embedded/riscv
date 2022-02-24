@@ -1,6 +1,6 @@
 [package]
 name = "riscv"
-version = "0.7.0"
+version = "0.8.0-alpha.7"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
@@ -17,8 +17,8 @@ targets = [
 
 [dependencies]
 bare-metal = "1.0.0"
-bit_field = "0.10.0"
-embedded-hal = "0.2.6"
+bit_field = "0.10.1"
+embedded-hal = "=1.0.0-alpha.7"
 
 [build-dependencies]
 riscv-target = "0.1.2"
