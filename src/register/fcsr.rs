@@ -76,6 +76,7 @@ pub enum RoundingMode {
 
 impl FCSR {
     /// Returns the contents of the register as raw bits
+    #[inline]
     pub fn bits(&self) -> u32 {
         self.bits
     }

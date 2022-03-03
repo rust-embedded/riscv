@@ -7,7 +7,7 @@ macro_rules! instruction {
         pub unsafe fn $fnname() {
             match () {
                 #[cfg(all(riscv, feature = "inline-asm"))]
-                () => llvm_asm!($asm :::: "volatile"),
+                () => core::arch::asm!($asm),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
                 () => {
@@ -25,6 +25,11 @@ macro_rules! instruction {
     )
 }
 
+instruction!(
+    /// `nop` instruction wrapper
+    ///
+    /// Generates a no-operation.  Useful to prevent delay loops from being optimized away.
+    , nop, "nop", __nop);
 instruction!(
     /// `EBREAK` instruction wrapper
     ///
@@ -58,15 +63,53 @@ instruction!(
 pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     match () {
         #[cfg(all(riscv, feature = "inline-asm"))]
-        () => llvm_asm!("sfence.vma $0, $1" :: "r"(asid), "r"(addr) :: "volatile"),
+        () => core::arch::asm!("sfence.vma {0}, {1}", in(reg) addr, in(reg) asid),
 
         #[cfg(all(riscv, not(feature = "inline-asm")))]
         () => {
             extern "C" {
-                fn __sfence_vma(asid: usize, addr: usize);
+                fn __sfence_vma(addr: usize, asid: usize);
             }
 
-            __sfence_vma(asid, addr);
+            __sfence_vma(addr, asid);
+        }
+
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
+    }
+}
+
+/// Blocks the program for *at least* `cycles` CPU cycles.
+///
+/// This is implemented in assembly so its execution time is independent of the optimization
+/// level, however it is dependent on the specific architecture and core configuration.
+///
+/// NOTE that the delay can take much longer if interrupts are serviced during its execution
+/// and the execution time may vary with other factors. This delay is mainly useful for simple
+/// timer-less initialization of peripherals if and only if accurate timing is not essential. In
+/// any other case please use a more accurate method to produce a delay.
+#[inline]
+#[allow(unused_variables)]
+pub unsafe fn delay(cycles: u32) {
+    match () {
+        #[cfg(all(riscv, feature = "inline-asm"))]
+        () => {
+            let real_cyc = 1 + cycles / 2;
+            core::arch::asm!(
+            "1:",
+            "addi {0}, {0}, -1",
+            "bne {0}, zero, 1b",
+            in(reg) real_cyc
+            )
+        }
+
+        #[cfg(all(riscv, not(feature = "inline-asm")))]
+        () => {
+            extern "C" {
+                fn __delay(cycles: u32);
+            }
+
+            __delay(cycles);
         }
 
         #[cfg(not(riscv))]

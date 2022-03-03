@@ -10,11 +10,13 @@ pub struct Mvendorid {
 
 impl Mvendorid {
     /// Returns the contents of the register as raw bits
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits.get()
     }
 
     /// Returns the JEDEC manufacturer ID
+    #[inline]
     pub fn jedec_manufacturer(&self) -> usize {
         self.bits() >> 7
     }

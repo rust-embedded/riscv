@@ -7,7 +7,7 @@ macro_rules! read_csr {
                 #[cfg(all(riscv, feature = "inline-asm"))]
                 () => {
                     let r: usize;
-                    llvm_asm!("csrrs $0, $1, x0" : "=r"(r) : "i"($csr_number) :: "volatile");
+                    core::arch::asm!("csrrs {0}, {1}, x0", out(reg) r, const $csr_number);
                     r
                 }
 
@@ -36,7 +36,7 @@ macro_rules! read_csr_rv32 {
                 #[cfg(all(riscv32, feature = "inline-asm"))]
                 () => {
                     let r: usize;
-                    llvm_asm!("csrrs $0, $1, x0" : "=r"(r) : "i"($csr_number) :: "volatile");
+                    core::arch::asm!("csrrs {0}, {1}, x0", out(reg) r, const $csr_number);
                     r
                 }
 
@@ -102,7 +102,7 @@ macro_rules! write_csr {
         unsafe fn _write(bits: usize) {
             match () {
                 #[cfg(all(riscv, feature = "inline-asm"))]
-                () => llvm_asm!("csrrw x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
+                () => core::arch::asm!("csrrw x0, {1}, {0}", in(reg) bits, const $csr_number),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
                 () => {
@@ -128,7 +128,7 @@ macro_rules! write_csr_rv32 {
         unsafe fn _write(bits: usize) {
             match () {
                 #[cfg(all(riscv32, feature = "inline-asm"))]
-                () => llvm_asm!("csrrw x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
+                () => core::arch::asm!("csrrw x0, {1}, {0}", in(reg) bits, const $csr_number),
 
                 #[cfg(all(riscv32, not(feature = "inline-asm")))]
                 () => {
@@ -178,7 +178,7 @@ macro_rules! set {
         unsafe fn _set(bits: usize) {
             match () {
                 #[cfg(all(riscv, feature = "inline-asm"))]
-                () => llvm_asm!("csrrs x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
+                () => core::arch::asm!("csrrs x0, {1}, {0}", in(reg) bits, const $csr_number),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
                 () => {
@@ -204,7 +204,7 @@ macro_rules! clear {
         unsafe fn _clear(bits: usize) {
             match () {
                 #[cfg(all(riscv, feature = "inline-asm"))]
-                () => llvm_asm!("csrrc x0, $1, $0" :: "r"(bits), "i"($csr_number) :: "volatile"),
+                () => core::arch::asm!("csrrc x0, {1}, {0}", in(reg) bits, const $csr_number),
 
                 #[cfg(all(riscv, not(feature = "inline-asm")))]
                 () => {
@@ -229,7 +229,7 @@ macro_rules! set_csr {
         pub unsafe fn $set_field() {
             _set($e);
         }
-    }
+    };
 }
 
 macro_rules! clear_csr {
@@ -239,7 +239,7 @@ macro_rules! clear_csr {
         pub unsafe fn $clear_field() {
             _clear($e);
         }
-    }
+    };
 }
 
 macro_rules! set_clear_csr {
@@ -267,6 +267,43 @@ macro_rules! read_composite_csr {
                 #[cfg(not(riscv32))]
                 () => $lo as u64,
             }
+        }
+    };
+}
+
+macro_rules! set_pmp {
+    () => {
+        /// Set the pmp configuration corresponding to the index
+        #[inline]
+        pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
+            assert!(index < 8);
+
+            let mut value = _read();
+            let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
+            value.set_bits(8 * index..=8 * index + 7, byte);
+            _write(value);
+        }
+    };
+}
+
+macro_rules! clear_pmp {
+    () => {
+        /// Clear the pmp configuration corresponding to the index
+        #[inline]
+        pub unsafe fn clear_pmp(index: usize) {
+            #[cfg(riscv32)]
+            assert!(index < 4);
+
+            #[cfg(riscv64)]
+            assert!(index < 8);
+
+            let mut value = _read();
+            value.set_bits(8 * index..=8 * index + 7, 0);
+            _write(value);
         }
     };
 }
