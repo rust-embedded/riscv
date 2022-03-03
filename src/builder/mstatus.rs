@@ -1,20 +1,20 @@
 //! mstatus register builder
 
-use bit_field::BitField;
-use core::mem::size_of;
-use core::arch::asm;
 use crate::register::mstatus::*;
+use bit_field::BitField;
+use core::arch::asm;
+use core::mem::size_of;
 
 /// mstatus register builder
 pub struct MstatusBuilder {
-    bits: usize
+    bits: usize,
 }
 
 /// mstatus register value
 #[derive(Clone, Copy, Debug)]
 #[repr(transparent)]
 pub struct MstatusValue {
-    bits: usize
+    bits: usize,
 }
 
 macro_rules! impl_mstatus_writable {
@@ -57,7 +57,7 @@ macro_rules! impl_mstatus_writable {
                     FS::Dirty => self.bits.set_bits(13..15, 0b11),
                 };
             }
-        
+
             #[inline]
             pub fn set_xs(&mut self, xs: XS) {
                 match xs {
@@ -79,9 +79,8 @@ macro_rules! impl_mstatus_writable {
             impl_set_bit!(set_tw, $inner, set_bit, 21);
 
             impl_set_bit!(set_tsr, $inner, set_bit, 22);
-
         }
-    }
+    };
 }
 
 macro_rules! impl_mstatus_readable {
@@ -156,7 +155,7 @@ macro_rules! impl_mstatus_readable {
                 self.$inner.get_bit(size_of::<usize>() * 8 - 1)
             }
         }
-    }
+    };
 }
 
 impl_mstatus_readable!(MstatusBuilder, bits);
@@ -164,7 +163,7 @@ impl_mstatus_writable!(MstatusBuilder, bits);
 
 impl MstatusBuilder {
     pub fn build(&self) -> MstatusValue {
-        return MstatusValue { bits: self.bits }
+        return MstatusValue { bits: self.bits };
     }
 }
 

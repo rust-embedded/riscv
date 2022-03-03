@@ -22,10 +22,10 @@ extern crate bit_field;
 extern crate embedded_hal;
 
 pub mod asm;
+pub mod builder;
 pub mod delay;
 pub mod interrupt;
 pub mod register;
-pub mod builder;
 
 #[macro_use]
 mod macros;

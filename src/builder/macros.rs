@@ -13,5 +13,5 @@ macro_rules! impl_set_bit {
         pub fn $field_setter(&mut self, value: bool) {
             self.$inner.$setter($idx, value);
         }
-    }
+    };
 }
