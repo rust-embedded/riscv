@@ -25,6 +25,7 @@ pub mod asm;
 pub mod delay;
 pub mod interrupt;
 pub mod register;
+pub mod builder;
 
 #[macro_use]
 mod macros;
