@@ -2,7 +2,6 @@
 
 use crate::register::mstatus::*;
 use bit_field::BitField;
-use core::arch::asm;
 use core::mem::size_of;
 
 /// mstatus register builder
@@ -169,6 +168,7 @@ impl MstatusBuilder {
 
 impl MstatusValue {
     pub unsafe fn write_mstatus(&self) {
-        asm!("csrw mstatus, {0}", in(reg) self.bits)
+        #[cfg(all(riscv, feature = "inline-asm"))]
+        core::arch::asm!("csrw mstatus, {0}", in(reg) self.bits)
     }
 }
