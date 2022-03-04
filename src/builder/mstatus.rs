@@ -6,14 +6,14 @@ use core::mem::size_of;
 
 /// mstatus register builder
 pub struct MstatusBuilder {
-    bits: usize,
+    pub(self) bits: usize,
 }
 
 /// mstatus register value
 #[derive(Clone, Copy, Debug)]
 #[repr(transparent)]
 pub struct MstatusValue {
-    bits: usize,
+    pub(self) bits: usize,
 }
 
 macro_rules! impl_mstatus_writable {
@@ -161,14 +161,29 @@ impl_mstatus_readable!(MstatusBuilder, bits);
 impl_mstatus_writable!(MstatusBuilder, bits);
 
 impl MstatusBuilder {
+    pub fn bits(&self) -> usize {
+        self.bits
+    }
+
     pub fn build(&self) -> MstatusValue {
-        return MstatusValue { bits: self.bits };
+        MstatusValue { bits: self.bits }
     }
 }
 
 impl MstatusValue {
-    pub unsafe fn write_mstatus(&self) {
-        #[cfg(all(riscv, feature = "inline-asm"))]
-        core::arch::asm!("csrw mstatus, {0}", in(reg) self.bits)
+    pub fn bits(&self) -> usize {
+        self.bits
+    }
+}
+
+impl From<MstatusValue> for MstatusBuilder {
+    fn from(value: MstatusValue) -> Self {
+        MstatusBuilder { bits: value.bits }
+    }
+}
+
+impl From<MstatusBuilder> for MstatusValue {
+    fn from(value: MstatusBuilder) -> Self {
+        MstatusValue { bits: value.bits }
     }
 }

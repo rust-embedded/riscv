@@ -8,6 +8,7 @@
 // which would be the best way we implement this using Rust?
 
 use bit_field::BitField;
+use builder::mstatus::MstatusValue;
 use core::mem::size_of;
 
 /// mstatus register
@@ -274,4 +275,10 @@ pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
     value.set_bits(13..15, fs as usize);
     _write(value);
+}
+
+/// Write from value to register
+#[inline]
+pub unsafe fn write(value: MstatusValue) {
+    _write(value.bits());
 }
