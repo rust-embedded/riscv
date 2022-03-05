@@ -69,6 +69,22 @@ impl MisaValue {
     pub fn bits(&self) -> usize {
         self.bits
     }
+
+    #[inline]
+    pub fn mxl(&self) -> MXL {
+        let value = match () {
+            #[cfg(target_pointer_width = "32")]
+            () => (self.bits() >> 30) as u8,
+            #[cfg(target_pointer_width = "64")]
+            () => (self.bits() >> 62) as u8,
+        };
+        match value {
+            1 => MXL::XLEN32,
+            2 => MXL::XLEN64,
+            3 => MXL::XLEN128,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl From<MisaValue> for MisaBuilder {

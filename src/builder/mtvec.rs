@@ -67,6 +67,21 @@ impl MtvecValue {
     pub fn bits(&self) -> usize {
         self.bits
     }
+
+    #[inline]
+    pub fn address(&self) -> usize {
+        self.bits - (self.bits & 0b11)
+    }
+
+    #[inline]
+    pub fn trap_mode(&self) -> Option<TrapMode> {
+        let mode = self.bits & 0b11;
+        match mode {
+            0 => Some(TrapMode::Direct),
+            1 => Some(TrapMode::Vectored),
+            _ => None,
+        }
+    }
 }
 
 impl From<MtvecValue> for MtvecBuilder {
