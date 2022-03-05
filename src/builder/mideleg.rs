@@ -31,7 +31,7 @@ macro_rules! impl_mideleg_writable {
 
             impl_set_bit!(set_sext, $inner, set_bit, 9);
         }
-    }
+    };
 }
 
 macro_rules! impl_mideleg_readable {
@@ -49,7 +49,7 @@ macro_rules! impl_mideleg_readable {
 
             impl_get_bit!(sext, $inner, get_bit, 9);
         }
-    }
+    };
 }
 
 impl_mideleg_readable!(MidelegBuilder, bits);
