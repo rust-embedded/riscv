@@ -276,9 +276,3 @@ pub unsafe fn set_fs(fs: FS) {
     value.set_bits(13..15, fs as usize);
     _write(value);
 }
-
-/// Write from value to register
-#[inline]
-pub unsafe fn write(value: MstatusValue) {
-    _write(value.bits());
-}

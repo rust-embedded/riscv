@@ -4,21 +4,34 @@ use crate::register::misa::*;
 use bit_field::BitField;
 
 /// mstatus register builder
+#[derive(Clone, Copy, Debug)]
 pub struct MisaBuilder {
-    pub(self) bits: usize,
+    bits: usize,
 }
 
 /// mstatus register value
 #[derive(Clone, Copy, Debug)]
 pub struct MisaValue {
-    pub(self) bits: usize,
+    bits: usize,
 }
 
 impl MisaBuilder {
+    #[inline]
+    pub fn new() -> Self {
+        Self { bits: 0usize }
+    }
+
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits
     }
 
+    #[inline]
+    pub fn build(&self) -> MisaValue {
+        MisaValue { bits: self.bits }
+    }
+
+    #[inline]
     pub fn mxl(&self) -> MXL {
         let value = match () {
             #[cfg(target_pointer_width = "32")]
@@ -34,6 +47,7 @@ impl MisaBuilder {
         }
     }
 
+    #[inline]
     pub fn set_mxl(&mut self, mxl: MXL) {
         let value = match mxl {
             MXL::XLEN32 => 1,
@@ -48,13 +62,10 @@ impl MisaBuilder {
             () => self.bits.set_bits(62..64, value),
         };
     }
-
-    pub fn build(&self) -> MisaValue {
-        MisaValue { bits: self.bits }
-    }
 }
 
 impl MisaValue {
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits
     }

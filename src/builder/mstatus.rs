@@ -6,14 +6,14 @@ use core::mem::size_of;
 
 /// mstatus register builder
 pub struct MstatusBuilder {
-    pub(self) bits: usize,
+    bits: usize,
 }
 
 /// mstatus register value
 #[derive(Clone, Copy, Debug)]
 #[repr(transparent)]
 pub struct MstatusValue {
-    pub(self) bits: usize,
+    bits: usize,
 }
 
 macro_rules! impl_mstatus_writable {
@@ -161,29 +161,41 @@ impl_mstatus_readable!(MstatusBuilder, bits);
 impl_mstatus_writable!(MstatusBuilder, bits);
 
 impl MstatusBuilder {
+    #[inline]
+    pub fn new() -> Self {
+        Self { bits: 0usize }
+    }
+
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits
     }
 
+    #[inline]
     pub fn build(&self) -> MstatusValue {
         MstatusValue { bits: self.bits }
     }
 }
 
+impl_mstatus_readable!(MstatusValue, bits);
+
 impl MstatusValue {
+    #[inline]
     pub fn bits(&self) -> usize {
         self.bits
     }
 }
 
 impl From<MstatusValue> for MstatusBuilder {
+    #[inline]
     fn from(value: MstatusValue) -> Self {
-        MstatusBuilder { bits: value.bits }
+        MstatusBuilder { bits: value.bits() }
     }
 }
 
 impl From<MstatusBuilder> for MstatusValue {
+    #[inline]
     fn from(value: MstatusBuilder) -> Self {
-        MstatusValue { bits: value.bits }
+        MstatusValue { bits: value.bits() }
     }
 }
