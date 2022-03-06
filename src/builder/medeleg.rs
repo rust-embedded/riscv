@@ -46,8 +46,8 @@ macro_rules! impl_medeleg_writable {
             impl_set_bit!(set_load_page_fault, $inner, set_bit, 13);
 
             impl_set_bit!(set_store_page_fault, $inner, set_bit, 15);
-        }     
-    }
+        }
+    };
 }
 
 macro_rules! impl_medeleg_readable {
@@ -80,8 +80,8 @@ macro_rules! impl_medeleg_readable {
             impl_get_bit!(load_page_fault, $inner, get_bit, 13);
 
             impl_get_bit!(store_page_fault, $inner, get_bit, 15);
-        }     
-    }
+        }
+    };
 }
 
 impl_medeleg_writable!(MedelegBuilder, bits);
@@ -100,7 +100,7 @@ impl MedelegBuilder {
 
     #[inline]
     pub fn build(&self) -> MedelegValue {
-       MedelegValue { bits: self.bits }
+        MedelegValue { bits: self.bits }
     }
 }
 
