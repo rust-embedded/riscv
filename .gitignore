@@ -1,5 +1,2 @@
 Cargo.lock
 target/
-bin/*.after
-bin/*.before
-bin/*.o

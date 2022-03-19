@@ -38,8 +38,6 @@ jobs:
         run: cargo check --target riscv64imac-unknown-none-elf
       - name: Run CI script for riscv64gc-unknown-none-elf under ${{ matrix.rust }}
         run: cargo check --target riscv64gc-unknown-none-elf
-      - name: Check blobs
-        run: ./check-blobs.sh
 
   # On macOS and Windows, we at least make sure that the crate builds and links.
   build-other:
