@@ -6,17 +6,8 @@ macro_rules! instruction {
         #[inline]
         pub unsafe fn $fnname() {
             match () {
-                #[cfg(all(riscv, feature = "inline-asm"))]
+                #[cfg(riscv)]
                 () => core::arch::asm!($asm),
-
-                #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn();
-                    }
-
-                    $asm_fn();
-                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -62,17 +53,8 @@ instruction!(
 #[allow(unused_variables)]
 pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     match () {
-        #[cfg(all(riscv, feature = "inline-asm"))]
+        #[cfg(riscv)]
         () => core::arch::asm!("sfence.vma {0}, {1}", in(reg) addr, in(reg) asid),
-
-        #[cfg(all(riscv, not(feature = "inline-asm")))]
-        () => {
-            extern "C" {
-                fn __sfence_vma(addr: usize, asid: usize);
-            }
-
-            __sfence_vma(addr, asid);
-        }
 
         #[cfg(not(riscv))]
         () => unimplemented!(),
@@ -92,7 +74,7 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
 #[allow(unused_variables)]
 pub unsafe fn delay(cycles: u32) {
     match () {
-        #[cfg(all(riscv, feature = "inline-asm"))]
+        #[cfg(riscv)]
         () => {
             let real_cyc = 1 + cycles / 2;
             core::arch::asm!(
@@ -101,15 +83,6 @@ pub unsafe fn delay(cycles: u32) {
             "bne {0}, zero, 1b",
             in(reg) real_cyc
             )
-        }
-
-        #[cfg(all(riscv, not(feature = "inline-asm")))]
-        () => {
-            extern "C" {
-                fn __delay(cycles: u32);
-            }
-
-            __delay(cycles);
         }
 
         #[cfg(not(riscv))]

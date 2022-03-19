@@ -4,20 +4,11 @@ macro_rules! read_csr {
         #[inline]
         unsafe fn _read() -> usize {
             match () {
-                #[cfg(all(riscv, feature = "inline-asm"))]
+                #[cfg(riscv)]
                 () => {
                     let r: usize;
                     core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
                     r
-                }
-
-                #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn() -> usize;
-                    }
-
-                    $asm_fn()
                 }
 
                 #[cfg(not(riscv))]
@@ -33,20 +24,11 @@ macro_rules! read_csr_rv32 {
         #[inline]
         unsafe fn _read() -> usize {
             match () {
-                #[cfg(all(riscv32, feature = "inline-asm"))]
+                #[cfg(riscv32)]
                 () => {
                     let r: usize;
                     core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
                     r
-                }
-
-                #[cfg(all(riscv32, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn() -> usize;
-                    }
-
-                    $asm_fn()
                 }
 
                 #[cfg(not(riscv32))]
@@ -101,17 +83,8 @@ macro_rules! write_csr {
         #[allow(unused_variables)]
         unsafe fn _write(bits: usize) {
             match () {
-                #[cfg(all(riscv, feature = "inline-asm"))]
+                #[cfg(riscv)]
                 () => core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
-
-                #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn(bits: usize);
-                    }
-
-                    $asm_fn(bits);
-                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -127,17 +100,8 @@ macro_rules! write_csr_rv32 {
         #[allow(unused_variables)]
         unsafe fn _write(bits: usize) {
             match () {
-                #[cfg(all(riscv32, feature = "inline-asm"))]
+                #[cfg(riscv32)]
                 () => core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
-
-                #[cfg(all(riscv32, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn(bits: usize);
-                    }
-
-                    $asm_fn(bits);
-                }
 
                 #[cfg(not(riscv32))]
                 () => unimplemented!(),
@@ -177,17 +141,8 @@ macro_rules! set {
         #[allow(unused_variables)]
         unsafe fn _set(bits: usize) {
             match () {
-                #[cfg(all(riscv, feature = "inline-asm"))]
+                #[cfg(riscv)]
                 () => core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
-
-                #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn(bits: usize);
-                    }
-
-                    $asm_fn(bits);
-                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),
@@ -203,17 +158,8 @@ macro_rules! clear {
         #[allow(unused_variables)]
         unsafe fn _clear(bits: usize) {
             match () {
-                #[cfg(all(riscv, feature = "inline-asm"))]
+                #[cfg(riscv)]
                 () => core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
-
-                #[cfg(all(riscv, not(feature = "inline-asm")))]
-                () => {
-                    extern "C" {
-                        fn $asm_fn(bits: usize);
-                    }
-
-                    $asm_fn(bits);
-                }
 
                 #[cfg(not(riscv))]
                 () => unimplemented!(),

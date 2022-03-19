@@ -11,8 +11,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.42.0
-        rust: [nightly, stable, 1.42.0]
+        # All generated code should be running on stable now, MRSV is 1.59.0
+        rust: [nightly, stable, 1.59.0]
 
         include:
           # Nightly is only for reference and allowed to fail
@@ -34,12 +34,6 @@ jobs:
         run: cargo check --target x86_64-unknown-linux-gnu
       - name: Run CI script for riscv32imac-unknown-none-elf under ${{ matrix.rust }}
         run: cargo check --target riscv32imac-unknown-none-elf
-      - name: Run CI script for riscv32imac-unknown-none-elf (inline-asm) under ${{ matrix.rust }}
-        run: |
-          # asm! requires Rust 1.59
-          if [ "${{ matrix.rust }}" != "1.42.0" ]; then
-            cargo check --target riscv32imac-unknown-none-elf --features inline-asm
-          fi
       - name: Run CI script for riscv64imac-unknown-none-elf under ${{ matrix.rust }}
         run: cargo check --target riscv64imac-unknown-none-elf
       - name: Run CI script for riscv64gc-unknown-none-elf under ${{ matrix.rust }}

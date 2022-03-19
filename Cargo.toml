@@ -1,6 +1,7 @@
 [package]
 name = "riscv"
 version = "0.7.0"
+rust-version = "1.59"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
@@ -19,9 +20,3 @@ targets = [
 bare-metal = "1.0.0"
 bit_field = "0.10.0"
 embedded-hal = "0.2.6"
-
-[build-dependencies]
-riscv-target = "0.1.2"
-
-[features]
-inline-asm = []

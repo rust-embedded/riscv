@@ -19,7 +19,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Use new `asm!` instead of `llvm_asm!`
-- Change `pmpcfgx::read()` macro to `read_csr_as!()` from `read_csr_as_usize!()` 
+- Change `pmpcfgx::read()` macro to `read_csr_as!()` from `read_csr_as_usize!()`
+- Inline assembly is now always used
+- Update Minimum Supported Rust Version to 1.59
+
+### Removed
+
+- Remove `inline-asm` feature which is now always enabled
 
 ## [v0.7.0] - 2020-07-29
 
