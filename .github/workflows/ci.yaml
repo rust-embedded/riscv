@@ -36,7 +36,8 @@ jobs:
         run: cargo check --target riscv32imac-unknown-none-elf
       - name: Run CI script for riscv32imac-unknown-none-elf (inline-asm) under ${{ matrix.rust }}
         run: |
-          if [ "${{ matrix.rust }}" == "nightly" ]; then
+          # asm! requires Rust 1.59
+          if [ "${{ matrix.rust }}" != "1.42.0" ]; then
             cargo check --target riscv32imac-unknown-none-elf --features inline-asm
           fi
       - name: Run CI script for riscv64imac-unknown-none-elf under ${{ matrix.rust }}
