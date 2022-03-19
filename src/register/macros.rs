@@ -1,5 +1,5 @@
 macro_rules! read_csr {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Reads the CSR
         #[inline]
         unsafe fn _read() -> usize {
@@ -19,7 +19,7 @@ macro_rules! read_csr {
 }
 
 macro_rules! read_csr_rv32 {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Reads the CSR
         #[inline]
         unsafe fn _read() -> usize {
@@ -39,8 +39,8 @@ macro_rules! read_csr_rv32 {
 }
 
 macro_rules! read_csr_as {
-    ($register:ident, $csr_number:literal, $asm_fn: ident) => {
-        read_csr!($csr_number, $asm_fn);
+    ($register:ident, $csr_number:literal) => {
+        read_csr!($csr_number);
 
         /// Reads the CSR
         #[inline]
@@ -53,8 +53,8 @@ macro_rules! read_csr_as {
 }
 
 macro_rules! read_csr_as_usize {
-    ($csr_number:literal, $asm_fn: ident) => {
-        read_csr!($csr_number, $asm_fn);
+    ($csr_number:literal) => {
+        read_csr!($csr_number);
 
         /// Reads the CSR
         #[inline]
@@ -65,8 +65,8 @@ macro_rules! read_csr_as_usize {
 }
 
 macro_rules! read_csr_as_usize_rv32 {
-    ($csr_number:literal, $asm_fn: ident) => {
-        read_csr_rv32!($csr_number, $asm_fn);
+    ($csr_number:literal) => {
+        read_csr_rv32!($csr_number);
 
         /// Reads the CSR
         #[inline]
@@ -77,7 +77,7 @@ macro_rules! read_csr_as_usize_rv32 {
 }
 
 macro_rules! write_csr {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Writes the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -94,7 +94,7 @@ macro_rules! write_csr {
 }
 
 macro_rules! write_csr_rv32 {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Writes the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -111,8 +111,8 @@ macro_rules! write_csr_rv32 {
 }
 
 macro_rules! write_csr_as_usize {
-    ($csr_number:literal, $asm_fn: ident) => {
-        write_csr!($csr_number, $asm_fn);
+    ($csr_number:literal) => {
+        write_csr!($csr_number);
 
         /// Writes the CSR
         #[inline]
@@ -123,8 +123,8 @@ macro_rules! write_csr_as_usize {
 }
 
 macro_rules! write_csr_as_usize_rv32 {
-    ($csr_number:literal, $asm_fn: ident) => {
-        write_csr_rv32!($csr_number, $asm_fn);
+    ($csr_number:literal) => {
+        write_csr_rv32!($csr_number);
 
         /// Writes the CSR
         #[inline]
@@ -135,7 +135,7 @@ macro_rules! write_csr_as_usize_rv32 {
 }
 
 macro_rules! set {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Set the CSR
         #[inline]
         #[allow(unused_variables)]
@@ -152,7 +152,7 @@ macro_rules! set {
 }
 
 macro_rules! clear {
-    ($csr_number:literal, $asm_fn: ident) => {
+    ($csr_number:literal) => {
         /// Clear the CSR
         #[inline]
         #[allow(unused_variables)]

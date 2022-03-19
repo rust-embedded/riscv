@@ -101,9 +101,9 @@ impl FCSR {
     }
 }
 
-read_csr!(0x003, __read_fcsr);
-write_csr!(0x003, __write_fcsr);
-clear!(0x003, __clear_fcsr);
+read_csr!(0x003);
+write_csr!(0x003);
+clear!(0x003);
 
 /// Reads the CSR
 #[inline]

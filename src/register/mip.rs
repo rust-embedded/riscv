@@ -70,9 +70,9 @@ impl Mip {
     }
 }
 
-read_csr_as!(Mip, 0x344, __read_mip);
-set!(0x344, __set_mip);
-clear!(0x344, __clear_mip);
+read_csr_as!(Mip, 0x344);
+set!(0x344);
+clear!(0x344);
 
 set_clear_csr!(
     /// User Software Interrupt Pending

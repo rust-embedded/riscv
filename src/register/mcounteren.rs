@@ -35,10 +35,10 @@ impl Mcounteren {
     }
 }
 
-read_csr_as!(Mcounteren, 0x306, __read_mcounteren);
-write_csr!(0x306, __write_mcounteren);
-set!(0x306, __set_mcounteren);
-clear!(0x306, __clear_mcounteren);
+read_csr_as!(Mcounteren, 0x306);
+write_csr!(0x306);
+set!(0x306);
+clear!(0x306);
 
 set_clear_csr!(
 /// Supervisor cycle Enable

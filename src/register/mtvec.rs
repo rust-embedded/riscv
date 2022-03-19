@@ -38,9 +38,9 @@ impl Mtvec {
     }
 }
 
-read_csr_as!(Mtvec, 0x305, __read_mtvec);
+read_csr_as!(Mtvec, 0x305);
 
-write_csr!(0x305, __write_mtvec);
+write_csr!(0x305);
 
 /// Writes the CSR
 #[inline]

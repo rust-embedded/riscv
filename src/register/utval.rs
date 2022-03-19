@@ -1,7 +1,7 @@
 //! utval register
 
-read_csr_as_usize!(0x043, __read_utval);
-write_csr!(0x043, __write_utval);
+read_csr_as_usize!(0x043);
+write_csr!(0x043);
 
 /// Writes the CSR
 #[inline]

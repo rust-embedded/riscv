@@ -14,8 +14,8 @@ impl Ucause {
     }
 }
 
-read_csr_as!(Ucause, 0x042, __read_ucause);
-write_csr!(0x042, __write_ucause);
+read_csr_as!(Ucause, 0x042);
+write_csr!(0x042);
 
 /// Writes the CSR
 #[inline]

@@ -1,7 +1,7 @@
 //! Assembly instructions
 
 macro_rules! instruction {
-    ($(#[$attr:meta])*, $fnname:ident, $asm:expr, $asm_fn:ident) => (
+    ($(#[$attr:meta])*, $fnname:ident, $asm:expr) => (
         $(#[$attr])*
         #[inline]
         pub unsafe fn $fnname() {
@@ -20,18 +20,18 @@ instruction!(
     /// `nop` instruction wrapper
     ///
     /// Generates a no-operation.  Useful to prevent delay loops from being optimized away.
-    , nop, "nop", __nop);
+    , nop, "nop");
 instruction!(
     /// `EBREAK` instruction wrapper
     ///
     /// Generates a breakpoint exception.
-    , ebreak, "ebreak", __ebreak);
+    , ebreak, "ebreak");
 instruction!(
     /// `WFI` instruction wrapper
     ///
     /// Provides a hint to the implementation that the current hart can be stalled until an interrupt might need servicing.
     /// The WFI instruction is just a hint, and a legal implementation is to implement WFI as a NOP.
-    , wfi, "wfi", __wfi);
+    , wfi, "wfi");
 instruction!(
     /// `SFENCE.VMA` instruction wrapper (all address spaces and page table levels)
     ///
@@ -40,7 +40,7 @@ instruction!(
     /// are ordinarily not ordered with respect to loads and stores in the instruction stream.
     /// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
     /// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
-    , sfence_vma_all, "sfence.vma", __sfence_vma_all);
+    , sfence_vma_all, "sfence.vma");
 
 /// `SFENCE.VMA` instruction wrapper
 ///

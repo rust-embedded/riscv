@@ -96,10 +96,10 @@ impl Sstatus {
     }
 }
 
-read_csr_as!(Sstatus, 0x100, __read_sstatus);
-write_csr!(0x100, __write_sstatus);
-set!(0x100, __set_sstatus);
-clear!(0x100, __clear_sstatus);
+read_csr_as!(Sstatus, 0x100);
+write_csr!(0x100);
+set!(0x100);
+clear!(0x100);
 
 set_clear_csr!(
     /// User Interrupt Enable
