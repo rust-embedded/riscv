@@ -100,9 +100,9 @@ impl Medeleg {
     }
 }
 
-read_csr_as!(Medeleg, 0x302, __read_medeleg);
-set!(0x302, __set_medeleg);
-clear!(0x302, __clear_medeleg);
+read_csr_as!(Medeleg, 0x302);
+set!(0x302);
+clear!(0x302);
 
 set_clear_csr!(
     /// Instruction Address Misaligned Delegate

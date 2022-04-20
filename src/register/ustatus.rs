@@ -23,10 +23,10 @@ impl Ustatus {
     }
 }
 
-read_csr_as!(Ustatus, 0x000, __read_ustatus);
-write_csr!(0x000, __write_ustatus);
-set!(0x000, __set_ustatus);
-clear!(0x000, __clear_ustatus);
+read_csr_as!(Ustatus, 0x000);
+write_csr!(0x000);
+set!(0x000);
+clear!(0x000);
 
 set_clear_csr!(
     /// User Interrupt Enable

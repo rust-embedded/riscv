@@ -138,4 +138,4 @@ impl Mcause {
     }
 }
 
-read_csr_as!(Mcause, 0x342, __read_mcause);
+read_csr_as!(Mcause, 0x342);

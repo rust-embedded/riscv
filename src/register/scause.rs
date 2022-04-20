@@ -117,8 +117,8 @@ impl Scause {
     }
 }
 
-read_csr_as!(Scause, 0x142, __read_scause);
-write_csr!(0x142, __write_scause);
+read_csr_as!(Scause, 0x142);
+write_csr!(0x142);
 
 /// Writes the CSR
 #[inline]

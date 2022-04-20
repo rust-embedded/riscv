@@ -94,8 +94,8 @@ pub enum Mode {
     Sv64 = 11,
 }
 
-read_csr_as!(Satp, 0x180, __read_satp);
-write_csr_as_usize!(0x180, __write_satp);
+read_csr_as!(Satp, 0x180);
+write_csr_as_usize!(0x180);
 
 /// Sets the register to corresponding page table mode, physical page number and address space id.
 #[inline]

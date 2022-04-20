@@ -70,9 +70,9 @@ impl Mie {
     }
 }
 
-read_csr_as!(Mie, 0x304, __read_mie);
-set!(0x304, __set_mie);
-clear!(0x304, __clear_mie);
+read_csr_as!(Mie, 0x304);
+set!(0x304);
+clear!(0x304);
 
 set_clear_csr!(
     /// User Software Interrupt Enable

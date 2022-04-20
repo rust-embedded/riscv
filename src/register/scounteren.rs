@@ -35,10 +35,10 @@ impl Scounteren {
     }
 }
 
-read_csr_as!(Scounteren, 0x106, __read_scounteren);
-write_csr!(0x106, __write_scounteren);
-set!(0x106, __set_scounteren);
-clear!(0x106, __clear_scounteren);
+read_csr_as!(Scounteren, 0x106);
+write_csr!(0x106);
+set!(0x106);
+clear!(0x106);
 
 set_clear_csr!(
 /// User cycle Enable

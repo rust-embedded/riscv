@@ -34,4 +34,4 @@ impl Uip {
     }
 }
 
-read_csr_as!(Uip, 0x044, __read_uip);
+read_csr_as!(Uip, 0x044);

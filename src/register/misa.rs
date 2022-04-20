@@ -51,7 +51,7 @@ impl Misa {
     }
 }
 
-read_csr!(0x301, __read_misa);
+read_csr!(0x301);
 
 /// Reads the CSR
 #[inline]

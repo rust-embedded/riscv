@@ -33,8 +33,8 @@ impl Utvec {
     }
 }
 
-read_csr_as!(Utvec, 0x005, __read_utvec);
-write_csr!(0x005, __write_utvec);
+read_csr_as!(Utvec, 0x005);
+write_csr!(0x005);
 
 /// Writes the CSR
 #[inline]

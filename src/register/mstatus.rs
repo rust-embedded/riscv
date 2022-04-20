@@ -209,10 +209,10 @@ impl Mstatus {
     }
 }
 
-read_csr_as!(Mstatus, 0x300, __read_mstatus);
-write_csr!(0x300, __write_mstatus);
-set!(0x300, __set_mstatus);
-clear!(0x300, __clear_mstatus);
+read_csr_as!(Mstatus, 0x300);
+write_csr!(0x300);
+set!(0x300);
+clear!(0x300);
 
 set_clear_csr!(
     /// User Interrupt Enable

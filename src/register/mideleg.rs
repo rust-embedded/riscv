@@ -52,9 +52,9 @@ impl Mideleg {
     }
 }
 
-read_csr_as!(Mideleg, 0x303, __read_mideleg);
-set!(0x303, __set_mideleg);
-clear!(0x303, __clear_mideleg);
+read_csr_as!(Mideleg, 0x303);
+set!(0x303);
+clear!(0x303);
 
 set_clear_csr!(
     /// User Software Interrupt Delegate
