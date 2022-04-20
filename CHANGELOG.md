@@ -6,11 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [v0.8.0] - 2022-04-20
+
 ### Added
+
 - Add `#[cfg(riscv32)]` to `pmpcfg1` and `pmpcfg3` modules
 - Add enums `Range`, `Permission` for PMP configuration
 - Add `set_pmp()` and `clear_pmp()` functions to pmpcfg(x) modules
 - Add struct `Pmpcsr` and is returned from `pmpcfgx::read()`
+- Add `singleton!` macro
 - Add delay structure and methods using embedded-hal traits and `mcycle` register
 - Add `asm::delay()` function for assembly-based busy-loops
 - Add `asm::nop()`, a wrapper for implementing a `nop` instruction
@@ -22,6 +27,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Change `pmpcfgx::read()` macro to `read_csr_as!()` from `read_csr_as_usize!()`
 - Inline assembly is now always used
 - Update Minimum Supported Rust Version to 1.59
+
+### Fixed
+
+- Fix `sfence.vma` operand order
 
 ### Removed
 
@@ -76,7 +85,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed MSRV by restricting the upper bound of `bare-metal` version
 
-[Unreleased]: https://github.com/rust-embedded/riscv/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv/compare/v0.8.0...HEAD
+[v0.8.0]: https://github.com/rust-embedded/riscv/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/rust-embedded/riscv/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/rust-embedded/riscv/compare/v0.5.6...v0.6.0
 [v0.5.6]: https://github.com/rust-embedded/riscv/compare/v0.5.5...v0.5.6
