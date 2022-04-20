@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Remove `inline-asm` feature which is now always enabled
 
-## [v0.7.0] - 2020-07-29
+## [v0.7.0] - 2021-07-29
 
 ### Added
 
