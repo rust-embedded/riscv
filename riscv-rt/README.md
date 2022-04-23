@@ -17,7 +17,7 @@ compile with older versions but that may change in any new patch release.
 
 ## License
 
-Copyright 2018 [RISC-V team][team]
+Copyright 2018-2022 [RISC-V team][team]
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
