@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Update `riscv` to version 0.8
+- Update Minimum Supported Rust Version to 1.59
+
+### Removed
+
+- Remove `inline-asm` feature which is now always enabled
+
 ## [v0.8.1] - 2022-01-25
 
 ### Added

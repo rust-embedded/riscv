@@ -11,8 +11,8 @@ jobs:
     continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.42.0
-        rust: [nightly, stable, 1.42.0]
+        # All generated code should be running on stable now, MSRV is 1.59.0
+        rust: [nightly, stable, 1.59.0]
 
         include:
           # Nightly is only for reference and allowed to fail
