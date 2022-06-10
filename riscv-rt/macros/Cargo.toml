@@ -22,8 +22,3 @@ proc-macro2 = "1.0"
 [dependencies.syn]
 version = "1.0"
 features = ["extra-traits", "full"]
-
-[dependencies.rand]
-version = "0.7.3"
-default-features = false
-features = ["small_rng"]
