@@ -4,7 +4,6 @@ extern crate riscv_target;
 use riscv_target::Target;
 use std::env;
 use std::fs;
-use std::io::Write;
 use std::path::PathBuf;
 
 fn main() {
@@ -15,26 +14,15 @@ fn main() {
     if target.starts_with("riscv") {
         let mut target = Target::from_target_str(&target);
         target.retain_extensions("imfdc");
+        let archive = format!("bin/{}.a", target.to_string());
 
-        let target = target.to_string();
-
-        fs::copy(
-            format!("bin/{}.a", target),
-            out_dir.join(format!("lib{}.a", name)),
-        )
-        .unwrap();
-
+        fs::copy(&archive, out_dir.join(format!("lib{}.a", name))).unwrap();
+        println!("cargo:rerun-if-changed={}", archive);
         println!("cargo:rustc-link-lib=static={}", name);
-        println!("cargo:rustc-link-search={}", out_dir.display());
     }
 
     // Put the linker script somewhere the linker can find it
-    fs::File::create(out_dir.join("link.x"))
-        .unwrap()
-        .write_all(include_bytes!("link.x"))
-        .unwrap();
+    fs::write(out_dir.join("link.x"), include_bytes!("link.x")).unwrap();
     println!("cargo:rustc-link-search={}", out_dir.display());
-
-    println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=link.x");
 }
