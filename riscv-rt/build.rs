@@ -24,7 +24,6 @@ fn main() {
         .unwrap();
 
         println!("cargo:rustc-link-lib=static={}", name);
-        println!("cargo:rustc-link-search={}", out_dir.display());
     }
 
     // Put the linker script somewhere the linker can find it
