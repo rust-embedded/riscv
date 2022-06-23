@@ -4,7 +4,6 @@ extern crate riscv_target;
 use riscv_target::Target;
 use std::env;
 use std::fs;
-use std::io::Write;
 use std::path::PathBuf;
 
 fn main() {
@@ -29,10 +28,7 @@ fn main() {
     }
 
     // Put the linker script somewhere the linker can find it
-    fs::File::create(out_dir.join("link.x"))
-        .unwrap()
-        .write_all(include_bytes!("link.x"))
-        .unwrap();
+    fs::write(out_dir.join("link.x"), include_bytes!("link.x")).unwrap();
     println!("cargo:rustc-link-search={}", out_dir.display());
 
     println!("cargo:rerun-if-changed=build.rs");
