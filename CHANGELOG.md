@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fix `asm::delay()` to ensure count register is always reloaded
+### Changed
+
+ - Use new `DelayUs` trait from `embedded-hal` `v1.0.0-alpha.7`
+   - NOTE: this removes `DelayMs` and `DelayUs` with `u64` version
 
 ## [v0.8.0] - 2022-04-20
 
