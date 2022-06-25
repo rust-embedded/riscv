@@ -10,7 +10,7 @@ keywords = ["riscv", "runtime", "startup"]
 license = "MIT OR Apache-2.0"
 name = "riscv-rt-macros"
 repository = "https://github.com/rust-embedded/riscv-rt"
-version = "0.1.6"
+version = "0.2.0"
 
 [lib]
 proc-macro = true

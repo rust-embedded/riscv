@@ -361,11 +361,11 @@ extern "C" {
 /// never returns.
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
-pub unsafe extern "C" fn start_rust() -> ! {
+pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     #[rustfmt::skip]
     extern "Rust" {
         // This symbol will be provided by the user via `#[entry]`
-        fn main() -> !;
+        fn main(a0: usize, a1: usize, a2: usize) -> !;
 
         // This symbol will be provided by the user via `#[pre_init]`
         fn __pre_init();
@@ -386,7 +386,7 @@ pub unsafe extern "C" fn start_rust() -> ! {
 
     _setup_interrupts();
 
-    main();
+    main(a0, a1, a2);
 }
 
 /// Registers saved in trap handler
