@@ -58,9 +58,7 @@ _abs_start:
     li  x7, 0
     li  x8, 0
     li  x9, 0
-    li  x10,0
-    li  x11,0
-    li  x12,0
+    // a0..a2 (x10..x12) skipped
     li  x13,0
     li  x14,0
     li  x15,0
@@ -87,23 +85,23 @@ _abs_start:
     .option pop
 
     // Check hart id
-    csrr a2, mhartid
+    csrr t2, mhartid
     lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
-    bgtu a2, t0, abort
+    bgtu t2, t0, abort
 
     // Allocate stacks
     la sp, _stack_start
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)
 #ifdef __riscv_mul
-    mul t0, a2, t0
+    mul t0, t2, t0
 #else
-    beqz a2, 2f  // Jump if single-hart
-    mv t1, a2
-    mv t2, t0
+    beqz t2, 2f  // Jump if single-hart
+    mv t1, t2
+    mv t3, t0
 1:
-    add t0, t0, t2
+    add t0, t0, t3
     addi t1, t1, -1
     bnez t1, 1b
 2:
