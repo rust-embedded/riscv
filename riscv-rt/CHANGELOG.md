@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Pass `a0..a2` register values to the `#[entry]` function.
+
 ### Changed
 
 - Update `riscv` to version 0.8
+- Update `riscv-rt-macros` to 0.2.0
 - Update Minimum Supported Rust Version to 1.59
 - The main symbol is no longer randomly generated in the `#[entry]` macro, instead it uses `__risc_v_rt__main`.
 
