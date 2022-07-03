@@ -330,13 +330,8 @@
 #![no_std]
 #![deny(missing_docs)]
 
-extern crate r0;
-extern crate riscv;
-extern crate riscv_rt_macros as macros;
-
-pub use macros::{entry, pre_init};
-
 use riscv::register::mcause;
+pub use riscv_rt_macros::{entry, pre_init};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
@@ -548,4 +543,16 @@ pub extern "Rust" fn default_mp_hook() -> bool {
             unsafe { riscv::asm::wfi() }
         },
     }
+}
+
+/// Default implementation of `_setup_interrupts` that sets `mtvec` to a trap handler address.
+#[doc(hidden)]
+#[no_mangle]
+#[rustfmt::skip]
+pub unsafe extern "Rust" fn default_setup_interrupts() {
+    use riscv::register::mtvec::{self, TrapMode};
+    extern "C" {
+        fn _start_trap();
+    }
+    mtvec::write(_start_trap as usize, TrapMode::Direct);
 }
