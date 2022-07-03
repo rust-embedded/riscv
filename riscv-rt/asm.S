@@ -167,16 +167,8 @@ default_start_trap:
     addi sp, sp, 16*REGBYTES
     mret
 
-.section .text
-.global default_setup_interrupts
-
-default_setup_interrupts:
-    // Set trap handler
-    la t0, _start_trap
-    csrw mtvec, t0
-    ret
-
 /* Make sure there is an abort when linking */
+.section .text.abort
 .globl abort
 abort:
     j abort
