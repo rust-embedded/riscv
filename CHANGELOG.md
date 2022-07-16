@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `asm::delay()` to ensure count register is always reloaded
+
 ## [v0.8.0] - 2022-04-20
 
 ### Added
