@@ -15,10 +15,9 @@ version = "0.0.1"
 edition = "2018"
 
 [features]
-default = ["inline-asm", "jlink-quirks"]
-inline-asm = []
+default = ["jlink-quirks"]
 jlink-quirks = []
 no-semihosting = []
 
 [dependencies]
-riscv = "0.7.0"
+riscv = "0.8.0"
