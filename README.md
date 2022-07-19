@@ -1,9 +1,20 @@
 [![crates.io](https://img.shields.io/crates/v/cortex-m-semihosting.svg)](https://crates.io/crates/cortex-m-semihosting)
 [![crates.io](https://img.shields.io/crates/d/cortex-m-semihosting.svg)](https://crates.io/crates/cortex-m-semihosting)
 
-# `cortex-m-semihosting`
+# `riscv-semihosting`
 
-> Semihosting for ARM Cortex-M processors
+> Semihosting for RISC-V processors
+
+This is a fork of the
+[cortex-m-semihosting](https://docs.rs/cortex-m-semihosting) crate with minimal
+changes to support the RISC-V Semihosting Specification as documented
+[here](https://github.com/riscv/riscv-semihosting-spec/blob/main/riscv-semihosting-spec.adoc)
+
+This crate can be used in exactly the same way as cortex-m-semihosting, simply
+by changing calls to `cortex_m_semihosting::*` to `riscv_semihosting::*`.
+
+The rest of this document is as-is from upstream, and obviously any
+ARM-specific sections should be ignored.
 
 This project is developed and maintained by the [Cortex-M team][team].
 
