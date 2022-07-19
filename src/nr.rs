@@ -1,6 +1,10 @@
 //! Semihosting operations
+//!
+//! The details of what each operation does can be found in the
+//! [ARM Semihosting Specification](https://github.com/ARM-software/abi-aa/blob/main/semihosting/semihosting.rst#semihosting-operations).
+//! The RISC-V Semihosting operations are identiacal to ARM's, so their
+//! documentation is sufficient.
 
-// TODO document
 #![allow(missing_docs)]
 
 pub const CLOCK: usize = 0x10;
