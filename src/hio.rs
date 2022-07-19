@@ -1,64 +1,46 @@
 //! Host I/O
 
+use crate::nr;
 use core::{fmt, slice};
-use nr;
 
-/// Host's standard error
-pub struct HStderr {
+/// A byte stream to the host (e.g., host's stdout or stderr).
+#[derive(Clone, Copy)]
+pub struct HostStream {
     fd: usize,
 }
 
-impl HStderr {
+impl HostStream {
     /// Attempts to write an entire `buffer` into this sink
     pub fn write_all(&mut self, buffer: &[u8]) -> Result<(), ()> {
         write_all(self.fd, buffer)
     }
 }
 
-impl fmt::Write for HStderr {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.write_all(s.as_bytes()).map_err(|_| fmt::Error)
-    }
-}
-
-/// Host's standard output
-pub struct HStdout {
-    fd: usize,
-}
-
-impl HStdout {
-    /// Attempts to write an entire `buffer` into this sink
-    pub fn write_all(&mut self, buffer: &[u8]) -> Result<(), ()> {
-        write_all(self.fd, buffer)
-    }
-}
-
-impl fmt::Write for HStdout {
+impl fmt::Write for HostStream {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_all(s.as_bytes()).map_err(|_| fmt::Error)
     }
 }
 
 /// Construct a new handle to the host's standard error.
-pub fn hstderr() -> Result<HStderr, ()> {
+pub fn hstderr() -> Result<HostStream, ()> {
     // There is actually no stderr access in ARM Semihosting documentation. Use
     // convention used in libgloss.
     // See: libgloss/arm/syscalls.c, line 139.
     // https://sourceware.org/git/gitweb.cgi?p=newlib-cygwin.git;a=blob;f=libgloss/arm/syscalls.c#l139
-    open(":tt\0", nr::open::W_APPEND).map(|fd| HStderr { fd })
+    open(":tt\0", nr::open::W_APPEND)
 }
 
 /// Construct a new handle to the host's standard output.
-pub fn hstdout() -> Result<HStdout, ()> {
-    open(":tt\0", nr::open::W_TRUNC).map(|fd| HStdout { fd })
+pub fn hstdout() -> Result<HostStream, ()> {
+    open(":tt\0", nr::open::W_TRUNC)
 }
 
-fn open(name: &str, mode: usize) -> Result<usize, ()> {
+fn open(name: &str, mode: usize) -> Result<HostStream, ()> {
     let name = name.as_bytes();
-    match unsafe { syscall!(OPEN, name.as_ptr(), mode, name.len() - 1) } as
-        isize {
+    match unsafe { syscall!(OPEN, name.as_ptr(), mode, name.len() - 1) } as isize {
         -1 => Err(()),
-        fd => Ok(fd as usize),
+        fd => Ok(HostStream { fd: fd as usize }),
     }
 }
 
@@ -70,10 +52,12 @@ fn write_all(fd: usize, mut buffer: &[u8]) -> Result<(), ()> {
             // `n` bytes were not written
             n if n <= buffer.len() => {
                 let offset = (buffer.len() - n) as isize;
-                buffer = unsafe {
-                    slice::from_raw_parts(buffer.as_ptr().offset(offset), n)
-                }
+                buffer = unsafe { slice::from_raw_parts(buffer.as_ptr().offset(offset), n) }
             }
+            #[cfg(feature = "jlink-quirks")]
+            // Error (-1) - should be an error but JLink can return -1, -2, -3,...
+            // For good measure, we allow up to negative 15.
+            n if n > 0xfffffff0 => return Ok(()),
             // Error
             _ => return Err(()),
         }
