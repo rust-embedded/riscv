@@ -2,26 +2,32 @@
 //!
 //! # What is semihosting?
 //!
-//! "Semihosting is a mechanism that enables code running on an ARM target to communicate and use
-//! the Input/Output facilities on a host computer that is running a debugger." - ARM
+//! "Semihosting is a technique where an application running in a debug or
+//! simulation environment can access elements of the system hosting the
+//! debugger or simulator including console, file system, time and other
+//! functions. This allows for diagnostics, interaction and measurement of a
+//! target system without requiring significant infrastructure to exist in that
+//! target environment." - RISC-V Semihosting Spec
 //!
 //! # Interface
 //!
 //! This crate provides implementations of
-//! [`core::fmt::Write`](https://doc.rust-lang.org/core/fmt/trait.Write.html), so you can use it,
-//! in conjunction with
-//! [`core::format_args!`](https://doc.rust-lang.org/core/macro.format_args.html) or the [`write!` macro](https://doc.rust-lang.org/core/macro.write.html), for user-friendly construction and printing of formatted strings.
+//! [`core::fmt::Write`](https://doc.rust-lang.org/core/fmt/trait.Write.html),
+//! so you can use it, in conjunction with
+//! [`core::format_args!`](https://doc.rust-lang.org/core/macro.format_args.html)
+//! or the [`write!` macro](https://doc.rust-lang.org/core/macro.write.html),
+//! for user-friendly construction and printing of formatted strings.
 //!
-//! Since semihosting operations are modeled as [system calls][sc], this crate exposes an untyped
-//! `syscall!` interface just like the [`sc`] crate does.
+//! Since semihosting operations are modeled as [system calls][sc], this crate
+//! exposes an untyped `syscall!` interface just like the [`sc`] crate does.
 //!
 //! [sc]: https://en.wikipedia.org/wiki/System_call
 //! [`sc`]: https://crates.io/crates/sc
 //!
 //! # Forewarning
 //!
-//! Semihosting operations are *very* slow. Like, each WRITE operation can take hundreds of
-//! milliseconds.
+//! Semihosting operations are *very* slow. Like, each WRITE operation can take
+//! hundreds of milliseconds.
 //!
 //! # Example
 //!
@@ -56,8 +62,8 @@
 //! # the command will block at this point
 //! ```
 //!
-//! The OpenOCD logs will be redirected to `/tmp/openocd.log`. You can view those logs in "real
-//! time" using `tail`
+//! The OpenOCD logs will be redirected to `/tmp/openocd.log`. You can view
+//! those logs in "real time" using `tail`
 //!
 //! ``` text
 //! $ tail -f /tmp/openocd.log
@@ -69,8 +75,9 @@
 //! Info : nrf51.cpu: hardware has 4 breakpoints, 2 watchpoints
 //! ```
 //!
-//! Alternatively you could omit the `-l` flag from the `openocd` call, and the `tail -f` command
-//! but the OpenOCD output will have intermingled in it logs from its normal operation.
+//! Alternatively you could omit the `-l` flag from the `openocd` call, and the
+//! `tail -f` command but the OpenOCD output will have intermingled in it logs
+//! from its normal operation.
 //!
 //! Then, we run the program:
 //!
@@ -119,9 +126,9 @@
 //!
 //! ## The `dbg!` macro
 //!
-//! Analogous to [`std::dbg`](https://doc.rust-lang.org/std/macro.dbg.html) the macro
-//! `dbg!` returns a given expression and prints it using `heprintln!` including context
-//! for quick and dirty debugging.
+//! Analogous to [`std::dbg`](https://doc.rust-lang.org/std/macro.dbg.html) the
+//! macro `dbg!` returns a given expression and prints it using `heprintln!`
+//! including context for quick and dirty debugging.
 //!
 //! Panics if `heprintln!` returns an error.
 //!
@@ -153,10 +160,10 @@
 //!
 //! ## `jlink-quirks`
 //!
-//! When this feature is enabled, return values above `0xfffffff0` from semihosting operation
-//! `SYS_WRITE` (0x05) are interpreted as if the entire buffer had been written. The current
-//! latest version 6.48b of J-Link exhibits such behaviour, causing a panic if this feature
-//! is not enabled.
+//! When this feature is enabled, return values above `0xfffffff0` from
+//! semihosting operation `SYS_WRITE` (0x05) are interpreted as if the entire
+//! buffer had been written. The current latest version 6.48b of J-Link exhibits
+//! such behaviour, causing a panic if this feature is not enabled.
 //!
 //! ## `no-semihosting`
 //!
@@ -164,12 +171,11 @@
 //!
 //! # Reference
 //!
-//! For documentation about the semihosting operations, check:
-//!
-//! 'Chapter 8 - Semihosting' of the ['ARM Compiler toolchain Version 5.0'][pdf]
-//! manual.
-//!
-//! [pdf]: http://infocenter.arm.com/help/topic/com.arm.doc.dui0471e/DUI0471E_developing_for_arm_processors.pdf
+//! For documentation about the semihosting operations, check
+//! ['Semihosting for AArch32 and AArch64'](https://github.com/ARM-software/abi-aa/blob/main/semihosting/semihosting.rst).
+//! The RISC-V Semihosting spec is identical to Arm's with the exception of the
+//! assembly sequence necessary to trigger a semihosting call, so their
+//! documentation is sufficient.
 
 #![deny(missing_docs)]
 #![no_std]
