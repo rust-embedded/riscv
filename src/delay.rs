@@ -1,3 +1,4 @@
+//! Delay devices and providers
 use crate::register::mcycle;
 use embedded_hal::blocking::delay::{DelayMs, DelayUs};
 
