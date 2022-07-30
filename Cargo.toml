@@ -19,4 +19,4 @@ targets = [
 [dependencies]
 bare-metal = "1.0.0"
 bit_field = "0.10.0"
-embedded-hal = "1.0.0-alpha.7"
+embedded-hal = "1.0.0-alpha.8"
