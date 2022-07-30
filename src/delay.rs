@@ -8,7 +8,8 @@ pub struct McycleDelay {
 }
 
 impl McycleDelay {
-    /// Constructs the delay provider
+    /// Constructs the delay provider.
+    /// `ticks_second` should be the clock speed of the core, in Hertz
     #[inline(always)]
     pub fn new(ticks_second: u32) -> Self {
         Self { ticks_second }
