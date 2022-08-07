@@ -16,7 +16,7 @@ impl Marchid {
     }
 }
 
-read_csr!(0xF11);
+read_csr!(0xF12);
 
 /// Reads the CSR
 #[inline]
