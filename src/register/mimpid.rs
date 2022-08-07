@@ -16,7 +16,7 @@ impl Mimpid {
     }
 }
 
-read_csr!(0xF11);
+read_csr!(0xF13);
 
 /// Reads the CSR
 #[inline]
