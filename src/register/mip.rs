@@ -81,17 +81,11 @@ set_clear_csr!(
     /// Supervisor Software Interrupt Pending
     , set_ssoft, clear_ssoft, 1 << 1);
 set_clear_csr!(
-    /// Machine Software Interrupt Pending
-    , set_msoft, clear_msoft, 1 << 3);
-set_clear_csr!(
     /// User Timer Interrupt Pending
     , set_utimer, clear_utimer, 1 << 4);
 set_clear_csr!(
     /// Supervisor Timer Interrupt Pending
     , set_stimer, clear_stimer, 1 << 5);
-set_clear_csr!(
-    /// Machine Timer Interrupt Pending
-    , set_mtimer, clear_mtimer, 1 << 7);
 set_clear_csr!(
     /// User External Interrupt Pending
     , set_uext, clear_uext, 1 << 8);
