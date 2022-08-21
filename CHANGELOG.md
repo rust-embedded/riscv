@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added `critical-section-single-core` feature which provides an implementation for the `critical_section` crate for single-core systems, based on disabling all interrupts.
+
 ### Fixed
 
 - Fix `asm::delay()` to ensure count register is always reloaded

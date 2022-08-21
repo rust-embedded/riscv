@@ -22,3 +22,6 @@ pub mod register;
 
 #[macro_use]
 mod macros;
+
+#[cfg(all(riscv, feature = "critical-section-single-core"))]
+mod critical_section;
