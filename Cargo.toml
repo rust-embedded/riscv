@@ -21,7 +21,6 @@ targets = [
 critical-section-single-core = ["critical-section/restore-state-bool"]
 
 [dependencies]
-bare-metal = "1.0.0"
 bit_field = "0.10.0"
 critical-section = "1.1.0"
 embedded-hal = "0.2.6"
