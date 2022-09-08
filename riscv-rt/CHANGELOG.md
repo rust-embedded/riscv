@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Remove superfluous parentheses from link.x, which caused linker errors with nightly.
+
 ## [v0.9.0] - 2022-07-01
 
 ### Added
