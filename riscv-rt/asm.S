@@ -46,8 +46,14 @@ _abs_start:
     .cfi_startproc
     .cfi_undefined ra
 
+    #ifdef SBI
+    csrw sie, 0     // interrupt disable 
+    csrw sip, 0     // no pending interrupts
+    #else
     csrw mie, 0
     csrw mip, 0
+    #endif
+    
 
     li  x1, 0
     li  x2, 0
@@ -84,8 +90,13 @@ _abs_start:
     la gp, __global_pointer$
     .option pop
 
-    // Check hart id
+    #ifdef SBI
+    // there is no equivalent of mhartid in supervisor mode.
+    // instead, the hartid is passed as paramter by SBI
+    mv t2, a0   
+    #else 
     csrr t2, mhartid
+    #endif
     lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
     bgtu t2, t0, abort
@@ -165,7 +176,11 @@ default_start_trap:
     LOAD a7, 15*REGBYTES(sp)
 
     addi sp, sp, 16*REGBYTES
+    #ifdef SBI
+    sret
+    #else
     mret
+    #endif
 
 /* Make sure there is an abort when linking */
 .section .text.abort

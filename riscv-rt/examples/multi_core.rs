@@ -11,7 +11,7 @@ use riscv_rt::entry;
 
 #[export_name = "_mp_hook"]
 #[rustfmt::skip]
-pub extern "Rust" fn user_mp_hook() -> bool {
+pub extern "Rust" fn user_mp_hook(hartid: usize) -> bool {
     let hartid = mhartid::read();
     if hartid == 0 {
         true
@@ -42,9 +42,7 @@ pub extern "Rust" fn user_mp_hook() -> bool {
 }
 
 #[entry]
-fn main() -> ! {
-    let hartid = mhartid::read();
-
+fn main(hartid: usize) -> ! {
     if hartid == 0 {
         // Waking hart 1...
         let addr = 0x02000004;
