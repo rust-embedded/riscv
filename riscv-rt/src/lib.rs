@@ -22,7 +22,7 @@
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
 //!
-//! - Support for a runtime in supervisor mode, bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
+//! - Support for a runtime in supervisor mode, that can be bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
 //!
 //! ``` text
 //! $ cargo new --bin app && cd $_
@@ -325,23 +325,23 @@
 //!
 //! # Features
 //!
-//! ## `sbi`
+//! ## `s-mode`
 //!
-//! The SBI runtime feature (`sbi`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
+//! The supervisor mode feature (`s-mode`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
 //!
 //! For example:
 //! ``` text
 //! [dependencies]
-//! riscv-rt = {features=["sbi"]}
+//! riscv-rt = {features=["s-mode"]}
 //! ```
-//! Using the SBI requires riscv-rt to be run in supervisor mode instead of machine code.
 //! Internally, riscv-rt uses different versions of precompiled static libraries
-//! for (i) machine mode and (ii) sbi. If the `sbi` feature was activated,
-//! the build script selects the sbi library. While most registers/instructions have variants for
+//! for (i) machine mode and (ii) supervisor mode. If the `s-mode` feature was activated,
+//! the build script selects the s-mode library. While most registers/instructions have variants for
 //! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
-//! mode. Instead, the hartid is passed as parameter by the calling SBI.
+//! mode. Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
 //!
-//! QEMU supports [OpenSBI](https://github.com/riscv-software-src/opensbi) as default firmware.
+//! Use case: QEMU supports [OpenSBI](https://github.com/riscv-software-src/opensbi) as default firmware.
+//! Using the SBI requires riscv-rt to be run in supervisor mode instead of machine mode.
 //! ``` text
 //! APP_BINARY=$(find target -name app)
 //! sudo qemu-system-riscv64 -m 2G -nographic -machine virt -kernel $APP_BINARY
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
 
     // sbi passes hartid as first parameter (a0)
     let hartid: usize;
-    if cfg!(feature = "sbi") {
+    if cfg!(feature = "s-mode") {
         hartid = a0;
     } else {
         hartid = mhartid::read();
@@ -461,7 +461,7 @@ pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
         let code: usize;
         let is_exception: bool;
 
-        if cfg!(feature = "sbi") {
+        if cfg!(feature = "s-mode") {
             let cause = scause::read();
             is_exception = cause.is_exception();
             code = cause.code();
@@ -601,7 +601,7 @@ pub unsafe extern "Rust" fn default_setup_interrupts() {
         fn _start_trap();
     }
 
-    if cfg!(feature = "sbi") {
+    if cfg!(feature = "s-mode") {
         use riscv::register::stvec::{self, TrapMode};
         stvec::write(_start_trap as usize, TrapMode::Direct);
     } else {

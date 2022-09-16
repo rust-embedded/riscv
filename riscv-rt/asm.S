@@ -46,7 +46,7 @@ _abs_start:
     .cfi_startproc
     .cfi_undefined ra
 
-    #ifdef SBI
+    #ifdef SMODE
     csrw sie, 0     // interrupt disable 
     csrw sip, 0     // no pending interrupts
     #else
@@ -90,9 +90,9 @@ _abs_start:
     la gp, __global_pointer$
     .option pop
 
-    #ifdef SBI
+    #ifdef SMODE
     // there is no equivalent of mhartid in supervisor mode.
-    // instead, the hartid is passed as paramter by SBI
+    // instead, the hartid is passed as paramter by SMODE
     mv t2, a0   
     #else 
     csrr t2, mhartid
@@ -176,7 +176,7 @@ default_start_trap:
     LOAD a7, 15*REGBYTES(sp)
 
     addi sp, sp, 16*REGBYTES
-    #ifdef SBI
+    #ifdef SMODE
     sret
     #else
     mret

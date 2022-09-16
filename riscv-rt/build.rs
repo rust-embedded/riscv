@@ -15,9 +15,9 @@ fn main() {
         let mut target = Target::from_target_str(&target);
         target.retain_extensions("imfdc");
         let archive: String;
-        if cfg!(feature = "sbi") {
-            println!("======== compiling riscv-rt for sbi");
-            archive = format!("bin/{}-sbi.a", target.to_string());
+        if cfg!(feature = "s-mode") {
+            println!("======== compiling riscv-rt for s-mode");
+            archive = format!("bin/{}-smode.a", target.to_string());
         } else {
             archive = format!("bin/{}.a", target.to_string());
         }
