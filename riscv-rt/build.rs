@@ -14,7 +14,7 @@ fn main() {
     if target.starts_with("riscv") {
         let mut target = Target::from_target_str(&target);
         target.retain_extensions("imfdc");
-        let archive:String;
+        let archive: String;
         if cfg!(feature = "sbi") {
             println!("======== compiling riscv-rt for sbi");
             archive = format!("bin/{}-sbi.a", target.to_string());

@@ -21,8 +21,8 @@
 //!   filename can be use instead of `memory.x`.
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
-//! 
-//! - Support for a runtime in supervisor mode, bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc) 
+//!
+//! - Support for a runtime in supervisor mode, bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
 //!
 //! ``` text
 //! $ cargo new --bin app && cd $_
@@ -322,25 +322,25 @@
 //! ```
 //!
 //! Default implementation of this function stucks in a busy-loop.
-//! 
+//!
 //! # Features
-//! 
+//!
 //! ## `sbi`
-//! 
+//!
 //! The SBI runtime feature (`sbi`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
-//! 
-//! For example: 
+//!
+//! For example:
 //! ``` text
 //! [dependencies]
 //! riscv-rt = {features=["sbi"]}
-//! ``` 
+//! ```
 //! Using the SBI requires riscv-rt to be run in supervisor mode instead of machine code.
-//! Internally, riscv-rt uses different versions of precompiled static libraries 
-//! for (i) machine mode and (ii) sbi. If the `sbi` feature was activated, 
-//! the build script selects the sbi library. While most registers/instructions have variants for 
-//! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor 
+//! Internally, riscv-rt uses different versions of precompiled static libraries
+//! for (i) machine mode and (ii) sbi. If the `sbi` feature was activated,
+//! the build script selects the sbi library. While most registers/instructions have variants for
+//! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
 //! mode. Instead, the hartid is passed as parameter by the calling SBI.
-//! 
+//!
 //! QEMU supports [OpenSBI](https://github.com/riscv-software-src/opensbi) as default firmware.
 //! ``` text
 //! APP_BINARY=$(find target -name app)
@@ -359,7 +359,7 @@
 #![no_std]
 #![deny(missing_docs)]
 
-use riscv::register::{scause,mcause,mhartid};
+use riscv::register::{mcause, mhartid, scause};
 pub use riscv_rt_macros::{entry, pre_init};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
@@ -400,7 +400,7 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     }
 
     // sbi passes hartid as first parameter (a0)
-    let hartid : usize;
+    let hartid: usize;
     if cfg!(feature = "sbi") {
         hartid = a0;
     } else {
@@ -458,7 +458,7 @@ pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     }
 
     unsafe {
-        let code : usize;
+        let code: usize;
         let is_exception: bool;
 
         if cfg!(feature = "sbi") {
@@ -484,7 +484,7 @@ pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
             } else {
                 DefaultHandler();
             }
-        }    
+        }
     }
 }
 

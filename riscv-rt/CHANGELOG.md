@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Optional cargo feature `sbi` for SBI compatibility, including conditional compilation for machine mode instructions.
+
 ### Changed
 
 - Remove superfluous parentheses from link.x, which caused linker errors with nightly.
+- Changed `mp_hook` signature, hartid as passed as usize parameter by the caller (required for `sbi` feature).
 
 ## [v0.9.0] - 2022-07-01
 
