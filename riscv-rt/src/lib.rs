@@ -359,7 +359,12 @@
 #![no_std]
 #![deny(missing_docs)]
 
-use riscv::register::{mcause, mhartid, scause};
+#[cfg(feature = "s-mode")]
+use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
+
+#[cfg(not(feature = "s-mode"))]
+use riscv::register::{mcause as xcause, mhartid, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
+
 pub use riscv_rt_macros::{entry, pre_init};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
@@ -400,12 +405,10 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     }
 
     // sbi passes hartid as first parameter (a0)
-    let hartid: usize;
-    if cfg!(feature = "s-mode") {
-        hartid = a0;
-    } else {
-        hartid = mhartid::read();
-    }
+    #[cfg(feature = "s-mode")]
+    let hartid = a0;
+    #[cfg(not(feature = "s-mode"))]
+    let hartid = mhartid::read();
 
     if _mp_hook(hartid) {
         __pre_init();
@@ -458,24 +461,13 @@ pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     }
 
     unsafe {
-        let code: usize;
-        let is_exception: bool;
+        let cause = xcause::read();
 
-        if cfg!(feature = "s-mode") {
-            let cause = scause::read();
-            is_exception = cause.is_exception();
-            code = cause.code();
-        } else {
-            let cause = mcause::read();
-            is_exception = cause.is_exception();
-            code = cause.code();
-        }
-
-        if is_exception {
+        if cause.is_exception() {
             ExceptionHandler(&*trap_frame)
         } else {
-            if code < __INTERRUPTS.len() {
-                let h = &__INTERRUPTS[code];
+            if cause.code() < __INTERRUPTS.len() {
+                let h = &__INTERRUPTS[cause.code()];
                 if h.reserved == 0 {
                     DefaultHandler();
                 } else {
@@ -601,11 +593,5 @@ pub unsafe extern "Rust" fn default_setup_interrupts() {
         fn _start_trap();
     }
 
-    if cfg!(feature = "s-mode") {
-        use riscv::register::stvec::{self, TrapMode};
-        stvec::write(_start_trap as usize, TrapMode::Direct);
-    } else {
-        use riscv::register::mtvec::{self, TrapMode};
-        mtvec::write(_start_trap as usize, TrapMode::Direct);        
-    }
+    xtvec::write(_start_trap as usize, xTrapMode::Direct);
 }
