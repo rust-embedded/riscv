@@ -10,6 +10,9 @@ keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
 edition = "2018"
 
+[features]
+s-mode = []
+
 [dependencies]
 r0 = "1.0.0"
 riscv = "0.8"

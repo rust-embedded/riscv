@@ -22,6 +22,8 @@
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
 //!
+//! - Support for a runtime in supervisor mode, that can be bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
+//!
 //! ``` text
 //! $ cargo new --bin app && cd $_
 //!
@@ -230,12 +232,13 @@
 //! This function is called from all the harts and must return true only for one hart,
 //! which will perform memory initialization. For other harts it must return false
 //! and implement wake-up in platform-dependent way (e.g. after waiting for a user interrupt).
+//! The parameter `hartid` specifies the hartid of the caller.
 //!
 //! This function can be redefined in the following way:
 //!
 //! ``` no_run
 //! #[export_name = "_mp_hook"]
-//! pub extern "Rust" fn mp_hook() -> bool {
+//! pub extern "Rust" fn mp_hook(hartid: usize) -> bool {
 //!    // ...
 //! }
 //! ```
@@ -245,7 +248,7 @@
 //! ### `ExceptionHandler`
 //!
 //! This function is called when exception is occured. The exception reason can be decoded from the
-//! `mcause` register.
+//! `mcause`/`scause` register.
 //!
 //! This function can be redefined in the following way:
 //!
@@ -300,7 +303,7 @@
 //! ### `DefaultHandler`
 //!
 //! This function is called when interrupt without defined interrupt handler is occured.
-//! The interrupt reason can be decoded from the `mcause` register.
+//! The interrupt reason can be decoded from the `mcause`/`scause` register.
 //!
 //! This function can be redefined in the following way:
 //!
@@ -319,12 +322,49 @@
 //! ```
 //!
 //! Default implementation of this function stucks in a busy-loop.
+//!
+//! # Features
+//!
+//! ## `s-mode`
+//!
+//! The supervisor mode feature (`s-mode`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
+//!
+//! For example:
+//! ``` text
+//! [dependencies]
+//! riscv-rt = {features=["s-mode"]}
+//! ```
+//! Internally, riscv-rt uses different versions of precompiled static libraries
+//! for (i) machine mode and (ii) supervisor mode. If the `s-mode` feature was activated,
+//! the build script selects the s-mode library. While most registers/instructions have variants for
+//! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
+//! mode. Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
+//!
+//! Use case: QEMU supports [OpenSBI](https://github.com/riscv-software-src/opensbi) as default firmware.
+//! Using the SBI requires riscv-rt to be run in supervisor mode instead of machine mode.
+//! ``` text
+//! APP_BINARY=$(find target -name app)
+//! sudo qemu-system-riscv64 -m 2G -nographic -machine virt -kernel $APP_BINARY
+//! ```
+//! It requires the memory layout to be non-overlapping, like
+//! ``` text
+//! MEMORY
+//! {
+//!   RAM : ORIGIN = 0x80200000, LENGTH = 0x8000000
+//!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
+//! }
+//! ```
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
 #![deny(missing_docs)]
 
-use riscv::register::mcause;
+#[cfg(feature = "s-mode")]
+use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
+
+#[cfg(not(feature = "s-mode"))]
+use riscv::register::{mcause as xcause, mhartid, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
+
 pub use riscv_rt_macros::{entry, pre_init};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
@@ -361,10 +401,16 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
 
         fn _setup_interrupts();
 
-        fn _mp_hook() -> bool;
+        fn _mp_hook(hartid: usize) -> bool;
     }
 
-    if _mp_hook() {
+    // sbi passes hartid as first parameter (a0)
+    #[cfg(feature = "s-mode")]
+    let hartid = a0;
+    #[cfg(not(feature = "s-mode"))]
+    let hartid = mhartid::read();
+
+    if _mp_hook(hartid) {
         __pre_init();
 
         r0::zero_bss(&mut _sbss, &mut _ebss);
@@ -403,7 +449,7 @@ pub struct TrapFrame {
 
 /// Trap entry point rust (_start_trap_rust)
 ///
-/// `mcause` is read to determine the cause of the trap. XLEN-1 bit indicates
+/// `scause`/`mcause` is read to determine the cause of the trap. XLEN-1 bit indicates
 /// if it's an interrupt or an exception. The result is examined and ExceptionHandler
 /// or one of the core interrupt handlers is called.
 #[link_section = ".trap.rust"]
@@ -415,13 +461,13 @@ pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     }
 
     unsafe {
-        let cause = mcause::read();
+        let cause = xcause::read();
+
         if cause.is_exception() {
             ExceptionHandler(&*trap_frame)
         } else {
-            let code = cause.code();
-            if code < __INTERRUPTS.len() {
-                let h = &__INTERRUPTS[code];
+            if cause.code() < __INTERRUPTS.len() {
+                let h = &__INTERRUPTS[cause.code()];
                 if h.reserved == 0 {
                     DefaultHandler();
                 } else {
@@ -529,9 +575,8 @@ pub unsafe extern "Rust" fn default_pre_init() {}
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
-pub extern "Rust" fn default_mp_hook() -> bool {
-    use riscv::register::mhartid;
-    match mhartid::read() {
+pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
+    match hartid {
         0 => true,
         _ => loop {
             unsafe { riscv::asm::wfi() }
@@ -539,14 +584,14 @@ pub extern "Rust" fn default_mp_hook() -> bool {
     }
 }
 
-/// Default implementation of `_setup_interrupts` that sets `mtvec` to a trap handler address.
+/// Default implementation of `_setup_interrupts` that sets `mtvec`/`stvec` to a trap handler address.
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
 pub unsafe extern "Rust" fn default_setup_interrupts() {
-    use riscv::register::mtvec::{self, TrapMode};
     extern "C" {
         fn _start_trap();
     }
-    mtvec::write(_start_trap as usize, TrapMode::Direct);
+
+    xtvec::write(_start_trap as usize, xTrapMode::Direct);
 }

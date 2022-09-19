@@ -6,13 +6,12 @@ extern crate riscv;
 extern crate riscv_rt;
 
 use riscv::asm::wfi;
-use riscv::register::{mhartid, mie, mip};
+use riscv::register::{mie, mip};
 use riscv_rt::entry;
 
 #[export_name = "_mp_hook"]
 #[rustfmt::skip]
-pub extern "Rust" fn user_mp_hook() -> bool {
-    let hartid = mhartid::read();
+pub extern "Rust" fn user_mp_hook(hartid: usize) -> bool {
     if hartid == 0 {
         true
     } else {
@@ -42,9 +41,7 @@ pub extern "Rust" fn user_mp_hook() -> bool {
 }
 
 #[entry]
-fn main() -> ! {
-    let hartid = mhartid::read();
-
+fn main(hartid: usize) -> ! {
     if hartid == 0 {
         // Waking hart 1...
         let addr = 0x02000004;

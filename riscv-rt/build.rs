@@ -14,7 +14,13 @@ fn main() {
     if target.starts_with("riscv") {
         let mut target = Target::from_target_str(&target);
         target.retain_extensions("imfdc");
-        let archive = format!("bin/{}.a", target.to_string());
+        let archive: String;
+        if cfg!(feature = "s-mode") {
+            println!("======== compiling riscv-rt for s-mode");
+            archive = format!("bin/{}-smode.a", target.to_string());
+        } else {
+            archive = format!("bin/{}.a", target.to_string());
+        }
 
         fs::copy(&archive, out_dir.join(format!("lib{}.a", name))).unwrap();
         println!("cargo:rerun-if-changed={}", archive);
