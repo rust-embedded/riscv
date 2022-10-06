@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.8.1] - 2022-10-06
+
 ### Fixed
 
 - Fix `asm::delay()` to ensure count register is always reloaded
+- Fix reading marchid and mimpid (#107)
 
 ## [v0.8.0] - 2022-04-20
 
@@ -89,7 +92,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed MSRV by restricting the upper bound of `bare-metal` version
 
-[Unreleased]: https://github.com/rust-embedded/riscv/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv/compare/v0.8.1...HEAD
+[v0.8.1]: https://github.com/rust-embedded/riscv/compare/v0.8.1...v0.8.0
 [v0.8.0]: https://github.com/rust-embedded/riscv/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/rust-embedded/riscv/compare/v0.6.0...v0.7.0
 [v0.6.0]: https://github.com/rust-embedded/riscv/compare/v0.5.6...v0.6.0
