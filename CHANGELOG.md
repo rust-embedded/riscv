@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Added `critical-section-single-hart` feature which provides an implementation for the `critical_section` crate for single-hart systems, based on disabling all interrupts.
+
 ## [v0.9.0] - 2022-10-06
 
 ### Fixed
