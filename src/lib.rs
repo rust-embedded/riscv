@@ -37,3 +37,10 @@ mod macros;
 
 #[cfg(all(riscv, feature = "critical-section-single-hart"))]
 mod critical_section;
+
+/// Used to reexport items for use in macros. Do not use directly.
+/// Not covered by semver guarantees.
+#[doc(hidden)]
+pub mod _export {
+    pub use critical_section;
+}

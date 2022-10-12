@@ -6,7 +6,10 @@
 /// at most once in the whole lifetime of the program.
 ///
 /// # Note
-/// this macro is unsound on multi-core systems
+///
+/// This macro requires a `critical-section` implementation to be set. For most single-hart systems,
+/// you can enable the `critical-section-single-hart` feature for this crate. For other systems, you
+/// have to provide one from elsewhere, typically your chip's HAL crate.
 ///
 /// # Example
 ///
@@ -29,7 +32,7 @@
 #[macro_export]
 macro_rules! singleton {
     (: $ty:ty = $expr:expr) => {
-        $crate::interrupt::free(|_| {
+        $crate::_export::critical_section::with(|_| {
             static mut VAR: Option<$ty> = None;
 
             #[allow(unsafe_code)]
