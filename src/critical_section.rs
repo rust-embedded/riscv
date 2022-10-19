@@ -8,9 +8,9 @@ set_impl!(SingleHartCriticalSection);
 
 unsafe impl Impl for SingleHartCriticalSection {
     unsafe fn acquire() -> RawRestoreState {
-        let was_active = mstatus::read().mie();
-        interrupt::disable();
-        was_active
+        let mut mstatus: usize;
+        core::arch::asm!("csrrci {}, 0x300, 0b100", out(reg) mstatus);
+        core::mem::transmute::<_, mstatus::Mstatus>(mstatus).mie()
     }
 
     unsafe fn release(was_active: RawRestoreState) {
