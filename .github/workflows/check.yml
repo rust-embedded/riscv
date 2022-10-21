@@ -1,0 +1,30 @@
+name: check
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # All generated code should be running on stable now, MRSV is 1.59.0
+        toolchain: [nightly, stable, 1.59.0]
+        target: [riscv32i-unknown-none-elf, riscv32imc-unknown-none-elf, riscv32imac-unknown-none-elf, riscv64imac-unknown-none-elf, riscv64gc-unknown-none-elf]
+
+        include:
+          # Nightly is only for reference and allowed to fail
+          - rust: nightly
+            experimental: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.target }}
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: check
+          args: --verbose --target ${{ matrix.target }}
