@@ -7,11 +7,19 @@ This is a fork of the
 to support the RISC-V Semihosting Specification as documented
 [here](https://github.com/riscv/riscv-semihosting-spec/blob/main/riscv-semihosting-spec.adoc)
 
-This crate can be used in exactly the same way as cortex-m-semihosting, simply
-by changing calls to `cortex_m_semihosting::*` to `riscv_semihosting::*`. Given
-this, the
+This crate can (almost) be used in exactly the same way as cortex-m-semihosting,
+simply by changing calls to `cortex_m_semihosting::*` to `riscv_semihosting::*`.
+Given this, the
 [cortex-m-semihosting documentation](https://docs.rs/cortex-m-semihosting) is
 generally sufficient for using this library.
+
+A major difference between this library and cortex-m-semihosting is that there
+are mandatory features to choose the privilege level at which the semihosting
+calls are executed. The "machine-mode" feature will cause the macros in `export`
+to execute the semihosting operation in an interrupt-free context, while
+"user-mode" causes them to just execute the operation. Failure to select one of
+these two features will cause a compiler error.
+
 
 # Minimum Supported Rust Version (MSRV)
 

@@ -9,6 +9,7 @@ jobs:
         # All generated code should be running on stable now, MRSV is 1.59.0
         toolchain: [nightly, stable, 1.59.0]
         target: [riscv32i-unknown-none-elf, riscv32imc-unknown-none-elf, riscv32imac-unknown-none-elf, riscv64imac-unknown-none-elf, riscv64gc-unknown-none-elf]
+        privilege: [machine, user]
 
         include:
           # Nightly is only for reference and allowed to fail
@@ -27,4 +28,4 @@ jobs:
         with:
           use-cross: true
           command: check
-          args: --verbose --target ${{ matrix.target }}
+          args: --verbose --target ${{ matrix.target }} --features=${{matrix.privilege}}-mode

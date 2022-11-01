@@ -18,8 +18,11 @@ rust-version = "1.59.0"
 
 [features]
 default = ["jlink-quirks"]
+machine-mode = []
+user-mode = []
 jlink-quirks = []
 no-semihosting = []
 
 [dependencies]
 riscv = "0.8.0"
+cfg-if = "1.0.0"
