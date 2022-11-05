@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.10.0] - 2022-11-04
+
 ### Added
 
 - Optional cargo feature `s-mode` for supervisor mode, including conditional compilation for supervisor/machine mode instructions.
@@ -15,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Remove superfluous parentheses from link.x, which caused linker errors with nightly.
 - Changed `mp_hook` signature, hartid as passed as usize parameter by the caller (required for `s-mode` feature).
+- Update `riscv` to version 0.9
 
 ## [v0.9.0] - 2022-07-01
 
@@ -91,7 +94,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Set MSRV to 1.38
 
 
-[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.9.0..HEAD
+[Unreleased]: https://github.com/rust-embedded/riscv-rt/compare/v0.10.0..HEAD
+[v0.10.0]: https://github.com/rust-embedded/riscv-rt/compare/v0.9.1...v0.10.0
 [v0.9.0]: https://github.com/rust-embedded/riscv-rt/compare/v0.8.1...v0.9.0
 [v0.8.1]: https://github.com/rust-embedded/riscv-rt/compare/v0.8.0...v0.8.1
 [v0.8.0]: https://github.com/rust-embedded/riscv-rt/compare/v0.7.2...v0.8.0

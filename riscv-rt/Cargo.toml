@@ -1,6 +1,6 @@
 [package]
 name = "riscv-rt"
-version = "0.9.0"
+version = "0.10.0"
 rust-version = "1.59"
 repository = "https://github.com/rust-embedded/riscv-rt"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
@@ -15,7 +15,7 @@ s-mode = []
 
 [dependencies]
 r0 = "1.0.0"
-riscv = "0.8"
+riscv = "0.9"
 riscv-rt-macros = { path = "macros", version = "0.2.0" }
 
 [dev-dependencies]
