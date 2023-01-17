@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix implementation for `SingleHartCriticalSection`
+
 ## [v0.10.0] - 2022-11-09
 
 ### Added
