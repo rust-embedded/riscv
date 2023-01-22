@@ -109,6 +109,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let stmts = f.block.stmts;
 
     quote!(
+        #[allow(non_snake_case)]
         #[export_name = "main"]
         #(#attrs)*
         pub #unsafety fn __risc_v_rt__main(#args) -> ! {
