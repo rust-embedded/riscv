@@ -2,7 +2,6 @@
 
 use bit_field::BitField;
 
-
 /// scause register
 #[derive(Clone, Copy)]
 pub struct Scause {

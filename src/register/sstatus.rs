@@ -3,7 +3,6 @@
 pub use super::mstatus::FS;
 use bit_field::BitField;
 
-
 /// Supervisor Status Register
 #[derive(Clone, Copy, Debug)]
 pub struct Sstatus {

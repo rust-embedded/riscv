@@ -9,7 +9,6 @@
 
 use bit_field::BitField;
 
-
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
 pub struct Mstatus {
