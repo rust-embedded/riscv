@@ -26,6 +26,7 @@
 //! a target-specific implementation instead, typically provided by a HAL or RTOS crate.
 
 #![no_std]
+#![allow(clippy::missing_safety_doc)]
 
 pub mod asm;
 pub mod delay;
