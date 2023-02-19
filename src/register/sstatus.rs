@@ -2,7 +2,7 @@
 
 pub use super::mstatus::FS;
 use bit_field::BitField;
-use core::mem::size_of;
+
 
 /// Supervisor Status Register
 #[derive(Clone, Copy, Debug)]
@@ -92,7 +92,7 @@ impl Sstatus {
     /// signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits.get_bit(size_of::<usize>() * 8 - 1)
+        self.bits.get_bit(usize::BITS as usize - 1)
     }
 }
 

@@ -30,7 +30,7 @@ impl Mcounteren {
     /// Supervisor "hpm\[x\]" Enable (bits 3-31)
     #[inline]
     pub fn hpm(&self, index: usize) -> bool {
-        assert!(3 <= index && index < 32);
+        assert!((3..32).contains(&index));
         self.bits.get_bit(index)
     }
 }
@@ -54,12 +54,12 @@ set_clear_csr!(
 
 #[inline]
 pub unsafe fn set_hpm(index: usize) {
-    assert!(3 <= index && index < 32);
+    assert!((3..32).contains(&index));
     _set(1 << index);
 }
 
 #[inline]
 pub unsafe fn clear_hpm(index: usize) {
-    assert!(3 <= index && index < 32);
+    assert!((3..32).contains(&index));
     _clear(1 << index);
 }
