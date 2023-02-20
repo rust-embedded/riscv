@@ -1,7 +1,6 @@
 //! scause register
 
 use bit_field::BitField;
-use core::mem::size_of;
 
 /// scause register
 #[derive(Clone, Copy)]
@@ -90,7 +89,7 @@ impl Scause {
     /// Returns the code field
     #[inline]
     pub fn code(&self) -> usize {
-        let bit = 1 << (size_of::<usize>() * 8 - 1);
+        let bit = 1 << (usize::BITS as usize - 1);
         self.bits & !bit
     }
 
@@ -107,7 +106,7 @@ impl Scause {
     /// Is trap cause an interrupt.
     #[inline]
     pub fn is_interrupt(&self) -> bool {
-        self.bits.get_bit(size_of::<usize>() * 8 - 1)
+        self.bits.get_bit(usize::BITS as usize - 1)
     }
 
     /// Is trap cause an exception.
@@ -139,7 +138,7 @@ pub unsafe fn set(cause: Trap) {
                 Interrupt::UserExternal => 8,
                 Interrupt::SupervisorExternal => 9,
                 Interrupt::Unknown => panic!("unknown interrupt"),
-            } | (1 << (size_of::<usize>() * 8 - 1)))
+            } | (1 << (usize::BITS as usize - 1)))
         } // interrupt bit is 1
         Trap::Exception(e) => match e {
             Exception::InstructionMisaligned => 0,

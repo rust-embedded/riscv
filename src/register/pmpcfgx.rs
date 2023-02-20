@@ -72,7 +72,7 @@ impl Pmpcsr {
                 3 => Range::NAPOT,
                 _ => unreachable!(),
             },
-            locked: byte.get_bit(7) as bool,
+            locked: byte.get_bit(7),
         }
     }
 }

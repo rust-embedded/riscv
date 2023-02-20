@@ -8,7 +8,6 @@
 // which would be the best way we implement this using Rust?
 
 use bit_field::BitField;
-use core::mem::size_of;
 
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
@@ -205,7 +204,7 @@ impl Mstatus {
     /// signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits.get_bit(size_of::<usize>() * 8 - 1)
+        self.bits.get_bit(usize::BITS as usize - 1)
     }
 }
 
