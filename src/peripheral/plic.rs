@@ -5,17 +5,17 @@
 use super::PLIC;
 use volatile_register::{RO, RW};
 
-/// Maximum number of interrupts supported by the PLIC standard
-const MAX_INTERRUPTS: usize = 1_024;
+/// Maximum number of interrupt sources supported by the PLIC standard
+const MAX_SOURCES: usize = 1_024;
 /// Maximum number of words needed to represent interrupts with flags
-const MAX_FLAGS_WORDS: usize = MAX_INTERRUPTS / (u32::BITS as usize);
-// Maximum number of PLIC contexts supported by the PLIC standard
+const MAX_FLAGS_WORDS: usize = MAX_SOURCES / (u32::BITS as usize);
+/// Maximum number of contexts supported by the PLIC standard
 const MAX_CONTEXTS: usize = 15_872;
 
 /// Register block
 #[repr(C)]
 pub struct RegisterBlock {
-    pub priority: [RW<u32>; MAX_INTERRUPTS], // Offset: 0x0000_0000
+    pub priority: [RW<u32>; MAX_SOURCES],    // Offset: 0x0000_0000
     pub pending: [RO<u32>; MAX_FLAGS_WORDS], // Offset: 0x0000_1000
     _reserved1: [u32; 0x03e0],               // Offset: 0x0000_1080
     pub enables: [ContextEnable; MAX_CONTEXTS], // Offset: 0x0000_2000
@@ -24,7 +24,7 @@ pub struct RegisterBlock {
 }
 
 /// Interrupt enable for a given context.
-pub type ContextEnable = [RW<u32>; MAX_INTERRUPTS / MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
+pub type ContextEnable = [RW<u32>; MAX_SOURCES / MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
 
 /// State of a single context
 #[repr(C)]
@@ -150,6 +150,8 @@ impl<const BASE: usize> PLIC<BASE> {
 /// This trait must only be implemented on enums of PLIC global interrupts. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
+/// The interrupt number must be less than 1_024.
+/// Interrupt number 0 is reserved for "no interrupt"
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait InterruptNumber: Copy {
@@ -171,6 +173,7 @@ pub unsafe trait InterruptNumber: Copy {
 /// This trait must only be implemented on enums of PLIC priority level. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
+/// Priority number 0 is reserved for "no priority (i.e., disabled)".
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
@@ -188,6 +191,7 @@ pub unsafe trait PriorityLevel: Copy {
 /// This trait must only be implemented on enums of PLIC contexts. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
+/// The context number must be less than 15_872.
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait ContextNumber: Copy {

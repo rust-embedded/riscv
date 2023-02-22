@@ -6,9 +6,9 @@ use core::ops;
 pub mod plic;
 
 /// PLIC peripheral.
-/// 
+///
 /// # Note
-/// 
+///
 /// The RISC-V standard does not specify a fixed location for the PLIC.
 /// Thus, we use const generics to map a PLIC to the desired memory location.
 /// Each platform must create a `PLIC<BASE>` struct where `BASE` refers to
@@ -20,7 +20,7 @@ pub struct PLIC<const BASE: usize> {
 
 unsafe impl<const BASE: usize> Send for PLIC<BASE> {}
 
-impl<const BASE: usize> PLIC<BASE>  {
+impl<const BASE: usize> PLIC<BASE> {
     /// Pointer to the register block
     pub const PTR: *const self::plic::RegisterBlock = BASE as *const _;
 }
