@@ -47,9 +47,10 @@ impl<const BASE: usize> PLIC<BASE> {
     #[inline]
     pub fn set_priority<I: InterruptNumber, P: PriorityLevel>(source: I, priority: P) {
         let source = usize::from(source.number());
+        let priority = u32::from(priority.number());
         // NOTE(unsafe) atomic write with no side effects
         unsafe {
-            (*Self::PTR).priority[source].write(priority.number());
+            (*Self::PTR).priority[source].write(priority);
         }
     }
 
@@ -110,7 +111,7 @@ impl<const BASE: usize> PLIC<BASE> {
     #[inline]
     pub fn set_threshold<C: ContextNumber, P: PriorityLevel>(context: C, priority: P) {
         let context = usize::from(context.number());
-        let priority = priority.number();
+        let priority = u32::from(priority.number());
         // NOTE(unsafe) atomic write with no side effects
         unsafe { (*Self::PTR).states[context].threshold.write(priority) }
     }
@@ -161,7 +162,7 @@ pub unsafe trait InterruptNumber: Copy {
 ///
 /// This trait should be implemented by a peripheral access crate (PAC)
 /// on its enum of available PLIC priority levels for a specific device.
-/// Each variant must convert to a `u32` of its priority level.
+/// Each variant must convert to a `u16` of its priority level.
 ///
 /// # Note
 ///
@@ -175,7 +176,7 @@ pub unsafe trait InterruptNumber: Copy {
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
-    fn number(self) -> u32;
+    fn number(self) -> u16;
 }
 
 /// Trait for enums of contexts implemented by the PLIC.
