@@ -24,7 +24,7 @@ pub struct RegisterBlock {
 }
 
 /// Interrupt enable for a given context.
-pub type ContextEnable = [RW<u32>; MAX_SOURCES / MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
+pub type ContextEnable = [RW<u32>; MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
 
 /// State of a single context
 #[repr(C)]
@@ -151,7 +151,6 @@ impl<const BASE: usize> PLIC<BASE> {
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
 /// The interrupt number must be less than 1_024.
-/// Interrupt number 0 is reserved for "no interrupt"
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait InterruptNumber: Copy {
@@ -173,7 +172,6 @@ pub unsafe trait InterruptNumber: Copy {
 /// This trait must only be implemented on enums of PLIC priority level. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
-/// Priority number 0 is reserved for "no priority (i.e., disabled)".
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
