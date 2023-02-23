@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add generic implementation of a PLIC peripheral
+
 ## [v0.10.1] - 2023-01-18
 
 ### Fixed
