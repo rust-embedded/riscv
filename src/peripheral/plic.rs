@@ -15,23 +15,32 @@ const MAX_CONTEXTS: usize = 15_872;
 /// Register block.
 #[repr(C)]
 pub struct RegisterBlock {
-    pub priority: [RW<u32>; MAX_SOURCES],    // Offset: 0x0000_0000
-    pub pending: [RO<u32>; MAX_FLAGS_WORDS], // Offset: 0x0000_1000
-    _reserved1: [u32; 0x03e0],               // Offset: 0x0000_1080
-    pub enables: [ContextEnable; MAX_CONTEXTS], // Offset: 0x0000_2000
-    _reserved2: [u32; 0x3800],               // Offset: 0x001F_2000
-    pub states: [ContextState; MAX_CONTEXTS], // Offset: 0x0020_0000; Total size: 0x0400_0000
+    /// `0x0000_0000..=0x0000_0FFC` - Interrupt Priority Register.
+    pub priority: [RW<u32>; MAX_SOURCES],
+    /// `0x0000_1000..=0x0000_107C` - Interrupt Pending Register.
+    pub pending: [RO<u32>; MAX_FLAGS_WORDS],
+    /// `0x0000_1080..=0x0000_1FFC` - Reserved.
+    _reserved1: [u32; 0x03e0],
+    /// `0x0000_2000..=0x001F_1FFC` - Enable Registers (one per context).
+    pub enables: [ContextEnable; MAX_CONTEXTS],
+    /// `0x001F_2000..=0x001F_FFFF` - Reserved.
+    _reserved2: [u32; 0x3800],
+    /// `0x0020_0000..=0x03FF_FFFC` - State Registers (one per context).
+    pub states: [ContextState; MAX_CONTEXTS],
 }
 
 /// Interrupt enable for a given context.
-pub type ContextEnable = [RW<u32>; MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
+pub type ContextEnable = [RW<u32>; MAX_FLAGS_WORDS];
 
 /// State of a single context.
 #[repr(C)]
 pub struct ContextState {
-    pub threshold: RW<u32>,      // Offset: 0x0000_0000
-    pub claim_complete: RW<u32>, // Offset: 0x0000_0004
-    _reserved: [u32; 0x3fe],     // Offset: 0x0000_0008; Total size: 0x0000_1000
+    /// `0x0000_0000` - Priority Threshold Register.
+    pub threshold: RW<u32>,
+    /// `0x0000_0004` - Claim/Complete Register.
+    pub claim_complete: RW<u32>,
+    /// `0x0000_0008..=0x0000_0FFC` - Reserved.
+    _reserved: [u32; 0x3fe],
 }
 
 impl<const BASE: usize> PLIC<BASE> {
