@@ -5,14 +5,14 @@
 use super::PLIC;
 use volatile_register::{RO, RW};
 
-/// Maximum number of interrupt sources supported by the PLIC standard
+/// Maximum number of interrupt sources supported by the PLIC standard.
 const MAX_SOURCES: usize = 1_024;
-/// Maximum number of words needed to represent interrupts with flags
+/// Maximum number of words needed to represent interrupts with flags.
 const MAX_FLAGS_WORDS: usize = MAX_SOURCES / (u32::BITS as usize);
-/// Maximum number of contexts supported by the PLIC standard
+/// Maximum number of contexts supported by the PLIC standard.
 const MAX_CONTEXTS: usize = 15_872;
 
-/// Register block
+/// Register block.
 #[repr(C)]
 pub struct RegisterBlock {
     pub priority: [RW<u32>; MAX_SOURCES],    // Offset: 0x0000_0000
@@ -26,7 +26,7 @@ pub struct RegisterBlock {
 /// Interrupt enable for a given context.
 pub type ContextEnable = [RW<u32>; MAX_FLAGS_WORDS]; // Total size: 0x0000_0080
 
-/// State of a single context
+/// State of a single context.
 #[repr(C)]
 pub struct ContextState {
     pub threshold: RW<u32>,      // Offset: 0x0000_0000
@@ -37,21 +37,23 @@ pub struct ContextState {
 impl<const BASE: usize> PLIC<BASE> {
     /// Returns the priority level number associated to a given interrupt source.
     #[inline]
-    pub fn get_priority<I: InterruptNumber>(source: I) -> u32 {
+    pub fn get_priority<I: InterruptNumber>(source: I) -> u16 {
         let source = usize::from(source.number());
-        // NOTE(unsafe) atomic read with no side effects
-        unsafe { (*Self::PTR).priority[source].read() }
+        // SAFETY: atomic read with no side effects
+        unsafe { (*Self::PTR).priority[source].read() as _ }
     }
 
     /// Sets the priority level of a given interrupt source.
+    ///
+    /// # Safety
+    ///
+    /// Changing priority levels can break priority-based critical sections and compromise memory safety.
     #[inline]
-    pub fn set_priority<I: InterruptNumber, P: PriorityLevel>(source: I, priority: P) {
+    pub unsafe fn set_priority<I: InterruptNumber, P: PriorityLevel>(source: I, priority: P) {
         let source = usize::from(source.number());
         let priority = u32::from(priority.number());
-        // NOTE(unsafe) atomic write with no side effects
-        unsafe {
-            (*Self::PTR).priority[source].write(priority);
-        }
+        // SAFETY: atomic write with no side effects
+        (*Self::PTR).priority[source].write(priority);
     }
 
     /// Checks if an interrupt triggered by a given source is pending.
@@ -59,7 +61,7 @@ impl<const BASE: usize> PLIC<BASE> {
     pub fn is_pending<I: InterruptNumber>(source: I) -> bool {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        // NOTE(unsafe) atomic read with no side effects
+        // SAFETY: atomic read with no side effects
         let flags = unsafe { (*Self::PTR).pending[source / MAX_FLAGS_WORDS].read() };
         (flags & mask) == mask
     }
@@ -70,57 +72,74 @@ impl<const BASE: usize> PLIC<BASE> {
         let context = usize::from(context.number());
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        // NOTE(unsafe) atomic read with no side effects
+        // SAFETY: atomic read with no side effects
         let flags = unsafe { (*Self::PTR).enables[context][source / MAX_FLAGS_WORDS].read() };
         (flags & mask) == mask
     }
 
     /// Enables an interrupt source for a given context.
+    ///
+    /// # Note
+    ///
+    /// This method performs a read-modify-write operation.
+    /// That is why it is a method instead of an associated function.
+    ///
+    /// # Safety
+    ///
+    /// Non-atomic operations may lead to undefined behavior.
+    /// Enabling an interrupt source can break mask-based critical sections.
     #[inline]
-    pub fn enable<C: ContextNumber, I: InterruptNumber>(context: C, source: I) {
+    pub unsafe fn enable<C: ContextNumber, I: InterruptNumber>(&mut self, context: C, source: I) {
         let context = usize::from(context.number());
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        // NOTE(unsafe) atomic write with no side effects
-        unsafe {
-            (*Self::PTR).enables[context][source / MAX_FLAGS_WORDS].modify(|value| value | mask);
-        }
+        self.enables[context][source / MAX_FLAGS_WORDS].modify(|value| value | mask);
     }
 
     /// Disables an interrupt source for a given context.
+    ///
+    /// # Note
+    ///
+    /// This method performs a read-modify-write operation.
+    /// That is why it is a method instead of an associated function.
+    ///
+    /// # Safety
+    ///
+    /// Non-atomic operations may lead to undefined behavior.
     #[inline]
-    pub fn disable<C: ContextNumber, I: InterruptNumber>(context: C, source: I) {
+    pub unsafe fn disable<C: ContextNumber, I: InterruptNumber>(&mut self, context: C, source: I) {
         let context = usize::from(context.number());
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        // NOTE(unsafe) atomic write with no side effects
-        unsafe {
-            (*Self::PTR).enables[context][source / MAX_FLAGS_WORDS].modify(|value| value & !mask);
-        }
+        self.enables[context][source / MAX_FLAGS_WORDS].modify(|value| value & !mask);
     }
 
     /// Gets the priority threshold for a given context.
     #[inline]
     pub fn get_threshold<C: ContextNumber>(context: C) -> u32 {
         let context = usize::from(context.number());
-        // NOTE(unsafe) atomic read with no side effects
+        // SAFETY: atomic read with no side effects
         unsafe { (*Self::PTR).states[context].threshold.read() }
     }
 
     /// Sets the priority threshold for a given context.
+    ///
+    /// # Safety
+    ///
+    /// Unmasking an interrupt source can break mask-based critical sections.
     #[inline]
-    pub fn set_threshold<C: ContextNumber, P: PriorityLevel>(context: C, priority: P) {
+    pub unsafe fn set_threshold<C: ContextNumber, P: PriorityLevel>(context: C, priority: P) {
         let context = usize::from(context.number());
         let priority = u32::from(priority.number());
-        // NOTE(unsafe) atomic write with no side effects
-        unsafe { (*Self::PTR).states[context].threshold.write(priority) }
+        // SAFETY: atomic write with no side effects
+        (*Self::PTR).states[context].threshold.write(priority);
     }
 
     /// Claims the number of a pending interrupt for a given context.
     #[inline]
     pub fn claim<C: ContextNumber>(context: C) -> u16 {
         let context = usize::from(context.number());
-        // NOTE(unsafe) atomic read with no side effects
+        // SAFETY: atomic read with no side effects
         unsafe { (*Self::PTR).states[context].claim_complete.read() as _ }
     }
 
@@ -129,7 +148,7 @@ impl<const BASE: usize> PLIC<BASE> {
     pub fn complete<C: ContextNumber, I: InterruptNumber>(context: C, source: I) {
         let context = usize::from(context.number());
         let source = u32::from(source.number());
-        // NOTE(unsafe) atomic write with no side effects
+        // SAFETY: atomic write with no side effects
         unsafe {
             (*Self::PTR).states[context].claim_complete.write(source);
         }
