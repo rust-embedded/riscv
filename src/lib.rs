@@ -29,6 +29,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod asm;
+#[cfg(feature = "delay")]
 pub mod delay;
 pub mod interrupt;
 pub mod register;

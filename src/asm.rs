@@ -70,6 +70,7 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
 /// and the execution time may vary with other factors. This delay is mainly useful for simple
 /// timer-less initialization of peripherals if and only if accurate timing is not essential. In
 /// any other case please use a more accurate method to produce a delay.
+#[cfg(feature = "delay")]
 #[inline]
 #[allow(unused_variables)]
 pub unsafe fn delay(cycles: u32) {

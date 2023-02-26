@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [v0.10.1] - 2023-01-18
 
+### Added
+
+- lib: gate delay module and asm under `delay` feature
+
 ### Fixed
 
 - Fix implementation for `SingleHartCriticalSection`
