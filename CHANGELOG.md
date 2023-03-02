@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `asm::fence()`, a wrapper for implementing a `fence` instruction
+
 ## [v0.10.1] - 2023-01-18
 
 ### Fixed

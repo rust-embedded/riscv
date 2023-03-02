@@ -41,6 +41,20 @@ instruction!(
     /// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
     /// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
     , sfence_vma_all, "sfence.vma");
+instruction!(
+    /// `FENCE` instruction wrapper
+    ///
+    /// The FENCE instruction is used to order device I/O and memory accesses as viewed by other RISC-V
+    /// harts and external devices or coprocessors. Any combination of device input (I), device output
+    /// (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination
+    /// of the same. Informally, no other RISC-V hart or external device can observe any operation in the
+    /// successor set following a FENCE before any operation in the predecessor set preceding the FENCE.
+    /// Chapter 17 provides a precise description of the RISC-V memory consistency model.
+    ///
+    /// The FENCE instruction also orders memory reads and writes made by the hart as observed by
+    /// memory reads and writes made by an external device. However, FENCE does not order observations
+    /// of events made by an external device using any other signaling mechanism.
+    , fence, "fence");
 
 /// `SFENCE.VMA` instruction wrapper
 ///
