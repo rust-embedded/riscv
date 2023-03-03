@@ -55,6 +55,24 @@ instruction!(
     /// memory reads and writes made by an external device. However, FENCE does not order observations
     /// of events made by an external device using any other signaling mechanism.
     , fence, "fence");
+instruction!(
+    /// `FENCE.I` instruction wrapper
+    ///
+    /// Used to synchronize the instruction and data streams. RISC-V does not guarantee that
+    /// stores to instruction memory will be made visible to instruction fetches on a
+    /// RISC-V hart until that hart executes a FENCE.I instruction.
+    ///
+    /// A FENCE.I instruction ensures that a subsequent instruction fetch on a RISC-V hart
+    /// will see any previous data stores already visible to the same RISC-V hart.
+    /// FENCE.I does not ensure that other RISC-V harts’ instruction fetches will observe the
+    /// local hart’s stores in a multiprocessor system. To make a store to instruction memory
+    /// visible to all RISC-V harts, the writing hart also has to execute a data FENCE before
+    /// requesting that all remote RISC-V harts execute a FENCE.I.
+    ///
+    /// The unused fields in the FENCE.I instruction, imm[11:0], rs1, and rd, are reserved for
+    /// finer-grain fences in future extensions. For forward compatibility, base
+    /// implementations shall ignore these fields, and standard software shall zero these fields.
+    , fence_i, "fence.i");
 
 /// `SFENCE.VMA` instruction wrapper
 ///
