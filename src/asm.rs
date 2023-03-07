@@ -41,6 +41,38 @@ instruction!(
     /// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
     /// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
     , sfence_vma_all, "sfence.vma");
+instruction!(
+    /// `FENCE` instruction wrapper
+    ///
+    /// The FENCE instruction is used to order device I/O and memory accesses as viewed by other RISC-V
+    /// harts and external devices or coprocessors. Any combination of device input (I), device output
+    /// (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination
+    /// of the same. Informally, no other RISC-V hart or external device can observe any operation in the
+    /// successor set following a FENCE before any operation in the predecessor set preceding the FENCE.
+    /// Chapter 17 provides a precise description of the RISC-V memory consistency model.
+    ///
+    /// The FENCE instruction also orders memory reads and writes made by the hart as observed by
+    /// memory reads and writes made by an external device. However, FENCE does not order observations
+    /// of events made by an external device using any other signaling mechanism.
+    , fence, "fence");
+instruction!(
+    /// `FENCE.I` instruction wrapper
+    ///
+    /// Used to synchronize the instruction and data streams. RISC-V does not guarantee that
+    /// stores to instruction memory will be made visible to instruction fetches on a
+    /// RISC-V hart until that hart executes a FENCE.I instruction.
+    ///
+    /// A FENCE.I instruction ensures that a subsequent instruction fetch on a RISC-V hart
+    /// will see any previous data stores already visible to the same RISC-V hart.
+    /// FENCE.I does not ensure that other RISC-V harts’ instruction fetches will observe the
+    /// local hart’s stores in a multiprocessor system. To make a store to instruction memory
+    /// visible to all RISC-V harts, the writing hart also has to execute a data FENCE before
+    /// requesting that all remote RISC-V harts execute a FENCE.I.
+    ///
+    /// The unused fields in the FENCE.I instruction, imm[11:0], rs1, and rd, are reserved for
+    /// finer-grain fences in future extensions. For forward compatibility, base
+    /// implementations shall ignore these fields, and standard software shall zero these fields.
+    , fence_i, "fence.i");
 
 /// `SFENCE.VMA` instruction wrapper
 ///
