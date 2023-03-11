@@ -4,5 +4,6 @@
         "editor.formatOnSave": true
     },
     "rust-analyzer.cargo.features": [
+        "plic",
     ]
 }

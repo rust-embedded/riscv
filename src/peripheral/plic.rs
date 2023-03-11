@@ -43,7 +43,7 @@ pub struct ContextState {
     _reserved: [u32; 0x3fe],
 }
 
-impl<const BASE: usize> PLIC<BASE> {
+impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// Returns the priority level number associated to a given interrupt source.
     #[inline]
     pub fn get_priority<I: InterruptNumber>(source: I) -> u16 {
@@ -53,6 +53,11 @@ impl<const BASE: usize> PLIC<BASE> {
     }
 
     /// Sets the priority level of a given interrupt source.
+    ///
+    /// # Note
+    ///
+    /// Interrupt source priorities are shared among all the contexts of the PLIC.
+    /// Thus, changing the priority of sources  may affect other PLIC contexts.
     ///
     /// # Safety
     ///
@@ -75,18 +80,17 @@ impl<const BASE: usize> PLIC<BASE> {
         (flags & mask) == mask
     }
 
-    /// Checks if an interrupt source is enabled for a given context.
+    /// Checks if an interrupt source is enabled for the PLIC context.
     #[inline]
-    pub fn is_enabled<C: ContextNumber, I: InterruptNumber>(context: C, source: I) -> bool {
-        let context = usize::from(context.number());
+    pub fn is_enabled<I: InterruptNumber>(source: I) -> bool {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
         // SAFETY: atomic read with no side effects
-        let flags = unsafe { (*Self::PTR).enables[context][source / MAX_FLAGS_WORDS].read() };
+        let flags = unsafe { (*Self::PTR).enables[CONTEXT][source / MAX_FLAGS_WORDS].read() };
         (flags & mask) == mask
     }
 
-    /// Enables an interrupt source for a given context.
+    /// Enables an interrupt source for the PLIC context.
     ///
     /// # Note
     ///
@@ -98,14 +102,13 @@ impl<const BASE: usize> PLIC<BASE> {
     /// Non-atomic operations may lead to undefined behavior.
     /// Enabling an interrupt source can break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable<C: ContextNumber, I: InterruptNumber>(&mut self, context: C, source: I) {
-        let context = usize::from(context.number());
+    pub unsafe fn enable<I: InterruptNumber>(&mut self, source: I) {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        self.enables[context][source / MAX_FLAGS_WORDS].modify(|value| value | mask);
+        self.enables[CONTEXT][source / MAX_FLAGS_WORDS].modify(|value| value | mask);
     }
 
-    /// Disables an interrupt source for a given context.
+    /// Disables an interrupt source for the PLIC context.
     ///
     /// # Note
     ///
@@ -116,50 +119,45 @@ impl<const BASE: usize> PLIC<BASE> {
     ///
     /// Non-atomic operations may lead to undefined behavior.
     #[inline]
-    pub unsafe fn disable<C: ContextNumber, I: InterruptNumber>(&mut self, context: C, source: I) {
-        let context = usize::from(context.number());
+    pub unsafe fn disable<I: InterruptNumber>(&mut self, source: I) {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
-        self.enables[context][source / MAX_FLAGS_WORDS].modify(|value| value & !mask);
+        self.enables[CONTEXT][source / MAX_FLAGS_WORDS].modify(|value| value & !mask);
     }
 
-    /// Gets the priority threshold for a given context.
+    /// Gets the priority threshold for for the PLIC context.
     #[inline]
-    pub fn get_threshold<C: ContextNumber>(context: C) -> u32 {
-        let context = usize::from(context.number());
+    pub fn get_threshold() -> u32 {
         // SAFETY: atomic read with no side effects
-        unsafe { (*Self::PTR).states[context].threshold.read() }
+        unsafe { (*Self::PTR).states[CONTEXT].threshold.read() }
     }
 
-    /// Sets the priority threshold for a given context.
+    /// Sets the priority threshold for for the PLIC context.
     ///
     /// # Safety
     ///
     /// Unmasking an interrupt source can break mask-based critical sections.
     #[inline]
-    pub unsafe fn set_threshold<C: ContextNumber, P: PriorityLevel>(context: C, priority: P) {
-        let context = usize::from(context.number());
+    pub unsafe fn set_threshold<P: PriorityLevel>(priority: P) {
         let priority = u32::from(priority.number());
         // SAFETY: atomic write with no side effects
-        (*Self::PTR).states[context].threshold.write(priority);
+        (*Self::PTR).states[CONTEXT].threshold.write(priority);
     }
 
-    /// Claims the number of a pending interrupt for a given context.
+    /// Claims the number of a pending interrupt for for the PLIC context.
     #[inline]
-    pub fn claim<C: ContextNumber>(context: C) -> u16 {
-        let context = usize::from(context.number());
+    pub fn claim() -> u16 {
         // SAFETY: atomic read with no side effects
-        unsafe { (*Self::PTR).states[context].claim_complete.read() as _ }
+        unsafe { (*Self::PTR).states[CONTEXT].claim_complete.read() as _ }
     }
 
-    /// Marks a pending interrupt as complete from a given context.
+    /// Marks a pending interrupt as complete from for the PLIC context.
     #[inline]
-    pub fn complete<C: ContextNumber, I: InterruptNumber>(context: C, source: I) {
-        let context = usize::from(context.number());
+    pub fn complete<I: InterruptNumber>(source: I) {
         let source = u32::from(source.number());
         // SAFETY: atomic write with no side effects
         unsafe {
-            (*Self::PTR).states[context].claim_complete.write(source);
+            (*Self::PTR).states[CONTEXT].claim_complete.write(source);
         }
     }
 }
@@ -204,23 +202,5 @@ pub unsafe trait InterruptNumber: Copy {
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
-    fn number(self) -> u16;
-}
-
-/// Trait for enums of contexts implemented by the PLIC.
-///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available PLIC contexs for a specific device.
-/// Each variant must convert to a `u16` of its context.
-///
-/// # Safety
-///
-/// This trait must only be implemented on enums of PLIC contexts. Each
-/// enum variant must represent a distinct value (no duplicates are permitted),
-/// and must always return the same value (do not change at runtime).
-/// The context number must be less than 15_872.
-///
-/// These requirements ensure safe nesting of critical sections.
-pub unsafe trait ContextNumber: Copy {
     fn number(self) -> u16;
 }

@@ -19,6 +19,7 @@ targets = [
 
 [features]
 critical-section-single-hart = ["critical-section/restore-state-bool"]
+plic = []
 
 [dependencies]
 bit_field = "0.10.0"
