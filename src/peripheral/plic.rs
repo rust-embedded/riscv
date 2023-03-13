@@ -162,6 +162,10 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     }
 }
 
+/// Helper structure to identify invalid interrupt numbers.
+#[derive(Debug, Copy, Clone)]
+pub struct TryFromInterruptError(());
+
 /// Trait for enums of global interrupt numbers handled by the PLIC.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC)
@@ -181,8 +185,19 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait InterruptNumber: Copy {
+    /// Highest number assigned to an interrupt source.
+    const MAX_INTERRUPT_NUMBER: u16;
+
+    /// Converts an interrupt source to its corresponding number.
     fn number(self) -> u16;
+
+    /// Tries to convert a number to a valid interrupt source.
+    fn try_from(value: u16) -> Result<Self, TryFromInterruptError>;
 }
+
+/// Helper structure to identify invalid priority numbers.
+#[derive(Debug, Copy, Clone)]
+pub struct TryFromPriorityError(());
 
 /// Trait for enums of priority levels implemented by the PLIC.
 ///
@@ -199,8 +214,17 @@ pub unsafe trait InterruptNumber: Copy {
 /// This trait must only be implemented on enums of PLIC priority level. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
+/// All the interrupt numbers must be less than or equal to `MAX_PRIORITY_NUMBER`.
+/// `MAX_PRIORITY_NUMBER` must coincide with the highest allowed priority number.
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
+    /// Number assigned to the highest priority level.
+    const MAX_PRIORITY_NUMBER: u16;
+
+    /// Converts a priority level to its corresponding number.
     fn number(self) -> u16;
+
+    /// Tries to convert a number to a valid priority level.
+    fn try_from(value: u16) -> Result<Self, TryFromInterruptError>;
 }
