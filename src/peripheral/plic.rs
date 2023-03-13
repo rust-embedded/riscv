@@ -226,5 +226,5 @@ pub unsafe trait PriorityLevel: Copy {
     fn number(self) -> u16;
 
     /// Tries to convert a number to a valid priority level.
-    fn try_from(value: u16) -> Result<Self, TryFromInterruptError>;
+    fn try_from(value: u16) -> Result<Self, TryFromPriorityError>;
 }
