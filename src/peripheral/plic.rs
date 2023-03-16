@@ -3,6 +3,7 @@
 //! Specification: https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
 
 use super::PLIC;
+use crate::register::{mie, mip};
 use volatile_register::{RO, RW};
 
 /// Maximum number of interrupt sources supported by the PLIC standard.
@@ -44,12 +45,51 @@ pub struct ContextState {
 }
 
 impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
-    /// Returns the priority level number associated to a given interrupt source.
+    /// Checks if the Machine External Interrupt bit of the [`crate::register::mie`] CSR is set.
     #[inline]
-    pub fn get_priority<I: InterruptNumber>(source: I) -> u16 {
+    pub fn is_mext_enabled() -> bool {
+        mie::read().mext()
+    }
+
+    /// Sets the Machine External Interrupt bit of the [`crate::register::mie`] CSR.
+    ///
+    /// # Safety
+    ///
+    /// This operation modifies a CSR and can affect the global behavior of the system.
+    /// This is why it is defined as a method instead of an associated function.
+    #[inline]
+    pub unsafe fn mext_enable(&mut self) {
+        mie::set_mext();
+    }
+
+    /// Clears the Machine External Interrupt bit of the [`crate::register::mie`] CSR.
+    ///
+    /// # Safety
+    ///
+    /// This operation modifies a CSR and can affect the global behavior of the system.
+    /// This is why it is defined as a method instead of an associated function.
+    #[inline]
+    pub unsafe fn mext_disable(&mut self) {
+        mie::clear_mext();
+    }
+
+    /// Checks if there the Machine External Interrupt bit of the [`crate::register::mip`] CSR is set.
+    #[inline]
+    pub fn is_mext_pending() -> bool {
+        mip::read().mext()
+    }
+
+    /// Returns the priority level associated to a given interrupt source.
+    /// If priority level is 0 (i.e., "never interrupt"), it returns `None`.
+    #[inline]
+    pub fn get_priority<I: InterruptNumber, P: PriorityLevel>(source: I) -> Option<P> {
         let source = usize::from(source.number());
         // SAFETY: atomic read with no side effects
-        unsafe { (*Self::PTR).priority[source].read() as _ }
+        let priority: u16 = unsafe { (*Self::PTR).priority[source].read() } as _;
+        match priority {
+            0 => None,
+            i => Some(P::try_from(i).unwrap()),
+        }
     }
 
     /// Sets the priority level of a given interrupt source.
@@ -72,7 +112,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Checks if an interrupt triggered by a given source is pending.
     #[inline]
-    pub fn is_pending<I: InterruptNumber>(source: I) -> bool {
+    pub fn is_interrupt_pending<I: InterruptNumber>(source: I) -> bool {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
         // SAFETY: atomic read with no side effects
@@ -82,7 +122,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Checks if an interrupt source is enabled for the PLIC context.
     #[inline]
-    pub fn is_enabled<I: InterruptNumber>(source: I) -> bool {
+    pub fn is_interrupt_enabled<I: InterruptNumber>(source: I) -> bool {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
         // SAFETY: atomic read with no side effects
@@ -102,7 +142,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// Non-atomic operations may lead to undefined behavior.
     /// Enabling an interrupt source can break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable<I: InterruptNumber>(&mut self, source: I) {
+    pub unsafe fn interrupt_enable<I: InterruptNumber>(&mut self, source: I) {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
         self.enables[CONTEXT][source / MAX_FLAGS_WORDS].modify(|value| value | mask);
@@ -119,7 +159,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     ///
     /// Non-atomic operations may lead to undefined behavior.
     #[inline]
-    pub unsafe fn disable<I: InterruptNumber>(&mut self, source: I) {
+    pub unsafe fn interrupt_disable<I: InterruptNumber>(&mut self, source: I) {
         let source = usize::from(source.number());
         let mask: u32 = 1 << (source % MAX_FLAGS_WORDS);
         self.enables[CONTEXT][source / MAX_FLAGS_WORDS].modify(|value| value & !mask);
@@ -127,9 +167,13 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Gets the priority threshold for for the PLIC context.
     #[inline]
-    pub fn get_threshold() -> u32 {
+    pub fn get_threshold<P: PriorityLevel>() -> Option<P> {
         // SAFETY: atomic read with no side effects
-        unsafe { (*Self::PTR).states[CONTEXT].threshold.read() }
+        let priority: u16 = unsafe { (*Self::PTR).states[CONTEXT].threshold.read() } as _;
+        match priority {
+            0 => None,
+            i => Some(P::try_from(i).unwrap()),
+        }
     }
 
     /// Sets the priority threshold for for the PLIC context.
@@ -146,9 +190,13 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Claims the number of a pending interrupt for for the PLIC context.
     #[inline]
-    pub fn claim() -> u16 {
+    pub fn claim<I: InterruptNumber>() -> Option<I> {
         // SAFETY: atomic read with no side effects
-        unsafe { (*Self::PTR).states[CONTEXT].claim_complete.read() as _ }
+        let interrupt: u16 = unsafe { (*Self::PTR).states[CONTEXT].claim_complete.read() } as _;
+        match interrupt {
+            0 => None,
+            i => Some(I::try_from(i).unwrap()),
+        }
     }
 
     /// Marks a pending interrupt as complete from for the PLIC context.
