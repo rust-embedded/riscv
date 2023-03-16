@@ -52,28 +52,27 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     }
 
     /// Sets the Machine External Interrupt bit of the [`crate::register::mie`] CSR.
+    /// This bit must be set for the PLIC to trigger machine external interrupts.
     ///
     /// # Safety
     ///
-    /// This operation modifies a CSR and can affect the global behavior of the system.
-    /// This is why it is defined as a method instead of an associated function.
+    /// Enabling machine external interrupts globally can break mask-based critical sections.
     #[inline]
-    pub unsafe fn mext_enable(&mut self) {
-        mie::set_mext();
+    pub unsafe fn mext_enable() {
+        // SAFETY: atomic CSRRS instruction with no side effects
+        unsafe { mie::set_mext() };
     }
 
     /// Clears the Machine External Interrupt bit of the [`crate::register::mie`] CSR.
-    ///
-    /// # Safety
-    ///
-    /// This operation modifies a CSR and can affect the global behavior of the system.
-    /// This is why it is defined as a method instead of an associated function.
+    /// When cleared, the PLIC does not trigger machine external interrupts.
     #[inline]
-    pub unsafe fn mext_disable(&mut self) {
-        mie::clear_mext();
+    pub fn mext_disable() {
+        // SAFETY: atomic CSRRC instruction with no side effects
+        unsafe { mie::clear_mext() };
     }
 
     /// Checks if there the Machine External Interrupt bit of the [`crate::register::mip`] CSR is set.
+    /// If set, there is at least one PLIC context that can claim a non-zero interrupt.
     #[inline]
     pub fn is_mext_pending() -> bool {
         mip::read().mext()
