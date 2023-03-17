@@ -167,13 +167,10 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Gets the priority threshold for for the PLIC context.
     #[inline]
-    pub fn get_threshold<P: PriorityLevel>() -> Option<P> {
+    pub fn get_threshold<P: PriorityLevel>() -> P {
         // SAFETY: atomic read with no side effects
         let priority: u16 = unsafe { (*Self::PTR).states[CONTEXT].threshold.read() } as _;
-        match priority {
-            0 => None,
-            i => Some(P::try_from(i).unwrap()),
-        }
+        P::try_from(priority).unwrap()
     }
 
     /// Sets the priority threshold for for the PLIC context.
