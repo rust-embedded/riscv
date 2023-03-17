@@ -1,6 +1,5 @@
 //! RISC-V peripherals
 use core::marker::PhantomData;
-use core::ops;
 
 // Platform-Level Interrupt Controller
 #[cfg(feature = "plic")]
@@ -34,6 +33,7 @@ pub mod plic;
 /// In this way, each HART can own a `PLIC` structure that points to a dedicated context.
 #[allow(clippy::upper_case_acronyms)]
 #[cfg(feature = "plic")]
+#[derive(Default)]
 pub struct PLIC<const BASE: usize, const CONTEXT: usize> {
     _marker: PhantomData<*const ()>,
 }
@@ -42,17 +42,12 @@ pub struct PLIC<const BASE: usize, const CONTEXT: usize> {
 impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// Pointer to the register block
     pub const PTR: *const self::plic::RegisterBlock = BASE as *const _;
-}
 
-#[cfg(feature = "plic")]
-unsafe impl<const BASE: usize, const CONTEXT: usize> Send for PLIC<BASE, CONTEXT> {}
-
-#[cfg(feature = "plic")]
-impl<const BASE: usize, const CONTEXT: usize> ops::Deref for PLIC<BASE, CONTEXT> {
-    type Target = self::plic::RegisterBlock;
-
-    #[inline(always)]
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*Self::PTR }
+    /// Creates a new interface for the PLIC peripheral. PACs can use this
+    /// function to add a PLIC interface to their `Peripherals` struct.
+    pub fn new() -> Self {
+        Self {
+            _marker: PhantomData,
+        }
     }
 }

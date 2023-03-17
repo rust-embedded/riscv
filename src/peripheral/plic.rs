@@ -4,6 +4,7 @@
 
 use super::PLIC;
 use crate::register::{mie, mip};
+use core::ops::Deref;
 use volatile_register::{RO, RW};
 
 /// Maximum number of interrupt sources supported by the PLIC standard.
@@ -209,9 +210,16 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     }
 }
 
-/// Helper structure to identify invalid interrupt numbers.
-#[derive(Debug, Copy, Clone)]
-pub struct TryFromInterruptError(());
+impl<const BASE: usize, const CONTEXT: usize> Deref for PLIC<BASE, CONTEXT> {
+    type Target = RegisterBlock;
+
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*Self::PTR }
+    }
+}
+
+unsafe impl<const BASE: usize, const CONTEXT: usize> Send for PLIC<BASE, CONTEXT> {}
 
 /// Trait for enums of global interrupt numbers handled by the PLIC.
 ///
@@ -239,12 +247,9 @@ pub unsafe trait InterruptNumber: Copy {
     fn number(self) -> u16;
 
     /// Tries to convert a number to a valid interrupt source.
-    fn try_from(value: u16) -> Result<Self, TryFromInterruptError>;
+    /// If the conversion fails, it returns an error with the number back.
+    fn try_from(value: u16) -> Result<Self, u16>;
 }
-
-/// Helper structure to identify invalid priority numbers.
-#[derive(Debug, Copy, Clone)]
-pub struct TryFromPriorityError(());
 
 /// Trait for enums of priority levels implemented by the PLIC.
 ///
@@ -273,5 +278,6 @@ pub unsafe trait PriorityLevel: Copy {
     fn number(self) -> u16;
 
     /// Tries to convert a number to a valid priority level.
-    fn try_from(value: u16) -> Result<Self, TryFromPriorityError>;
+    /// If the conversion fails, it returns an error with the number back.
+    fn try_from(value: u16) -> Result<Self, u16>;
 }
