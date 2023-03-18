@@ -82,14 +82,11 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// Returns the priority level associated to a given interrupt source.
     /// If priority level is 0 (i.e., "never interrupt"), it returns `None`.
     #[inline]
-    pub fn get_priority<I: InterruptNumber, P: PriorityLevel>(source: I) -> Option<P> {
+    pub fn get_priority<I: InterruptNumber, P: PriorityLevel>(source: I) -> P {
         let source = usize::from(source.number());
         // SAFETY: atomic read with no side effects
         let priority: u16 = unsafe { (*Self::PTR).priority[source].read() } as _;
-        match priority {
-            0 => None,
-            i => Some(P::try_from(i).unwrap()),
-        }
+        P::try_from(priority).unwrap()
     }
 
     /// Sets the priority level of a given interrupt source.
@@ -265,6 +262,7 @@ pub unsafe trait InterruptNumber: Copy {
 /// and must always return the same value (do not change at runtime).
 /// All the interrupt numbers must be less than or equal to `MAX_PRIORITY_NUMBER`.
 /// `MAX_PRIORITY_NUMBER` must coincide with the highest allowed priority number.
+/// There must be a valid interrupt number set to 0 (i.e., never interrupt).
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
