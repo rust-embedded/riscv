@@ -240,7 +240,7 @@ pub unsafe trait InterruptNumber: Copy {
     const MAX_INTERRUPT_NUMBER: u16;
 
     /// Number of bits used to encode the global interrupt numbers.
-    const N_PRIORITY_BITS: u16 = Self::MAX_INTERRUPT_NUMBER.ilog2() as u16 + 1;
+    const N_INTERRUPT_BITS: u16 = Self::MAX_INTERRUPT_NUMBER.ilog2() as u16 + 1;
 
     /// Converts an interrupt source to its corresponding number.
     fn number(self) -> u16;
