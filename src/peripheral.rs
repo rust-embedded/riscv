@@ -18,19 +18,12 @@ pub mod plic;
 /// with each other when attending to external interruptions.
 ///
 /// Each platform must specify a type alias for every context of its PLIC.
-/// In single core platforms, there is usually just one context (context 0).
-/// In this case, PACs can define their PLIC as follows:
+/// For instance, for targets with two contexts, PACs can define their PLIC as follows:
 /// ```
-/// pub type PLIC = riscv::peripheral::PLIC<ADDRESS, 0>;
-/// ```
-/// where `ADDRESS` is the base address of the PLIC peripheral in the target platform.
-///
-/// For multicore architectures with more than one context, these can be defined as follows:
-///  ```
 /// pub type PLIC0 = riscv::peripheral::PLIC<ADDRESS, 0>;
 /// pub type PLIC1 = riscv::peripheral::PLIC<ADDRESS, 1>;
 /// ```
-/// In this way, each HART can own a `PLIC` structure that points to a dedicated context.
+/// where `ADDRESS` is the base address of the PLIC peripheral in the target platform.
 #[allow(clippy::upper_case_acronyms)]
 #[cfg(feature = "plic")]
 #[derive(Default)]

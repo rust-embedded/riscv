@@ -231,11 +231,16 @@ unsafe impl<const BASE: usize, const CONTEXT: usize> Send for PLIC<BASE, CONTEXT
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
 /// The interrupt number must be less than 1_024.
+/// All the interrupt numbers must be less than or equal to `MAX_INTERRUPT_NUMBER`.
+/// `MAX_INTERRUPT_NUMBER` must coincide with the highest allowed interrupt number.
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait InterruptNumber: Copy {
     /// Highest number assigned to an interrupt source.
     const MAX_INTERRUPT_NUMBER: u16;
+
+    /// Number of bits used to encode the global interrupt numbers.
+    const N_PRIORITY_BITS: u16 = Self::MAX_INTERRUPT_NUMBER.ilog2() as u16 + 1;
 
     /// Converts an interrupt source to its corresponding number.
     fn number(self) -> u16;
@@ -260,14 +265,17 @@ pub unsafe trait InterruptNumber: Copy {
 /// This trait must only be implemented on enums of PLIC priority level. Each
 /// enum variant must represent a distinct value (no duplicates are permitted),
 /// and must always return the same value (do not change at runtime).
-/// All the interrupt numbers must be less than or equal to `MAX_PRIORITY_NUMBER`.
+/// There must be a valid priority number set to 0 (i.e., never interrupt).
+/// All the priority level numbers must be less than or equal to `MAX_PRIORITY_NUMBER`.
 /// `MAX_PRIORITY_NUMBER` must coincide with the highest allowed priority number.
-/// There must be a valid interrupt number set to 0 (i.e., never interrupt).
 ///
 /// These requirements ensure safe nesting of critical sections.
 pub unsafe trait PriorityLevel: Copy {
     /// Number assigned to the highest priority level.
     const MAX_PRIORITY_NUMBER: u16;
+
+    /// Number of bits used to encode the priority levels.
+    const N_PRIORITY_BITS: u16 = Self::MAX_PRIORITY_NUMBER.ilog2() as u16 + 1;
 
     /// Converts a priority level to its corresponding number.
     fn number(self) -> u16;
