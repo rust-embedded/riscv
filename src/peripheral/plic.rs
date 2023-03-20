@@ -3,7 +3,10 @@
 //! Specification: https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
 
 use super::PLIC;
-use crate::register::{mie, mip};
+use crate::{
+    interrupt::{InterruptNumber, PriorityNumber},
+    register::mie,
+};
 use core::ops::Deref;
 use volatile_register::{RO, RW};
 
@@ -46,12 +49,6 @@ pub struct ContextState {
 }
 
 impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
-    /// Checks if the Machine External Interrupt bit of the [`crate::register::mie`] CSR is set.
-    #[inline]
-    pub fn is_mext_enabled() -> bool {
-        mie::read().mext()
-    }
-
     /// Sets the Machine External Interrupt bit of the [`crate::register::mie`] CSR.
     /// This bit must be set for the PLIC to trigger machine external interrupts.
     ///
@@ -72,20 +69,13 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
         unsafe { mie::clear_mext() };
     }
 
-    /// Checks if there the Machine External Interrupt bit of the [`crate::register::mip`] CSR is set.
-    /// If set, there is at least one PLIC context that can claim a non-zero interrupt.
-    #[inline]
-    pub fn is_mext_pending() -> bool {
-        mip::read().mext()
-    }
-
     /// Returns the priority level associated to a given interrupt source.
     /// If priority level is 0 (i.e., "never interrupt"), it returns `None`.
     #[inline]
-    pub fn get_priority<I: InterruptNumber, P: PriorityLevel>(source: I) -> P {
+    pub fn get_priority<I: InterruptNumber, P: PriorityNumber>(source: I) -> P {
         let source = usize::from(source.number());
         // SAFETY: atomic read with no side effects
-        let priority: u16 = unsafe { (*Self::PTR).priority[source].read() } as _;
+        let priority = unsafe { (*Self::PTR).priority[source].read() } as _;
         P::try_from(priority).unwrap()
     }
 
@@ -100,9 +90,9 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     ///
     /// Changing priority levels can break priority-based critical sections and compromise memory safety.
     #[inline]
-    pub unsafe fn set_priority<I: InterruptNumber, P: PriorityLevel>(source: I, priority: P) {
+    pub unsafe fn set_priority<I: InterruptNumber, P: PriorityNumber>(source: I, priority: P) {
         let source = usize::from(source.number());
-        let priority = u32::from(priority.number());
+        let priority = priority.number().into();
         // SAFETY: atomic write with no side effects
         (*Self::PTR).priority[source].write(priority);
     }
@@ -164,9 +154,9 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Gets the priority threshold for for the PLIC context.
     #[inline]
-    pub fn get_threshold<P: PriorityLevel>() -> P {
+    pub fn get_threshold<P: PriorityNumber>() -> P {
         // SAFETY: atomic read with no side effects
-        let priority: u16 = unsafe { (*Self::PTR).states[CONTEXT].threshold.read() } as _;
+        let priority = unsafe { (*Self::PTR).states[CONTEXT].threshold.read() } as _;
         P::try_from(priority).unwrap()
     }
 
@@ -176,8 +166,8 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     ///
     /// Unmasking an interrupt source can break mask-based critical sections.
     #[inline]
-    pub unsafe fn set_threshold<P: PriorityLevel>(priority: P) {
-        let priority = u32::from(priority.number());
+    pub unsafe fn set_threshold<P: PriorityNumber>(priority: P) {
+        let priority = priority.number().into();
         // SAFETY: atomic write with no side effects
         (*Self::PTR).states[CONTEXT].threshold.write(priority);
     }
@@ -186,7 +176,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     #[inline]
     pub fn claim<I: InterruptNumber>() -> Option<I> {
         // SAFETY: atomic read with no side effects
-        let interrupt: u16 = unsafe { (*Self::PTR).states[CONTEXT].claim_complete.read() } as _;
+        let interrupt = unsafe { (*Self::PTR).states[CONTEXT].claim_complete.read() } as _;
         match interrupt {
             0 => None,
             i => Some(I::try_from(i).unwrap()),
@@ -196,7 +186,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// Marks a pending interrupt as complete from for the PLIC context.
     #[inline]
     pub fn complete<I: InterruptNumber>(source: I) {
-        let source = u32::from(source.number());
+        let source = source.number().into();
         // SAFETY: atomic write with no side effects
         unsafe {
             (*Self::PTR).states[CONTEXT].claim_complete.write(source);
@@ -214,73 +204,3 @@ impl<const BASE: usize, const CONTEXT: usize> Deref for PLIC<BASE, CONTEXT> {
 }
 
 unsafe impl<const BASE: usize, const CONTEXT: usize> Send for PLIC<BASE, CONTEXT> {}
-
-/// Trait for enums of global interrupt numbers handled by the PLIC.
-///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available PLIC global interrupts for a specific device.
-/// Each variant must convert to a `u16` of its interrupt number.
-///
-/// # Note
-///
-/// Recall that the interrupt number `0` is reserved as "no interrupt".
-///
-/// # Safety
-///
-/// This trait must only be implemented on enums of PLIC global interrupts. Each
-/// enum variant must represent a distinct value (no duplicates are permitted),
-/// and must always return the same value (do not change at runtime).
-/// The interrupt number must be less than 1_024.
-/// All the interrupt numbers must be less than or equal to `MAX_INTERRUPT_NUMBER`.
-/// `MAX_INTERRUPT_NUMBER` must coincide with the highest allowed interrupt number.
-///
-/// These requirements ensure safe nesting of critical sections.
-pub unsafe trait InterruptNumber: Copy {
-    /// Highest number assigned to an interrupt source.
-    const MAX_INTERRUPT_NUMBER: u16;
-
-    /// Number of bits used to encode the global interrupt numbers.
-    const N_INTERRUPT_BITS: u16 = Self::MAX_INTERRUPT_NUMBER.ilog2() as u16 + 1;
-
-    /// Converts an interrupt source to its corresponding number.
-    fn number(self) -> u16;
-
-    /// Tries to convert a number to a valid interrupt source.
-    /// If the conversion fails, it returns an error with the number back.
-    fn try_from(value: u16) -> Result<Self, u16>;
-}
-
-/// Trait for enums of priority levels implemented by the PLIC.
-///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available PLIC priority levels for a specific device.
-/// Each variant must convert to a `u16` of its priority level.
-///
-/// # Note
-///
-/// Recall that the priority number `0` is reserved as "never interrupt".
-///
-/// # Safety
-///
-/// This trait must only be implemented on enums of PLIC priority level. Each
-/// enum variant must represent a distinct value (no duplicates are permitted),
-/// and must always return the same value (do not change at runtime).
-/// There must be a valid priority number set to 0 (i.e., never interrupt).
-/// All the priority level numbers must be less than or equal to `MAX_PRIORITY_NUMBER`.
-/// `MAX_PRIORITY_NUMBER` must coincide with the highest allowed priority number.
-///
-/// These requirements ensure safe nesting of critical sections.
-pub unsafe trait PriorityLevel: Copy {
-    /// Number assigned to the highest priority level.
-    const MAX_PRIORITY_NUMBER: u16;
-
-    /// Number of bits used to encode the priority levels.
-    const N_PRIORITY_BITS: u16 = Self::MAX_PRIORITY_NUMBER.ilog2() as u16 + 1;
-
-    /// Converts a priority level to its corresponding number.
-    fn number(self) -> u16;
-
-    /// Tries to convert a number to a valid priority level.
-    /// If the conversion fails, it returns an error with the number back.
-    fn try_from(value: u16) -> Result<Self, u16>;
-}
