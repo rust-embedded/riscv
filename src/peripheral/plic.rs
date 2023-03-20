@@ -192,6 +192,30 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
             (*Self::PTR).states[CONTEXT].claim_complete.write(source);
         }
     }
+
+    /// Resets the PLIC peripherals. Namely, it performs the following operations:
+    ///
+    /// - Sets PLIC context threshold to the maximum interrupt level (i.e., never interrupt).
+    /// - Disables all the interrupt sources.
+    /// - Sets interrupt source priority to 0 (i.e., no interrupt).
+    ///
+    /// # Note
+    ///
+    /// This method performs a read-modify-write operation.
+    /// That is why it is a method instead of an associated function.
+    ///
+    /// # Safety
+    ///
+    /// Non-atomic operations may lead to undefined behavior.
+    #[inline]
+    pub unsafe fn reset<I: InterruptNumber, P: PriorityNumber>(&mut self) {
+        Self::set_threshold(P::try_from(P::MAX_PRIORITY_NUMBER).unwrap());
+        let no_interrupt = P::try_from(0).unwrap();
+        for source in (1..=I::MAX_INTERRUPT_NUMBER).filter_map(|n| I::try_from(n).ok()) {
+            self.interrupt_disable(source);
+            Self::set_priority(source, no_interrupt);
+        }
+    }
 }
 
 impl<const BASE: usize, const CONTEXT: usize> Deref for PLIC<BASE, CONTEXT> {
