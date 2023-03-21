@@ -31,6 +31,8 @@
 pub mod asm;
 pub mod delay;
 pub mod interrupt;
+#[cfg(any(feature = "plic"))]
+pub mod peripheral;
 pub mod register;
 
 #[macro_use]
