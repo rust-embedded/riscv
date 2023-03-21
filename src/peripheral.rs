@@ -9,6 +9,8 @@ pub mod plic;
 ///
 /// # Note
 ///
+/// This structure requires the `plic` feature.
+///
 /// The RISC-V standard does not specify a fixed location for the PLIC.
 /// Thus, we use const generics to map a PLIC to the desired memory location.
 /// Each platform must specify the base address of the PLIC on the platform.
@@ -17,13 +19,9 @@ pub mod plic;
 /// Usually, each HART uses a dedicated context. In this way, they do not interfere
 /// with each other when attending to external interruptions.
 ///
-/// Each platform must specify a type alias for every context of its PLIC.
-/// For instance, for targets with two contexts, PACs can define their PLIC as follows:
-/// ```
-/// pub type PLIC0 = riscv::peripheral::PLIC<ADDRESS, 0>;
-/// pub type PLIC1 = riscv::peripheral::PLIC<ADDRESS, 1>;
-/// ```
-/// where `ADDRESS` is the base address of the PLIC peripheral in the target platform.
+/// You can use the [`crate::plic_context`] macro to generate a specific structure
+/// for interfacing every PLIC context of your platform. The resulting structure
+/// replaces generic types with the specific types of your target.
 #[allow(clippy::upper_case_acronyms)]
 #[cfg(feature = "plic")]
 #[derive(Default)]

@@ -1,6 +1,6 @@
 //! Platform-Level Interrupt Controller (PLIC) peripheral.
 //!
-//! Specification: https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc
+//! Specification: <https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc>
 
 pub use super::PLIC;
 use crate::register::mie;
@@ -69,12 +69,6 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
         // SAFETY: atomic read with no side effects
         let priority = unsafe { (*Self::PTR).priority[source].read() } as _;
         P::try_from(priority).unwrap()
-    }
-
-    /// Getter method for the priority level associated to a given interrupt source.
-    #[inline(always)]
-    pub fn get_priority<I: InterruptNumber, P: PriorityNumber>(&self, source: I) -> P {
-        Self::priority(source)
     }
 
     /// Sets the priority level of a given interrupt source.
@@ -152,12 +146,6 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
         P::try_from(priority).unwrap()
     }
 
-    /// Getter method for the priority threshold of the PLIC context.
-    #[inline(always)]
-    pub fn get_threshold<P: PriorityNumber>(&self) -> P {
-        Self::threshold()
-    }
-
     /// Sets the priority threshold for for the PLIC context.
     ///
     /// # Safety
@@ -202,11 +190,6 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
     /// - Sets PLIC context threshold to the maximum interrupt level (i.e., never interrupt).
     /// - Disables all the interrupt sources.
     /// - Sets interrupt source priority to 0 (i.e., no interrupt).
-    ///
-    /// # Note
-    ///
-    /// This method performs a read-modify-write operation.
-    /// That is why it is a method instead of an associated function.
     ///
     /// # Safety
     ///
