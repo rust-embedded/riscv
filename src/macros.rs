@@ -88,7 +88,7 @@ macro_rules! plic_context {
 
         impl $PLIC {
             /// Creates a new PLIC context interface.
-            pub fn new() -> Self {
+            pub const fn new() -> Self {
                 Self {
                     context: $crate::peripheral::PLIC::new(),
                 }

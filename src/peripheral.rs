@@ -36,7 +36,7 @@ impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
 
     /// Creates a new interface for the PLIC peripheral. PACs can use this
     /// function to add a PLIC interface to their `Peripherals` struct.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             _marker: PhantomData,
         }
