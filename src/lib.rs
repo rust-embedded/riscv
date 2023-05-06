@@ -21,7 +21,7 @@
 //! implementation suitable for single-hart targets, based on disabling interrupts globally.
 //!
 //! It is **unsound** to enable it on multi-hart targets,
-//! and may cause functional problems in systems where some interrupts must be not be disabled
+//! and may cause functional problems in systems where some interrupts must NOT be disabled
 //! or critical sections are managed as part of an RTOS. In these cases, you should use
 //! a target-specific implementation instead, typically provided by a HAL or RTOS crate.
 
