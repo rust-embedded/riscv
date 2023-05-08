@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- CI action updated. It now uses `checkout@v3` and `dtolenay/rust-toolchain`.
+- CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
 
 ## [v0.10.1] - 2023-01-18
 
