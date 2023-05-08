@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `asm::fence()`, a wrapper for implementing a `fence` instruction
 - Add `asm::fence_i()`, a wrapper for implementing a `fence.i` instruction
 
+### Changed
+
+- CI action updated. It now uses `checkout@v3` and `dtolenay/rust-toolchain`.
+
 ## [v0.10.1] - 2023-01-18
 
 ### Fixed
