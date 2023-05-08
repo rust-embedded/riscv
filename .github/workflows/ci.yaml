@@ -5,63 +5,50 @@ on:
 
 name: Continuous integration
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
+  # On Linux, we check that the crate builds and links for all the toolchains and targets.
   ci-linux:
-    runs-on: ubuntu-20.04
-    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       matrix:
         # All generated code should be running on stable now, MRSV is 1.59.0
-        rust: [nightly, stable, 1.59.0]
-
+        toolchain: [ stable, nightly, 1.59.0 ]
+        target:
+          - x86_64-unknown-linux-gnu
+          - riscv32i-unknown-none-elf
+          - riscv32imc-unknown-none-elf
+          - riscv32imac-unknown-none-elf
+          - riscv64gc-unknown-linux-gnu
+          - riscv64gc-unknown-none-elf
+        cargo_flags: [ "--no-default-features", "--all-features" ]
         include:
           # Nightly is only for reference and allowed to fail
           - rust: nightly
             experimental: true
-
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          override: true
-      - name: Install all Rust targets for ${{ matrix.rust }}
-        run: rustup target install --toolchain=${{ matrix.rust }} x86_64-unknown-linux-gnu riscv32imac-unknown-none-elf riscv64imac-unknown-none-elf riscv64gc-unknown-none-elf
-      - name: Install riscv gcc
-        run: sudo apt-get update && sudo apt-get install -y gcc-riscv64-unknown-elf
-      - name: Run CI script for x86_64-unknown-linux-gnu under ${{ matrix.rust }}
-        run: cargo check --target x86_64-unknown-linux-gnu
-      - name: Run CI script for riscv32imac-unknown-none-elf under ${{ matrix.rust }}
-        run: cargo check --target riscv32imac-unknown-none-elf
-      - name: Run CI script for riscv64imac-unknown-none-elf under ${{ matrix.rust }}
-        run: cargo check --target riscv64imac-unknown-none-elf
-      - name: Run CI script for riscv64gc-unknown-none-elf under ${{ matrix.rust }}
-        run: cargo check --target riscv64gc-unknown-none-elf
-      - name: Run CI script for x86_64-unknown-linux-gnu under ${{ matrix.rust }} with critical-section-single-hart
-        run: cargo check --target x86_64-unknown-linux-gnu --features critical-section-single-hart
-      - name: Run CI script for riscv32imac-unknown-none-elf under ${{ matrix.rust }} with critical-section-single-hart
-        run: cargo check --target riscv32imac-unknown-none-elf --features critical-section-single-hart
-      - name: Run CI script for riscv64imac-unknown-none-elf under ${{ matrix.rust }} with critical-section-single-hart
-        run: cargo check --target riscv64imac-unknown-none-elf --features critical-section-single-hart
-      - name: Run CI script for riscv64gc-unknown-none-elf under ${{ matrix.rust }} with critical-section-single-hart
-        run: cargo check --target riscv64gc-unknown-none-elf --features critical-section-single-hart
-
+    - uses: actions/checkout@v3
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.toolchain }}
+        targets: ${{ matrix.target }}
+    - name: Build library
+      run: cargo build --target ${{ matrix.target }} ${{ matrix.cargo_flags }}
+      
   # On macOS and Windows, we at least make sure that the crate builds and links.
-  build-other:
+  ci-others:
     strategy:
       matrix:
         os:
           - macOS-latest
           - windows-latest
+        cargo_flags: [ "--no-default-features", "--all-features" ]
     runs-on: ${{ matrix.os }}
-
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build crate for host OS
-        run: cargo build --features critical-section-single-hart
+        run: cargo build ${{ matrix.cargo_flags }}
