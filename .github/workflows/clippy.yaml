@@ -1,14 +1,10 @@
-name: Clippy
-
 on:
   push:
     branches: [ staging, trying, master ]
   pull_request:
-    branches: [ master ]
+  merge_group:
 
-defaults:
-  run:
-    shell: bash
+name: Clippy lints
 
 env:
   CLIPPY_PARAMS: -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::cargo
@@ -16,21 +12,22 @@ env:
 jobs:
   clippy:
     name: Clippy
-    runs-on: ubuntu-latest
     strategy:
       matrix:
+        toolchain: [ stable, nightly ]
         cargo_flags:
           - "--no-default-features"
           - "--all-features"
+        include:
+          # Nightly is only for reference and allowed to fail
+          - toolchain: nightly
+            experimental: true
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@${{ matrix.toolchain }}
         with:
-          toolchain: stable
           components: clippy
-
       - name: Run clippy
         run: cargo clippy --all ${{ matrix.cargo_flags }} -- -D warnings

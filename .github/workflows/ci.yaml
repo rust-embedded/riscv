@@ -2,21 +2,18 @@ on:
   push:
     branches: [ staging, trying, master ]
   pull_request:
+  merge_group:
 
 name: Continuous integration
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  # On Linux, we check that the crate builds and links for all the toolchains and targets.
-  ci-linux:
+  # We check that the crate builds and links for all the toolchains and targets.
+  ci-riscv:
     strategy:
       matrix:
         # All generated code should be running on stable now, MRSV is 1.59.0
         toolchain: [ stable, nightly, 1.59.0 ]
         target:
-          - x86_64-unknown-linux-gnu
           - riscv32i-unknown-none-elf
           - riscv32imc-unknown-none-elf
           - riscv32imac-unknown-none-elf
@@ -25,25 +22,25 @@ jobs:
         cargo_flags: [ "--no-default-features", "--all-features" ]
         include:
           # Nightly is only for reference and allowed to fail
-          - rust: nightly
+          - toolchain: nightly
             experimental: true
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
     - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@master
+    - uses: dtolnay/rust-toolchain@${{ matrix.toolchain }}
       with:
-        toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
     - name: Build library
       run: cargo build --target ${{ matrix.target }} ${{ matrix.cargo_flags }}
       
-  # On macOS and Windows, we at least make sure that the crate builds and links.
+  # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
   ci-others:
     strategy:
       matrix:
         os:
-          - macOS-latest
+          - macos-latest
+          - ubuntu-latest
           - windows-latest
         cargo_flags: [ "--no-default-features", "--all-features" ]
     runs-on: ${{ matrix.os }}

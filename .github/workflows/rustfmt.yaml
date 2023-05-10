@@ -2,6 +2,7 @@ on:
   push:
     branches: [ staging, trying, master ]
   pull_request:
+  merge_group:
 
 name: Code formatting check
 
