@@ -28,8 +28,9 @@ jobs:
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
     - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@${{ matrix.toolchain }}
+    - uses: dtolnay/rust-toolchain@master
       with:
+        toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
     - name: Build library
       run: cargo build --target ${{ matrix.target }} ${{ matrix.cargo_flags }}

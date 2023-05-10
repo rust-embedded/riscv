@@ -26,8 +26,9 @@ jobs:
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@${{ matrix.toolchain }}
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: ${{ matrix.toolchain }}
           components: clippy
       - name: Run clippy
         run: cargo clippy --all ${{ matrix.cargo_flags }} -- -D warnings
