@@ -11,6 +11,7 @@ keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 
 [package.metadata.docs.rs]
+all-features = true
 default-target = "riscv64imac-unknown-none-elf"
 targets = [
     "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
@@ -19,8 +20,10 @@ targets = [
 
 [features]
 critical-section-single-hart = ["critical-section/restore-state-bool"]
+plic = ["volatile-register"]
 
 [dependencies]
 bit_field = "0.10.0"
 critical-section = "1.1.0"
 embedded-hal = "0.2.6"
+volatile-register = {version  = "0.2.1", optional = true}
