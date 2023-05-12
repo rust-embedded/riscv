@@ -7,8 +7,7 @@ on:
 name: Code formatting check
 
 jobs:
-  fmt:
-    name: Rustfmt
+  rustfmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
