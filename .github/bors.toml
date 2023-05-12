@@ -5,6 +5,6 @@ status = [
     "build-riscv (stable%)",
     "build-riscv (1.59.0%)",
     "build-others (%)",
-    "clippy (stable%),
+    "clippy (stable%)",
     "rustfmt",
 ]
