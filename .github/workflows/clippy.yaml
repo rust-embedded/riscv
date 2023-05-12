@@ -32,8 +32,8 @@ jobs:
       - name: Run clippy
         run: cargo clippy --all ${{ matrix.cargo_flags }} -- -D warnings
 
-    # Job to check that all the lint checks succeeded
-    clippy-check:
+   # Job to check that all the lint checks succeeded
+  clippy-check:
     needs:
     - clippy
     runs-on: ubuntu-latest
