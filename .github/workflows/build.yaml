@@ -50,3 +50,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Build crate for host OS
         run: cargo build ${{ matrix.cargo_flags }}
+  
+  # Job to check that all the builds succeeded
+  build-check:
+    needs:
+    - build-riscv
+    - build-others
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
