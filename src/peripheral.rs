@@ -1,6 +1,15 @@
 //! RISC-V peripherals
 use core::marker::PhantomData;
 
+pub mod common;
+
+// Advanced Core-Local Interruptor
+#[cfg(feature = "aclint")]
+pub mod aclint;
+
+#[cfg(feature = "aclint")]
+pub use aclint::*;
+
 // Platform-Level Interrupt Controller
 #[cfg(feature = "plic")]
 pub mod plic;

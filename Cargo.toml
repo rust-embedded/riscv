@@ -20,7 +20,10 @@ targets = [
 
 [features]
 critical-section-single-hart = ["critical-section/restore-state-bool"]
-plic = ["volatile-register"]
+peripheral = []
+aclint = []
+clint = ["aclint"]
+plic = ["peripheral", "volatile-register"]
 
 [dependencies]
 bit_field = "0.10.0"
