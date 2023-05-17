@@ -29,6 +29,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod asm;
+pub mod builder;
 pub mod delay;
 pub mod interrupt;
 #[cfg(any(feature = "plic"))]
