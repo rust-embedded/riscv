@@ -3,12 +3,27 @@ use core::marker::PhantomData;
 
 pub mod common;
 
-// Advanced Core-Local Interruptor
-#[cfg(feature = "aclint")]
+#[cfg(any(feature = "aclint", feature = "clint"))]
 pub mod aclint;
 
-#[cfg(feature = "aclint")]
-pub use aclint::*;
+/// Interface for a CLINT peripheral.
+///
+/// # Note
+///
+/// You need to set the `clint` feature to enable this peripheral.
+///
+/// The RISC-V standard does not specify a fixed location for the CLINT.
+/// Thus, each platform must specify the base address of the CLINT on the platform.
+///
+/// The CLINT standard allows up to 4_095 different HARTs connected to the CLINT.
+/// Each HART has an assigned index starting from 0 to up to 4_094.
+/// In this way, each HART's timer and software interrupts can be independently configured.
+#[cfg(feature = "clint")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CLINT {
+    pub mswi: aclint::MSWI,
+    pub mtimer: aclint::MTIMER,
+}
 
 // Platform-Level Interrupt Controller
 #[cfg(feature = "plic")]

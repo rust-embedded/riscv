@@ -1,3 +1,5 @@
+//! Common definitions for all the peripheral registers.
+
 use core::marker::PhantomData;
 
 /// Read-only type state for `A` in [`Reg`].

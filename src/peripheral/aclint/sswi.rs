@@ -1,14 +1,6 @@
+pub use super::SSWI;
 use crate::peripheral::common::{peripheral_reg, Reg, WARL};
 use crate::register::mie;
-
-/// Supervisor-level Software Interrupt Device.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(transparent)]
-pub struct SSWI {
-    /// [`SETSSIP`] register for HART ID 0.  In multi-HART architectures,
-    /// use [`SSWI::setssip`] for accessing the `SETSSIP` of other HARTs.
-    pub setssip0: SETSSIP,
-}
 
 impl SSWI {
     pub const fn new(address: usize) -> Self {

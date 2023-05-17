@@ -1,14 +1,6 @@
+pub use super::MSWI;
 use crate::peripheral::common::{peripheral_reg, Reg, WARL};
 use crate::register::mie;
-
-/// Machine-level Software Interrupt Device.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(transparent)]
-pub struct MSWI {
-    /// [`MSIP`] register for HART ID 0.  In multi-HART architectures,
-    /// use [`MSWI::msip`] for accessing the `MSIP` of other HARTs.
-    pub msip0: MSIP,
-}
 
 impl MSWI {
     pub const fn new(address: usize) -> Self {

@@ -21,8 +21,8 @@ targets = [
 [features]
 critical-section-single-hart = ["critical-section/restore-state-bool"]
 peripheral = []
-aclint = []
-clint = ["aclint"]
+aclint = ["peripheral"]
+clint = ["peripheral"]
 plic = ["peripheral", "volatile-register"]
 
 [dependencies]

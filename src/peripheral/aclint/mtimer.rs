@@ -1,15 +1,6 @@
+pub use super::MTIMER;
 use crate::peripheral::common::{peripheral_reg, Reg, RW};
 use crate::register::mie;
-
-/// Machine-level Timer Device.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct MTIMER {
-    /// [`MTIMECMP`] register for HART ID 0.  In multi-HART architectures,
-    /// use [`MTIMER::mtimecmp`] for accessing the `MTIMECMP` of other HARTs.
-    pub mtimecmp0: MTIMECMP,
-    /// The `MTIME` register is shared among all the HARTs.
-    pub mtime: MTIME,
-}
 
 impl MTIMER {
     pub const fn new(mtimecmp: usize, mtime: usize) -> Self {

@@ -1,40 +1,64 @@
-//! Advanced Core Local Interruptor (ACLINT) peripheral.
+//! Devices for the Core Local Interruptor (CLINT) and Advanced CLINT (ACLINT) peripherals.
 //!
-//! Specification: <https://github.com/riscv/riscv-aclint/blob/main/riscv-aclint.adoc>
+//! CLINT pecification: <https://github.com/pulp-platform/clint>
+//! ACLINT Specification: <https://github.com/riscv/riscv-aclint/blob/main/riscv-aclint.adoc>
 
 pub mod mswi;
 pub mod mtimer;
-pub mod sswi;
 
-pub use mswi::MSWI;
-pub use mtimer::MTIMER;
-pub use sswi::SSWI;
-
-/// Interface for a CLINT peripheral.
-///
-/// # Note
-///
-/// This structure requires the `clint` feature.
-///
-/// The RISC-V standard does not specify a fixed location for the CLINT.
-/// Thus, each platform must specify the base address of the CLINT on the platform.
-///
-/// The CLINT standard allows up to 4_095 different HARTs connected to the CLINT.
-/// Each HART has an assigned index starting from 0 to up to 4_094.
-/// In this way, each HART's timer and software interrupts can be independently configured.
 #[cfg(feature = "clint")]
-pub struct CLINT {
-    pub mswi: MSWI,
-    pub mtimer: MTIMER,
-}
+pub use super::CLINT;
 
 #[cfg(feature = "clint")]
 impl CLINT {
     pub const fn new(address: usize) -> Self {
         Self {
             mswi: MSWI::new(address),
-            // address offsets: <https://github.com/pulp-platform/clint>
             mtimer: MTIMER::new(address + 0x4000, address + 0xBFF8),
         }
     }
+}
+
+/// Machine-level Software Interrupt Device.
+///
+/// # Note
+///
+/// You need to activate the `aclint` or `clint` features to use this device.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct MSWI {
+    /// `MSIP` register for HART ID 0.  In multi-HART architectures,
+    /// use [`MSWI::msip`] for accessing the `MSIP` of other HARTs.
+    pub msip0: mswi::MSIP,
+}
+
+/// Machine-level Timer Device.
+///
+/// # Note
+///
+/// You need to activate the `aclint` or `clint` features to use this device.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MTIMER {
+    /// `MTIMECMP` register for HART ID 0.  In multi-HART architectures,
+    /// use [`MTIMER::mtimecmp`] for accessing the `MTIMECMP` of other HARTs.
+    pub mtimecmp0: mtimer::MTIMECMP,
+    /// The `MTIME` register is shared among all the HARTs.
+    pub mtime: mtimer::MTIME,
+}
+
+#[cfg(feature = "aclint")]
+pub mod sswi;
+
+/// Supervisor-level Software Interrupt Device.
+///
+/// # Note
+///
+/// You need to activate the `aclint` feature to use this device.
+#[cfg(feature = "aclint")]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(transparent)]
+pub struct SSWI {
+    /// `SETSSIP` register for HART ID 0.  In multi-HART architectures,
+    /// use [`SSWI::setssip`] for accessing the `SETSSIP` of other HARTs.
+    pub setssip0: sswi::SETSSIP,
 }
