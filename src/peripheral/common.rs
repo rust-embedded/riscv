@@ -41,6 +41,7 @@ impl Write for WARL {}
 /// Generic register structure. `T` refers to the data type of the register.
 /// Alternatively, `A` corresponds to the access level (e.g., read-only, read-write...).
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(transparent)]
 pub struct Reg<T: Copy, A: Access> {
     pub ptr: *mut T,
     phantom: PhantomData<A>,
@@ -50,11 +51,10 @@ unsafe impl<T: Copy, A: Access> Send for Reg<T, A> {}
 unsafe impl<T: Copy, A: Access> Sync for Reg<T, A> {}
 
 impl<T: Copy, A: Access> Reg<T, A> {
-    /// Creates a new peripheral register mapped to a given memory address.
     #[inline(always)]
-    pub const fn new(address: usize) -> Self {
+    pub const fn new(ptr: *mut T) -> Self {
         Self {
-            ptr: address as _,
+            ptr,
             phantom: PhantomData,
         }
     }
@@ -113,6 +113,7 @@ macro_rules! bitwise_reg {
     ($TYPE: ty) => {
         impl<A: Read> Reg<$TYPE, A> {
             /// Reads the nth bit of the register.
+            #[inline(always)]
             pub unsafe fn read_bit(self, n: $TYPE) -> bool {
                 let mask = 1 << n;
                 let val = self.read();
@@ -122,6 +123,7 @@ macro_rules! bitwise_reg {
 
         impl<A: Read + Write> Reg<$TYPE, A> {
             /// Clears the nth bit of the register.
+            #[inline(always)]
             pub unsafe fn clear_bit(self, n: $TYPE) {
                 let mask = 1 << n;
                 let val = self.read();
@@ -129,6 +131,7 @@ macro_rules! bitwise_reg {
             }
 
             /// Sets the nth bit of the register.
+            #[inline(always)]
             pub unsafe fn set_bit(self, n: $TYPE) {
                 let mask = 1 << n;
                 let val = self.read();
@@ -161,9 +164,15 @@ macro_rules! peripheral_reg {
         }
 
         impl $REGISTER {
+            #[inline(always)]
             pub const fn new(address: usize) -> Self {
+                Self::from_ptr(address as _)
+            }
+
+            #[inline(always)]
+            pub const fn from_ptr(ptr: *mut $TYPE) -> Self {
                 Self {
-                    register: Reg::new(address),
+                    register: Reg::new(ptr),
                 }
             }
         }

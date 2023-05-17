@@ -33,6 +33,7 @@ impl CLINT {
     pub const fn new(address: usize) -> Self {
         Self {
             mswi: MSWI::new(address),
+            // address offsets: <https://github.com/pulp-platform/clint>
             mtimer: MTIMER::new(address + 0x4000, address + 0xBFF8),
         }
     }
