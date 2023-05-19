@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add generic implementation of ACLINT and CLINT peripherals
 - Add generic implementation of a PLIC peripheral
 - Add `asm::fence()`, a wrapper for implementing a `fence` instruction
 - Add `asm::fence_i()`, a wrapper for implementing a `fence.i` instruction

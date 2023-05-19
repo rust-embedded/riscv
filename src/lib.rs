@@ -24,6 +24,24 @@
 //! and may cause functional problems in systems where some interrupts must NOT be disabled
 //! or critical sections are managed as part of an RTOS. In these cases, you should use
 //! a target-specific implementation instead, typically provided by a HAL or RTOS crate.
+//!
+//! ## `aclint`
+//!
+//! This feature enables the `riscv::peripheral::aclint` module, which provides access to the
+//! [Advanced Core Local Interruptor (ACLINT) devices](https://github.com/riscv/riscv-aclint/blob/main/riscv-aclint.adoc).
+//! PACs may use this feature to provide a homogenous interface to ACLINT peripherals among targets.
+//!
+//! ## `clint`
+//!
+//! This feature enables the `riscv::peripheral::CLINT` struct, which provides access to the
+//! [Core Local Interruptor (CLINT) peripheral](https://chromitem-soc.readthedocs.io/en/latest/clint.html).
+//! PACs may use this feature to provide a homogenous interface to CLINT peripherals among targets.
+//!
+//! ## `plic`
+//!
+//! This feature enables the `riscv::peripheral::PLIC` struct, which provides access to the
+//! [Platform-Level Interrupt Controller (PLIC) peripheral](https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc).
+//! PACs may use this feature to provide a homogenous interface to PLIC peripherals among targets.
 
 #![no_std]
 #![allow(clippy::missing_safety_doc)]

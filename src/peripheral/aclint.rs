@@ -1,7 +1,7 @@
 //! Devices for the Core Local Interruptor (CLINT) and Advanced CLINT (ACLINT) peripherals.
 //!
 //! CLINT pecification: <https://github.com/pulp-platform/clint>
-//! ACLINT Specification: <https://github.com/riscv/riscv-aclint/blob/main/riscv-aclint.adoc>
+//! ACLINT Specification: <https://chromitem-soc.readthedocs.io/en/latest/clint.html>
 
 pub mod mswi;
 pub mod mtimer;
