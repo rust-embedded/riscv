@@ -3,7 +3,7 @@ use crate::peripheral::common::{peripheral_reg, Reg, WARL};
 use crate::register::mie;
 
 impl SSWI {
-    pub const fn new(address: usize) -> Self {
+    pub fn new(address: usize) -> Self {
         Self {
             setssip0: SETSSIP::new(address),
         }

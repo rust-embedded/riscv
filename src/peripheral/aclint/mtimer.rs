@@ -3,7 +3,7 @@ use crate::peripheral::common::{peripheral_reg, Reg, RW};
 use crate::register::mie;
 
 impl MTIMER {
-    pub const fn new(mtimecmp: usize, mtime: usize) -> Self {
+    pub fn new(mtimecmp: usize, mtime: usize) -> Self {
         Self {
             mtimecmp0: MTIMECMP::new(mtimecmp),
             mtime: MTIME::new(mtime),

@@ -54,7 +54,7 @@ unsafe impl<T: Copy, A: Access> Sync for Reg<T, A> {}
 
 impl<T: Copy, A: Access> Reg<T, A> {
     #[inline(always)]
-    pub const fn new(ptr: *mut T) -> Self {
+    pub fn new(ptr: *mut T) -> Self {
         Self {
             ptr,
             phantom: PhantomData,
@@ -167,12 +167,12 @@ macro_rules! peripheral_reg {
 
         impl $REGISTER {
             #[inline(always)]
-            pub const fn new(address: usize) -> Self {
+            pub fn new(address: usize) -> Self {
                 Self::from_ptr(address as _)
             }
 
             #[inline(always)]
-            pub const fn from_ptr(ptr: *mut $TYPE) -> Self {
+            pub fn from_ptr(ptr: *mut $TYPE) -> Self {
                 Self {
                     register: Reg::new(ptr),
                 }
