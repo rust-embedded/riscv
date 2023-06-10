@@ -1,13 +1,19 @@
-pub use super::MSWI;
-use crate::peripheral::common::{peripheral_reg, Reg, WARL};
+pub use super::{HartIdNumber, MSWI};
+use crate::peripheral::common::{peripheral_reg, RW};
 use crate::register::mie;
 
 impl MSWI {
-    pub fn new(address: usize) -> Self {
+    /// Creates a new `MSWI` peripheral from a base address.
+    ///
+    /// # Safety
+    ///
+    /// The base address must point to a valid `MSWI` peripheral.
+    pub unsafe fn new(address: usize) -> Self {
         Self {
             msip0: MSIP::new(address),
         }
     }
+
     /// Sets the Machine Software Interrupt bit of the [`crate::register::mie`] CSR.
     /// This bit must be set for the `MSWI` to trigger machine software interrupts.
     #[inline(always)]
@@ -24,31 +30,34 @@ impl MSWI {
 
     /// Returns the `MSIP` register for the HART which ID is `hart_id`.
     ///
-    /// # Safety
+    /// # Note
     ///
-    /// `hart_id` must be valid for the target.
-    /// Otherwise, the resulting `MSIP` register will point to a reserved memory region.
-    pub unsafe fn msip(&self, hart_id: u16) -> MSIP {
-        assert!(hart_id < 4095); // maximum number of HARTs allowed
-        MSIP::from_ptr(self.msip0.ptr.offset(hart_id as _))
+    /// For HART ID 0, you can simply use [`MSWI::msip0`].
+    #[inline(always)]
+    pub fn msip<H: HartIdNumber>(&self, hart_id: H) -> MSIP {
+        // SAFETY: `hart_id` is valid for the target
+        unsafe { MSIP::from_ptr(self.msip0.get_ptr().offset(hart_id.number() as _)) }
     }
 }
 
-peripheral_reg!(MSIP, u32, WARL);
+peripheral_reg!(MSIP, u32, RW);
 
 impl MSIP {
     /// Returns `true` if a machine software interrupt is pending.
-    pub unsafe fn is_pending(self) -> bool {
-        self.register.read() == 1
+    #[inline(always)]
+    pub fn is_pending(self) -> bool {
+        self.read() == 1
     }
 
     /// Writes to the register to trigger a machine software interrupt.
-    pub unsafe fn pend(self) {
-        self.register.write(1);
+    #[inline(always)]
+    pub fn pend(self) {
+        self.write(1);
     }
 
     /// Clears the register to unpend a machine software interrupt.
-    pub unsafe fn unpend(self) {
-        self.register.write(0);
+    #[inline(always)]
+    pub fn unpend(self) {
+        self.write(0);
     }
 }

@@ -14,38 +14,35 @@ pub struct WO;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct RW;
 
-/// Write-any-read-legal type state for `A` in [`Reg`].
-/// In contrast with [`RW`] registers, `WARL` registers usually have
-/// additional methods that are specific to the behavior of the register.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct WARL;
-
 /// Generic trait for all the peripheral registers.
 /// This trait is sealed and cannot be implemented by any external crate.
 pub trait Access: sealed::Access + Copy {}
 impl Access for RO {}
 impl Access for WO {}
 impl Access for RW {}
-impl Access for WARL {}
 
 /// Trait for readable registers.
 pub trait Read: Access {}
 impl Read for RO {}
 impl Read for RW {}
-impl Read for WARL {}
 
 /// Trait for writable registers.
 pub trait Write: Access {}
 impl Write for WO {}
 impl Write for RW {}
-impl Write for WARL {}
 
 /// Generic register structure. `T` refers to the data type of the register.
 /// Alternatively, `A` corresponds to the access level (e.g., read-only, read-write...).
+///
+/// # Note
+///
+/// This structure assumes that it points to a valid peripheral register.
+/// If so, it is safe to read from or write to the register.
+/// However, keep in mind that read-modify-write operations may lead to **wrong** behavior.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct Reg<T: Copy, A: Access> {
-    pub ptr: *mut T,
+    ptr: *mut T,
     phantom: PhantomData<A>,
 }
 
@@ -53,28 +50,38 @@ unsafe impl<T: Copy, A: Access> Send for Reg<T, A> {}
 unsafe impl<T: Copy, A: Access> Sync for Reg<T, A> {}
 
 impl<T: Copy, A: Access> Reg<T, A> {
+    /// Creates a new register from a pointer.
+    ///
+    /// # Safety
+    ///
+    /// The pointer must be valid and must be correctly aligned.
     #[inline(always)]
-    pub fn new(ptr: *mut T) -> Self {
+    pub unsafe fn new(ptr: *mut T) -> Self {
         Self {
             ptr,
             phantom: PhantomData,
         }
     }
+
+    /// Returns a pointer to the register.
+    #[inline(always)]
+    pub fn get_ptr(self) -> *mut T {
+        self.ptr
+    }
 }
 
 impl<T: Copy, A: Read> Reg<T, A> {
-    /// Performs a volatile read of the peripheral register.
+    /// Performs a volatile read of the peripheral register with no side effects.
     ///
     /// # Note
     ///
     /// Beware of what "volatile" means in Rust (see [`core::ptr::read_volatile`]).
     ///
-    /// # Safety
-    ///
-    /// The address assigned must be valid and must be correctly aligned.
+    /// If you want to perform a read-modify-write operation, use [`Reg::modify`] instead.
     #[inline(always)]
-    pub unsafe fn read(self) -> T {
-        self.ptr.read_volatile()
+    pub fn read(self) -> T {
+        // SAFETY: valid address and register is readable
+        unsafe { self.ptr.read_volatile() }
     }
 }
 
@@ -85,12 +92,11 @@ impl<T: Copy, A: Write> Reg<T, A> {
     ///
     /// Beware of what "volatile" means in Rust (see [`core::ptr::read_volatile`]).
     ///
-    /// # Safety
-    ///
-    /// The address assigned must be valid and must be correctly aligned.
+    /// If you want to perform a read-modify-write operation, use [`Reg::modify`] instead.
     #[inline(always)]
-    pub unsafe fn write(self, val: T) {
-        self.ptr.write_volatile(val)
+    pub fn write(self, val: T) {
+        // SAFETY: valid address and register is writable
+        unsafe { self.ptr.write_volatile(val) }
     }
 }
 
@@ -98,11 +104,11 @@ impl<T: Copy, A: Read + Write> Reg<T, A> {
     /// It modifies the value of the register according to a given function `f`.
     /// After writing the new value to the register, it returns the value returned by `f`.
     ///
-    /// # Safety
+    /// # Note
     ///
-    /// It performs a non-atomic read-modify-write operation, which may lead to undefined behavior.
+    /// It performs a non-atomic read-modify-write operation, which may lead to **wrong** behavior.
     #[inline(always)]
-    pub unsafe fn modify<R>(self, f: impl FnOnce(&mut T) -> R) -> R {
+    pub fn modify<R>(self, f: impl FnOnce(&mut T) -> R) -> R {
         let mut val = self.read();
         let res = f(&mut val);
         self.write(val);
@@ -116,7 +122,7 @@ macro_rules! bitwise_reg {
         impl<A: Read> Reg<$TYPE, A> {
             /// Reads the nth bit of the register.
             #[inline(always)]
-            pub unsafe fn read_bit(self, n: $TYPE) -> bool {
+            pub fn read_bit(self, n: $TYPE) -> bool {
                 let mask = 1 << n;
                 let val = self.read();
                 val & mask == mask
@@ -125,19 +131,23 @@ macro_rules! bitwise_reg {
 
         impl<A: Read + Write> Reg<$TYPE, A> {
             /// Clears the nth bit of the register.
+            ///
+            /// # Note
+            ///
+            /// It performs a non-atomic read-modify-write operation, which may lead to **wrong** behavior.
             #[inline(always)]
-            pub unsafe fn clear_bit(self, n: $TYPE) {
-                let mask = 1 << n;
-                let val = self.read();
-                self.write(val & !mask);
+            pub fn clear_bit(self, n: $TYPE) {
+                self.modify(|val| *val &= !(1 << n));
             }
 
             /// Sets the nth bit of the register.
+            ///
+            /// # Note
+            ///
+            /// It performs a non-atomic read-modify-write operation, which may lead to **wrong** behavior.
             #[inline(always)]
             pub unsafe fn set_bit(self, n: $TYPE) {
-                let mask = 1 << n;
-                let val = self.read();
-                self.write(val | mask);
+                self.modify(|val| *val |= 1 << n);
             }
         }
     };
@@ -166,21 +176,31 @@ macro_rules! peripheral_reg {
         }
 
         impl $REGISTER {
+            /// Creates a new register from an address.
+            ///
+            /// # Safety
+            ///
+            /// The address assigned must be valid and must be correctly aligned.
             #[inline(always)]
-            pub fn new(address: usize) -> Self {
+            pub unsafe fn new(address: usize) -> Self {
                 Self::from_ptr(address as _)
             }
 
+            /// Creates a new register from a pointer.
+            ///
+            /// # Safety
+            ///
+            /// The pointer must be valid and must be correctly aligned.
             #[inline(always)]
-            pub fn from_ptr(ptr: *mut $TYPE) -> Self {
+            pub unsafe fn from_ptr(ptr: *mut $TYPE) -> Self {
                 Self {
-                    register: Reg::new(ptr),
+                    register: $crate::peripheral::common::Reg::new(ptr),
                 }
             }
         }
 
         impl core::ops::Deref for $REGISTER {
-            type Target = Reg<$TYPE, $ACCESS>;
+            type Target = $crate::peripheral::common::Reg<$TYPE, $ACCESS>;
 
             fn deref(&self) -> &Self::Target {
                 &self.register
@@ -196,5 +216,4 @@ mod sealed {
     impl Access for RO {}
     impl Access for WO {}
     impl Access for RW {}
-    impl Access for WARL {}
 }

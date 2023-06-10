@@ -9,9 +9,44 @@ pub mod mtimer;
 #[cfg(feature = "clint")]
 pub use super::CLINT;
 
+/// Trait for enums of HART IDs in (A)CLINT peripherals.
+///
+/// This trait should be implemented by a peripheral access crate (PAC)
+/// on its enum of available HARTs for a specific device.
+/// Each variant must convert to a `u16` of its HART ID.
+///
+/// # Note
+///
+/// If your target only has one HART (HART ID 0), you don't need to implement this trait.
+/// Instead, you can access directly to the base registers through the `(A)CLINT` structs.
+///
+/// # Safety
+///
+/// This trait must only be implemented on enums of HART IDs. Each
+/// enum variant must represent a distinct value (no duplicates are permitted),
+/// and must always return the same value (do not change at runtime).
+/// All the HART ID numbers must be less than or equal to `MAX_HART_ID_NUMBER`.
+/// `MAX_HART_ID_NUMBER` must coincide with the highest allowed HART ID number.
+pub unsafe trait HartIdNumber: Copy {
+    /// Highest number assigned to a HART ID.
+    const MAX_HART_ID_NUMBER: u16;
+
+    /// Converts a HART Id to its corresponding number.
+    fn number(self) -> u16;
+
+    /// Tries to convert a number to a valid HART ID.
+    /// If the conversion fails, it returns an error with the number back.
+    fn try_from(value: u16) -> Result<Self, u16>;
+}
+
 #[cfg(feature = "clint")]
 impl CLINT {
-    pub fn new(address: usize) -> Self {
+    /// Creates a new `CLINT` peripheral from a base address.
+    ///
+    /// # Safety
+    ///
+    /// The base address must point to a valid CLINT peripheral.
+    pub unsafe fn new(address: usize) -> Self {
         Self {
             mswi: MSWI::new(address),
             mtimer: MTIMER::new(address + 0x4000, address + 0xBFF8),

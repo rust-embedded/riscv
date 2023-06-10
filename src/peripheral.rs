@@ -1,5 +1,4 @@
 //! RISC-V peripherals
-use core::marker::PhantomData;
 
 pub mod common;
 
@@ -18,6 +17,7 @@ pub mod aclint;
 /// The CLINT standard allows up to 4_095 different HARTs connected to the CLINT.
 /// Each HART has an assigned index starting from 0 to up to 4_094.
 /// In this way, each HART's timer and software interrupts can be independently configured.
+#[allow(clippy::upper_case_acronyms)]
 #[cfg(feature = "clint")]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct CLINT {
@@ -36,33 +36,27 @@ pub mod plic;
 /// This structure requires the `plic` feature.
 ///
 /// The RISC-V standard does not specify a fixed location for the PLIC.
-/// Thus, we use const generics to map a PLIC to the desired memory location.
-/// Each platform must specify the base address of the PLIC on the platform.
+/// Thus, each platform must specify the base address of the PLIC on the platform.
 ///
 /// The PLIC standard allows up to 15_872 different contexts for interfacing the PLIC.
+/// Each context has an assigned index starting from 0 to up to 15_871.
 /// Usually, each HART uses a dedicated context. In this way, they do not interfere
 /// with each other when attending to external interruptions.
-///
-/// You can use the [`crate::plic_context`] macro to generate a specific structure
-/// for interfacing every PLIC context of your platform. The resulting structure
-/// replaces generic types with the specific types of your target.
 #[allow(clippy::upper_case_acronyms)]
 #[cfg(feature = "plic")]
-#[derive(Default)]
-pub struct PLIC<const BASE: usize, const CONTEXT: usize> {
-    _marker: PhantomData<*const ()>,
-}
-
-#[cfg(feature = "plic")]
-impl<const BASE: usize, const CONTEXT: usize> PLIC<BASE, CONTEXT> {
-    /// Pointer to the register block
-    pub const PTR: *const self::plic::RegisterBlock = BASE as *const _;
-
-    /// Creates a new interface for the PLIC peripheral. PACs can use this
-    /// function to add a PLIC interface to their `Peripherals` struct.
-    pub const fn new() -> Self {
-        Self {
-            _marker: PhantomData,
-        }
-    }
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct PLIC {
+    /// Interrupts priorities register.
+    pub priorities: plic::PRIORITIES,
+    /// Interrupts pending register.
+    pub pendings: plic::PENDINGS,
+    /// Interrupt enables register for PLIC context 0.
+    /// To access the enables register of other contexts, use [`PLIC::enables`].
+    pub enables0: plic::ENABLES,
+    /// Priority threshold register for PLIC context 0.
+    /// To access the threshold register of other contexts, use [`PLIC::threshold`].
+    pub threshold0: plic::THRESHOLD,
+    /// Interrupt claim/complete register for PLIC context 0.
+    /// To access the claim/complete register of other contexts, use [`PLIC::claim`].
+    pub claim0: plic::CLAIM,
 }

@@ -1,9 +1,14 @@
-pub use super::MTIMER;
-use crate::peripheral::common::{peripheral_reg, Reg, RW};
+pub use super::{HartIdNumber, MTIMER};
+use crate::peripheral::common::{peripheral_reg, RW};
 use crate::register::mie;
 
 impl MTIMER {
-    pub fn new(mtimecmp: usize, mtime: usize) -> Self {
+    /// Creates a new `MTIMER` peripheral from a base address.
+    ///
+    /// # Safety
+    ///
+    /// The base address must point to a valid `MTIMER` peripheral.
+    pub unsafe fn new(mtimecmp: usize, mtime: usize) -> Self {
         Self {
             mtimecmp0: MTIMECMP::new(mtimecmp),
             mtime: MTIME::new(mtime),
@@ -24,15 +29,15 @@ impl MTIMER {
         mie::clear_mtimer();
     }
 
-    /// Returns the `MTIMECMP` register for the HART which ID is `hart_id`.
+    /// Returns the `MTIME` register for the HART which ID is `hart_id`.
     ///
-    /// # Safety
+    /// # Note
     ///
-    /// `hart_id` must be valid for the target.
-    /// Otherwise, the resulting `MTIMECMP` register will point to a reserved memory region.
-    pub unsafe fn mtimecmp(&self, hart_id: u16) -> MTIMECMP {
-        assert!(hart_id < 4095); // maximum number of HARTs allowed
-        MTIMECMP::from_ptr(self.mtimecmp0.ptr.offset(hart_id as _))
+    /// For HART ID 0, you can simply use [`MTIMER::mtimecmp0`].
+    #[inline(always)]
+    pub fn mtimecmp<H: HartIdNumber>(&self, hart_id: H) -> MTIMECMP {
+        // SAFETY: `hart_id` is valid for the target
+        unsafe { MTIMECMP::from_ptr(self.mtimecmp0.get_ptr().offset(hart_id.number() as _)) }
     }
 }
 

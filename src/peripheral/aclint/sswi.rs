@@ -1,9 +1,14 @@
-pub use super::SSWI;
-use crate::peripheral::common::{peripheral_reg, Reg, WARL};
+pub use super::{HartIdNumber, SSWI};
+use crate::peripheral::common::{peripheral_reg, RW};
 use crate::register::mie;
 
 impl SSWI {
-    pub fn new(address: usize) -> Self {
+    /// Creates a new `SSWI` peripheral from a base address.
+    ///
+    /// # Safety
+    ///
+    /// The base address must point to a valid `SSWI` peripheral.
+    pub unsafe fn new(address: usize) -> Self {
         Self {
             setssip0: SETSSIP::new(address),
         }
@@ -25,31 +30,34 @@ impl SSWI {
 
     /// Returns the `SETSSIP` register for the HART which ID is `hart_id`.
     ///
-    /// # Safety
+    /// # Note
     ///
-    /// `hart_id` must be valid for the target.
-    /// Otherwise, the resulting `SETSSIP` register will point to a reserved memory region.
-    pub unsafe fn setssip(&self, hart_id: u16) -> SETSSIP {
-        assert!(hart_id < 4095); // maximum number of HARTs allowed
-        SETSSIP::from_ptr(self.setssip0.ptr.offset(hart_id as _))
+    /// For HART ID 0, you can simply use [`SSWI::setssip0`].
+    #[inline(always)]
+    pub fn setssip<H: HartIdNumber>(&self, hart_id: H) -> SETSSIP {
+        // SAFETY: `hart_id` is valid for the target
+        unsafe { SETSSIP::from_ptr(self.setssip0.get_ptr().offset(hart_id.number() as _)) }
     }
 }
 
-peripheral_reg!(SETSSIP, u32, WARL);
+peripheral_reg!(SETSSIP, u32, RW);
 
 impl SETSSIP {
     /// Returns `true` if a supervisor software interrupt is pending.
-    pub unsafe fn is_pending(self) -> bool {
-        self.register.read() == 1
+    #[inline(always)]
+    pub fn is_pending(self) -> bool {
+        self.read() == 1
     }
 
     /// Writes to the register to trigger a supervisor software interrupt.
-    pub unsafe fn pend(self) {
-        self.register.write(1);
+    #[inline(always)]
+    pub fn pend(self) {
+        self.write(1);
     }
 
     /// Clears the register to unpend a supervisor software interrupt.
-    pub unsafe fn unpend(self) {
-        self.register.write(0);
+    #[inline(always)]
+    pub fn unpend(self) {
+        self.write(0);
     }
 }
