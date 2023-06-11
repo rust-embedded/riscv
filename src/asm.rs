@@ -69,7 +69,7 @@ instruction!(
     /// visible to all RISC-V harts, the writing hart also has to execute a data FENCE before
     /// requesting that all remote RISC-V harts execute a FENCE.I.
     ///
-    /// The unused fields in the FENCE.I instruction, imm[11:0], rs1, and rd, are reserved for
+    /// The unused fields in the FENCE.I instruction, imm\[11:0\], rs1, and rd, are reserved for
     /// finer-grain fences in future extensions. For forward compatibility, base
     /// implementations shall ignore these fields, and standard software shall zero these fields.
     , fence_i, "fence.i");
