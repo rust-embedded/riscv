@@ -1,5 +1,5 @@
 pub use super::{HartIdNumber, MSWI};
-use crate::peripheral::common::{peripheral_reg, RW};
+use crate::peripheral::common::{unsafe_peripheral, RW};
 use crate::register::mie;
 
 impl MSWI {
@@ -36,28 +36,28 @@ impl MSWI {
     #[inline(always)]
     pub fn msip<H: HartIdNumber>(&self, hart_id: H) -> MSIP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { MSIP::from_ptr(self.msip0.get_ptr().offset(hart_id.number() as _)) }
+        unsafe { MSIP::new(self.msip0.get_ptr().offset(hart_id.number() as _) as _) }
     }
 }
 
-peripheral_reg!(MSIP, u32, RW);
+unsafe_peripheral!(MSIP, u32, RW);
 
 impl MSIP {
     /// Returns `true` if a machine software interrupt is pending.
     #[inline(always)]
     pub fn is_pending(self) -> bool {
-        self.read() == 1
+        self.register.read() == 1
     }
 
     /// Writes to the register to trigger a machine software interrupt.
     #[inline(always)]
     pub fn pend(self) {
-        self.write(1);
+        self.register.write(1);
     }
 
     /// Clears the register to unpend a machine software interrupt.
     #[inline(always)]
     pub fn unpend(self) {
-        self.write(0);
+        self.register.write(0);
     }
 }

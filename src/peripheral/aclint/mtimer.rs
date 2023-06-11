@@ -1,5 +1,5 @@
 pub use super::{HartIdNumber, MTIMER};
-use crate::peripheral::common::{peripheral_reg, RW};
+use crate::peripheral::common::{safe_peripheral, RW};
 use crate::register::mie;
 
 impl MTIMER {
@@ -37,12 +37,12 @@ impl MTIMER {
     #[inline(always)]
     pub fn mtimecmp<H: HartIdNumber>(&self, hart_id: H) -> MTIMECMP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { MTIMECMP::from_ptr(self.mtimecmp0.get_ptr().offset(hart_id.number() as _)) }
+        unsafe { MTIMECMP::new(self.mtimecmp0.get_ptr().offset(hart_id.number() as _) as _) }
     }
 }
 
 // MTIMECMP register.
-peripheral_reg!(MTIMECMP, u64, RW);
+safe_peripheral!(MTIMECMP, u64, RW);
 
 // MTIME register.
-peripheral_reg!(MTIME, u64, RW);
+safe_peripheral!(MTIME, u64, RW);

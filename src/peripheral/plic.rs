@@ -2,7 +2,7 @@
 //!
 //! Specification: <https://github.com/riscv/riscv-plic-spec/blob/master/riscv-plic.adoc>
 
-use crate::peripheral::common::{peripheral_reg, RW};
+use crate::peripheral::common::{unsafe_peripheral, RW};
 use crate::peripheral::PLIC;
 use crate::register::mie;
 
@@ -199,13 +199,13 @@ pub struct ENABLES {
     base: enables::ENABLE,
 }
 
-peripheral_reg!(THRESHOLD, u32, RW);
+unsafe_peripheral!(THRESHOLD, u32, RW);
 
 impl THRESHOLD {
     /// Returns the priority threshold level.
     #[inline(always)]
     pub fn get_threshold<P: PriorityNumber>(&self) -> P {
-        P::try_from(self.read() as _).unwrap()
+        P::try_from(self.register.read() as _).unwrap()
     }
 
     /// Sets the priority threshold level.
@@ -215,18 +215,18 @@ impl THRESHOLD {
     /// Changing the priority threshold can break priority-based critical sections.
     #[inline(always)]
     pub unsafe fn set_threshold<P: PriorityNumber>(&mut self, threshold: P) {
-        self.write(threshold.number() as _)
+        self.register.write(threshold.number() as _)
     }
 }
 
-peripheral_reg!(CLAIM, u32, RW);
+unsafe_peripheral!(CLAIM, u32, RW);
 
 impl CLAIM {
     /// Claims the number of a pending interrupt for for the PLIC context.
     /// If no interrupt is pending for this context, it returns [`None`].
     #[inline(always)]
     pub fn claim<I: InterruptNumber>(self) -> Option<I> {
-        match self.read() {
+        match self.register.read() {
             0 => None,
             i => Some(I::try_from(i as _).unwrap()),
         }
@@ -240,6 +240,6 @@ impl CLAIM {
     /// currently enabled for the target, the completion is silently ignored.
     #[inline(always)]
     pub fn complete<I: InterruptNumber>(self, source: I) {
-        self.write(source.number() as _)
+        self.register.write(source.number() as _)
     }
 }

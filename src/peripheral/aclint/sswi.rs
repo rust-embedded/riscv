@@ -1,5 +1,5 @@
 pub use super::{HartIdNumber, SSWI};
-use crate::peripheral::common::{peripheral_reg, RW};
+use crate::peripheral::common::{unsafe_peripheral, RW};
 use crate::register::mie;
 
 impl SSWI {
@@ -36,28 +36,28 @@ impl SSWI {
     #[inline(always)]
     pub fn setssip<H: HartIdNumber>(&self, hart_id: H) -> SETSSIP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { SETSSIP::from_ptr(self.setssip0.get_ptr().offset(hart_id.number() as _)) }
+        unsafe { SETSSIP::new(self.setssip0.get_ptr().offset(hart_id.number() as _) as _) }
     }
 }
 
-peripheral_reg!(SETSSIP, u32, RW);
+unsafe_peripheral!(SETSSIP, u32, RW);
 
 impl SETSSIP {
     /// Returns `true` if a supervisor software interrupt is pending.
     #[inline(always)]
     pub fn is_pending(self) -> bool {
-        self.read() == 1
+        self.register.read() == 1
     }
 
     /// Writes to the register to trigger a supervisor software interrupt.
     #[inline(always)]
     pub fn pend(self) {
-        self.write(1);
+        self.register.write(1);
     }
 
     /// Clears the register to unpend a supervisor software interrupt.
     #[inline(always)]
     pub fn unpend(self) {
-        self.write(0);
+        self.register.write(0);
     }
 }

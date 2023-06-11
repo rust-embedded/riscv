@@ -1,7 +1,7 @@
 //! Interrupt Priority register.
 
 use super::{InterruptNumber, PriorityNumber, PRIORITIES};
-use crate::peripheral::common::{peripheral_reg, RW};
+use crate::peripheral::common::{unsafe_peripheral, RW};
 
 impl PRIORITIES {
     /// Creates a new Interrupts priorities register from a base address.
@@ -20,17 +20,17 @@ impl PRIORITIES {
     #[inline(always)]
     pub fn priority<I: InterruptNumber>(&self, source: I) -> PRIORITY {
         // SAFETY: valid interrupt number
-        unsafe { PRIORITY::from_ptr(self.priority0.get_ptr().offset(source.number() as _)) }
+        unsafe { PRIORITY::new(self.priority0.get_ptr().offset(source.number() as _) as _) }
     }
 }
 
-peripheral_reg!(PRIORITY, u32, RW);
+unsafe_peripheral!(PRIORITY, u32, RW);
 
 impl PRIORITY {
     /// Returns the priority level associated to the interrupt source.
     #[inline(always)]
     pub fn get_priority<P: PriorityNumber>(self) -> P {
-        P::try_from(self.read() as _).unwrap()
+        P::try_from(self.register.read() as _).unwrap()
     }
 
     /// Sets the priority level of a given interrupt source.
@@ -45,6 +45,6 @@ impl PRIORITY {
     /// Changing priority levels can break priority-based critical sections and compromise memory safety.
     #[inline(always)]
     pub unsafe fn set_priority<P: PriorityNumber>(self, priority: P) {
-        self.write(priority.number() as _);
+        self.register.write(priority.number() as _);
     }
 }

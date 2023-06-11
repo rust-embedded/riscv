@@ -166,13 +166,12 @@ bitwise_reg!(i128);
 bitwise_reg!(isize);
 
 /// Macro to define the archetypal behavior of registers.
-/// You must specify the register name, its data type, and its access level.
-macro_rules! peripheral_reg {
+macro_rules! peripheral {
     ($REGISTER: ident, $TYPE: ty, $ACCESS: ty) => {
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         #[repr(transparent)]
         pub struct $REGISTER {
-            pub register: $crate::peripheral::common::Reg<$TYPE, $ACCESS>,
+            register: $crate::peripheral::common::Reg<$TYPE, $ACCESS>,
         }
 
         impl $REGISTER {
@@ -183,21 +182,24 @@ macro_rules! peripheral_reg {
             /// The address assigned must be valid and must be correctly aligned.
             #[inline(always)]
             pub unsafe fn new(address: usize) -> Self {
-                Self::from_ptr(address as _)
-            }
-
-            /// Creates a new register from a pointer.
-            ///
-            /// # Safety
-            ///
-            /// The pointer must be valid and must be correctly aligned.
-            #[inline(always)]
-            pub unsafe fn from_ptr(ptr: *mut $TYPE) -> Self {
                 Self {
-                    register: $crate::peripheral::common::Reg::new(ptr),
+                    register: $crate::peripheral::common::Reg::new(address as _),
                 }
             }
         }
+    };
+}
+
+/// Macro to define the archetypal behavior of *safe* registers.
+/// You must specify the register name, its data type, and its access level.
+///
+/// # Note
+///
+/// Safe peripheral registers implement [`core::ops::Deref`] to [`Reg`].
+/// You can safely use the dereferenced [`Reg::read`], [`Reg::write`], and/or [`Reg::modify`] methods.
+macro_rules! safe_peripheral {
+    ($REGISTER: ident, $TYPE: ty, $ACCESS: ty) => {
+        $crate::peripheral::common::peripheral!($REGISTER, $TYPE, $ACCESS);
 
         impl core::ops::Deref for $REGISTER {
             type Target = $crate::peripheral::common::Reg<$TYPE, $ACCESS>;
@@ -208,7 +210,40 @@ macro_rules! peripheral_reg {
         }
     };
 }
-pub(crate) use peripheral_reg;
+
+/// Macro to define the archetypal behavior of *unsafe* registers.
+/// You must specify the register name, its data type, and its access level.
+///
+/// # Note
+///
+/// Unsafe peripheral registers need special care when reading and/or writing.
+/// They usually provide additional methods to perform safe (or unsafe) operations.
+/// Nevertheless, you can still access the underlying register using the `unsafe get_register(self)` method.
+macro_rules! unsafe_peripheral {
+    ($REGISTER: ident, $TYPE: ty, $ACCESS: ty) => {
+        $crate::peripheral::common::peripheral!($REGISTER, $TYPE, $ACCESS);
+
+        impl $REGISTER {
+            #[inline(always)]
+            pub fn get_ptr(self) -> *mut $TYPE {
+                self.register.get_ptr()
+            }
+
+            /// Returns the underlying register.
+            ///
+            /// # Safety
+            ///
+            /// This register is not supposed to be used directly.
+            /// Use the other provided methods instead. Otherwise, use this method at your own risk.
+            #[inline(always)]
+            pub unsafe fn get_register(self) -> $crate::peripheral::common::Reg<$TYPE, $ACCESS> {
+                self.register
+            }
+        }
+    };
+}
+
+pub(crate) use {peripheral, safe_peripheral, unsafe_peripheral};
 
 mod sealed {
     use super::*;
