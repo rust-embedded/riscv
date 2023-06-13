@@ -100,10 +100,6 @@ pub unsafe trait ContextNumber: Copy {
 }
 
 impl PLIC {
-    /// Maximum number of interrupt sources supported by the PLIC standard.
-    const MAX_SOURCES: u32 = 1_024;
-    /// Maximum number of words needed to represent interrupts with flags.
-    const MAX_FLAGS_WORDS: u32 = Self::MAX_SOURCES / u32::BITS;
     /// Separation between enables registers for different contexts.
     const ENABLES_SEPARATION: usize = 0x80;
     /// Separation between threshold registers for different contexts.
@@ -149,7 +145,7 @@ impl PLIC {
     #[inline(always)]
     pub fn enables<C: ContextNumber>(&self, context: C) -> ENABLES {
         let context = context.number() as usize;
-        let addr = self.enables0.base.get_ptr() as usize + context * Self::ENABLES_SEPARATION;
+        let addr = self.enables0.base + context * Self::ENABLES_SEPARATION;
         // SAFETY: context is a valid index
         unsafe { ENABLES::new(addr) }
     }
@@ -184,19 +180,19 @@ impl PLIC {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct PRIORITIES {
-    priority0: priorities::PRIORITY,
+    base: usize,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct PENDINGS {
-    base: pendings::PENDING,
+    base: usize,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct ENABLES {
-    base: enables::ENABLE,
+    base: usize,
 }
 
 unsafe_peripheral!(THRESHOLD, u32, RW);
@@ -204,7 +200,7 @@ unsafe_peripheral!(THRESHOLD, u32, RW);
 impl THRESHOLD {
     /// Returns the priority threshold level.
     #[inline(always)]
-    pub fn get_threshold<P: PriorityNumber>(&self) -> P {
+    pub fn get_threshold<P: PriorityNumber>(self) -> P {
         P::try_from(self.register.read() as _).unwrap()
     }
 
@@ -214,8 +210,23 @@ impl THRESHOLD {
     ///
     /// Changing the priority threshold can break priority-based critical sections.
     #[inline(always)]
-    pub unsafe fn set_threshold<P: PriorityNumber>(&mut self, threshold: P) {
+    pub unsafe fn set_threshold<P: PriorityNumber>(self, threshold: P) {
         self.register.write(threshold.number() as _)
+    }
+
+    /// Resets the priority threshold level to 0.
+    ///
+    /// # Note
+    ///
+    /// Threshold 0 implies that all interrupts are accepted.
+    /// Thus, resetting the threshold is equivalent to accepting interrupts from any enabled interrupt source.
+    ///
+    /// # Safety
+    ///
+    /// Changing the priority threshold can break priority-based critical sections.
+    #[inline(always)]
+    pub unsafe fn reset(self) {
+        self.register.write(0)
     }
 }
 

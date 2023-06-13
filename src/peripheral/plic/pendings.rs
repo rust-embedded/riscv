@@ -1,6 +1,6 @@
 //! Interrupt pending bits register.
 
-use super::{InterruptNumber, PENDINGS, PLIC};
+use super::{InterruptNumber, PENDINGS};
 use crate::peripheral::common::{Reg, RO};
 
 impl PENDINGS {
@@ -10,19 +10,21 @@ impl PENDINGS {
     ///
     /// The base address must point to a valid Interrupts pending bits register.
     pub unsafe fn new(address: usize) -> Self {
-        Self {
-            base: PENDING::new(address as _),
-        }
+        Self { base: address }
+    }
+
+    /// Returns the base address of the Interrupts priorities register.
+    #[inline(always)]
+    pub fn ptr(&self) -> *mut u32 {
+        self.base as _
     }
 
     /// Checks if an interrupt triggered by a given source is pending.
     pub fn is_pending<I: InterruptNumber>(&self, source: I) -> bool {
         let source = source.number() as u32;
-        let offset = (source / PLIC::MAX_FLAGS_WORDS) as _;
+        let offset = (source / u32::BITS) as _;
         // SAFETY: valid interrupt number
-        let reg = unsafe { PENDING::new(self.base.get_ptr().offset(offset)) };
-        reg.read_bit(source % PLIC::MAX_FLAGS_WORDS)
+        let reg: Reg<u32, RO> = unsafe { Reg::new(self.ptr().offset(offset)) };
+        reg.read_bit(source % u32::BITS)
     }
 }
-
-pub type PENDING = Reg<u32, RO>;
