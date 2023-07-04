@@ -1,24 +1,19 @@
 
 on:
   push:
-    branches: [ staging, trying, master ]
+    branches: [ master, ghmq ]
   pull_request:
+  merge_group:
 
 name: Code formatting check
 
 jobs:
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-20.04
+  rustfmt:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: Run Rustfmt
+        run: cargo fmt --all -- --check --verbose
