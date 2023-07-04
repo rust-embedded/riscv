@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, ghmq ]
+    branches: [ master ]
   pull_request:
   merge_group:
 
