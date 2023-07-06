@@ -359,6 +359,9 @@
 #![no_std]
 #![deny(missing_docs)]
 
+#[cfg(riscv)]
+mod asm;
+
 #[cfg(feature = "s-mode")]
 use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
 
