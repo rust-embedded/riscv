@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, global_asm, global_asm_link ]
+    branches: [ master, global_asm ]
   pull_request:
   merge_group:
 
@@ -47,4 +47,3 @@ jobs:
     if: always()
     steps:
       - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
-  
