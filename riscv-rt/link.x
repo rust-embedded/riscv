@@ -55,7 +55,7 @@ SECTIONS
     KEEP(*(.init));
     KEEP(*(.init.rust));
     . = ALIGN(4);
-    *(.abort)
+    *(.abort);
     *(.trap);
     *(.trap.rust);
 
