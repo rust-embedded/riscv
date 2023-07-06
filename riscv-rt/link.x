@@ -4,7 +4,6 @@ PROVIDE(_max_hart_id = 0);
 PROVIDE(_hart_stack_size = 2K);
 PROVIDE(_heap_size = 0);
 
-beep boop xdd
 
 PROVIDE(UserSoft = DefaultHandler);
 PROVIDE(SupervisorSoft = DefaultHandler);
@@ -57,10 +56,9 @@ SECTIONS
     KEEP(*(.init));
     KEEP(*(.init.rust));
     . = ALIGN(4);
-    *(.abort);
     *(.trap);
     *(.trap.rust);
-
+    *(.text.abort);
     *(.text .text.*);
   } > REGION_TEXT
 
