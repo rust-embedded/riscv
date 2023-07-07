@@ -92,11 +92,7 @@ _abs_start:
     "csrr t2, mhartid",
     "lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
-    // bgtu t2, t0, abort
-    bleu t2, t0, not_abort
-    la t0, abort
-    jr t0
-    not_abort:
+    bgtu t2, t0, abort
 
     // Allocate stacks
     la sp, _stack_start

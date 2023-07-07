@@ -47,4 +47,3 @@ jobs:
     if: always()
     steps:
       - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
-  
