@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, global_asm ]
+    branches: [ master ]
   pull_request:
   merge_group:
 
