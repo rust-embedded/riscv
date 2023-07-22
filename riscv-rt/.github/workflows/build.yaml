@@ -18,6 +18,9 @@ jobs:
           - riscv32imac-unknown-none-elf
           - riscv64imac-unknown-none-elf
           - riscv64gc-unknown-none-elf
+        example:
+          - empty
+          - multi_core
         cargo_flags: [ "--no-default-features", "--all-features" ]
         include:
           # Nightly is only for reference and allowed to fail
@@ -33,6 +36,8 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build library
         run: cargo build --target ${{ matrix.target }} ${{ matrix.cargo_flags }}
+      - name: Build example
+        run: RUSTFLAGS="-C link-arg=-Texamples/device.x" cargo build --target ${{ matrix.target }} --example ${{ matrix.example }} ${{ matrix.cargo_flags }}
   
   # Job to check that all the builds succeeded
   build-check:
@@ -42,4 +47,3 @@ jobs:
     if: always()
     steps:
       - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
-  

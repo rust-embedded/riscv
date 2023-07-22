@@ -57,7 +57,7 @@ SECTIONS
     . = ALIGN(4);
     *(.trap);
     *(.trap.rust);
-
+    *(.text.abort);
     *(.text .text.*);
   } > REGION_TEXT
 
