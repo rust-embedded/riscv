@@ -86,21 +86,21 @@ _abs_start:
     .option norelax
     la gp, __global_pointer$
     .option pop",
-    #[cfg(feature = "s-mode")]
+    #[cfg(all(not(feature = "single-hart"), feature = "s-mode"))]
     "mv t2, a0 // the hartid is passed as parameter by SMODE",
-    #[cfg(not(feature = "s-mode"))]
+    #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
     "csrr t2, mhartid",
+    #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
-    bgtu t2, t0, abort
-
-    // Allocate stacks
+    bgtu t2, t0, abort",
+    "// Allocate stacks
     la sp, _stack_start
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
-    #[cfg(riscvm)]
+    #[cfg(all(not(feature = "single-hart"), riscvm))]
     "mul t0, t2, t0",
-    #[cfg(not(riscvm))]
+    #[cfg(all(not(feature = "single-hart"), not(riscvm)))]
     "beqz t2, 2f  // Jump if single-hart
     mv t1, t2
     mv t3, t0
@@ -110,8 +110,8 @@ _abs_start:
     bnez t1, 1b
 2:  ",
     "sub sp, sp, t0
-    
-    // Set frame pointer 
+
+    // Set frame pointer
     add s0, sp, zero
 
     jal zero, _start_rust
@@ -121,9 +121,9 @@ _abs_start:
 
 /// Trap entry point (_start_trap). It saves caller saved registers, calls
 /// _start_trap_rust, restores caller saved registers and then returns.
-/// 
+///
 /// # Usage
-/// 
+///
 /// The macro takes 5 arguments:
 /// - `$STORE`: the instruction used to store a register in the stack (e.g. `sd` for riscv64)
 /// - `$LOAD`: the instruction used to load a register from the stack (e.g. `ld` for riscv64)

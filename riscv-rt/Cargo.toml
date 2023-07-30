@@ -12,6 +12,7 @@ edition = "2018"
 
 [features]
 s-mode = []
+single-hart = []
 
 [dependencies]
 r0 = "1.0.0"
