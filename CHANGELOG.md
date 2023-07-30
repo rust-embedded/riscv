@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
 
+### Fixed
+
+- Fix `scause::Exception` missing `LoadMisaligned`
+
 ## [v0.10.1] - 2023-01-18
 
 ### Fixed
