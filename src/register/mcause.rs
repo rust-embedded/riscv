@@ -15,50 +15,46 @@ pub enum Trap {
 
 /// Interrupt
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(usize)]
 pub enum Interrupt {
-    UserSoft,
-    SupervisorSoft,
-    MachineSoft,
-    UserTimer,
-    SupervisorTimer,
-    MachineTimer,
-    UserExternal,
-    SupervisorExternal,
-    MachineExternal,
+    SupervisorSoft = 1,
+    MachineSoft = 3,
+    SupervisorTimer = 5,
+    MachineTimer = 7,
+    SupervisorExternal = 9,
+    MachineExternal = 11,
     Unknown,
 }
 
 /// Exception
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(usize)]
 pub enum Exception {
-    InstructionMisaligned,
-    InstructionFault,
-    IllegalInstruction,
-    Breakpoint,
-    LoadMisaligned,
-    LoadFault,
-    StoreMisaligned,
-    StoreFault,
-    UserEnvCall,
-    SupervisorEnvCall,
-    MachineEnvCall,
-    InstructionPageFault,
-    LoadPageFault,
-    StorePageFault,
+    InstructionMisaligned = 0,
+    InstructionFault = 1,
+    IllegalInstruction = 2,
+    Breakpoint = 3,
+    LoadMisaligned = 4,
+    LoadFault = 5,
+    StoreMisaligned = 6,
+    StoreFault = 7,
+    UserEnvCall = 8,
+    SupervisorEnvCall = 9,
+    MachineEnvCall = 11,
+    InstructionPageFault = 12,
+    LoadPageFault = 13,
+    StorePageFault = 15,
     Unknown,
 }
 
-impl Interrupt {
+impl From<usize> for Interrupt {
     #[inline]
-    pub fn from(nr: usize) -> Self {
+    fn from(nr: usize) -> Self {
         match nr {
-            0 => Interrupt::UserSoft,
             1 => Interrupt::SupervisorSoft,
             3 => Interrupt::MachineSoft,
-            4 => Interrupt::UserTimer,
             5 => Interrupt::SupervisorTimer,
             7 => Interrupt::MachineTimer,
-            8 => Interrupt::UserExternal,
             9 => Interrupt::SupervisorExternal,
             11 => Interrupt::MachineExternal,
             _ => Interrupt::Unknown,
@@ -66,9 +62,21 @@ impl Interrupt {
     }
 }
 
-impl Exception {
+impl TryFrom<Interrupt> for usize {
+    type Error = Interrupt;
+
     #[inline]
-    pub fn from(nr: usize) -> Self {
+    fn try_from(value: Interrupt) -> Result<Self, Self::Error> {
+        match value {
+            Interrupt::Unknown => Err(Interrupt::Unknown),
+            _ => Ok(value as Self),
+        }
+    }
+}
+
+impl From<usize> for Exception {
+    #[inline]
+    fn from(nr: usize) -> Self {
         match nr {
             0 => Exception::InstructionMisaligned,
             1 => Exception::InstructionFault,
@@ -88,6 +96,19 @@ impl Exception {
         }
     }
 }
+
+impl TryFrom<Exception> for usize {
+    type Error = Exception;
+
+    #[inline]
+    fn try_from(value: Exception) -> Result<Self, Self::Error> {
+        match value {
+            Exception::Unknown => Err(Exception::Unknown),
+            _ => Ok(value as Self),
+        }
+    }
+}
+
 impl Mcause {
     /// Returns the contents of the register as raw bits
     #[inline]
