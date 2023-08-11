@@ -106,9 +106,9 @@
 //! Disassembly of section .text:
 //!
 //! 20000000 <_start>:
-//! 20000000:	800011b7          	lui	gp,0x80001
-//! 20000004:	80018193          	addi	gp,gp,-2048 # 80000800 <_stack_start+0xffffc800>
-//! 20000008:	80004137          	lui	sp,0x80004
+//! 20000000:    800011b7        lui     gp,0x80001
+//! 20000004:    80018193        addi    gp,gp,-2048 # 80000800 <_stack_start+0xffffc800>
+//! 20000008:    80004137        lui     sp,0x80004
 //! ```
 //!
 //! # Symbol interfaces
@@ -393,8 +393,12 @@ extern "C" {
 
 /// Rust entry point (_start_rust)
 ///
-/// Zeros bss section, initializes data section and calls main. This function
-/// never returns.
+/// Zeros bss section, initializes data section and calls main. This function never returns.
+///
+/// # Safety
+///
+/// This function must be called only from assembly `_start` function.
+/// Do **NOT** call this function directly.
 #[link_section = ".init.rust"]
 #[export_name = "_start_rust"]
 pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
@@ -459,29 +463,32 @@ pub struct TrapFrame {
 /// `scause`/`mcause` is read to determine the cause of the trap. XLEN-1 bit indicates
 /// if it's an interrupt or an exception. The result is examined and ExceptionHandler
 /// or one of the core interrupt handlers is called.
+///
+/// # Safety
+///
+/// This function must be called only from assembly `_start_trap` function.
+/// Do **NOT** call this function directly.
 #[link_section = ".trap.rust"]
 #[export_name = "_start_trap_rust"]
-pub extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
+pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
         fn ExceptionHandler(trap_frame: &TrapFrame);
         fn DefaultHandler();
     }
 
-    unsafe {
-        let cause = xcause::read();
+    let cause = xcause::read();
 
-        if cause.is_exception() {
-            ExceptionHandler(&*trap_frame)
-        } else if cause.code() < __INTERRUPTS.len() {
-            let h = &__INTERRUPTS[cause.code()];
-            if h.reserved == 0 {
-                DefaultHandler();
-            } else {
-                (h.handler)();
-            }
-        } else {
+    if cause.is_exception() {
+        ExceptionHandler(&*trap_frame)
+    } else if cause.code() < __INTERRUPTS.len() {
+        let h = &__INTERRUPTS[cause.code()];
+        if h.reserved == 0 {
             DefaultHandler();
+        } else {
+            (h.handler)();
         }
+    } else {
+        DefaultHandler();
     }
 }
 
