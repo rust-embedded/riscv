@@ -1,7 +1,5 @@
 //! scause register
 
-use bit_field::BitField;
-
 /// scause register
 #[derive(Clone, Copy)]
 pub struct Scause {
@@ -17,66 +15,88 @@ pub enum Trap {
 
 /// Interrupt
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(usize)]
 pub enum Interrupt {
-    UserSoft,
-    SupervisorSoft,
-    UserTimer,
-    SupervisorTimer,
-    UserExternal,
-    SupervisorExternal,
+    SupervisorSoft = 1,
+    SupervisorTimer = 5,
+    SupervisorExternal = 9,
     Unknown,
 }
 
 /// Exception
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(usize)]
 pub enum Exception {
-    InstructionMisaligned,
-    InstructionFault,
-    IllegalInstruction,
-    Breakpoint,
-    LoadMisaligned,
-    LoadFault,
-    StoreMisaligned,
-    StoreFault,
-    UserEnvCall,
-    InstructionPageFault,
-    LoadPageFault,
-    StorePageFault,
+    InstructionMisaligned = 0,
+    InstructionFault = 1,
+    IllegalInstruction = 2,
+    Breakpoint = 3,
+    LoadMisaligned = 4,
+    LoadFault = 5,
+    StoreMisaligned = 6,
+    StoreFault = 7,
+    UserEnvCall = 8,
+    SupervisorEnvCall = 9,
+    InstructionPageFault = 12,
+    LoadPageFault = 13,
+    StorePageFault = 15,
     Unknown,
 }
 
-impl Interrupt {
+impl From<usize> for Interrupt {
     #[inline]
-    pub fn from(nr: usize) -> Self {
+    fn from(nr: usize) -> Self {
         match nr {
-            0 => Interrupt::UserSoft,
-            1 => Interrupt::SupervisorSoft,
-            4 => Interrupt::UserTimer,
-            5 => Interrupt::SupervisorTimer,
-            8 => Interrupt::UserExternal,
-            9 => Interrupt::SupervisorExternal,
-            _ => Interrupt::Unknown,
+            1 => Self::SupervisorSoft,
+            5 => Self::SupervisorTimer,
+            9 => Self::SupervisorExternal,
+            _ => Self::Unknown,
         }
     }
 }
 
-impl Exception {
+impl TryFrom<Interrupt> for usize {
+    type Error = Interrupt;
+
     #[inline]
-    pub fn from(nr: usize) -> Self {
+    fn try_from(value: Interrupt) -> Result<Self, Self::Error> {
+        match value {
+            Interrupt::Unknown => Err(Self::Error::Unknown),
+            _ => Ok(value as Self),
+        }
+    }
+}
+
+impl From<usize> for Exception {
+    #[inline]
+    fn from(nr: usize) -> Self {
         match nr {
-            0 => Exception::InstructionMisaligned,
-            1 => Exception::InstructionFault,
-            2 => Exception::IllegalInstruction,
-            3 => Exception::Breakpoint,
-            4 => Exception::LoadMisaligned,
-            5 => Exception::LoadFault,
-            6 => Exception::StoreMisaligned,
-            7 => Exception::StoreFault,
-            8 => Exception::UserEnvCall,
-            12 => Exception::InstructionPageFault,
-            13 => Exception::LoadPageFault,
-            15 => Exception::StorePageFault,
-            _ => Exception::Unknown,
+            0 => Self::InstructionMisaligned,
+            1 => Self::InstructionFault,
+            2 => Self::IllegalInstruction,
+            3 => Self::Breakpoint,
+            4 => Self::LoadMisaligned,
+            5 => Self::LoadFault,
+            6 => Self::StoreMisaligned,
+            7 => Self::StoreFault,
+            8 => Self::UserEnvCall,
+            9 => Self::SupervisorEnvCall,
+            12 => Self::InstructionPageFault,
+            13 => Self::LoadPageFault,
+            15 => Self::StorePageFault,
+            _ => Self::Unknown,
+        }
+    }
+}
+
+impl TryFrom<Exception> for usize {
+    type Error = Exception;
+
+    #[inline]
+    fn try_from(value: Exception) -> Result<Self, Self::Error> {
+        match value {
+            Exception::Unknown => Err(Self::Error::Unknown),
+            _ => Ok(value as Self),
         }
     }
 }
@@ -91,8 +111,7 @@ impl Scause {
     /// Returns the code field
     #[inline]
     pub fn code(&self) -> usize {
-        let bit = 1 << (usize::BITS as usize - 1);
-        self.bits & !bit
+        self.bits & !(1 << (usize::BITS as usize - 1))
     }
 
     /// Trap Cause
@@ -108,7 +127,7 @@ impl Scause {
     /// Is trap cause an interrupt.
     #[inline]
     pub fn is_interrupt(&self) -> bool {
-        self.bits.get_bit(usize::BITS as usize - 1)
+        self.bits & (1 << (usize::BITS as usize - 1)) != 0
     }
 
     /// Is trap cause an exception.
@@ -132,31 +151,10 @@ pub unsafe fn write(bits: usize) {
 pub unsafe fn set(cause: Trap) {
     let bits = match cause {
         Trap::Interrupt(i) => {
-            (match i {
-                Interrupt::UserSoft => 0,
-                Interrupt::SupervisorSoft => 1,
-                Interrupt::UserTimer => 4,
-                Interrupt::SupervisorTimer => 5,
-                Interrupt::UserExternal => 8,
-                Interrupt::SupervisorExternal => 9,
-                Interrupt::Unknown => panic!("unknown interrupt"),
-            } | (1 << (usize::BITS as usize - 1)))
-        } // interrupt bit is 1
-        Trap::Exception(e) => match e {
-            Exception::InstructionMisaligned => 0,
-            Exception::InstructionFault => 1,
-            Exception::IllegalInstruction => 2,
-            Exception::Breakpoint => 3,
-            Exception::LoadMisaligned => 4,
-            Exception::LoadFault => 5,
-            Exception::StoreMisaligned => 6,
-            Exception::StoreFault => 7,
-            Exception::UserEnvCall => 8,
-            Exception::InstructionPageFault => 12,
-            Exception::LoadPageFault => 13,
-            Exception::StorePageFault => 15,
-            Exception::Unknown => panic!("unknown exception"),
-        }, // interrupt bit is 0
+            let i = usize::try_from(i).expect("unknown interrupt");
+            i | (1 << (usize::BITS as usize - 1)) // interrupt bit is 1
+        }
+        Trap::Exception(e) => usize::try_from(e).expect("unknown exception"),
     };
     _write(bits);
 }

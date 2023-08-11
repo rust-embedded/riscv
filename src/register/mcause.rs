@@ -51,13 +51,13 @@ impl From<usize> for Interrupt {
     #[inline]
     fn from(nr: usize) -> Self {
         match nr {
-            1 => Interrupt::SupervisorSoft,
-            3 => Interrupt::MachineSoft,
-            5 => Interrupt::SupervisorTimer,
-            7 => Interrupt::MachineTimer,
-            9 => Interrupt::SupervisorExternal,
-            11 => Interrupt::MachineExternal,
-            _ => Interrupt::Unknown,
+            1 => Self::SupervisorSoft,
+            3 => Self::MachineSoft,
+            5 => Self::SupervisorTimer,
+            7 => Self::MachineTimer,
+            9 => Self::SupervisorExternal,
+            11 => Self::MachineExternal,
+            _ => Self::Unknown,
         }
     }
 }
@@ -68,7 +68,7 @@ impl TryFrom<Interrupt> for usize {
     #[inline]
     fn try_from(value: Interrupt) -> Result<Self, Self::Error> {
         match value {
-            Interrupt::Unknown => Err(Interrupt::Unknown),
+            Interrupt::Unknown => Err(Self::Error::Unknown),
             _ => Ok(value as Self),
         }
     }
@@ -78,21 +78,21 @@ impl From<usize> for Exception {
     #[inline]
     fn from(nr: usize) -> Self {
         match nr {
-            0 => Exception::InstructionMisaligned,
-            1 => Exception::InstructionFault,
-            2 => Exception::IllegalInstruction,
-            3 => Exception::Breakpoint,
-            4 => Exception::LoadMisaligned,
-            5 => Exception::LoadFault,
-            6 => Exception::StoreMisaligned,
-            7 => Exception::StoreFault,
-            8 => Exception::UserEnvCall,
-            9 => Exception::SupervisorEnvCall,
-            11 => Exception::MachineEnvCall,
-            12 => Exception::InstructionPageFault,
-            13 => Exception::LoadPageFault,
-            15 => Exception::StorePageFault,
-            _ => Exception::Unknown,
+            0 => Self::InstructionMisaligned,
+            1 => Self::InstructionFault,
+            2 => Self::IllegalInstruction,
+            3 => Self::Breakpoint,
+            4 => Self::LoadMisaligned,
+            5 => Self::LoadFault,
+            6 => Self::StoreMisaligned,
+            7 => Self::StoreFault,
+            8 => Self::UserEnvCall,
+            9 => Self::SupervisorEnvCall,
+            11 => Self::MachineEnvCall,
+            12 => Self::InstructionPageFault,
+            13 => Self::LoadPageFault,
+            15 => Self::StorePageFault,
+            _ => Self::Unknown,
         }
     }
 }
@@ -103,7 +103,7 @@ impl TryFrom<Exception> for usize {
     #[inline]
     fn try_from(value: Exception) -> Result<Self, Self::Error> {
         match value {
-            Exception::Unknown => Err(Exception::Unknown),
+            Exception::Unknown => Err(Self::Error::Unknown),
             _ => Ok(value as Self),
         }
     }
@@ -119,14 +119,7 @@ impl Mcause {
     /// Returns the code field
     #[inline]
     pub fn code(&self) -> usize {
-        match () {
-            #[cfg(target_pointer_width = "32")]
-            () => self.bits & !(1 << 31),
-            #[cfg(target_pointer_width = "64")]
-            () => self.bits & !(1 << 63),
-            #[cfg(target_pointer_width = "128")]
-            () => self.bits & !(1 << 127),
-        }
+        self.bits & !(1 << (usize::BITS as usize - 1))
     }
 
     /// Trap Cause
@@ -142,14 +135,7 @@ impl Mcause {
     /// Is trap cause an interrupt.
     #[inline]
     pub fn is_interrupt(&self) -> bool {
-        match () {
-            #[cfg(target_pointer_width = "32")]
-            () => self.bits & (1 << 31) == 1 << 31,
-            #[cfg(target_pointer_width = "64")]
-            () => self.bits & (1 << 63) == 1 << 63,
-            #[cfg(target_pointer_width = "128")]
-            () => self.bits & (1 << 127) == 1 << 127,
-        }
+        self.bits & (1 << (usize::BITS as usize - 1)) != 0
     }
 
     /// Is trap cause an exception.
