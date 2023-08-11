@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New GitHub workflow for checking clippy lints in PRs
+
 ### Changed
 
 - Use inline assembly instead of pre-compiled blobs
 - Removed bors in favor of GitHub Merge Queue
+- `start_trap_rust` is now marked as `unsafe`
 
 ## [v0.11.0] - 2023-01-18
 
