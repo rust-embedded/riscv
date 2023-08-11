@@ -12,14 +12,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add generic implementation of a PLIC peripheral
 - Add `asm::fence()`, a wrapper for implementing a `fence` instruction
 - Add `asm::fence_i()`, a wrapper for implementing a `fence.i` instruction
+- Add `TryFrom` implementation for `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}`
 
 ### Changed
 
 - CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
+- `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}` now implement `From` trait for `usize`
 
 ### Fixed
 
 - Fix `scause::Exception` missing `LoadMisaligned`
+- Fix `scause::Exception` missing `SupervisorEnvCall`
+- Removed user-level interrupts from `mcause::Interrupt` and `scause::Interrupt` 
 
 ## [v0.10.1] - 2023-01-18
 
