@@ -1,7 +1,5 @@
 //! uip register
 
-use bit_field::BitField;
-
 /// uip register
 #[derive(Clone, Copy, Debug)]
 pub struct Uip {
@@ -18,19 +16,19 @@ impl Uip {
     /// User Software Interrupt Pending
     #[inline]
     pub fn usoft(&self) -> bool {
-        self.bits.get_bit(0)
+        self.bits & (1 << 0) != 0
     }
 
     /// User Timer Interrupt Pending
     #[inline]
     pub fn utimer(&self) -> bool {
-        self.bits.get_bit(4)
+        self.bits & (1 << 4) != 0
     }
 
     /// User External Interrupt Pending
     #[inline]
     pub fn uext(&self) -> bool {
-        self.bits.get_bit(8)
+        self.bits & (1 << 8) != 0
     }
 }
 

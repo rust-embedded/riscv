@@ -1,7 +1,5 @@
 //! medeleg register
 
-use bit_field::BitField;
-
 /// medeleg register
 #[derive(Clone, Copy, Debug)]
 pub struct Medeleg {
@@ -18,85 +16,85 @@ impl Medeleg {
     /// Instruction Address Misaligned Delegate
     #[inline]
     pub fn instruction_misaligned(&self) -> bool {
-        self.bits.get_bit(0)
+        self.bits & (1 << 0) != 0
     }
 
     /// Instruction Access Fault Delegate
     #[inline]
     pub fn instruction_fault(&self) -> bool {
-        self.bits.get_bit(1)
+        self.bits & (1 << 1) != 0
     }
 
     /// Illegal Instruction Delegate
     #[inline]
     pub fn illegal_instruction(&self) -> bool {
-        self.bits.get_bit(2)
+        self.bits & (1 << 2) != 0
     }
 
     /// Breakpoint Delegate
     #[inline]
     pub fn breakpoint(&self) -> bool {
-        self.bits.get_bit(3)
+        self.bits & (1 << 3) != 0
     }
 
     /// Load Address Misaligned Delegate
     #[inline]
     pub fn load_misaligned(&self) -> bool {
-        self.bits.get_bit(4)
+        self.bits & (1 << 4) != 0
     }
 
     /// Load Access Fault Delegate
     #[inline]
     pub fn load_fault(&self) -> bool {
-        self.bits.get_bit(5)
+        self.bits & (1 << 5) != 0
     }
 
     /// Store/AMO Address Misaligned Delegate
     #[inline]
     pub fn store_misaligned(&self) -> bool {
-        self.bits.get_bit(6)
+        self.bits & (1 << 6) != 0
     }
 
     /// Store/AMO Access Fault Delegate
     #[inline]
     pub fn store_fault(&self) -> bool {
-        self.bits.get_bit(7)
+        self.bits & (1 << 7) != 0
     }
 
     /// Environment Call from U-mode Delegate
     #[inline]
     pub fn user_env_call(&self) -> bool {
-        self.bits.get_bit(8)
+        self.bits & (1 << 8) != 0
     }
 
     /// Environment Call from S-mode Delegate
     #[inline]
     pub fn supervisor_env_call(&self) -> bool {
-        self.bits.get_bit(9)
+        self.bits & (1 << 9) != 0
     }
 
     /// Environment Call from M-mode Delegate
     #[inline]
     pub fn machine_env_call(&self) -> bool {
-        self.bits.get_bit(11)
+        self.bits & (1 << 11) != 0
     }
 
     /// Instruction Page Fault Delegate
     #[inline]
     pub fn instruction_page_fault(&self) -> bool {
-        self.bits.get_bit(12)
+        self.bits & (1 << 12) != 0
     }
 
     /// Load Page Fault Delegate
     #[inline]
     pub fn load_page_fault(&self) -> bool {
-        self.bits.get_bit(13)
+        self.bits & (1 << 13) != 0
     }
 
     /// Store/AMO Page Fault Delegate
     #[inline]
     pub fn store_page_fault(&self) -> bool {
-        self.bits.get_bit(15)
+        self.bits & (1 << 15) != 0
     }
 }
 

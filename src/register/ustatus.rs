@@ -1,8 +1,6 @@
 //! ustatus register
 // TODO: Virtualization, Memory Privilege and Extension Context Fields
 
-use bit_field::BitField;
-
 /// ustatus register
 #[derive(Clone, Copy, Debug)]
 pub struct Ustatus {
@@ -13,13 +11,13 @@ impl Ustatus {
     /// User Interrupt Enable
     #[inline]
     pub fn uie(&self) -> bool {
-        self.bits.get_bit(0)
+        self.bits & (1 << 0) != 0
     }
 
     /// User Previous Interrupt Enable
     #[inline]
     pub fn upie(&self) -> bool {
-        self.bits.get_bit(4)
+        self.bits & (1 << 4) != 0
     }
 }
 

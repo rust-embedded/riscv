@@ -23,7 +23,6 @@ critical-section-single-hart = ["critical-section/restore-state-bool"]
 plic = ["volatile-register"]
 
 [dependencies]
-bit_field = "0.10.0"
 critical-section = "1.1.0"
 embedded-hal = "0.2.6"
 volatile-register = {version  = "0.2.1", optional = true}

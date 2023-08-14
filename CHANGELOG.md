@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed `bit_field` dependency
 - CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
 - `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}` now implement `From` trait for `usize`
 

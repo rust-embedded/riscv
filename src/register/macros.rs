@@ -229,8 +229,9 @@ macro_rules! set_pmp {
             assert!(index < 8);
 
             let mut value = _read();
+            value &= !(0xFF << (8 * index)); // clear previous value
             let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
-            value.set_bits(8 * index..=8 * index + 7, byte);
+            value |= byte << (8 * index);
             _write(value);
         }
     };
@@ -248,7 +249,7 @@ macro_rules! clear_pmp {
             assert!(index < 8);
 
             let mut value = _read();
-            value.set_bits(8 * index..=8 * index + 7, 0);
+            value &= !(0xFF << (8 * index)); // clear previous value
             _write(value);
         }
     };
