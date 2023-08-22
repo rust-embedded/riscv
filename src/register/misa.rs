@@ -8,12 +8,24 @@ pub struct Misa {
     bits: NonZeroUsize,
 }
 
-/// Machine XLEN
+/// Base integer ISA width
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum MXL {
+pub enum XLEN {
     XLEN32,
     XLEN64,
     XLEN128,
+}
+
+impl XLEN {
+    /// Converts a number into an ISA width
+    pub(crate) fn from(value: u8) -> Self {
+        match value {
+            1 => XLEN::XLEN32,
+            2 => XLEN::XLEN64,
+            3 => XLEN::XLEN128,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl Misa {
@@ -23,24 +35,21 @@ impl Misa {
         self.bits.get()
     }
 
-    /// Returns the machine xlen.
+    /// Effective xlen in M-mode (i.e., `MXLEN`).
     #[inline]
-    pub fn mxl(&self) -> MXL {
-        let value = match () {
-            #[cfg(target_pointer_width = "32")]
-            () => (self.bits() >> 30) as u8,
-            #[cfg(target_pointer_width = "64")]
-            () => (self.bits() >> 62) as u8,
-        };
-        match value {
-            1 => MXL::XLEN32,
-            2 => MXL::XLEN64,
-            3 => MXL::XLEN128,
-            _ => unreachable!(),
-        }
+    pub fn mxl(&self) -> XLEN {
+        let value = (self.bits() >> (usize::BITS - 2)) as u8;
+        XLEN::from(value)
     }
 
-    /// Returns true when the atomic extension is implemented.
+    /// Returns true when a given extension is implemented.
+    ///
+    /// # Example
+    ///
+    /// ``` no_run
+    /// let misa = unsafe { riscv::register::misa::read() };
+    /// assert!(misa.has_extension('A')); // panics if atomic extension is not implemented
+    /// ```
     #[inline]
     pub fn has_extension(&self, extension: char) -> bool {
         let bit = extension as u8 - 65;

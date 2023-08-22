@@ -9,6 +9,7 @@
 //! - mcycleh
 //! - minstreth
 //! - mhpmcounter<3-31>h
+//! - mstatush
 
 #[macro_use]
 mod macros;
@@ -69,6 +70,7 @@ pub mod mideleg;
 pub mod mie;
 pub mod misa;
 pub mod mstatus;
+pub mod mstatush;
 pub mod mtvec;
 
 // Machine Trap Handling

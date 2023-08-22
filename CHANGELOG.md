@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `read_csr_as_rv32`, `set_rv32`, and `clear_rv32` macros
+- Add `mstatus::uxl` and `mstatus::sxl`
+- Add `mstatus::ube`, `mstatus::sbe`, and `mstatus::mbe` endianness bit fields
+- Add `mstatush` registers (RISCV-32 only)
 - Add generic implementation of a PLIC peripheral
 - Add `asm::fence()`, a wrapper for implementing a `fence` instruction
 - Add `asm::fence_i()`, a wrapper for implementing a `fence.i` instruction
@@ -16,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- `misa::MXL` renamed to `misa::XLEN`
 - Removed `bit_field` dependency
 - CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
 - `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}` now implement `From` trait for `usize`
@@ -24,7 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix `scause::Exception` missing `LoadMisaligned`
 - Fix `scause::Exception` missing `SupervisorEnvCall`
-- Removed user-level interrupts from `mcause::Interrupt` and `scause::Interrupt` 
+- Removed user-level interrupts from `mcause::Interrupt` and `scause::Interrupt`
+- Removed user-level interrupts from `mstatus`
 
 ## [v0.10.1] - 2023-01-18
 

@@ -52,6 +52,20 @@ macro_rules! read_csr_as {
     };
 }
 
+macro_rules! read_csr_as_rv32 {
+    ($register:ident, $csr_number:literal) => {
+        read_csr_rv32!($csr_number);
+
+        /// Reads the CSR
+        #[inline]
+        pub fn read() -> $register {
+            $register {
+                bits: unsafe { _read() },
+            }
+        }
+    };
+}
+
 macro_rules! read_csr_as_usize {
     ($csr_number:literal) => {
         read_csr!($csr_number);
@@ -151,6 +165,23 @@ macro_rules! set {
     };
 }
 
+macro_rules! set_rv32 {
+    ($csr_number:literal) => {
+        /// Set the CSR
+        #[inline]
+        #[allow(unused_variables)]
+        unsafe fn _set(bits: usize) {
+            match () {
+                #[cfg(riscv32)]
+                () => core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
+
+                #[cfg(not(riscv32))]
+                () => unimplemented!(),
+            }
+        }
+    };
+}
+
 macro_rules! clear {
     ($csr_number:literal) => {
         /// Clear the CSR
@@ -162,6 +193,23 @@ macro_rules! clear {
                 () => core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
                 #[cfg(not(riscv))]
+                () => unimplemented!(),
+            }
+        }
+    };
+}
+
+macro_rules! clear_rv32 {
+    ($csr_number:literal) => {
+        /// Clear the CSR
+        #[inline]
+        #[allow(unused_variables)]
+        unsafe fn _clear(bits: usize) {
+            match () {
+                #[cfg(riscv32)]
+                () => core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
+
+                #[cfg(not(riscv32))]
                 () => unimplemented!(),
             }
         }
