@@ -26,4 +26,4 @@ plic = ["volatile-register"]
 bit_field = "0.10.0"
 critical-section = "1.1.0"
 embedded-hal = "0.2.6"
-volatile-register = {version  = "0.2.1", optional = true}
+volatile-register = { version  = "0.2.1", optional = true }
