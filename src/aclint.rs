@@ -65,12 +65,14 @@ impl<C: Clint> CLINT<C> {
     const MTIME_OFFSET: usize = 0xBFF8;
 
     /// Returns the `MSWI` peripheral.
+    #[inline]
     pub const fn mswi() -> mswi::MSWI {
         // SAFETY: valid base address
         unsafe { mswi::MSWI::new(C::BASE) }
     }
 
     /// Returns the `MTIMER` peripheral.
+    #[inline]
     pub const fn mtimer() -> mtimer::MTIMER {
         // SAFETY: valid base address
         unsafe {
@@ -79,5 +81,50 @@ impl<C: Clint> CLINT<C> {
                 C::BASE + Self::MTIME_OFFSET,
             )
         }
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod test {
+    use super::*;
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[repr(u16)]
+    pub(crate) enum HartId {
+        H0 = 0,
+        H1 = 1,
+        H2 = 2,
+    }
+
+    unsafe impl HartIdNumber for HartId {
+        const MAX_HART_ID_NUMBER: u16 = 2;
+
+        #[inline]
+        fn number(self) -> u16 {
+            self as _
+        }
+
+        #[inline]
+        fn from_number(number: u16) -> Result<Self, u16> {
+            if number > Self::MAX_HART_ID_NUMBER {
+                Err(number)
+            } else {
+                // SAFETY: valid context number
+                Ok(unsafe { core::mem::transmute(number) })
+            }
+        }
+    }
+
+    #[test]
+    fn check_hart_id_enum() {
+        assert_eq!(HartId::H0.number(), 0);
+        assert_eq!(HartId::H1.number(), 1);
+        assert_eq!(HartId::H2.number(), 2);
+
+        assert_eq!(HartId::from_number(0), Ok(HartId::H0));
+        assert_eq!(HartId::from_number(1), Ok(HartId::H1));
+        assert_eq!(HartId::from_number(2), Ok(HartId::H2));
+
+        assert_eq!(HartId::from_number(3), Err(3));
     }
 }

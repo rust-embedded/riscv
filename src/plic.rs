@@ -206,12 +206,12 @@ impl<P: Plic> PLIC<P> {
 }
 
 #[cfg(test)]
-pub(self) mod test {
+pub(crate) mod test {
     use super::*;
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
-    pub(super) enum Interrupt {
+    pub(crate) enum Interrupt {
         I1 = 1,
         I2 = 2,
         I3 = 3,
@@ -220,7 +220,7 @@ pub(self) mod test {
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u8)]
-    pub(super) enum Priority {
+    pub(crate) enum Priority {
         P0 = 0,
         P1 = 1,
         P2 = 2,
@@ -229,7 +229,7 @@ pub(self) mod test {
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
-    pub(super) enum Context {
+    pub(crate) enum Context {
         C0 = 0,
         C1 = 1,
         C2 = 2,
