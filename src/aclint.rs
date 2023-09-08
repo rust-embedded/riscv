@@ -86,7 +86,7 @@ impl<C: Clint> CLINT<C> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use super::*;
+    use super::HartIdNumber;
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
@@ -126,5 +126,47 @@ pub(crate) mod test {
         assert_eq!(HartId::from_number(2), Ok(HartId::H2));
 
         assert_eq!(HartId::from_number(3), Err(3));
+    }
+
+    #[test]
+    fn check_clint() {
+        // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.
+        crate::clint_codegen!(
+            base 0x0200_0000,
+            mtimecmps [mtimecmp0=HartId::H0, mtimecmp1=HartId::H1, mtimecmp2=HartId::H2],
+        );
+
+        let mswi = CLINT::mswi();
+        let mtimer = CLINT::mtimer();
+
+        assert_eq!(mswi.msip0.get_ptr() as usize, 0x0200_0000);
+        assert_eq!(mtimer.mtimecmp0.get_ptr() as usize, 0x0200_4000);
+        assert_eq!(mtimer.mtime.get_ptr() as usize, 0x0200_bff8);
+
+        let mtimecmp0 = mtimer.mtimecmp(HartId::H0);
+        let mtimecmp1 = mtimer.mtimecmp(HartId::H1);
+        let mtimecmp2 = mtimer.mtimecmp(HartId::H2);
+
+        assert_eq!(mtimecmp0.get_ptr() as usize, 0x0200_4000);
+        assert_eq!(mtimecmp1.get_ptr() as usize, 0x0200_4000 + 1 * 8); // 8 bytes per register
+        assert_eq!(mtimecmp2.get_ptr() as usize, 0x0200_4000 + 2 * 8);
+
+        // Check that the mtimecmpX functions are equivalent to the mtimer.mtimecmp(X) function.
+        let mtimecmp0 = CLINT::mtimecmp0();
+        let mtimecmp1 = CLINT::mtimecmp1();
+        let mtimecmp2 = CLINT::mtimecmp2();
+
+        assert_eq!(
+            mtimecmp0.get_ptr() as usize,
+            mtimer.mtimecmp(HartId::H0).get_ptr() as usize
+        );
+        assert_eq!(
+            mtimecmp1.get_ptr() as usize,
+            mtimer.mtimecmp(HartId::H1).get_ptr() as usize
+        );
+        assert_eq!(
+            mtimecmp2.get_ptr() as usize,
+            mtimer.mtimecmp(HartId::H2).get_ptr() as usize
+        );
     }
 }

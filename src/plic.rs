@@ -127,15 +127,6 @@ impl<P: Plic> PLIC<P> {
 
     const PENDINGS_OFFSET: usize = 0x1000;
 
-    const ENABLES_OFFSET: usize = 0x2000;
-    const ENABLES_SEPARATION: usize = 0x80;
-
-    const THRESHOLDS_OFFSET: usize = 0x20_0000;
-    const THRESHOLDS_SEPARATION: usize = 0x1000;
-
-    const CLAIMS_OFFSET: usize = 0x20_0004;
-    const CLAIMS_SEPARATION: usize = 0x1000;
-
     /// Sets the Machine External Interrupt bit of the `mie` CSR.
     /// This bit must be set for the PLIC to trigger machine external interrupts.
     ///
@@ -160,6 +151,7 @@ impl<P: Plic> PLIC<P> {
     /// The priority level of each interrupt source is shared among all the contexts.
     #[inline]
     pub fn priorities() -> priorities::PRIORITIES {
+        // SAFETY: valid address
         unsafe { priorities::PRIORITIES::new(P::BASE + Self::PRIORITIES_OFFSET) }
     }
 
@@ -168,46 +160,84 @@ impl<P: Plic> PLIC<P> {
     /// This register is shared among all the contexts.
     #[inline]
     pub fn pendings() -> pendings::PENDINGS {
+        // SAFETY: valid address
         unsafe { pendings::PENDINGS::new(P::BASE + Self::PENDINGS_OFFSET) }
     }
 
-    /// Returns the interrupt enable register assigned to a given context.
-    /// This register allows to enable/disable interrupt sources for a given context.
-    /// Each context has its own enable register.
+    /// Returns the context proxy of a given context.
+    /// This proxy provides access to the PLIC registers of the given context.
     #[inline]
-    pub fn enables<C: ContextNumber>(context: C) -> enables::ENABLES {
-        let context = context.number() as usize;
-        let addr = P::BASE + Self::ENABLES_OFFSET + context * Self::ENABLES_SEPARATION;
-        // SAFETY: context is a valid index
+    pub fn ctx<C: ContextNumber>(context: C) -> CTX<P> {
+        // SAFETY: valid context number
+        unsafe { CTX::new(context.number()) }
+    }
+}
+
+/// PLIC context proxy. It provides access to the PLIC registers of a given context.
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct CTX<P: Plic> {
+    context: usize,
+    _marker: core::marker::PhantomData<P>,
+}
+
+impl<P: Plic> CTX<P> {
+    const ENABLES_OFFSET: usize = 0x2000;
+    const ENABLES_SEPARATION: usize = 0x80;
+
+    const THRESHOLDS_OFFSET: usize = 0x20_0000;
+    const THRESHOLDS_SEPARATION: usize = 0x1000;
+
+    const CLAIMS_OFFSET: usize = 0x20_0004;
+    const CLAIMS_SEPARATION: usize = 0x1000;
+
+    /// Creates a new PLIC context proxy
+    ///
+    /// # Safety
+    ///
+    /// The context number must be valid for the target device.
+    #[inline]
+    pub(crate) unsafe fn new(context: u16) -> Self {
+        Self {
+            context: context as _,
+            _marker: core::marker::PhantomData,
+        }
+    }
+
+    /// Returns the context number of this proxy.
+    #[inline]
+    pub const fn context(self) -> u16 {
+        self.context as _
+    }
+
+    /// Returns the interrupts enable register of the context.
+    #[inline]
+    pub const fn enables(self) -> enables::ENABLES {
+        let addr = P::BASE + Self::ENABLES_OFFSET + self.context * Self::ENABLES_SEPARATION;
+        // SAFETY: valid address
         unsafe { enables::ENABLES::new(addr) }
     }
 
-    /// Returns the interrupt threshold register assigned to a given context.
-    /// This register allows to set the priority threshold level for a given context.
-    /// Each context has its own threshold register.
+    /// Returns the interrupt threshold register of the context.
     #[inline]
-    pub fn threshold<C: ContextNumber>(context: C) -> threshold::THRESHOLD {
-        let context = context.number() as usize;
-        let addr = P::BASE + Self::THRESHOLDS_OFFSET + context * Self::THRESHOLDS_SEPARATION;
-        // SAFETY: context is a valid index
+    pub const fn threshold(self) -> threshold::THRESHOLD {
+        let addr = P::BASE + Self::THRESHOLDS_OFFSET + self.context * Self::THRESHOLDS_SEPARATION;
+        // SAFETY: valid address
         unsafe { threshold::THRESHOLD::new(addr) }
     }
 
-    /// Returns the interrupt claim/complete register assigned to a given context.
-    /// This register allows to claim and complete interrupts for a given context.
-    /// Each context has its own claim/complete register.
+    /// Returns the interrupt claim/complete register of the context.
     #[inline]
-    pub fn claim<C: ContextNumber>(context: C) -> claim::CLAIM {
-        let context = context.number() as usize;
-        let addr = P::BASE + Self::CLAIMS_OFFSET + context * Self::CLAIMS_SEPARATION;
-        // SAFETY: context is a valid index
+    pub const fn claim(self) -> claim::CLAIM {
+        let addr = P::BASE + Self::CLAIMS_OFFSET + self.context * Self::CLAIMS_SEPARATION;
+        // SAFETY: valid address
         unsafe { claim::CLAIM::new(addr) }
     }
 }
 
 #[cfg(test)]
 pub(crate) mod test {
-    use super::*;
+    use super::{ContextNumber, InterruptNumber, PriorityNumber};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
@@ -334,5 +364,56 @@ pub(crate) mod test {
         assert_eq!(Context::from_number(2), Ok(Context::C2));
 
         assert_eq!(Context::from_number(3), Err(3));
+    }
+
+    #[allow(dead_code)]
+    #[test]
+    fn check_plic() {
+        crate::plic_codegen!(
+            base 0x0C00_0000,
+            ctxs [ctx0 = Context::C0, ctx1 = Context::C1, ctx2 = Context::C2],
+        );
+
+        let priorities = PLIC::priorities();
+        let pendings = PLIC::pendings();
+
+        assert_eq!(priorities.address(), 0x0C00_0000);
+        assert_eq!(pendings.address(), 0x0C00_1000);
+
+        for i in 0..=Context::MAX_CONTEXT_NUMBER {
+            let context = Context::from_number(i).unwrap();
+            let ctx = PLIC::ctx(context);
+
+            assert_eq!(
+                ctx.enables().address(),
+                0x0C00_0000 + 0x2000 + i as usize * 0x80
+            );
+            assert_eq!(
+                ctx.threshold().get_ptr() as usize,
+                0x0C00_0000 + 0x20_0000 + i as usize * 0x1000
+            );
+            assert_eq!(
+                ctx.claim().get_ptr() as usize,
+                0x0C00_0000 + 0x20_0004 + i as usize * 0x1000
+            );
+        }
+
+        let ctx0 = PLIC::ctx0();
+        let ctx_0_ = PLIC::ctx(Context::C0);
+        assert_eq!(ctx0.enables().address(), ctx_0_.enables().address());
+        assert_eq!(ctx0.threshold().get_ptr(), ctx_0_.threshold().get_ptr());
+        assert_eq!(ctx0.claim().get_ptr(), ctx_0_.claim().get_ptr());
+
+        let ctx1 = PLIC::ctx1();
+        let ctx_1_ = PLIC::ctx(Context::C1);
+        assert_eq!(ctx1.enables().address(), ctx_1_.enables().address());
+        assert_eq!(ctx1.threshold().get_ptr(), ctx_1_.threshold().get_ptr());
+        assert_eq!(ctx1.claim().get_ptr(), ctx_1_.claim().get_ptr());
+
+        let ctx2 = PLIC::ctx2();
+        let ctx_2_ = PLIC::ctx(Context::C2);
+        assert_eq!(ctx2.enables().address(), ctx_2_.enables().address());
+        assert_eq!(ctx2.threshold().get_ptr(), ctx_2_.threshold().get_ptr());
+        assert_eq!(ctx2.claim().get_ptr(), ctx_2_.claim().get_ptr());
     }
 }

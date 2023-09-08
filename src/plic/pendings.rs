@@ -22,6 +22,12 @@ impl PENDINGS {
         Self { ptr: address as _ }
     }
 
+    #[cfg(test)]
+    #[inline]
+    pub(crate) fn address(self) -> usize {
+        self.ptr as _
+    }
+
     /// Checks if an interrupt triggered by a given source is pending.
     #[inline]
     pub fn is_pending<I: InterruptNumber>(self, source: I) -> bool {

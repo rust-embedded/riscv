@@ -90,7 +90,6 @@ macro_rules! clint_codegen {
     (mtimecmps [$($fn:ident = $hart:expr),+], $($tail:tt)*) => {
         impl CLINT {
             $(
-                /// Returns the `MTIMECMP` register for the given HART.
                 #[inline]
                 pub fn $fn() -> $crate::aclint::mtimer::MTIMECMP {
                     Self::mtimer().mtimecmp($hart)
@@ -101,49 +100,67 @@ macro_rules! clint_codegen {
     };
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::aclint::test::HartId;
+#[macro_export]
+macro_rules! plic_codegen {
+    () => {
+        #[allow(unused_imports)]
+        use PLIC as _; // assert that the PLIC struct is defined
+    };
+    (base $addr:literal, $($tail:tt)*) => {
+        /// PLIC peripheral
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+        pub struct PLIC;
 
-    #[test]
-    fn test_clint_mtimecmp() {
-        // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.
-        clint_codegen!(
-            base 0x0200_0000,
-            mtimecmps [mtimecmp0=HartId::H0, mtimecmp1=HartId::H1, mtimecmp2=HartId::H2],
-        );
+        unsafe impl $crate::plic::Plic for PLIC {
+            const BASE: usize = $addr;
+        }
 
-        let mswi = CLINT::mswi();
-        let mtimer = CLINT::mtimer();
+        impl PLIC {
+            /// Enables machine external interrupts to allow the PLIC to trigger interrupts.
+            ///
+            /// # Safety
+            ///
+            /// Enabling the `PLIC` may break mask-based critical sections.
+            #[inline]
+            pub unsafe fn enable() {
+                $crate::plic::PLIC::<PLIC>::enable();
+            }
 
-        assert_eq!(mswi.msip0.get_ptr() as usize, 0x0200_0000);
-        assert_eq!(mtimer.mtimecmp0.get_ptr() as usize, 0x0200_4000);
-        assert_eq!(mtimer.mtime.get_ptr() as usize, 0x0200_bff8);
+            /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
+            #[inline]
+            pub fn disable() {
+                $crate::plic::PLIC::<PLIC>::disable();
+            }
 
-        let mtimecmp0 = mtimer.mtimecmp(HartId::H0);
-        let mtimecmp1 = mtimer.mtimecmp(HartId::H1);
-        let mtimecmp2 = mtimer.mtimecmp(HartId::H2);
+            /// Returns the priorities register of the PLIC.
+            #[inline]
+            pub fn priorities() -> $crate::plic::priorities::PRIORITIES {
+                $crate::plic::PLIC::<PLIC>::priorities()
+            }
 
-        assert_eq!(mtimecmp0.get_ptr() as usize, 0x0200_4000);
-        assert_eq!(mtimecmp1.get_ptr() as usize, 0x0200_4000 + 1 * 8); // 8 bytes per register
-        assert_eq!(mtimecmp2.get_ptr() as usize, 0x0200_4000 + 2 * 8);
+            /// Returns the pendings register of the PLIC.
+            #[inline]
+            pub fn pendings() -> $crate::plic::pendings::PENDINGS {
+                $crate::plic::PLIC::<PLIC>::pendings()
+            }
 
-        // Check that the mtimecmpX functions are equivalent to the mtimer.mtimecmp(X) function.
-        let mtimecmp0 = CLINT::mtimecmp0();
-        let mtimecmp1 = CLINT::mtimecmp1();
-        let mtimecmp2 = CLINT::mtimecmp2();
-
-        assert_eq!(
-            mtimecmp0.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H0).get_ptr() as usize
-        );
-        assert_eq!(
-            mtimecmp1.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H1).get_ptr() as usize
-        );
-        assert_eq!(
-            mtimecmp2.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H2).get_ptr() as usize
-        );
-    }
+            /// Returns the context proxy of a given PLIC context.
+            #[inline]
+            pub fn ctx<C: ContextNumber>(context: C) -> $crate::plic::CTX<Self> {
+                $crate::plic::PLIC::<PLIC>::ctx(context)
+            }
+        }
+        $crate::plic_codegen!($($tail)*);
+    };
+    (ctxs [$($fn:ident = $ctx:expr),+], $($tail:tt)*) => {
+        impl PLIC {
+            $(
+                #[inline]
+                pub fn $fn() -> $crate::plic::CTX<Self> {
+                    Self::ctx($ctx)
+                }
+            )*
+        }
+        $crate::plic_codegen!($($tail)*);
+    };
 }

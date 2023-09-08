@@ -22,6 +22,12 @@ impl PRIORITIES {
         Self { ptr: address as _ }
     }
 
+    #[cfg(test)]
+    #[inline]
+    pub(crate) fn address(self) -> usize {
+        self.ptr as _
+    }
+
     /// Returns the priority assigned to a given interrupt source.
     #[inline]
     pub fn get_priority<I: InterruptNumber, P: PriorityNumber>(self, source: I) -> P {

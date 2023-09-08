@@ -23,6 +23,12 @@ impl ENABLES {
         Self { ptr: address as _ }
     }
 
+    #[cfg(test)]
+    #[inline]
+    pub(crate) fn address(self) -> usize {
+        self.ptr as _
+    }
+
     /// Checks if an interrupt source is enabled for the PLIC context.
     #[inline]
     pub fn is_enabled<I: InterruptNumber>(self, source: I) -> bool {
