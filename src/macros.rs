@@ -15,7 +15,7 @@
 /// ```
 /// use riscv_peripheral::clint_codegen;
 ///
-/// clint_codegen!(base 0x0200_0000;);
+/// clint_codegen!(base 0x0200_0000,); // do not forget the ending comma!
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
 /// let mtimer = CLINT::mtimer(); // MTIMER peripheral
@@ -45,10 +45,9 @@
 ///   }
 /// }
 ///
-/// clint_codegen!(base 0x0200_0000;
-///   mtimecmp mtimecmp0 = HartId::H0;
-///   mtimecmp mtimecmp1 = HartId::H1;
-///   mtimecmp mtimecmp2 = HartId::H2;
+/// clint_codegen!(
+///     base 0x0200_0000,
+///     mtimecmps [mtimecmp0 = HartId::H0, mtimecmp1 = HartId::H1, mtimecmp2 = HartId::H2], // do not forget the ending comma!
 /// );
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
@@ -60,8 +59,11 @@
 /// ```
 #[macro_export]
 macro_rules! clint_codegen {
-    () => {};
-    (base $addr:literal; $($tail:tt)*) => {
+    () => {
+        #[allow(unused_imports)]
+        use CLINT as _; // assert that the CLINT struct is defined
+    };
+    (base $addr:literal, $($tail:tt)*) => {
         /// CLINT peripheral
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub struct CLINT;
@@ -83,19 +85,19 @@ macro_rules! clint_codegen {
                 $crate::aclint::CLINT::<CLINT>::mtimer()
             }
         }
-
-        clint_codegen!($($tail)*);
+        $crate::clint_codegen!($($tail)*);
     };
-    (mtimecmp $fn:ident = $hart:expr; $($tail:tt)*) => {
+    (mtimecmps [$($fn:ident = $hart:expr),+], $($tail:tt)*) => {
         impl CLINT {
-            /// Returns the `MTIMECMP` register for the given HART.
-            #[inline]
-            pub fn $fn() -> $crate::aclint::mtimer::MTIMECMP {
-                Self::mtimer().mtimecmp($hart)
-            }
+            $(
+                /// Returns the `MTIMECMP` register for the given HART.
+                #[inline]
+                pub fn $fn() -> $crate::aclint::mtimer::MTIMECMP {
+                    Self::mtimer().mtimecmp($hart)
+                }
+            )*
         }
-
-        clint_codegen!($($tail)*);
+        $crate::clint_codegen!($($tail)*);
     };
 }
 
@@ -106,10 +108,9 @@ mod tests {
     #[test]
     fn test_clint_mtimecmp() {
         // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.
-        clint_codegen!(base 0x0200_0000;
-            mtimecmp mtimecmp0 = HartId::H0;
-            mtimecmp mtimecmp1 = HartId::H1;
-            mtimecmp mtimecmp2 = HartId::H2;
+        clint_codegen!(
+            base 0x0200_0000,
+            mtimecmps [mtimecmp0=HartId::H0, mtimecmp1=HartId::H1, mtimecmp2=HartId::H2],
         );
 
         let mswi = CLINT::mswi();
