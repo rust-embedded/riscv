@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - CI actions updated. They now use `checkout@v3` and `dtolnay/rust-toolchain`.
 - `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}` now implement `From` trait for `usize`
+- Set safety of `asm::nop` and `asm::delay` functions to safe.
 
 ### Fixed
 
