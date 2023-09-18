@@ -1,5 +1,4 @@
-/// Physical memory protection configuration
-use bit_field::BitField;
+//! Physical memory protection configuration
 
 /// Permission enum contains all possible permission modes for pmp registers
 #[derive(Clone, Copy, Debug)]
@@ -51,10 +50,12 @@ impl Pmpcsr {
         #[cfg(riscv64)]
         assert!(index < 8);
 
-        let byte = self.bits.get_bits(8 * index..=8 * index + 7) as u8;
+        let byte = (self.bits >> (8 * index)) as u8; // move config to LSB and drop the rest
+        let permission = byte & 0x7; // bits 0-2
+        let range = (byte >> 3) & 0x3; // bits 3-4
         Pmp {
             byte,
-            permission: match byte.get_bits(0..=2) {
+            permission: match permission {
                 0 => Permission::NONE,
                 1 => Permission::R,
                 2 => Permission::W,
@@ -65,14 +66,14 @@ impl Pmpcsr {
                 7 => Permission::RWX,
                 _ => unreachable!(),
             },
-            range: match byte.get_bits(3..=4) {
+            range: match range {
                 0 => Range::OFF,
                 1 => Range::TOR,
                 2 => Range::NA4,
                 3 => Range::NAPOT,
                 _ => unreachable!(),
             },
-            locked: byte.get_bit(7),
+            locked: (byte & (1 << 7)) != 0,
         }
     }
 }
@@ -81,7 +82,6 @@ impl Pmpcsr {
 /// pmpcfg0 struct contains pmp0cfg - pmp3cfg for RV32, and pmp0cfg - pmp7cfg for RV64
 pub mod pmpcfg0 {
     use super::{Permission, Pmpcsr, Range};
-    use bit_field::BitField;
 
     read_csr_as!(Pmpcsr, 0x3A0);
     write_csr_as_usize!(0x3A0);
@@ -95,7 +95,6 @@ pub mod pmpcfg0 {
 #[cfg(riscv32)]
 pub mod pmpcfg1 {
     use super::{Permission, Pmpcsr, Range};
-    use bit_field::BitField;
 
     read_csr_as!(Pmpcsr, 0x3A1);
     write_csr_as_usize_rv32!(0x3A1);
@@ -108,7 +107,6 @@ pub mod pmpcfg1 {
 /// pmpcfg2 struct contains pmp8cfg - pmp11cfg for RV32, or pmp8cfg - pmp15cfg for RV64
 pub mod pmpcfg2 {
     use super::{Permission, Pmpcsr, Range};
-    use bit_field::BitField;
 
     read_csr_as!(Pmpcsr, 0x3A2);
     write_csr_as_usize!(0x3A2);
@@ -122,7 +120,6 @@ pub mod pmpcfg2 {
 #[cfg(riscv32)]
 pub mod pmpcfg3 {
     use super::{Permission, Pmpcsr, Range};
-    use bit_field::BitField;
 
     read_csr_as!(Pmpcsr, 0x3A3);
     write_csr_as_usize_rv32!(0x3A3);

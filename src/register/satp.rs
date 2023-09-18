@@ -1,7 +1,5 @@
 //! satp register
 
-use bit_field::BitField;
-
 /// satp register
 #[derive(Clone, Copy, Debug)]
 pub struct Satp {
@@ -19,7 +17,7 @@ impl Satp {
     #[inline]
     #[cfg(target_pointer_width = "32")]
     pub fn mode(&self) -> Mode {
-        match self.bits.get_bit(31) {
+        match self.bits & (1 << 31) != 0 {
             false => Mode::Bare,
             true => Mode::Sv32,
         }
@@ -29,7 +27,7 @@ impl Satp {
     #[inline]
     #[cfg(target_pointer_width = "64")]
     pub fn mode(&self) -> Mode {
-        match self.bits.get_bits(60..64) {
+        match self.bits >> 60 {
             0 => Mode::Bare,
             8 => Mode::Sv39,
             9 => Mode::Sv48,
@@ -43,28 +41,28 @@ impl Satp {
     #[inline]
     #[cfg(target_pointer_width = "32")]
     pub fn asid(&self) -> usize {
-        self.bits.get_bits(22..31)
+        (self.bits >> 22) & 0x1FF // bits 22-30
     }
 
     /// Address space identifier
     #[inline]
     #[cfg(target_pointer_width = "64")]
     pub fn asid(&self) -> usize {
-        self.bits.get_bits(44..60)
+        self.bits >> 44 & 0xFFFF // bits 44-59
     }
 
     /// Physical page number
     #[inline]
     #[cfg(target_pointer_width = "32")]
     pub fn ppn(&self) -> usize {
-        self.bits.get_bits(0..22)
+        self.bits & 0x3F_FFFF // bits 0-21
     }
 
     /// Physical page number
     #[inline]
     #[cfg(target_pointer_width = "64")]
     pub fn ppn(&self) -> usize {
-        self.bits.get_bits(0..44)
+        self.bits & 0xFFF_FFFF_FFFF // bits 0-43
     }
 }
 
@@ -101,10 +99,9 @@ write_csr_as_usize!(0x180);
 #[inline]
 #[cfg(target_pointer_width = "32")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    let mut bits = 0usize;
-    bits.set_bits(31..32, mode as usize);
-    bits.set_bits(22..31, asid);
-    bits.set_bits(0..22, ppn);
+    assert_eq!(asid, asid & 0x1FF, "invalid value for asid");
+    assert_eq!(ppn, ppn & 0x3F_FFFF, "invalid value for ppn");
+    let bits = (mode as usize) << 31 | (asid << 22) | ppn;
     _write(bits);
 }
 
@@ -112,9 +109,8 @@ pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
 #[inline]
 #[cfg(target_pointer_width = "64")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    let mut bits = 0usize;
-    bits.set_bits(60..64, mode as usize);
-    bits.set_bits(44..60, asid);
-    bits.set_bits(0..44, ppn);
+    assert_eq!(asid, asid & 0xFFFF, "invalid value for asid");
+    assert_eq!(ppn, ppn & 0xFFF_FFFF_FFFF, "invalid value for ppn");
+    let bits = (mode as usize) << 60 | (asid << 44) | ppn;
     _write(bits);
 }

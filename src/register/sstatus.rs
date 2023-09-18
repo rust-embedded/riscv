@@ -1,7 +1,6 @@
 //! sstatus register
 
 pub use super::mstatus::FS;
-use bit_field::BitField;
 
 /// Supervisor Status Register
 #[derive(Clone, Copy, Debug)]
@@ -20,31 +19,31 @@ impl Sstatus {
     /// User Interrupt Enable
     #[inline]
     pub fn uie(&self) -> bool {
-        self.bits.get_bit(0)
+        self.bits & (1 << 0) != 0
     }
 
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
-        self.bits.get_bit(1)
+        self.bits & (1 << 1) != 0
     }
 
     /// User Previous Interrupt Enable
     #[inline]
     pub fn upie(&self) -> bool {
-        self.bits.get_bit(4)
+        self.bits & (1 << 4) != 0
     }
 
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
-        self.bits.get_bit(5)
+        self.bits & (1 << 5) != 0
     }
 
     /// Supervisor Previous Privilege Mode
     #[inline]
     pub fn spp(&self) -> SPP {
-        match self.bits.get_bit(8) {
+        match self.bits & (1 << 8) != 0 {
             true => SPP::Supervisor,
             false => SPP::User,
         }
@@ -53,7 +52,8 @@ impl Sstatus {
     /// The status of the floating-point unit
     #[inline]
     pub fn fs(&self) -> FS {
-        match self.bits.get_bits(13..15) {
+        let fs = (self.bits >> 13) & 0x3; // bits 13-14
+        match fs {
             0 => FS::Off,
             1 => FS::Initial,
             2 => FS::Clean,
@@ -66,7 +66,8 @@ impl Sstatus {
     /// and associated state
     #[inline]
     pub fn xs(&self) -> FS {
-        match self.bits.get_bits(15..17) {
+        let xs = (self.bits >> 15) & 0x3; // bits 15-16
+        match xs {
             0 => FS::Off,
             1 => FS::Initial,
             2 => FS::Clean,
@@ -78,20 +79,20 @@ impl Sstatus {
     /// Permit Supervisor User Memory access
     #[inline]
     pub fn sum(&self) -> bool {
-        self.bits.get_bit(18)
+        self.bits & (1 << 18) != 0
     }
 
     /// Make eXecutable Readable
     #[inline]
     pub fn mxr(&self) -> bool {
-        self.bits.get_bit(19)
+        self.bits & (1 << 19) != 0
     }
 
     /// Whether either the FS field or XS field
     /// signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits.get_bit(usize::BITS as usize - 1)
+        self.bits & (1 << (usize::BITS as usize - 1)) != 0
     }
 }
 
@@ -132,6 +133,7 @@ pub unsafe fn set_spp(spp: SPP) {
 #[inline]
 pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
-    value.set_bits(13..15, fs as usize);
+    value &= !(0x3 << 13); // clear previous value
+    value |= (fs as usize) << 13;
     _write(value);
 }

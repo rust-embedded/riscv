@@ -7,8 +7,6 @@
 // FIXME: `SXL` and `UXL` bits require a structure interpreting XLEN,
 // which would be the best way we implement this using Rust?
 
-use bit_field::BitField;
-
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
 pub struct Mstatus {
@@ -59,43 +57,43 @@ impl Mstatus {
     /// User Interrupt Enable
     #[inline]
     pub fn uie(&self) -> bool {
-        self.bits.get_bit(0)
+        self.bits & (1 << 0) != 0
     }
 
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
-        self.bits.get_bit(1)
+        self.bits & (1 << 1) != 0
     }
 
     /// Machine Interrupt Enable
     #[inline]
     pub fn mie(&self) -> bool {
-        self.bits.get_bit(3)
+        self.bits & (1 << 3) != 0
     }
 
     /// User Previous Interrupt Enable
     #[inline]
     pub fn upie(&self) -> bool {
-        self.bits.get_bit(4)
+        self.bits & (1 << 4) != 0
     }
 
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
-        self.bits.get_bit(5)
+        self.bits & (1 << 5) != 0
     }
 
     /// Machine Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
-        self.bits.get_bit(7)
+        self.bits & (1 << 7) != 0
     }
 
     /// Supervisor Previous Privilege Mode
     #[inline]
     pub fn spp(&self) -> SPP {
-        match self.bits.get_bit(8) {
+        match self.bits & (1 << 8) != 0 {
             true => SPP::Supervisor,
             false => SPP::User,
         }
@@ -104,7 +102,8 @@ impl Mstatus {
     /// Machine Previous Privilege Mode
     #[inline]
     pub fn mpp(&self) -> MPP {
-        match self.bits.get_bits(11..13) {
+        let mpp = (self.bits >> 11) & 0x3; // bits 11-12
+        match mpp {
             0b00 => MPP::User,
             0b01 => MPP::Supervisor,
             0b11 => MPP::Machine,
@@ -118,7 +117,8 @@ impl Mstatus {
     /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
     #[inline]
     pub fn fs(&self) -> FS {
-        match self.bits.get_bits(13..15) {
+        let fs = (self.bits >> 13) & 0x3; // bits 13-14
+        match fs {
             0b00 => FS::Off,
             0b01 => FS::Initial,
             0b10 => FS::Clean,
@@ -132,7 +132,8 @@ impl Mstatus {
     /// Encodes the status of additional user-mode extensions and associated state.
     #[inline]
     pub fn xs(&self) -> XS {
-        match self.bits.get_bits(15..17) {
+        let xs = (self.bits >> 15) & 0x3; // bits 15-16
+        match xs {
             0b00 => XS::AllOff,
             0b01 => XS::NoneDirtyOrClean,
             0b10 => XS::NoneDirtySomeClean,
@@ -144,19 +145,19 @@ impl Mstatus {
     /// Modify Memory PRiVilege
     #[inline]
     pub fn mprv(&self) -> bool {
-        self.bits.get_bit(17)
+        self.bits & (1 << 17) != 0
     }
 
     /// Permit Supervisor User Memory access
     #[inline]
     pub fn sum(&self) -> bool {
-        self.bits.get_bit(18)
+        self.bits & (1 << 18) != 0
     }
 
     /// Make eXecutable Readable
     #[inline]
     pub fn mxr(&self) -> bool {
-        self.bits.get_bit(19)
+        self.bits & (1 << 19) != 0
     }
 
     /// Trap Virtual Memory
@@ -167,7 +168,7 @@ impl Mstatus {
     /// TVM is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tvm(&self) -> bool {
-        self.bits.get_bit(20)
+        self.bits & (1 << 20) != 0
     }
 
     /// Timeout Wait
@@ -181,7 +182,7 @@ impl Mstatus {
     /// TW is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tw(&self) -> bool {
-        self.bits.get_bit(21)
+        self.bits & (1 << 21) != 0
     }
 
     /// Trap SRET
@@ -192,7 +193,7 @@ impl Mstatus {
     /// If S-mode is not supported, TSR bit is hard-wired to 0.
     #[inline]
     pub fn tsr(&self) -> bool {
-        self.bits.get_bit(22)
+        self.bits & (1 << 22) != 0
     }
 
     /*
@@ -204,7 +205,7 @@ impl Mstatus {
     /// signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits.get_bit(usize::BITS as usize - 1)
+        self.bits & (1 << (usize::BITS as usize - 1)) != 0
     }
 }
 
@@ -263,7 +264,8 @@ pub unsafe fn set_spp(spp: SPP) {
 #[inline]
 pub unsafe fn set_mpp(mpp: MPP) {
     let mut value = _read();
-    value.set_bits(11..13, mpp as usize);
+    value &= !(0x3 << 11); // clear previous value
+    value |= (mpp as usize) << 11;
     _write(value);
 }
 
@@ -271,6 +273,7 @@ pub unsafe fn set_mpp(mpp: MPP) {
 #[inline]
 pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
-    value.set_bits(13..15, fs as usize);
+    value &= !(0x3 << 13); // clear previous value
+    value |= (fs as usize) << 13;
     _write(value);
 }

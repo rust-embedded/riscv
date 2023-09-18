@@ -1,7 +1,5 @@
 //! Floating-point control and status register
 
-use bit_field::BitField;
-
 /// Floating-point control and status register
 #[derive(Clone, Copy, Debug)]
 pub struct FCSR {
@@ -35,31 +33,31 @@ impl Flags {
     /// Inexact
     #[inline]
     pub fn nx(&self) -> bool {
-        self.0.get_bit(0)
+        self.0 & (1 << 0) != 0
     }
 
     /// Underflow
     #[inline]
     pub fn uf(&self) -> bool {
-        self.0.get_bit(1)
+        self.0 & (1 << 1) != 0
     }
 
     /// Overflow
     #[inline]
     pub fn of(&self) -> bool {
-        self.0.get_bit(2)
+        self.0 & (1 << 2) != 0
     }
 
     /// Divide by Zero
     #[inline]
     pub fn dz(&self) -> bool {
-        self.0.get_bit(3)
+        self.0 & (1 << 3) != 0
     }
 
     /// Invalid Operation
     #[inline]
     pub fn nv(&self) -> bool {
-        self.0.get_bit(4)
+        self.0 & (1 << 4) != 0
     }
 }
 
@@ -84,13 +82,14 @@ impl FCSR {
     /// Accrued Exception Flags
     #[inline]
     pub fn fflags(&self) -> Flags {
-        Flags(self.bits.get_bits(0..5))
+        Flags(self.bits & 0x1F) // bits 0-4
     }
 
     /// Rounding Mode
     #[inline]
     pub fn frm(&self) -> RoundingMode {
-        match self.bits.get_bits(5..8) {
+        let frm = (self.bits >> 5) & 0x7; // bits 5-7
+        match frm {
             0b000 => RoundingMode::RoundToNearestEven,
             0b001 => RoundingMode::RoundTowardsZero,
             0b010 => RoundingMode::RoundDown,
