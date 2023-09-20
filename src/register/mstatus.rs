@@ -210,7 +210,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits() >> 32) as u8 & 0x3),
+            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
         }
     }
 
@@ -223,7 +223,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits() >> 34) as u8 & 0x3),
+            () => XLEN::from((self.bits >> 34) as u8 & 0x3),
         }
     }
 
