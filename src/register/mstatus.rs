@@ -1,11 +1,6 @@
 //! mstatus register
 
-// FIXME: in 1.12 spec there will be `SBE` and `MBE` bits.
-// They allows to execute supervisor in given big endian,
-// they would be in a new register `mstatush` in RV32; we should implement `mstatush`
-// at that time.
-// FIXME: `SXL` and `UXL` bits require a structure interpreting XLEN,
-// which would be the best way we implement this using Rust?
+pub use super::misa::XLEN;
 
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
@@ -53,13 +48,23 @@ pub enum SPP {
     User = 0,
 }
 
-impl Mstatus {
-    /// User Interrupt Enable
-    #[inline]
-    pub fn uie(&self) -> bool {
-        self.bits & (1 << 0) != 0
-    }
+/// Non-instruction-fetch memory endianness
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Endianness {
+    BigEndian = 1,
+    LittleEndian = 0,
+}
 
+impl From<bool> for Endianness {
+    fn from(value: bool) -> Self {
+        match value {
+            true => Self::BigEndian,
+            false => Self::LittleEndian,
+        }
+    }
+}
+
+impl Mstatus {
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
@@ -72,16 +77,16 @@ impl Mstatus {
         self.bits & (1 << 3) != 0
     }
 
-    /// User Previous Interrupt Enable
-    #[inline]
-    pub fn upie(&self) -> bool {
-        self.bits & (1 << 4) != 0
-    }
-
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
         self.bits & (1 << 5) != 0
+    }
+
+    /// U-mode non-instruction-fetch memory endianness
+    #[inline]
+    pub fn ube(&self) -> Endianness {
+        Endianness::from(self.bits & (1 << 6) != 0)
     }
 
     /// Machine Previous Interrupt Enable
@@ -196,13 +201,57 @@ impl Mstatus {
         self.bits & (1 << 22) != 0
     }
 
-    /*
-        FIXME: There are MBE and SBE bits in 1.12; once Privileged Specification version 1.12
-        is ratified, there should be read functions of these bits as well.
-    */
+    /// Effective xlen in U-mode (i.e., `UXLEN`).
+    ///
+    /// In RISCV-32, UXL does not exist, and `UXLEN` is always [`XLEN::XLEN32`].
+    #[inline]
+    pub fn uxl(&self) -> XLEN {
+        match () {
+            #[cfg(riscv32)]
+            () => XLEN::XLEN32,
+            #[cfg(not(riscv32))]
+            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
+        }
+    }
 
-    /// Whether either the FS field or XS field
-    /// signals the presence of some dirty state
+    /// Effective xlen in S-mode (i.e., `SXLEN`).
+    ///
+    /// In RISCV-32, SXL does not exist, and SXLEN is always [`XLEN::XLEN32`].
+    #[inline]
+    pub fn sxl(&self) -> XLEN {
+        match () {
+            #[cfg(riscv32)]
+            () => XLEN::XLEN32,
+            #[cfg(not(riscv32))]
+            () => XLEN::from((self.bits >> 34) as u8 & 0x3),
+        }
+    }
+
+    /// S-mode non-instruction-fetch memory endianness.
+    ///
+    /// In RISCV-32, this field is read from the [`crate::register::mstatush`] register.
+    pub fn sbe(&self) -> Endianness {
+        match () {
+            #[cfg(riscv32)]
+            () => super::mstatush::read().sbe(),
+            #[cfg(not(riscv32))]
+            () => Endianness::from(self.bits & (1 << 36) != 0),
+        }
+    }
+
+    /// M-mode non-instruction-fetch memory endianness
+    ///
+    /// In RISCV-32, this field is read from the [`crate::register::mstatush`] register
+    pub fn mbe(&self) -> Endianness {
+        match () {
+            #[cfg(riscv32)]
+            () => super::mstatush::read().mbe(),
+            #[cfg(not(riscv32))]
+            () => Endianness::from(self.bits & (1 << 37) != 0),
+        }
+    }
+
+    /// Whether either the FS field or XS field signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
         self.bits & (1 << (usize::BITS as usize - 1)) != 0
@@ -251,6 +300,15 @@ set_clear_csr!(
     /// Trap SRET
     , set_tsr, clear_tsr, 1 << 22);
 
+/// Set U-mode non-instruction-fetch memory endianness
+#[inline]
+pub unsafe fn set_ube(endianness: Endianness) {
+    match endianness {
+        Endianness::BigEndian => _set(1 << 6),
+        Endianness::LittleEndian => _clear(1 << 6),
+    }
+}
+
 /// Supervisor Previous Privilege Mode
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {
@@ -276,4 +334,40 @@ pub unsafe fn set_fs(fs: FS) {
     value &= !(0x3 << 13); // clear previous value
     value |= (fs as usize) << 13;
     _write(value);
+}
+
+/// Set S-mode non-instruction-fetch memory endianness
+///
+/// # Note
+///
+/// In RISCV-32, this function calls [`crate::register::mstatush::set_sbe`]
+#[inline]
+pub unsafe fn set_sbe(endianness: Endianness) {
+    match () {
+        #[cfg(riscv32)]
+        () => super::mstatush::set_sbe(endianness),
+        #[cfg(not(riscv32))]
+        () => match endianness {
+            Endianness::BigEndian => _set(1 << 36),
+            Endianness::LittleEndian => _clear(1 << 36),
+        },
+    }
+}
+
+/// Set M-mode non-instruction-fetch memory endianness
+///
+/// # Note
+///
+/// In RISCV-32, this function calls [`crate::register::mstatush::set_mbe`]
+#[inline]
+pub unsafe fn set_mbe(endianness: Endianness) {
+    match () {
+        #[cfg(riscv32)]
+        () => super::mstatush::set_mbe(endianness),
+        #[cfg(not(riscv32))]
+        () => match endianness {
+            Endianness::BigEndian => _set(1 << 37),
+            Endianness::LittleEndian => _clear(1 << 37),
+        },
+    }
 }
