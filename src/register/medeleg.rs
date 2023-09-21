@@ -73,12 +73,6 @@ impl Medeleg {
         self.bits & (1 << 9) != 0
     }
 
-    /// Environment Call from M-mode Delegate
-    #[inline]
-    pub fn machine_env_call(&self) -> bool {
-        self.bits & (1 << 11) != 0
-    }
-
     /// Instruction Page Fault Delegate
     #[inline]
     pub fn instruction_page_fault(&self) -> bool {
@@ -132,9 +126,6 @@ set_clear_csr!(
 set_clear_csr!(
     /// Environment Call from S-mode Delegate
     , set_supervisor_env_call, clear_supervisor_env_call, 1 << 9);
-set_clear_csr!(
-    /// Environment Call from M-mode Delegate
-    , set_machine_env_call, clear_machine_env_call, 1 << 11);
 set_clear_csr!(
     /// Instruction Page Fault Delegate
     , set_instruction_page_fault, clear_instruction_page_fault, 1 << 12);

@@ -14,18 +14,6 @@
 #[macro_use]
 mod macros;
 
-// User Trap Setup
-pub mod uie;
-pub mod ustatus;
-pub mod utvec;
-
-// User Trap Handling
-pub mod ucause;
-pub mod uepc;
-pub mod uip;
-pub mod uscratch;
-pub mod utval;
-
 // User Floating-Point CSRs
 // TODO: frm, fflags
 pub mod fcsr;

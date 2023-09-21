@@ -1,5 +1,6 @@
 //! sstatus register
 
+pub use super::misa::XLEN;
 pub use super::mstatus::FS;
 
 /// Supervisor Status Register
@@ -16,22 +17,10 @@ pub enum SPP {
 }
 
 impl Sstatus {
-    /// User Interrupt Enable
-    #[inline]
-    pub fn uie(&self) -> bool {
-        self.bits & (1 << 0) != 0
-    }
-
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
         self.bits & (1 << 1) != 0
-    }
-
-    /// User Previous Interrupt Enable
-    #[inline]
-    pub fn upie(&self) -> bool {
-        self.bits & (1 << 4) != 0
     }
 
     /// Supervisor Previous Interrupt Enable
@@ -86,6 +75,19 @@ impl Sstatus {
     #[inline]
     pub fn mxr(&self) -> bool {
         self.bits & (1 << 19) != 0
+    }
+
+    /// Effective xlen in U-mode (i.e., `UXLEN`).
+    ///
+    /// In RISCV-32, UXL does not exist, and `UXLEN` is always [`XLEN::XLEN32`].
+    #[inline]
+    pub fn uxl(&self) -> XLEN {
+        match () {
+            #[cfg(riscv32)]
+            () => XLEN::XLEN32,
+            #[cfg(not(riscv32))]
+            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
+        }
     }
 
     /// Whether either the FS field or XS field
