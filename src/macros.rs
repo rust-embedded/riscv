@@ -146,7 +146,7 @@ macro_rules! plic_codegen {
 
             /// Returns the context proxy of a given PLIC context.
             #[inline]
-            pub fn ctx<C: ContextNumber>(context: C) -> $crate::plic::CTX<Self> {
+            pub fn ctx<C: $crate::plic::ContextNumber>(context: C) -> $crate::plic::CTX<Self> {
                 $crate::plic::PLIC::<PLIC>::ctx(context)
             }
         }
