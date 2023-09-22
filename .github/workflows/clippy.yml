@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         toolchain: [ stable, nightly ]
-        cargo_flags: [ ]
+        cargo_flags: [ --all-features, --no-default-features ]
         include:
           # Nightly is only for reference and allowed to fail
           - toolchain: nightly
