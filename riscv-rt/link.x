@@ -84,7 +84,7 @@ SECTIONS
     _edata = .;
   } > REGION_DATA AT > REGION_RODATA
 
-  .bss (NOLOAD) :
+  .bss (NOLOAD) : ALIGN(4)
   {
     _sbss = .;
     *(.sbss .sbss.* .bss .bss.*);

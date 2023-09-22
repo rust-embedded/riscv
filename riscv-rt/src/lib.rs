@@ -366,6 +366,8 @@
 #[cfg(riscv)]
 mod asm;
 
+use core::sync::atomic::{compiler_fence, Ordering};
+
 #[cfg(feature = "s-mode")]
 use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
 
@@ -377,19 +379,6 @@ pub use riscv_rt_macros::{entry, pre_init};
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
-
-extern "C" {
-    // Boundaries of the .bss section
-    static mut _ebss: u32;
-    static mut _sbss: u32;
-
-    // Boundaries of the .data section
-    static mut _edata: u32;
-    static mut _sdata: u32;
-
-    // Initial values of the .data section (stored in Flash)
-    static _sidata: u32;
-}
 
 /// Rust entry point (_start_rust)
 ///
@@ -424,8 +413,51 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     if _mp_hook(hartid) {
         __pre_init();
 
-        r0::zero_bss(&mut _sbss, &mut _ebss);
-        r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+        // Initialize RAM (32-bit version)
+        // 1. Copy over .data from flash to RAM
+        // 2. Zero out .bss
+        core::arch::asm!(
+            "
+                // Copy over .data
+                la      {start},_sdata
+                la      {end},_edata
+                la      {input},_sidata
+
+            1:
+            	addi    {a},{start},4
+            	bgeu    {a},{end},1f
+            	lw      {b},0({input})
+            	sw      {b},0({start})
+            	addi    {start},{start},4
+            	addi    {input},{input},4
+            	j       1b
+
+            1:
+                // Zero out .bss
+            	la      {start},_sbss
+            	la      {end},_ebss
+
+            2:
+            	addi    {a},{start},4
+            	bgeu    {a},{end},2f
+            	sw      zero,0({start})
+            	addi    {start},{start},4
+            	j       2b
+
+            2:
+
+                li      {start},0
+                li      {end},0
+                li      {input},0
+            ",
+            start = out(reg) _,
+            end = out(reg) _,
+            input = out(reg) _,
+            a = out(reg) _,
+            b = out(reg) _,
+        );
+
+        compiler_fence(Ordering::SeqCst);
     }
 
     // TODO: Enable FPU when available
