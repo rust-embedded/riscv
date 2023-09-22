@@ -1,7 +1,9 @@
+//! Machine-level Software Interrupt Device.
+
 pub use super::HartIdNumber;
 use crate::common::unsafe_peripheral;
 
-/// Machine-level Software Interrupt Device.
+/// MSWI peripheral.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct MSWI {

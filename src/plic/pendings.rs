@@ -5,6 +5,7 @@ use crate::{
     plic::InterruptNumber,
 };
 
+/// Interrupts pending bits register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct PENDINGS {

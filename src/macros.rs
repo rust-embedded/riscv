@@ -1,3 +1,5 @@
+//! Utility macros for generating standard peripherals-related code in RISC-V PACs.
+
 /// Macro to create interfaces to CLINT peripherals in PACs.
 /// The resulting struct will be named `CLINT`, and will provide safe access to the CLINT registers.
 ///
@@ -73,6 +75,38 @@ macro_rules! clint_codegen {
         }
 
         impl CLINT {
+            /// Enables the `MSWI` peripheral.
+            ///
+            /// # Safety
+            ///
+            /// Enabling the `MSWI` may break mask-based critical sections.
+            #[inline]
+            pub unsafe fn enable_mswi() {
+                $crate::aclint::CLINT::<CLINT>::enable_mswi();
+            }
+
+            /// Disables the `MSWI` peripheral.
+            #[inline]
+            pub fn disable_mswi() {
+                $crate::aclint::CLINT::<CLINT>::disable_mswi();
+            }
+
+            /// Enables the `MTIMER` peripheral.
+            ///
+            /// # Safety
+            ///
+            /// Enabling the `MTIMER` may break mask-based critical sections.
+            #[inline]
+            pub unsafe fn enable_mtimer() {
+                $crate::aclint::CLINT::<CLINT>::enable_mtimer();
+            }
+
+            /// Disables the `MTIMER` peripheral.
+            #[inline]
+            pub fn disable_mtimer() {
+                $crate::aclint::CLINT::<CLINT>::disable_mtimer();
+            }
+
             /// Returns the `MSWI` peripheral.
             #[inline]
             pub const fn mswi() -> $crate::aclint::mswi::MSWI {
@@ -103,6 +137,7 @@ macro_rules! clint_codegen {
     };
 }
 
+/// Macro to create interfaces to PLIC peripherals in PACs.
 #[macro_export]
 macro_rules! plic_codegen {
     () => {

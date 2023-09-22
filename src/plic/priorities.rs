@@ -5,6 +5,7 @@ use crate::{
     plic::{InterruptNumber, PriorityNumber},
 };
 
+/// Interrupts priorities register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct PRIORITIES {

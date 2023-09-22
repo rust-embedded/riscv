@@ -1,6 +1,6 @@
 # `riscv-peripheral`
 
-> Standard RISC-V targets for embedded systems written in Rust
+> Standard RISC-V peripherals for embedded systems written in Rust
 
 ## Minimum Supported Rust Version (MSRV)
 

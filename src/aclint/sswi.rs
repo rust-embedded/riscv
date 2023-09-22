@@ -1,7 +1,9 @@
+//! Supervisor-level Software Interrupt Device.
+
 pub use super::HartIdNumber;
 use crate::common::unsafe_peripheral;
 
-/// Supervisor-level Software Interrupt Device.
+/// SSWI peripheral.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct SSWI {

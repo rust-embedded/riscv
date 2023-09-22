@@ -41,6 +41,7 @@ pub unsafe trait HartIdNumber: Copy {
 /// * This trait must only be implemented on a PAC of a target with a CLINT peripheral.
 /// * The CLINT peripheral base address `BASE` must be valid for the target device.
 pub unsafe trait Clint: Copy {
+    /// Base address of the CLINT peripheral.
     const BASE: usize;
 }
 
@@ -63,6 +64,38 @@ impl<C: Clint> CLINT<C> {
     const MTIMECMP_OFFSET: usize = 0x4000;
 
     const MTIME_OFFSET: usize = 0xBFF8;
+
+    /// Enables machine software interrupts to let the `MSWI` peripheral trigger interrupts.
+    ///
+    /// # Safety
+    ///
+    /// Enabling the `MSWI` may break mask-based critical sections.
+    #[inline]
+    pub unsafe fn enable_mswi() {
+        mswi::MSWI::enable();
+    }
+
+    /// Disables machine software interrupts to prevent the `MSWI` peripheral from triggering interrupts.
+    #[inline]
+    pub fn disable_mswi() {
+        mswi::MSWI::disable();
+    }
+
+    /// Enables machine timer interrupts to let the `MTIMER` peripheral trigger interrupts.
+    ///
+    /// # Safety
+    ///
+    /// Enabling the `MTIMER` may break mask-based critical sections.
+    #[inline]
+    pub unsafe fn enable_mtimer() {
+        mtimer::MTIMER::enable();
+    }
+
+    /// Disables machine timer interrupts to prevent the `MTIMER` peripheral from triggering interrupts.
+    #[inline]
+    pub fn disable_mtimer() {
+        mtimer::MTIMER::disable();
+    }
 
     /// Returns the `MSWI` peripheral.
     #[inline]
@@ -128,6 +161,7 @@ pub(crate) mod test {
         assert_eq!(HartId::from_number(3), Err(3));
     }
 
+    #[allow(dead_code)]
     #[test]
     fn check_clint() {
         // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.

@@ -1,7 +1,9 @@
+//! Machine-level Timer Device.
+
 pub use super::HartIdNumber;
 use crate::common::safe_peripheral;
 
-/// Machine-level Timer Device.
+/// MTIMER peripheral.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct MTIMER {
     /// `MTIMECMP` register for HART ID 0.  In multi-HART architectures,
