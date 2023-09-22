@@ -371,7 +371,7 @@ pub(crate) mod test {
     fn check_plic() {
         crate::plic_codegen!(
             base 0x0C00_0000,
-            ctxs [ctx0 = Context::C0, ctx1 = Context::C1, ctx2 = Context::C2],
+            ctxs [ctx0 = (Context::C0, "`C0`"), ctx1 = (Context::C1, "`C1`"), ctx2 = (Context::C2, "`C2`")],
         );
 
         let priorities = PLIC::priorities();

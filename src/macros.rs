@@ -47,7 +47,7 @@
 ///
 /// clint_codegen!(
 ///     base 0x0200_0000,
-///     mtimecmps [mtimecmp0 = HartId::H0, mtimecmp1 = HartId::H1, mtimecmp2 = HartId::H2], // do not forget the ending comma!
+///     mtimecmps [mtimecmp0 = (HartId::H0, "`H0`"), mtimecmp1 = (HartId::H1, "`H1`"), mtimecmp2 = (HartId::H2, "`H2`")], // do not forget the ending comma!
 /// );
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
@@ -87,9 +87,12 @@ macro_rules! clint_codegen {
         }
         $crate::clint_codegen!($($tail)*);
     };
-    (mtimecmps [$($fn:ident = $hart:expr),+], $($tail:tt)*) => {
+    (mtimecmps [$($fn:ident = ($hart:expr , $shart:expr)),+], $($tail:tt)*) => {
         impl CLINT {
             $(
+                #[doc = "Returns the `mtimecmp` peripheral HART "]
+                #[doc = $shart]
+                #[doc = "."]
                 #[inline]
                 pub fn $fn() -> $crate::aclint::mtimer::MTIMECMP {
                     Self::mtimer().mtimecmp($hart)
@@ -152,9 +155,12 @@ macro_rules! plic_codegen {
         }
         $crate::plic_codegen!($($tail)*);
     };
-    (ctxs [$($fn:ident = $ctx:expr),+], $($tail:tt)*) => {
+    (ctxs [$($fn:ident = ($ctx:expr , $sctx:expr)),+], $($tail:tt)*) => {
         impl PLIC {
             $(
+                #[doc = "Returns a PLIC context proxy for context "]
+                #[doc = $sctx]
+                #[doc = "."]
                 #[inline]
                 pub fn $fn() -> $crate::plic::CTX<Self> {
                     Self::ctx($ctx)

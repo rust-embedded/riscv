@@ -133,7 +133,7 @@ pub(crate) mod test {
         // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.
         crate::clint_codegen!(
             base 0x0200_0000,
-            mtimecmps [mtimecmp0=HartId::H0, mtimecmp1=HartId::H1, mtimecmp2=HartId::H2],
+            mtimecmps [mtimecmp0=(HartId::H0,"`H0`"), mtimecmp1=(HartId::H1,"`H1`"), mtimecmp2=(HartId::H2,"`H2`")],
         );
 
         let mswi = CLINT::mswi();
