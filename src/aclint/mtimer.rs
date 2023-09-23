@@ -27,6 +27,18 @@ impl MTIMER {
         }
     }
 
+    /// Returns `true` if a machine timer interrupt is pending.
+    #[inline]
+    pub fn is_interrupting() -> bool {
+        riscv::register::mip::read().mtimer()
+    }
+
+    /// Returns `true` if Machine Timer Interrupts are enabled.
+    #[inline]
+    pub fn is_enabled() -> bool {
+        riscv::register::mie::read().mtimer()
+    }
+
     /// Sets the Machine Timer Interrupt bit of the `mie` CSR.
     /// This bit must be set for the `MTIMER` to trigger machine timer interrupts.
     ///
@@ -46,7 +58,7 @@ impl MTIMER {
         unsafe { riscv::register::mie::clear_mtimer() };
     }
 
-    /// Returns the `MTIME` register for the HART which ID is `hart_id`.
+    /// Returns the `MTIMECMP` register for the HART which ID is `hart_id`.
     ///
     /// # Note
     ///

@@ -65,20 +65,59 @@ impl<C: Clint> CLINT<C> {
 
     const MTIME_OFFSET: usize = 0xBFF8;
 
+    /// Returns `true` if any CLINT-related interrupt is pending.
+    #[inline]
+    pub fn is_interrupting() -> bool {
+        Self::mswi_is_interrupting() || Self::mtimer_is_interrupting()
+    }
+
+    /// Returns `true` if a machine software interrupt is pending.
+    #[inline]
+    pub fn mswi_is_interrupting() -> bool {
+        mswi::MSWI::is_interrupting()
+    }
+
+    /// Returns `true` if Machine Software Interrupts are enabled.
+    /// This bit must be set for the `MSWI` to trigger machine software interrupts.
+    #[inline]
+    pub fn mswi_is_enabled() -> bool {
+        mswi::MSWI::is_enabled()
+    }
+
     /// Enables machine software interrupts to let the `MSWI` peripheral trigger interrupts.
     ///
     /// # Safety
     ///
     /// Enabling the `MSWI` may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable_mswi() {
+    pub unsafe fn mswi_enable() {
         mswi::MSWI::enable();
     }
 
     /// Disables machine software interrupts to prevent the `MSWI` peripheral from triggering interrupts.
     #[inline]
-    pub fn disable_mswi() {
+    pub fn mswi_disable() {
         mswi::MSWI::disable();
+    }
+
+    /// Returns the `MSWI` peripheral.
+    #[inline]
+    pub const fn mswi() -> mswi::MSWI {
+        // SAFETY: valid base address
+        unsafe { mswi::MSWI::new(C::BASE) }
+    }
+
+    /// Returns `true` if a machine timer interrupt is pending.
+    #[inline]
+    pub fn mtimer_is_interrupting() -> bool {
+        mtimer::MTIMER::is_interrupting()
+    }
+
+    /// Returns `true` if Machine Timer Interrupts are enabled.
+    /// This bit must be set for the `MTIMER` to trigger machine timer interrupts.
+    #[inline]
+    pub fn mtimer_is_enabled() -> bool {
+        mtimer::MTIMER::is_enabled()
     }
 
     /// Enables machine timer interrupts to let the `MTIMER` peripheral trigger interrupts.
@@ -87,21 +126,14 @@ impl<C: Clint> CLINT<C> {
     ///
     /// Enabling the `MTIMER` may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable_mtimer() {
+    pub unsafe fn mtimer_enable() {
         mtimer::MTIMER::enable();
     }
 
     /// Disables machine timer interrupts to prevent the `MTIMER` peripheral from triggering interrupts.
     #[inline]
-    pub fn disable_mtimer() {
+    pub fn mtimer_disable() {
         mtimer::MTIMER::disable();
-    }
-
-    /// Returns the `MSWI` peripheral.
-    #[inline]
-    pub const fn mswi() -> mswi::MSWI {
-        // SAFETY: valid base address
-        unsafe { mswi::MSWI::new(C::BASE) }
     }
 
     /// Returns the `MTIMER` peripheral.

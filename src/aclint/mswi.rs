@@ -25,6 +25,18 @@ impl MSWI {
         }
     }
 
+    /// Returns `true` if a machine software interrupt is pending.
+    #[inline]
+    pub fn is_interrupting() -> bool {
+        riscv::register::mip::read().msoft()
+    }
+
+    /// Returns `true` if Machine Software Interrupts are enabled.
+    #[inline]
+    pub fn is_enabled() -> bool {
+        riscv::register::mie::read().msoft()
+    }
+
     /// Sets the Machine Software Interrupt bit of the `mie` CSR.
     /// This bit must be set for the `MSWI` to trigger machine software interrupts.
     ///

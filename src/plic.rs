@@ -127,6 +127,18 @@ impl<P: Plic> PLIC<P> {
 
     const PENDINGS_OFFSET: usize = 0x1000;
 
+    /// Returns `true` if a machine external interrupt is pending.
+    #[inline]
+    pub fn is_interrupting() -> bool {
+        riscv::register::mip::read().mext()
+    }
+
+    /// Returns true if Machine External Interrupts are enabled.
+    #[inline]
+    pub fn is_enabled() -> bool {
+        riscv::register::mie::read().mext()
+    }
+
     /// Sets the Machine External Interrupt bit of the `mie` CSR.
     /// This bit must be set for the PLIC to trigger machine external interrupts.
     ///
@@ -156,16 +168,14 @@ impl<P: Plic> PLIC<P> {
     }
 
     /// Returns the pendings register of the PLIC.
-    /// This register allows to check if an interrupt source is pending.
-    /// This register is shared among all the contexts.
+    /// This register allows to check if a particular interrupt source is pending.
     #[inline]
     pub fn pendings() -> pendings::PENDINGS {
         // SAFETY: valid address
         unsafe { pendings::PENDINGS::new(P::BASE + Self::PENDINGS_OFFSET) }
     }
 
-    /// Returns the context proxy of a given context.
-    /// This proxy provides access to the PLIC registers of the given context.
+    /// Returns a proxy to access to all the PLIC registers of a given context.
     #[inline]
     pub fn ctx<C: ContextNumber>(context: C) -> CTX<P> {
         // SAFETY: valid context number

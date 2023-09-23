@@ -81,14 +81,14 @@ macro_rules! clint_codegen {
             ///
             /// Enabling the `MSWI` may break mask-based critical sections.
             #[inline]
-            pub unsafe fn enable_mswi() {
-                $crate::aclint::CLINT::<CLINT>::enable_mswi();
+            pub unsafe fn mswi_enable() {
+                $crate::aclint::CLINT::<CLINT>::mswi_enable();
             }
 
             /// Disables the `MSWI` peripheral.
             #[inline]
-            pub fn disable_mswi() {
-                $crate::aclint::CLINT::<CLINT>::disable_mswi();
+            pub fn mswi_disable() {
+                $crate::aclint::CLINT::<CLINT>::mswi_disable();
             }
 
             /// Enables the `MTIMER` peripheral.
@@ -97,14 +97,14 @@ macro_rules! clint_codegen {
             ///
             /// Enabling the `MTIMER` may break mask-based critical sections.
             #[inline]
-            pub unsafe fn enable_mtimer() {
-                $crate::aclint::CLINT::<CLINT>::enable_mtimer();
+            pub unsafe fn mtimer_enable() {
+                $crate::aclint::CLINT::<CLINT>::mtimer_enable();
             }
 
             /// Disables the `MTIMER` peripheral.
             #[inline]
             pub fn disable_mtimer() {
-                $crate::aclint::CLINT::<CLINT>::disable_mtimer();
+                $crate::aclint::CLINT::<CLINT>::mtimer_disable();
             }
 
             /// Returns the `MSWI` peripheral.

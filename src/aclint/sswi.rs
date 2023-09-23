@@ -25,6 +25,18 @@ impl SSWI {
         }
     }
 
+    /// Returns `true` if a supervisor software interrupt is pending.
+    #[inline]
+    pub fn is_interrupting() -> bool {
+        riscv::register::sip::read().ssoft()
+    }
+
+    /// Returns `true` if Supervisor Software Interrupts are enabled.
+    #[inline]
+    pub fn is_enabled() -> bool {
+        riscv::register::mie::read().ssoft()
+    }
+
     /// Sets the Supervisor Software Interrupt bit of the `mie` CSR.
     /// This bit must be set for the `SSWI` to trigger supervisor software interrupts.
     ///
