@@ -127,37 +127,6 @@ impl<P: Plic> PLIC<P> {
 
     const PENDINGS_OFFSET: usize = 0x1000;
 
-    /// Returns `true` if a machine external interrupt is pending.
-    #[inline]
-    pub fn is_interrupting() -> bool {
-        riscv::register::mip::read().mext()
-    }
-
-    /// Returns true if Machine External Interrupts are enabled.
-    #[inline]
-    pub fn is_enabled() -> bool {
-        riscv::register::mie::read().mext()
-    }
-
-    /// Sets the Machine External Interrupt bit of the `mie` CSR.
-    /// This bit must be set for the PLIC to trigger machine external interrupts.
-    ///
-    /// # Safety
-    ///
-    /// Enabling the `PLIC` may break mask-based critical sections.
-    #[inline]
-    pub unsafe fn enable() {
-        riscv::register::mie::set_mext();
-    }
-
-    /// Clears the Machine External Interrupt bit of the `mie` CSR.
-    /// When cleared, the PLIC does not trigger machine external interrupts.
-    #[inline]
-    pub fn disable() {
-        // SAFETY: it is safe to disable interrupts
-        unsafe { riscv::register::mie::clear_mext() };
-    }
-
     /// Returns the priorities register of the PLIC.
     /// This register allows to set the priority level of each interrupt source.
     /// The priority level of each interrupt source is shared among all the contexts.

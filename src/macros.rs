@@ -75,6 +75,47 @@ macro_rules! clint_codegen {
         }
 
         impl CLINT {
+            /// Returns `true` if a machine timer **OR** software interrupt is pending.
+            #[inline]
+            pub fn is_interrupting() -> bool {
+                Self::mswi_is_interrupting() || Self::mtimer_is_interrupting()
+            }
+
+            /// Returns `true` if machine timer **OR** software interrupts are enabled.
+            pub fn is_enabled() -> bool {
+                Self::mswi_is_enabled() || Self::mtimer_is_enabled()
+            }
+
+            /// Enables machine timer **AND** software interrupts to allow the CLINT to trigger interrupts.
+            ///
+            /// # Safety
+            ///
+            /// Enabling the `CLINT` may break mask-based critical sections.
+            #[inline]
+            pub unsafe fn enable() {
+                Self::mswi_enable();
+                Self::mtimer_enable();
+            }
+
+            /// Disables machine timer **AND** software interrupts to prevent the CLINT from triggering interrupts.
+            #[inline]
+            pub fn disable() {
+                Self::mswi_disable();
+                Self::mtimer_disable();
+            }
+
+            /// Returns `true` if a machine software interrupt is pending.
+            #[inline]
+            pub fn mswi_is_interrupting() -> bool {
+                $crate::riscv::register::mip::read().msoft()
+            }
+
+            /// Returns `true` if Machine Software Interrupts are enabled.
+            #[inline]
+            pub fn mswi_is_enabled() -> bool {
+                $crate::riscv::register::mie::read().msoft()
+            }
+
             /// Enables the `MSWI` peripheral.
             ///
             /// # Safety
@@ -82,35 +123,51 @@ macro_rules! clint_codegen {
             /// Enabling the `MSWI` may break mask-based critical sections.
             #[inline]
             pub unsafe fn mswi_enable() {
-                $crate::aclint::CLINT::<CLINT>::mswi_enable();
+                $crate::riscv::register::mie::set_msoft();
             }
 
             /// Disables the `MSWI` peripheral.
             #[inline]
             pub fn mswi_disable() {
-                $crate::aclint::CLINT::<CLINT>::mswi_disable();
-            }
-
-            /// Enables the `MTIMER` peripheral.
-            ///
-            /// # Safety
-            ///
-            /// Enabling the `MTIMER` may break mask-based critical sections.
-            #[inline]
-            pub unsafe fn mtimer_enable() {
-                $crate::aclint::CLINT::<CLINT>::mtimer_enable();
-            }
-
-            /// Disables the `MTIMER` peripheral.
-            #[inline]
-            pub fn disable_mtimer() {
-                $crate::aclint::CLINT::<CLINT>::mtimer_disable();
+                // SAFETY: it is safe to disable interrupts
+                unsafe { $crate::riscv::register::mie::clear_msoft() };
             }
 
             /// Returns the `MSWI` peripheral.
             #[inline]
             pub const fn mswi() -> $crate::aclint::mswi::MSWI {
                 $crate::aclint::CLINT::<CLINT>::mswi()
+            }
+
+            /// Returns `true` if a machine timer interrupt is pending.
+            #[inline]
+            pub fn mtimer_is_interrupting() -> bool {
+                $crate::riscv::register::mip::read().mtimer()
+            }
+
+            /// Returns `true` if Machine Timer Interrupts are enabled.
+            #[inline]
+            pub fn mtimer_is_enabled() -> bool {
+                $crate::riscv::register::mie::read().mtimer()
+            }
+
+            /// Sets the Machine Timer Interrupt bit of the `mie` CSR.
+            /// This bit must be set for the `MTIMER` to trigger machine timer interrupts.
+            ///
+            /// # Safety
+            ///
+            /// Enabling the `MTIMER` may break mask-based critical sections.
+            #[inline]
+            pub unsafe fn mtimer_enable() {
+                $crate::riscv::register::mie::set_mtimer();
+            }
+
+            /// Clears the Machine Timer Interrupt bit of the `mie` CSR.
+            /// When cleared, the `MTIMER` cannot trigger machine timer interrupts.
+            #[inline]
+            pub fn mtimer_disable() {
+                // SAFETY: it is safe to disable interrupts
+                unsafe { $crate::riscv::register::mie::clear_mtimer() };
             }
 
             /// Returns the `MTIMER` peripheral.
@@ -154,6 +211,18 @@ macro_rules! plic_codegen {
         }
 
         impl PLIC {
+            /// Returns `true` if a machine external interrupt is pending.
+            #[inline]
+            pub fn is_interrupting() -> bool {
+                $crate::riscv::register::mip::read().mext()
+            }
+
+            /// Returns true if Machine External Interrupts are enabled.
+            #[inline]
+            pub fn is_enabled() -> bool {
+                $crate::riscv::register::mie::read().mext()
+            }
+
             /// Enables machine external interrupts to allow the PLIC to trigger interrupts.
             ///
             /// # Safety
@@ -161,13 +230,14 @@ macro_rules! plic_codegen {
             /// Enabling the `PLIC` may break mask-based critical sections.
             #[inline]
             pub unsafe fn enable() {
-                $crate::plic::PLIC::<PLIC>::enable();
+                $crate::riscv::register::mie::set_mext();
             }
 
             /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
             #[inline]
             pub fn disable() {
-                $crate::plic::PLIC::<PLIC>::disable();
+                // SAFETY: it is safe to disable interrupts
+                unsafe { $crate::riscv::register::mie::clear_mext() };
             }
 
             /// Returns the priorities register of the PLIC.

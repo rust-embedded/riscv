@@ -25,37 +25,6 @@ impl MSWI {
         }
     }
 
-    /// Returns `true` if a machine software interrupt is pending.
-    #[inline]
-    pub fn is_interrupting() -> bool {
-        riscv::register::mip::read().msoft()
-    }
-
-    /// Returns `true` if Machine Software Interrupts are enabled.
-    #[inline]
-    pub fn is_enabled() -> bool {
-        riscv::register::mie::read().msoft()
-    }
-
-    /// Sets the Machine Software Interrupt bit of the `mie` CSR.
-    /// This bit must be set for the `MSWI` to trigger machine software interrupts.
-    ///
-    /// # Safety
-    ///
-    /// Enabling the `MSWI` may break mask-based critical sections.
-    #[inline]
-    pub unsafe fn enable() {
-        riscv::register::mie::set_msoft();
-    }
-
-    /// Clears the Machine Software Interrupt bit of the `mie` CSR.
-    /// When cleared, the `MSWI` cannot trigger machine software interrupts.
-    #[inline]
-    pub fn disable() {
-        // SAFETY: it is safe to disable interrupts
-        unsafe { riscv::register::mie::clear_msoft() };
-    }
-
     /// Returns the `MSIP` register for the HART which ID is `hart_id`.
     ///
     /// # Note
