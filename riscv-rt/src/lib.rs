@@ -413,7 +413,7 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     if _mp_hook(hartid) {
         __pre_init();
 
-        // Initialize RAM (32-bit version)
+        // Initialize RAM
         // 1. Copy over .data from flash to RAM
         // 2. Zero out .bss
         core::arch::asm!(
@@ -423,29 +423,28 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
                 la      {end},_edata
                 la      {input},_sidata
 
+            	bgeu    {start},{end},2f
             1:
-            	addi    {a},{start},4
-            	bgeu    {a},{end},1f
-            	lw      {b},0({input})
-            	sw      {b},0({start})
-            	addi    {start},{start},4
+            	lw      {a},0({input})
             	addi    {input},{input},4
-            	j       1b
+            	sw      {a},0({start})
+            	addi    {start},{start},4
+            	bltu    {start},{end},1b
 
-            1:
+            2:
+                li      {a},0
+
                 // Zero out .bss
             	la      {start},_sbss
             	la      {end},_ebss
 
+            	bgeu    {start},{end},3f
             2:
-            	addi    {a},{start},4
-            	bgeu    {a},{end},2f
             	sw      zero,0({start})
             	addi    {start},{start},4
-            	j       2b
+            	bltu    {start},{end},2b
 
-            2:
-
+            3:
                 li      {start},0
                 li      {end},0
                 li      {input},0
@@ -454,7 +453,6 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
             end = out(reg) _,
             input = out(reg) _,
             a = out(reg) _,
-            b = out(reg) _,
         );
 
         compiler_fence(Ordering::SeqCst);
