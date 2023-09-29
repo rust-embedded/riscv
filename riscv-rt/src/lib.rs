@@ -416,6 +416,8 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
         // Initialize RAM
         // 1. Copy over .data from flash to RAM
         // 2. Zero out .bss
+
+        #[cfg(target_arch = "riscv32")]
         core::arch::asm!(
             "
                 // Copy over .data
@@ -453,6 +455,100 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
             end = out(reg) _,
             input = out(reg) _,
             a = out(reg) _,
+        );
+
+        #[cfg(target_arch = "riscv64")]
+        core::arch::asm!(
+            "
+                // Copy over .data
+                la      {start},_sdata
+                la      {end},_edata
+                la      {input},_sidata
+
+                bgeu    {start},{end},3f
+
+                //    If _sdata and _sidata are not 8-byte aligned, we copy one word before the main loop. This way, in
+                //    the main loop, we are sure `start` and `input` are 8-byte aligned. This is needed to safely
+                //    perform load and store double instructions.
+                //
+                //    NOTE: We assert in the `link.x` file that _sdata and _sidata are similarly 8-byte aligned. This is
+                //          needed for the main loop here.
+                andi    {b},{start},4
+                beqz    {b},0f
+                lw      {a},0({input})
+                addi    {input},{input},4
+                sw      {a},0({start})
+                addi    {start},{start},4
+
+            0: // .data Main Loop Initialization
+                //    b = FLOOR_ALIGN(_edata, 4)
+                andi    {b},{end},4
+                sub     {b},{end},{b}
+
+            	bgeu    {start},{b},2f
+            1: // .data Main Loop
+            	ld      {a},0({input})
+            	addi    {input},{input},8
+            	sd      {a},0({start})
+            	addi    {start},{start},8
+            	bltu    {start},{b},1b
+            
+            2: // .data end align
+                //    If _edata is not 8-byte aligned, we copy one word after the main loop. This way we are sure we
+                //    copied all the data even if _edata is 4-byte aligned.
+                andi    {b},{end},4
+                beqz    {b},3f
+                lw      {a},0({input})
+                addi    {input},{input},4
+                sw      {a},0({start})
+                addi    {start},{start},4
+            
+            3: // .data zero registers
+                li      {a},0
+                li      {input},0
+
+            4: // zero out .bss start
+            	la      {start},_sbss
+            	la      {end},_ebss
+            
+                bgeu    {start},{end},8f
+
+                //    If _sbss is not 8-byte aligned, we zero one word before the main loop. This way, in the main
+                //    loop, we are sure `start` is 8-byte aligned. This is needed to safely perform store double
+                //    instruction.
+                andi    {b},{start},4
+                beqz    {b},5f
+            	sw      zero,0({start})
+            	addi    {start},{start},4
+
+            5: // .bss main loop initialization
+                //    b = FLOOR_ALIGN(_ebss, 4)
+                andi    {b},{end},4
+                sub     {b},{end},{b}
+
+            	bgeu    {start},{b},7f
+            6: // .bss main loop
+            	sd      zero,0({start})
+            	addi    {start},{start},8
+            	bltu    {start},{b},6b
+
+            7: // .bss end align
+                //    If _ebss is not 8-byte aligned, we need to zero more one word after the main loop.
+                andi    {b},{end},4
+                beqz    {b},8f
+            	sw      zero,0({start})
+
+            8: // .bss zero registers
+                //    Zero out used registers
+                li      {b},0
+                li      {start},0
+                li      {end},0
+        ",
+            start = out(reg) _,
+            end = out(reg) _,
+            input = out(reg) _,
+            a = out(reg) _,
+            b = out(reg) _,
         );
 
         compiler_fence(Ordering::SeqCst);

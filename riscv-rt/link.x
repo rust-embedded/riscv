@@ -150,6 +150,10 @@ BUG(riscv-rt): .data is not 4-byte aligned");
 ASSERT(_sidata % 4 == 0, "
 BUG(riscv-rt): the LMA of .data is not 4-byte aligned");
 
+/* Make sure that we can safely perform .data initialization on RV64 */ 
+ASSERT(_sidata % 8 == _sdata % 8, "
+BUG(riscv-rt): .data is not similarly 8-byte aligned to the LMA of .data");
+
 ASSERT(_sbss % 4 == 0 && _ebss % 4 == 0, "
 BUG(riscv-rt): .bss is not 4-byte aligned");
 
