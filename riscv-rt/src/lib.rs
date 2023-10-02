@@ -366,6 +366,8 @@
 #[cfg(riscv)]
 mod asm;
 
+use core::sync::atomic::{compiler_fence, Ordering};
+
 #[cfg(feature = "s-mode")]
 use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
 
@@ -377,19 +379,6 @@ pub use riscv_rt_macros::{entry, pre_init};
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
-
-extern "C" {
-    // Boundaries of the .bss section
-    static mut _ebss: u32;
-    static mut _sbss: u32;
-
-    // Boundaries of the .data section
-    static mut _edata: u32;
-    static mut _sdata: u32;
-
-    // Initial values of the .data section (stored in Flash)
-    static _sidata: u32;
-}
 
 /// Rust entry point (_start_rust)
 ///
@@ -424,8 +413,93 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     if _mp_hook(hartid) {
         __pre_init();
 
-        r0::zero_bss(&mut _sbss, &mut _ebss);
-        r0::init_data(&mut _sdata, &mut _edata, &_sidata);
+        // Initialize RAM
+        // 1. Copy over .data from flash to RAM
+        // 2. Zero out .bss
+
+        #[cfg(target_arch = "riscv32")]
+        core::arch::asm!(
+            "
+                // Copy over .data
+                la      {start},_sdata
+                la      {end},_edata
+                la      {input},_sidata
+
+            	bgeu    {start},{end},2f
+            1:
+            	lw      {a},0({input})
+            	addi    {input},{input},4
+            	sw      {a},0({start})
+            	addi    {start},{start},4
+            	bltu    {start},{end},1b
+
+            2:
+                li      {a},0
+                li      {input},0
+
+                // Zero out .bss
+            	la      {start},_sbss
+            	la      {end},_ebss
+
+            	bgeu    {start},{end},3f
+            2:
+            	sw      zero,0({start})
+            	addi    {start},{start},4
+            	bltu    {start},{end},2b
+
+            3:
+                li      {start},0
+                li      {end},0
+            ",
+            start = out(reg) _,
+            end = out(reg) _,
+            input = out(reg) _,
+            a = out(reg) _,
+        );
+
+        #[cfg(target_arch = "riscv64")]
+        core::arch::asm!(
+            "
+                // Copy over .data
+                la      {start},_sdata
+                la      {end},_edata
+                la      {input},_sidata
+
+                bgeu    {start},{end},2f
+
+            1: // .data Main Loop
+            	ld      {a},0({input})
+            	addi    {input},{input},8
+            	sd      {a},0({start})
+            	addi    {start},{start},8
+            	bltu    {start},{end},1b
+            
+            2: // .data zero registers
+                li      {a},0
+                li      {input},0
+
+            	la      {start},_sbss
+            	la      {end},_ebss
+            
+                bgeu    {start},{end},4f
+
+            3: // .bss main loop
+            	sd      zero,0({start})
+            	addi    {start},{start},8
+            	bltu    {start},{end},3b
+
+            4: // .bss zero registers
+                //    Zero out used registers
+                li      {start},0
+                li      {end},0
+        ",
+            start = out(reg) _,
+            end = out(reg) _,
+            input = out(reg) _,
+            a = out(reg) _,
+        );
+
+        compiler_fence(Ordering::SeqCst);
     }
 
     // TODO: Enable FPU when available
