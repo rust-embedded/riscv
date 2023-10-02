@@ -72,7 +72,7 @@ SECTIONS
     . = ALIGN(4);
   } > REGION_RODATA
 
-  .data : ALIGN(4)
+  .data : ALIGN(8)
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
@@ -80,15 +80,15 @@ SECTIONS
     PROVIDE(__global_pointer$ = . + 0x800);
     *(.sdata .sdata.* .sdata2 .sdata2.*);
     *(.data .data.*);
-    . = ALIGN(4);
+    . = ALIGN(8);
     _edata = .;
   } > REGION_DATA AT > REGION_RODATA
 
-  .bss (NOLOAD) : ALIGN(4)
+  .bss (NOLOAD) : ALIGN(8)
   {
     _sbss = .;
     *(.sbss .sbss.* .bss .bss.*);
-    . = ALIGN(4);
+    . = ALIGN(8);
     _ebss = .;
   } > REGION_BSS
 
@@ -129,8 +129,8 @@ ERROR(riscv-rt): the start of the REGION_TEXT must be 4-byte aligned");
 ASSERT(ORIGIN(REGION_RODATA) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_RODATA must be 4-byte aligned");
 
-ASSERT(ORIGIN(REGION_DATA) % 4 == 0, "
-ERROR(riscv-rt): the start of the REGION_DATA must be 4-byte aligned");
+ASSERT(ORIGIN(REGION_DATA) % 8 == 0, "
+ERROR(riscv-rt): the start of the REGION_DATA must be 8-byte aligned");
 
 ASSERT(ORIGIN(REGION_HEAP) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_HEAP must be 4-byte aligned");
@@ -144,18 +144,14 @@ ERROR(riscv-rt): the start of the REGION_STACK must be 4-byte aligned");
 ASSERT(_stext % 4 == 0, "
 ERROR(riscv-rt): `_stext` must be 4-byte aligned");
 
-ASSERT(_sdata % 4 == 0 && _edata % 4 == 0, "
-BUG(riscv-rt): .data is not 4-byte aligned");
+ASSERT(_sdata % 8 == 0 && _edata % 8 == 0, "
+BUG(riscv-rt): .data is not 8-byte aligned");
 
-ASSERT(_sidata % 4 == 0, "
-BUG(riscv-rt): the LMA of .data is not 4-byte aligned");
+ASSERT(_sidata % 8 == 0, "
+BUG(riscv-rt): the LMA of .data is not 8-byte aligned");
 
-/* Make sure that we can safely perform .data initialization on RV64 */ 
-ASSERT(_sidata % 8 == _sdata % 8, "
-BUG(riscv-rt): .data is not similarly 8-byte aligned to the LMA of .data");
-
-ASSERT(_sbss % 4 == 0 && _ebss % 4 == 0, "
-BUG(riscv-rt): .bss is not 4-byte aligned");
+ASSERT(_sbss % 8 == 0 && _ebss % 8 == 0, "
+BUG(riscv-rt): .bss is not 8-byte aligned");
 
 ASSERT(_sheap % 4 == 0, "
 BUG(riscv-rt): start of .heap is not 4-byte aligned");
