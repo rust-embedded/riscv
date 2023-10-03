@@ -1,0 +1,22 @@
+name: Check CHANGELOG.md
+
+on:
+  push:
+    branches: [ master, check-changelog ]
+  pull_request:
+  merge_group:
+
+jobs:
+  check_changelog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check for CHANGELOG.md
+        run: |
+          if ! git diff --name-only HEAD^ | grep -q "^CHANGELOG.md$"; then
+            echo "ERROR: CHANGELOG.md not modified in this pull request"
+            exit 1
+          fi
