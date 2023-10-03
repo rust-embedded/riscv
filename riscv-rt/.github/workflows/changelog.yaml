@@ -1,22 +1,18 @@
 name: Check CHANGELOG.md
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
 jobs:
   check_changelog:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Check for CHANGELOG.md
-        run: |
-          if ! git diff --name-only HEAD^ | grep -q "^CHANGELOG.md$"; then
-            echo "ERROR: CHANGELOG.md not modified in this pull request"
-            exit 1
-          fi
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          missingUpdateErrorMessage: 'Please add a changelog entry in the CHANGELOG.md file.'
+
