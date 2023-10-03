@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix `scause::Exception` missing `SupervisorEnvCall`
 - Removed user-level interrupts from `mcause::Interrupt` and `scause::Interrupt`
 - Removed user-level interrupts from `mstatus`
+- Removed machine environment call delegation from `medeleg`
+- Removed user-level interrupts from machine and supervisor mode interrupt-related registers.
+
+### Removed
+
+- User mode registers removed, as they are no longer supported in RISC-V
 
 ## [v0.10.1] - 2023-01-18
 
