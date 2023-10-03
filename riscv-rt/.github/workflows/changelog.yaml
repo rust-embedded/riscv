@@ -2,9 +2,9 @@ name: Check CHANGELOG.md
 
 on:
   push:
-    branches: [ master, check-changelog ]
+    branches: [ master ]
   pull_request:
-  merge_group:
+    branches: [ master ]
 
 jobs:
   check_changelog:

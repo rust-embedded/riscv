@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- New GitHub worklow for checking modifications on CHANGELOG.md
 - New GitHub workflow for checking clippy lints in PRs
 
 ### Changed
