@@ -1,6 +1,7 @@
 name: Check CHANGELOG.md
 
 on:
+  merge_group:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
@@ -14,5 +15,6 @@ jobs:
       - name: Check for CHANGELOG.md
         uses: dangoslen/changelog-enforcer@v3
         with:
+          skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the CHANGELOG.md file.'
 
