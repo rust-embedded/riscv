@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `mstatus::uxl` and `mstatus::sxl`
 - Add `mstatus::ube`, `mstatus::sbe`, and `mstatus::mbe` endianness bit fields
 - Add `mstatush` registers (RISCV-32 only)
-- Add generic implementation of a PLIC peripheral
 - Add `asm::fence()`, a wrapper for implementing a `fence` instruction
 - Add `asm::fence_i()`, a wrapper for implementing a `fence.i` instruction
 - Add `TryFrom` implementation for `mcause::{Interrupt, Exception}` and `scause::{Interrupt, Exception}`
