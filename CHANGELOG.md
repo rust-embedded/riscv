@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add CI workflow to check that CHANGELOG.md file has been modified in PRs
 - Add `read_csr_as_rv32`, `set_rv32`, and `clear_rv32` macros
 - Add `mstatus::uxl` and `mstatus::sxl`
 - Add `mstatus::ube`, `mstatus::sbe`, and `mstatus::mbe` endianness bit fields
