@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removed bors in favor of GitHub Merge Queue
 - `start_trap_rust` is now marked as `unsafe`
 - Implement `r0` as inline assembly
+- mhartid CSR is no longer read in single-hart mode, assumed zero
 
 ## [v0.11.0] - 2023-01-18
 
