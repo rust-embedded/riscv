@@ -136,6 +136,7 @@ pub(crate) mod test {
         crate::clint_codegen!(
             base 0x0200_0000,
             mtimecmps [mtimecmp0=(HartId::H0,"`H0`"), mtimecmp1=(HartId::H1,"`H1`"), mtimecmp2=(HartId::H2,"`H2`")],
+            msips [msip0=(HartId::H0,"`H0`"), msip1=(HartId::H1,"`H1`"), msip2=(HartId::H2,"`H2`")],
         );
 
         let mswi = CLINT::mswi();
@@ -150,25 +151,16 @@ pub(crate) mod test {
         let mtimecmp2 = mtimer.mtimecmp(HartId::H2);
 
         assert_eq!(mtimecmp0.get_ptr() as usize, 0x0200_4000);
-        assert_eq!(mtimecmp1.get_ptr() as usize, 0x0200_4000 + 1 * 8); // 8 bytes per register
+        assert_eq!(mtimecmp1.get_ptr() as usize, 0x0200_4000 + 8); // 8 bytes per register
         assert_eq!(mtimecmp2.get_ptr() as usize, 0x0200_4000 + 2 * 8);
 
-        // Check that the mtimecmpX functions are equivalent to the mtimer.mtimecmp(X) function.
-        let mtimecmp0 = CLINT::mtimecmp0();
-        let mtimecmp1 = CLINT::mtimecmp1();
-        let mtimecmp2 = CLINT::mtimecmp2();
+        assert_eq!(CLINT::mtime(), mtimer.mtime);
+        assert_eq!(CLINT::mtimecmp0(), mtimer.mtimecmp(HartId::H0));
+        assert_eq!(CLINT::mtimecmp1(), mtimer.mtimecmp(HartId::H1));
+        assert_eq!(CLINT::mtimecmp2(), mtimer.mtimecmp(HartId::H2));
 
-        assert_eq!(
-            mtimecmp0.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H0).get_ptr() as usize
-        );
-        assert_eq!(
-            mtimecmp1.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H1).get_ptr() as usize
-        );
-        assert_eq!(
-            mtimecmp2.get_ptr() as usize,
-            mtimer.mtimecmp(HartId::H2).get_ptr() as usize
-        );
+        assert_eq!(CLINT::msip0(), mswi.msip(HartId::H0));
+        assert_eq!(CLINT::msip1(), mswi.msip(HartId::H1));
+        assert_eq!(CLINT::msip2(), mswi.msip(HartId::H2));
     }
 }

@@ -58,3 +58,30 @@ impl MSIP {
         self.register.write(0);
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::super::test::HartId;
+    use super::*;
+
+    #[test]
+    fn test_mswi() {
+        // slice to emulate the interrupt pendings register
+        let raw_reg = [0u32; HartId::MAX_HART_ID_NUMBER as usize + 1];
+        // SAFETY: valid memory address
+        let mswi = unsafe { MSWI::new(raw_reg.as_ptr() as _) };
+
+        for i in 0..=HartId::MAX_HART_ID_NUMBER {
+            let hart_id = HartId::from_number(i).unwrap();
+            let msip = mswi.msip(hart_id);
+            assert!(!msip.is_pending());
+            assert_eq!(raw_reg[i as usize], 0);
+            msip.pend();
+            assert!(msip.is_pending());
+            assert_ne!(raw_reg[i as usize], 0);
+            msip.unpend();
+            assert!(!msip.is_pending());
+            assert_eq!(raw_reg[i as usize], 0);
+        }
+    }
+}

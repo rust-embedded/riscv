@@ -3,10 +3,12 @@
 /// Macro to create interfaces to CLINT peripherals in PACs.
 /// The resulting struct will be named `CLINT`, and will provide safe access to the CLINT registers.
 ///
-/// This macro expects 2 different argument types:
+/// This macro expects 4 different argument types:
 ///
 /// - Base address (**MANDATORY**): base address of the CLINT peripheral of the target.
+/// - Frequency (**OPTIONAL**): clock frequency (in Hz) of the `MTIME` register. It enables the `delay` method of the `CLINT` struct.
 /// - Per-HART mtimecmp registers (**OPTIONAL**): a list of `mtimecmp` registers for easing access to per-HART mtimecmp regs.
+/// - Per-HART msip registers (**OPTIONAL**): a list of `msip` registers for easing access to per-HART msip regs.
 ///
 /// Check the examples below for more details about the usage and syntax of this macro.
 ///
@@ -17,10 +19,11 @@
 /// ```
 /// use riscv_peripheral::clint_codegen;
 ///
-/// clint_codegen!(base 0x0200_0000,); // do not forget the ending comma!
+/// clint_codegen!(base 0x0200_0000, freq 32_768,); // do not forget the ending comma!
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
 /// let mtimer = CLINT::mtimer(); // MTIMER peripheral
+/// let delay = CLINT::delay(); // For the `embedded_hal::delay::DelayUs` and `embedded_hal_async::delay::DelayUs` traits
 /// ```
 ///
 /// ## Base address and per-HART mtimecmp registers
@@ -49,7 +52,8 @@
 ///
 /// clint_codegen!(
 ///     base 0x0200_0000,
-///     mtimecmps [mtimecmp0 = (HartId::H0, "`H0`"), mtimecmp1 = (HartId::H1, "`H1`"), mtimecmp2 = (HartId::H2, "`H2`")], // do not forget the ending comma!
+///     mtimecmps [mtimecmp0 = (HartId::H0, "`H0`"), mtimecmp1 = (HartId::H1, "`H1`"), mtimecmp2 = (HartId::H2, "`H2`")],
+///     msips [msip0=(HartId::H0,"`H0`"), msip1=(HartId::H1,"`H1`"), msip2=(HartId::H2,"`H2`")], // do not forget the ending comma!
 /// );
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
@@ -58,6 +62,10 @@
 /// let mtimecmp0 = CLINT::mtimecmp0(); // mtimecmp register for HART 0
 /// let mtimecmp1 = CLINT::mtimecmp1(); // mtimecmp register for HART 1
 /// let mtimecmp2 = CLINT::mtimecmp2(); // mtimecmp register for HART 2
+///
+/// let msip0 = CLINT::msip0(); // msip register for HART 0
+/// let msip1 = CLINT::msip1(); // msip register for HART 1
+/// let msip2 = CLINT::msip2(); // msip register for HART 2
 /// ```
 #[macro_export]
 macro_rules! clint_codegen {
@@ -67,6 +75,7 @@ macro_rules! clint_codegen {
     };
     (base $addr:literal, $($tail:tt)*) => {
         /// CLINT peripheral
+        #[allow(clippy::upper_case_acronyms)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub struct CLINT;
 
@@ -175,13 +184,54 @@ macro_rules! clint_codegen {
             pub const fn mtimer() -> $crate::aclint::mtimer::MTIMER {
                 $crate::aclint::CLINT::<CLINT>::mtimer()
             }
+
+            /// Returns the `MTIME` register of the `MTIMER` peripheral.
+            #[inline]
+            pub const fn mtime() -> $crate::aclint::mtimer::MTIME {
+                Self::mtimer().mtime
+            }
+        }
+        $crate::clint_codegen!($($tail)*);
+    };
+    (freq $freq:literal, $($tail:tt)*) => {
+        impl CLINT {
+            /// Returns the frequency of the `MTIME` register.
+            #[inline]
+            pub const fn freq() -> usize {
+                $freq
+            }
+
+            /// Delay implementation for CLINT peripherals.
+            ///
+            /// # Note
+            ///
+            /// You must export the `riscv_peripheral::hal::delay::DelayUs` trait in order to use delay methods.
+            /// You must export the `riscv_peripheral::hal_async::delay::DelayUs` trait in order to use async delay methods.
+            #[inline]
+            pub const fn delay() -> $crate::hal::aclint::Delay {
+                $crate::hal::aclint::Delay::new(Self::mtime(), Self::freq())
+            }
+        }
+        $crate::clint_codegen!($($tail)*);
+    };
+    (msips [$($fn:ident = ($hart:expr , $shart:expr)),+], $($tail:tt)*) => {
+        impl CLINT {
+            $(
+                #[doc = "Returns the `msip` register for HART "]
+                #[doc = $shart]
+                #[doc = "."]
+                #[inline]
+                pub fn $fn() -> $crate::aclint::mswi::MSIP {
+                    Self::mswi().msip($hart)
+                }
+            )*
         }
         $crate::clint_codegen!($($tail)*);
     };
     (mtimecmps [$($fn:ident = ($hart:expr , $shart:expr)),+], $($tail:tt)*) => {
         impl CLINT {
             $(
-                #[doc = "Returns the `mtimecmp` peripheral HART "]
+                #[doc = "Returns the `mtimecmp` register for HART "]
                 #[doc = $shart]
                 #[doc = "."]
                 #[inline]
@@ -203,6 +253,7 @@ macro_rules! plic_codegen {
     };
     (base $addr:literal, $($tail:tt)*) => {
         /// PLIC peripheral
+        #[allow(clippy::upper_case_acronyms)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub struct PLIC;
 
