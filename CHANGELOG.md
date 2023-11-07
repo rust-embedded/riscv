@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Removed
 
 - User mode registers removed, as they are no longer supported in RISC-V
+- FCSR register operations removed to avoid UB (#148)
 
 ## [v0.10.1] - 2023-01-18
 
