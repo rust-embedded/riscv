@@ -10,13 +10,34 @@
 //! - minstreth
 //! - mhpmcounter<3-31>h
 //! - mstatush
+//!
+//! # On Floating-Point CSRs
+//!
+//! We are deliberately *not* providing instructions that could change the floating-point rounding
+//! mode or exception behavior or read the accrued exceptions flags: `frcsr`, `fscsr`, `fsrm`,
+//! `frflags`, `fsflags`.
+//!
+//! Rust makes no guarantees whatsoever about the contents of the accrued exceptions register: Rust
+//! floating-point operations may or may not result in this register getting updated with exception
+//! state, and the register can change between two invocations of this function even when no
+//! floating-point operations appear in the source code (since floating-point operations appearing
+//! earlier or later can be reordered).
+//!
+//! Modifying the rounding mode leads to **immediate Undefined Behavior**: Rust assumes that the
+//! default rounding mode is always set and will optimize accordingly. This even applies when the
+//! rounding mode is altered and later reset to its original value without any floating-point
+//! operations appearing in the source code between those operations (since floating-point
+//! operations appearing earlier or later can be reordered).
+//!
+//! If you need to perform some floating-point operations and check whether they raised an
+//! exception, use a single inline assembly block for the entire sequence of operations.
+//!
+//! If you need to perform some floating-point operations under a different rounding mode, use a
+//! single inline assembly block and make sure to restore the original rounding mode before the end
+//! of the block.
 
 #[macro_use]
 mod macros;
-
-// User Floating-Point CSRs
-// TODO: frm, fflags
-pub mod fcsr;
 
 // User Counter/Timers
 pub mod cycle;
@@ -29,7 +50,6 @@ pub mod time;
 pub mod timeh;
 
 // Supervisor Trap Setup
-// TODO: sedeleg, sideleg
 pub mod scounteren;
 pub mod sie;
 pub mod sstatus;
