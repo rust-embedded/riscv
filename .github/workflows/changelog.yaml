@@ -1,4 +1,4 @@
-name: Check CHANGELOG.md
+name: Changelog check
 
 on:
   merge_group:
@@ -12,9 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Check for CHANGELOG.md
+      - name: Check which component is modified 
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            riscv:
+              - 'riscv/**'
+
+      - name: Check for CHANGELOG.md (riscv)
+        if: steps.changes.outputs.riscv == 'true'
         uses: dangoslen/changelog-enforcer@v3
         with:
+          changeLogPath: ./riscv/CHANGELOG.md
           skipLabels: 'skip changelog'
-          missingUpdateErrorMessage: 'Please add a changelog entry in the CHANGELOG.md file.'
-
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv/CHANGELOG.md file.'
