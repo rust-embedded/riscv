@@ -19,6 +19,10 @@ jobs:
           # Nightly is only for reference and allowed to fail
           - toolchain: nightly
             experimental: true
+          # async traits are still not supported in stable
+          - toolchain: stable
+            cargo_flags: --all-features
+            experimental: true
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:

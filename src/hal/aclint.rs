@@ -38,10 +38,8 @@ impl Delay {
 impl DelayUs for Delay {
     #[inline]
     fn delay_us(&mut self, us: u32) {
-        let time_from = self.mtime.read();
-        let time_to = time_from.wrapping_add(us as u64 * self.freq as u64 / 1_000_000);
-
-        while time_to < self.mtime.read() {} // wait for overflow
-        while time_to > self.mtime.read() {} // wait for time to pass
+        let t0 = self.mtime.read();
+        let n_ticks = us as u64 * self.freq as u64 / 1_000_000;
+        while self.mtime.read().wrapping_sub(t0) < n_ticks {}
     }
 }
