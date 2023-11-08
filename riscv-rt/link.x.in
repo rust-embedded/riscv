@@ -1,3 +1,27 @@
+/* # Developer notes
+
+- Symbols that start with a double underscore (__) are considered "private"
+
+- Symbols that start with a single underscore (_) are considered "semi-public"; they can be
+  overridden in a user linker script, but should not be referred from user code (e.g. `extern "C" {
+  static mut _heap_size }`).
+
+- `EXTERN` forces the linker to keep a symbol in the final binary. We use this to make sure a
+  symbol if not dropped if it appears in or near the front of the linker arguments and "it's not
+  needed" by any of the preceding objects (linker arguments)
+
+- `PROVIDE` is used to provide default values that can be overridden by a user linker script
+
+- In this linker script, you may find symbols that look like `${...}` (e.g., `${ARCH_WIDTH}`).
+  These are wildcards used by the `build.rs` script to adapt to different target particularities.
+  Check `build.rs` for more details about these symbols.
+
+- On alignment: it's important for correctness that the VMA boundaries of both .bss and .data *and*
+  the LMA of .data are all `${ARCH_WIDTH}`-byte aligned. These alignments are assumed by the RAM
+  initialization routine. There's also a second benefit: `${ARCH_WIDTH}`-byte aligned boundaries
+  means that you won't see "Address (..) is out of bounds" in the disassembly produced by `objdump`.
+*/
+
 PROVIDE(_stext = ORIGIN(REGION_TEXT));
 PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
 PROVIDE(_max_hart_id = 0);
@@ -72,7 +96,7 @@ SECTIONS
     . = ALIGN(4);
   } > REGION_RODATA
 
-  .data : ALIGN(8)
+  .data : ALIGN(${ARCH_WIDTH})
   {
     _sidata = LOADADDR(.data);
     _sdata = .;
@@ -80,15 +104,15 @@ SECTIONS
     PROVIDE(__global_pointer$ = . + 0x800);
     *(.sdata .sdata.* .sdata2 .sdata2.*);
     *(.data .data.*);
-    . = ALIGN(8);
+    . = ALIGN(${ARCH_WIDTH});
     _edata = .;
   } > REGION_DATA AT > REGION_RODATA
 
-  .bss (NOLOAD) : ALIGN(8)
+  .bss (NOLOAD) : ALIGN(${ARCH_WIDTH})
   {
     _sbss = .;
     *(.sbss .sbss.* .bss .bss.*);
-    . = ALIGN(8);
+    . = ALIGN(${ARCH_WIDTH});
     _ebss = .;
   } > REGION_BSS
 
@@ -129,8 +153,8 @@ ERROR(riscv-rt): the start of the REGION_TEXT must be 4-byte aligned");
 ASSERT(ORIGIN(REGION_RODATA) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_RODATA must be 4-byte aligned");
 
-ASSERT(ORIGIN(REGION_DATA) % 8 == 0, "
-ERROR(riscv-rt): the start of the REGION_DATA must be 8-byte aligned");
+ASSERT(ORIGIN(REGION_DATA) % ${ARCH_WIDTH} == 0, "
+ERROR(riscv-rt): the start of the REGION_DATA must be ${ARCH_WIDTH}-byte aligned");
 
 ASSERT(ORIGIN(REGION_HEAP) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_HEAP must be 4-byte aligned");
@@ -144,14 +168,14 @@ ERROR(riscv-rt): the start of the REGION_STACK must be 4-byte aligned");
 ASSERT(_stext % 4 == 0, "
 ERROR(riscv-rt): `_stext` must be 4-byte aligned");
 
-ASSERT(_sdata % 8 == 0 && _edata % 8 == 0, "
-BUG(riscv-rt): .data is not 8-byte aligned");
+ASSERT(_sdata % ${ARCH_WIDTH} == 0 && _edata % ${ARCH_WIDTH} == 0, "
+BUG(riscv-rt): .data is not ${ARCH_WIDTH}-byte aligned");
 
-ASSERT(_sidata % 8 == 0, "
-BUG(riscv-rt): the LMA of .data is not 8-byte aligned");
+ASSERT(_sidata % ${ARCH_WIDTH} == 0, "
+BUG(riscv-rt): the LMA of .data is not ${ARCH_WIDTH}-byte aligned");
 
-ASSERT(_sbss % 8 == 0 && _ebss % 8 == 0, "
-BUG(riscv-rt): .bss is not 8-byte aligned");
+ASSERT(_sbss % ${ARCH_WIDTH} == 0 && _ebss % ${ARCH_WIDTH} == 0, "
+BUG(riscv-rt): .bss is not ${ARCH_WIDTH}-byte aligned");
 
 ASSERT(_sheap % 4 == 0, "
 BUG(riscv-rt): start of .heap is not 4-byte aligned");

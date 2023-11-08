@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removed bors in favor of GitHub Merge Queue
 - `start_trap_rust` is now marked as `unsafe`
 - Implement `r0` as inline assembly
+- Use `${ARCH_WIDTH}` in `link.x.in` to adapt to different archs
 
 ## [v0.11.0] - 2023-01-18
 
