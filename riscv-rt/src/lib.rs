@@ -372,7 +372,10 @@ use core::sync::atomic::{compiler_fence, Ordering};
 use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
 
 #[cfg(not(feature = "s-mode"))]
-use riscv::register::{mcause as xcause, mhartid, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
+use riscv::register::{mcause as xcause, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
+
+#[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
+use riscv::register::mhartid;
 
 pub use riscv_rt_macros::{entry, pre_init};
 
@@ -404,13 +407,20 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
         fn _mp_hook(hartid: usize) -> bool;
     }
 
-    // sbi passes hartid as first parameter (a0)
-    #[cfg(feature = "s-mode")]
-    let hartid = a0;
-    #[cfg(not(feature = "s-mode"))]
-    let hartid = mhartid::read();
+    #[cfg(not(feature = "single-hart"))]
+    let run_init = {
+        // sbi passes hartid as first parameter (a0)
+        #[cfg(feature = "s-mode")]
+        let hartid = a0;
+        #[cfg(not(feature = "s-mode"))]
+        let hartid = mhartid::read();
 
-    if _mp_hook(hartid) {
+        _mp_hook(hartid)
+    };
+    #[cfg(feature = "single-hart")]
+    let run_init = true;
+
+    if run_init {
         __pre_init();
 
         // Initialize RAM
@@ -661,6 +671,7 @@ pub unsafe extern "Rust" fn default_pre_init() {}
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
+#[cfg(not(feature = "single-hart"))]
 pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
     match hartid {
         0 => true,
