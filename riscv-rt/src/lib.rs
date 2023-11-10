@@ -327,7 +327,7 @@
 //!
 //! ## `single-hart`
 //!
-//! This feature saves a little code size by removing unnecessary stack space calculation if there is only one hart on the target.
+//! This feature saves a little code size if there is only one hart on the target.
 //!
 //! ## `s-mode`
 //!
