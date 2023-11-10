@@ -85,7 +85,8 @@ _abs_start:
     .option push
     .option norelax
     la gp, __global_pointer$
-    .option pop",
+    .option pop
+    // Allocate stacks",
     #[cfg(all(not(feature = "single-hart"), feature = "s-mode"))]
     "mv t2, a0 // the hartid is passed as parameter by SMODE",
     #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
@@ -93,9 +94,7 @@ _abs_start:
     #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
-    bgtu t2, t0, abort",
-    "// Allocate stacks
-    la sp, _stack_start
+    bgtu t2, t0, abort
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
     #[cfg(all(not(feature = "single-hart"), riscvm))]
@@ -109,9 +108,10 @@ _abs_start:
     addi t1, t1, -1
     bnez t1, 1b
 2:  ",
-    "sub sp, sp, t0
-
-    // Set frame pointer
+    "la sp, _stack_start",
+    #[cfg(not(feature = "single-hart"))]
+    "sub sp, sp, t0",
+    "// Set frame pointer
     add s0, sp, zero
 
     jal zero, _start_rust
