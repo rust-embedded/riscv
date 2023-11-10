@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New GitHub workflow for checking invalid labels in PRs
 - New GitHub workflow for checking modifications on CHANGELOG.md
 - New GitHub workflow for checking clippy lints in PRs
+- Optional cargo feature `single-hart` for single CPU targets
 
 ### Changed
 
