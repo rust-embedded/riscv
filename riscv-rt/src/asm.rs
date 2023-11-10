@@ -108,10 +108,11 @@ _abs_start:
     addi t1, t1, -1
     bnez t1, 1b
 2:  ",
-    "la sp, _stack_start",
+    "la t1, _stack_start",
     #[cfg(not(feature = "single-hart"))]
-    "sub sp, sp, t0",
-    "// Set frame pointer
+    "sub t1, t1, t0",
+    "andi sp, t1, -16 // Force 16-byte alignment
+    // Set frame pointer
     add s0, sp, zero
 
     jal zero, _start_rust
@@ -135,6 +136,8 @@ _abs_start:
 #[rustfmt::skip]
 macro_rules! trap_handler {
     ($STORE:ident, $LOAD:ident, $BYTES:literal, $TRAP_SIZE:literal, [$(($REG:ident, $LOCATION:literal)),*]) => {
+        // ensure we do not break that sp is 16-byte aligned
+        const _: () = assert!(($TRAP_SIZE * $BYTES) % 16 == 0);
         global_asm!(
         "
             .section .trap, \"ax\"
