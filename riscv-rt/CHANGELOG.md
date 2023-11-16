@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Removed bors in favor of GitHub Merge Queue
 - `start_trap_rust` is now marked as `unsafe`
 - Implement `r0` as inline assembly
+- Use `${ARCH_WIDTH}` in `link.x.in` to adapt to different archs
 - mhartid CSR is no longer read in single-hart mode, assumed zero
 - Ensure stack pointer is 16-byte aligned before jumping to Rust entry point
 

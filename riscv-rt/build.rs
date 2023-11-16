@@ -1,17 +1,21 @@
 // NOTE: Adapted from cortex-m/build.rs
 
 use riscv_target::Target;
-use std::env;
-use std::fs;
-use std::path::PathBuf;
+use std::{env, fs, io, path::PathBuf};
 
-fn add_linker_script(bytes: &[u8]) {
+fn add_linker_script(arch_width: u32) -> io::Result<()> {
+    // Read the file to a string and replace all occurrences of ${ARCH_WIDTH} with the arch width
+    let mut content = fs::read_to_string("link.x.in")?;
+    content = content.replace("${ARCH_WIDTH}", &arch_width.to_string());
+
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
 
     // Put the linker script somewhere the linker can find it
-    fs::write(out_dir.join("link.x"), bytes).unwrap();
+    fs::write(out_dir.join("link.x"), content)?;
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rerun-if-changed=link.x");
+
+    Ok(())
 }
 
 fn main() {
@@ -22,19 +26,24 @@ fn main() {
     if target.starts_with("riscv") {
         println!("cargo:rustc-cfg=riscv");
         let target = Target::from_target_str(&target);
-        match target.bits {
+
+        // generate the linker script
+        let arch_width = match target.bits {
             32 => {
                 println!("cargo:rustc-cfg=riscv32");
-                add_linker_script(include_bytes!("link-rv32.x"));
+                4
             }
             64 => {
                 println!("cargo:rustc-cfg=riscv64");
-                add_linker_script(include_bytes!("link-rv64.x"));
+                8
             }
             _ => panic!("Unsupported bit width"),
-        }
+        };
+        add_linker_script(arch_width).unwrap();
+
+        // expose the ISA extensions
         if target.has_extension('m') {
-            println!("cargo:rustc-cfg=riscvm"); // we can expose extensions this way
+            println!("cargo:rustc-cfg=riscvm");
         }
     }
 }
