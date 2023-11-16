@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New GitHub workflow for checking invalid labels in PRs
 - New GitHub workflow for checking modifications on CHANGELOG.md
 - New GitHub workflow for checking clippy lints in PRs
+- Optional cargo feature `single-hart` for single CPU targets
 
 ### Changed
 
@@ -20,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `start_trap_rust` is now marked as `unsafe`
 - Implement `r0` as inline assembly
 - Use `${ARCH_WIDTH}` in `link.x.in` to adapt to different archs
+- mhartid CSR is no longer read in single-hart mode, assumed zero
+- Ensure stack pointer is 16-byte aligned before jumping to Rust entry point
 
 ## [v0.11.0] - 2023-01-18
 

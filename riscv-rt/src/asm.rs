@@ -85,7 +85,8 @@ _abs_start:
     .option push
     .option norelax
     la gp, __global_pointer$
-    .option pop",
+    .option pop
+    // Allocate stacks",
     #[cfg(all(not(feature = "single-hart"), feature = "s-mode"))]
     "mv t2, a0 // the hartid is passed as parameter by SMODE",
     #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
@@ -93,9 +94,7 @@ _abs_start:
     #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
-    bgtu t2, t0, abort",
-    "// Allocate stacks
-    la sp, _stack_start
+    bgtu t2, t0, abort
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
     #[cfg(all(not(feature = "single-hart"), riscvm))]
@@ -109,8 +108,10 @@ _abs_start:
     addi t1, t1, -1
     bnez t1, 1b
 2:  ",
-    "sub sp, sp, t0
-
+    "la t1, _stack_start",
+    #[cfg(not(feature = "single-hart"))]
+    "sub t1, t1, t0",
+    "andi sp, t1, -16 // Force 16-byte alignment
     // Set frame pointer
     add s0, sp, zero
 
@@ -135,6 +136,8 @@ _abs_start:
 #[rustfmt::skip]
 macro_rules! trap_handler {
     ($STORE:ident, $LOAD:ident, $BYTES:literal, $TRAP_SIZE:literal, [$(($REG:ident, $LOCATION:literal)),*]) => {
+        // ensure we do not break that sp is 16-byte aligned
+        const _: () = assert!(($TRAP_SIZE * $BYTES) % 16 == 0);
         global_asm!(
         "
             .section .trap, \"ax\"
