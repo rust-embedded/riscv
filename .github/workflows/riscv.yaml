@@ -1,10 +1,10 @@
 on:
   push:
-    branches: [ master, add-riscv-rt ]
+    branches: [ master ]
   pull_request:
   merge_group:
 
-name: Build check
+name: Build check (riscv)
 
 jobs:
   # We check that the crate builds and links for all the toolchains and targets.
@@ -13,52 +13,42 @@ jobs:
       matrix:
         # All generated code should be running on stable now, MRSV is 1.59.0
         toolchain: [ stable, nightly, 1.60.0 ]
-        package: 
-          - riscv
-          - riscv-rt
         target:
           - riscv32i-unknown-none-elf
           - riscv32imc-unknown-none-elf
           - riscv32imac-unknown-none-elf
           - riscv64imac-unknown-none-elf
           - riscv64gc-unknown-none-elf
-        cargo_flags: [ "--no-default-features", "--all-features" ]
         include:
           # Nightly is only for reference and allowed to fail
           - toolchain: nightly
             experimental: true
-          - package: riscv-rt
-            cargo_flags:
-              - "--features=s-mode"
-              - "--features=single-hart"
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
-    - name: Build library
-      run: cargo build --package ${{ matrix.package }} --target ${{ matrix.target }} ${{ matrix.cargo_flags }}
+    - name: Build (no features)
+      run: cargo build --package riscv --target ${{ matrix.target }}
+    - name: Build (all features)
+      run: cargo build --package riscv --target ${{ matrix.target }} --all-features
       
   # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
   build-others:
     strategy:
       matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        package: 
-          - riscv
-        cargo_flags: [ "--no-default-features", "--all-features" ]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build crate for host OS
-        run: cargo build --package ${{ matrix.package }} ${{ matrix.cargo_flags }}
+      - name: Build (no features)
+        run: cargo build --package riscv
+      - name: Build (all features)
+        run: cargo build --package riscv --all-features
   
   # Job to check that all the builds succeeded
   build-check:

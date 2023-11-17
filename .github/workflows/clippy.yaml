@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, add-riscv-rt ]
+    branches: [ master ]
   pull_request:
   merge_group:
 
@@ -14,9 +14,6 @@ jobs:
     strategy:
       matrix:
         toolchain: [ stable, nightly ]
-        cargo_flags:
-          - "--no-default-features"
-          - "--all-features"
         include:
           # Nightly is only for reference and allowed to fail
           - toolchain: nightly
@@ -24,18 +21,39 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy
-      - name: Run clippy
-        run: cargo clippy --all ${{ matrix.cargo_flags }} -- -D warnings
+      - name: Run clippy (no features)
+        run: cargo clippy --all --no-default-features -- -D warnings
+      - name: Run clippy (all features)
+        run: cargo clippy --all --all-features -- -D warnings
+  
+  # Additonal clippy checks for riscv-rt
+  clippy-riscv-rt:
+    strategy:
+      matrix:
+        toolchain: [ stable, nightly ]
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: clippy
+      - name: Run clippy (s-mode)
+        run: cargo clippy --package riscv-rt --all --features=s-mode -- -D warnings
+      - name: Run clippy (single-hart)
+        run: cargo clippy --package riscv-rt --all --features=single-hart -- -D warnings
 
    # Job to check that all the lint checks succeeded
   clippy-check:
     needs:
     - clippy
+    - clippy-riscv-rt
     runs-on: ubuntu-latest
     if: always()
     steps:
