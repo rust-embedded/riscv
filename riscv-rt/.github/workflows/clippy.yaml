@@ -1,0 +1,42 @@
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  merge_group:
+
+name: Lints compliance check
+
+env:
+  CLIPPY_PARAMS: -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::cargo
+
+jobs:
+  clippy:
+    strategy:
+      matrix:
+        toolchain: [ stable, nightly ]
+        cargo_flags:
+          - "--no-default-features"
+          - "--all-features"
+        include:
+          # Nightly is only for reference and allowed to fail
+          - toolchain: nightly
+            experimental: true
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: clippy
+      - name: Run clippy
+        run: cargo clippy --all ${{ matrix.cargo_flags }} -- -D warnings
+
+   # Job to check that all the lint checks succeeded
+  clippy-check:
+    needs:
+    - clippy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'

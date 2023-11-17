@@ -1,0 +1,20 @@
+name: Check CHANGELOG.md
+
+on:
+  merge_group:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+jobs:
+  changelog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for CHANGELOG.md
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the CHANGELOG.md file.'
+
