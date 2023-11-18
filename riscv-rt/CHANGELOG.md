@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Cargo workspace for riscv and riscv-rt
 - Use inline assembly instead of pre-compiled blobs
 - Removed bors in favor of GitHub Merge Queue
 - `start_trap_rust` is now marked as `unsafe`
