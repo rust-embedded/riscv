@@ -2,20 +2,21 @@
 name = "riscv-rt"
 version = "0.11.0"
 rust-version = "1.59"
-repository = "https://github.com/rust-embedded/riscv-rt"
+repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
 description = "Minimal runtime / startup for RISC-V CPU's"
+documentation = "https://docs.rs/riscv-rt"
 keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
-edition = "2018"
+edition = "2021"
 
 [features]
 s-mode = []
 single-hart = []
 
 [dependencies]
-riscv = "0.10"
+riscv = {path = "../riscv", version = "0.10"}
 riscv-rt-macros = { path = "macros", version = "0.2.0" }
 
 [dev-dependencies]
