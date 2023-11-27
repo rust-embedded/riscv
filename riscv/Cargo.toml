@@ -7,6 +7,7 @@ repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Low level access to RISC-V processors"
+documentation = "https://docs.rs/riscv"
 keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 

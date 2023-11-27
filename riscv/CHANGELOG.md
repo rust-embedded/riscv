@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Transitioning to cargo workspace
+- Cargo workspace for riscv and riscv-rt
 - Update `embedded-hal` dependency to v1.0 (bumps MSRV to 1.60)
 - `misa::MXL` renamed to `misa::XLEN`
 - Removed `bit_field` dependency
