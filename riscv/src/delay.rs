@@ -21,11 +21,6 @@ impl McycleDelay {
 
 impl DelayNs for McycleDelay {
     #[inline]
-    fn delay_us(&mut self, us: u32) {
-	self.delay_ns(us * 1000)
-    }
-
-    #[inline]
    fn delay_ns(&mut self, ns: u32) {
         let t0 = mcycle::read64();
         let ns_64: u64 = ns.into();
