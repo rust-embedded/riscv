@@ -24,4 +24,4 @@ critical-section-single-hart = ["critical-section/restore-state-bool"]
 
 [dependencies]
 critical-section = "1.1.2"
-embedded-hal = "1.0.0-rc.1"
+embedded-hal = "1.0.0-rc.2"
