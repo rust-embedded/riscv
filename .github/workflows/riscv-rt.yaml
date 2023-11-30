@@ -10,8 +10,8 @@ jobs:
   build:
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.59.0
-        toolchain: [ stable, nightly, 1.59.0 ]
+        # All generated code should be running on stable now, MRSV is 1.60.0
+        toolchain: [ stable, nightly, 1.60.0 ]
         target:
           - riscv32i-unknown-none-elf
           - riscv32imc-unknown-none-elf
@@ -41,7 +41,7 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=single-hart
       - name: Build example (all features)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --all-features
-  
+
   # Job to check that all the builds succeeded
   build-check:
     needs:

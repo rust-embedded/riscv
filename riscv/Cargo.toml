@@ -2,7 +2,7 @@
 name = "riscv"
 version = "0.10.1"
 edition = "2021"
-rust-version = "1.59"
+rust-version = "1.60"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
