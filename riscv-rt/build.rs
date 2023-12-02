@@ -1,7 +1,6 @@
 // NOTE: Adapted from cortex-m/build.rs
 
-use riscv_target::Target;
-use std::{env, fs, io, path::PathBuf};
+use std::{collections::HashSet, env, fs, io, path::PathBuf};
 
 fn add_linker_script(arch_width: u32) -> io::Result<()> {
     // Read the file to a string and replace all occurrences of ${ARCH_WIDTH} with the arch width
@@ -18,6 +17,35 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
     Ok(())
 }
 
+/// Parse the target RISC-V architecture and returns its bit width and the extension set
+fn parse_target(target: &str) -> (u32, HashSet<char>) {
+    // isolate bit width and extensions from the rest of the target information
+    let arch = target
+        .trim_start_matches("riscv")
+        .split('-')
+        .next()
+        .unwrap();
+
+    let bits = arch
+        .chars()
+        .take_while(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse::<u32>()
+        .unwrap();
+
+    let mut extensions: HashSet<char> = arch.chars().skip_while(|c| c.is_ascii_digit()).collect();
+    // get rid of the 'g' shorthand extension
+    if extensions.remove(&'g') {
+        extensions.insert('i');
+        extensions.insert('m');
+        extensions.insert('a');
+        extensions.insert('f');
+        extensions.insert('d');
+    }
+
+    (bits, extensions)
+}
+
 fn main() {
     let target = env::var("TARGET").unwrap();
     let _name = env::var("CARGO_PKG_NAME").unwrap();
@@ -25,10 +53,11 @@ fn main() {
     // set configuration flags depending on the target
     if target.starts_with("riscv") {
         println!("cargo:rustc-cfg=riscv");
-        let target = Target::from_target_str(&target);
 
-        // generate the linker script
-        let arch_width = match target.bits {
+        let (bits, extensions) = parse_target(&target);
+
+        // generate the linker script and expose the ISA width
+        let arch_width = match bits {
             32 => {
                 println!("cargo:rustc-cfg=riscv32");
                 4
@@ -42,8 +71,8 @@ fn main() {
         add_linker_script(arch_width).unwrap();
 
         // expose the ISA extensions
-        if target.has_extension('m') {
-            println!("cargo:rustc-cfg=riscvm");
+        for ext in &extensions {
+            println!("cargo:rustc-cfg=riscv{}", ext);
         }
     }
 }
