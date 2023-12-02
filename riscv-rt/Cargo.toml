@@ -1,7 +1,7 @@
 [package]
 name = "riscv-rt"
 version = "0.11.0"
-rust-version = "1.59"
+rust-version = "1.60"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
