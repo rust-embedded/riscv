@@ -11,7 +11,7 @@ jobs:
   build-riscv:
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.59.0
+        # All generated code should be running on stable now, MRSV is 1.60.0
         toolchain: [ stable, nightly, 1.60.0 ]
         target:
           - riscv32i-unknown-none-elf
@@ -35,7 +35,7 @@ jobs:
       run: cargo build --package riscv --target ${{ matrix.target }}
     - name: Build (all features)
       run: cargo build --package riscv --target ${{ matrix.target }} --all-features
-      
+
   # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
   build-others:
     strategy:
@@ -49,7 +49,7 @@ jobs:
         run: cargo build --package riscv
       - name: Build (all features)
         run: cargo build --package riscv --all-features
-  
+
   # Job to check that all the builds succeeded
   build-check:
     needs:

@@ -2,7 +2,7 @@
 //!
 //! # Minimum Supported Rust Version (MSRV)
 //!
-//! This crate is guaranteed to compile on stable Rust 1.59 and up. It *might*
+//! This crate is guaranteed to compile on stable Rust 1.60 and up. It *might*
 //! compile with older versions but that may change in any new patch release.
 //!
 //! # Features
@@ -483,14 +483,14 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
             	sd      {a},0({start})
             	addi    {start},{start},8
             	bltu    {start},{end},1b
-            
+
             2: // .data zero registers
                 li      {a},0
                 li      {input},0
 
             	la      {start},_sbss
             	la      {end},_ebss
-            
+
                 bgeu    {start},{end},4f
 
             3: // .bss main loop
