@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- `s-mode` feature for reexporting `machine::supervisor` or `interrupt::supervisor` to `interrupt`
-- Support for supervisor-level interrupts in `interrupt::supervisor`
 - Add CI workflow to check that CHANGELOG.md file has been modified in PRs
 - Add `read_csr_as_rv32`, `set_rv32`, and `clear_rv32` macros
 - Add `mstatus::uxl` and `mstatus::sxl`
@@ -22,8 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `critical-section` implementation depends on `s-mode` feature
-- machine-level interrupt functions moved to `interrupt::machine`
 - Cargo workspace for riscv and riscv-rt
 - Update `embedded-hal` dependency to v1.0.0-rc.2 (bumps MSRV to 1.60)
 - `misa::MXL` renamed to `misa::XLEN`

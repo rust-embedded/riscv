@@ -20,7 +20,6 @@ targets = [
 ]
 
 [features]
-s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
 
 [dependencies]

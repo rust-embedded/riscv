@@ -1,23 +1,16 @@
 use critical_section::{set_impl, Impl, RawRestoreState};
 
 use crate::interrupt;
+use crate::register::mstatus;
 
 struct SingleHartCriticalSection;
 set_impl!(SingleHartCriticalSection);
 
 unsafe impl Impl for SingleHartCriticalSection {
-    #[cfg(not(feature = "s-mode"))]
     unsafe fn acquire() -> RawRestoreState {
         let mut mstatus: usize;
         core::arch::asm!("csrrci {}, mstatus, 0b1000", out(reg) mstatus);
-        core::mem::transmute::<_, crate::register::mstatus::Mstatus>(mstatus).mie()
-    }
-
-    #[cfg(feature = "s-mode")]
-    unsafe fn acquire() -> RawRestoreState {
-        let mut sstatus: usize;
-        core::arch::asm!("csrrci {}, sstatus, 0b0010", out(reg) sstatus);
-        core::mem::transmute::<_, crate::register::sstatus::Sstatus>(sstatus).sie()
+        core::mem::transmute::<_, mstatus::Mstatus>(mstatus).mie()
     }
 
     unsafe fn release(was_active: RawRestoreState) {
