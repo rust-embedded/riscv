@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master ]
+    branches: [ master, riscv-pac ]
   pull_request:
   merge_group:
 
@@ -31,8 +31,12 @@ jobs:
       with:
         toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
-    - name: Build (no features)
+    - name: Build (M-mode)
       run: cargo build --package riscv --target ${{ matrix.target }}
+    - name: Build (M-mode, critical section)
+      run: cargo build --package riscv --target ${{ matrix.target }} --features=critical-section-single-hart
+    - name: Build (S-mode)
+      run: cargo build --package riscv --target ${{ matrix.target }} --features=s-mode
     - name: Build (all features)
       run: cargo build --package riscv --target ${{ matrix.target }} --all-features
 
