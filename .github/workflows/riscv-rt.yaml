@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, vectored-exceptions ]
+    branches: [ master ]
   pull_request:
   merge_group:
 
