@@ -21,6 +21,8 @@ jobs:
               - 'riscv/**'
             riscv-rt:
               - 'riscv-rt/**'
+            riscv-pac:
+              - 'riscv-pac/**'
 
       - name: Check for CHANGELOG.md (riscv)
         if: steps.changes.outputs.riscv == 'true'
@@ -37,3 +39,11 @@ jobs:
           changeLogPath: ./riscv-rt/CHANGELOG.md
           skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-rt/CHANGELOG.md file.'
+      
+      - name: Check for CHANGELOG.md (riscv-pac)
+        if: steps.changes.outputs.riscv-pac == 'true'
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          changeLogPath: ./riscv-pac/CHANGELOG.md
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-pac/CHANGELOG.md file.'

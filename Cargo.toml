@@ -2,5 +2,6 @@
 resolver = "2"
 members = [
     "riscv",
+    "riscv-pac",
     "riscv-rt",
 ]
