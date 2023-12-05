@@ -2,7 +2,8 @@
 
 This repository contains various crates useful for writing Rust programs on RISC-V microcontrollers:
 
-* [`riscv`]: CPU peripheral access and intrinsics
+* [`riscv`]: CPU registers access and intrinsics
+* [`riscv-pac`]: Common traits to be implemented by RISC-V PACs
 * [`riscv-rt`]: Startup code and interrupt handling
 
 
