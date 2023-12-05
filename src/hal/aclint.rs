@@ -1,7 +1,7 @@
 //! Delay trait implementation for (A)CLINT peripherals
 
 use crate::aclint::mtimer::MTIME;
-pub use crate::hal::delay::DelayUs;
+pub use crate::hal::delay::DelayNs;
 
 /// Delay implementation for (A)CLINT peripherals.
 pub struct Delay {
@@ -35,11 +35,12 @@ impl Delay {
     }
 }
 
-impl DelayUs for Delay {
+impl DelayNs for Delay {
     #[inline]
-    fn delay_us(&mut self, us: u32) {
+    fn delay_ns(&mut self, ns: u32) {
         let t0 = self.mtime.read();
-        let n_ticks = us as u64 * self.freq as u64 / 1_000_000;
+        let ns_64: u64 = ns.into();
+        let n_ticks = ns_64 * self.freq as u64 / 1_000_000_000;
         while self.mtime.read().wrapping_sub(t0) < n_ticks {}
     }
 }
