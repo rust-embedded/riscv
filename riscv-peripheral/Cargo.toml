@@ -7,11 +7,11 @@ edition = "2021"
 
 [dependencies]
 embedded-hal = "1.0.0-rc.2"
-embedded-hal-async = { version = "1.0.0-rc.1", optional =  true }
+# embedded-hal-async = { version = "1.0.0-rc.1", optional =  true }
 riscv = { git = "https://github.com/rust-embedded/riscv", branch = "master" }
 
 [features]
-hal-async = ["embedded-hal-async"]
+# hal-async = ["embedded-hal-async"]
 
 [package.metadata.docs.rs]
 default-target = "riscv64imac-unknown-none-elf"
