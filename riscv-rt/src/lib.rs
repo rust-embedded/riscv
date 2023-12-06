@@ -377,6 +377,12 @@ use riscv::register::{mcause as xcause, mtvec as xtvec, mtvec::TrapMode as xTrap
 #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
 use riscv::register::mhartid;
 
+#[cfg(all(feature = "s-mode", any(riscvf, riscvd)))]
+use riscv::register::sstatus as xstatus;
+
+#[cfg(all(not(feature = "s-mode"), any(riscvf, riscvd)))]
+use riscv::register::mstatus as xstatus;
+
 pub use riscv_rt_macros::{entry, pre_init};
 
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
@@ -512,7 +518,25 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
         compiler_fence(Ordering::SeqCst);
     }
 
-    // TODO: Enable FPU when available
+    #[cfg(any(riscvf, riscvd))]
+    {
+        xstatus::set_fs(xstatus::FS::Initial); // Enable fpu in xstatus
+        core::arch::asm!("fscsr x0"); // Zero out fcsr register csrrw x0, fcsr, x0
+
+        // Zero out floating point registers
+        for i in 0..32 { 
+            if cfg!(all(riscv32, riscvd)) {
+                // rv32 targets with double precision floating point can use fmvp.d.x 
+                // to combine 2 32 bit registers to fill the 64 bit floating point 
+                // register
+                core::arch::asm!("fmvp.d.x f{}, x0, x0", i);
+            } else if cfg!(riscvd) {
+                core::arch::asm!("fmv.d.x f{}, x0", i);
+            } else {
+                core::arch::asm!("fmv.w.x f{}, x0", i);
+            }
+        }
+    }
 
     _setup_interrupts();
 
