@@ -9,7 +9,7 @@ extern crate proc_macro2;
 extern crate syn;
 
 use proc_macro2::Span;
-use syn::{parse, spanned::Spanned, FnArg, ItemFn, PathArguments, ReturnType, Type, Visibility};
+use syn::{parse::{self, Parse}, spanned::Spanned, FnArg, ItemFn, PathArguments, ReturnType, Type, Visibility, LitStr, LitInt};
 
 use proc_macro::TokenStream;
 
@@ -204,4 +204,34 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
         pub unsafe fn #ident() #block
     )
     .into()
+}
+
+struct AsmLoopArgs {
+    asm_template: String,
+    count: usize,
+}
+
+impl Parse for AsmLoopArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let template: LitStr = input.parse().unwrap();
+        _ = input.parse::<Token![,]>().unwrap();
+        let count: LitInt = input.parse().unwrap();
+
+        Ok(Self {
+            asm_template: template.value(),
+            count: count.base10_parse().unwrap(),
+        })
+    }
+}
+
+#[proc_macro]
+pub fn loop_asm(input: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(input as AsmLoopArgs);
+
+    let tokens = (0..args.count).map(|i| {
+        let i = i.to_string();
+        let asm = args.asm_template.replace("{}", &i);
+        format!("core::arch::asm!(\"{}\");", asm)
+    }).collect::<Vec<String>>().join("\n");
+    tokens.parse().unwrap()
 }
