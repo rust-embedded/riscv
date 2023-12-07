@@ -9,8 +9,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Add `InterruptNumber`, `PriorityNumber`, and `HartIdNumber` traits.
-
-### Changed
-
-- Update `README.md`
+- Add `ACLINT`, `CLINT`, and `PLIC` structs

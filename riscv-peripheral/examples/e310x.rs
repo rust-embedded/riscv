@@ -1,7 +1,8 @@
-use riscv_peripheral::{
-    aclint::HartIdNumber,
-    plic::{ContextNumber, InterruptNumber, PriorityNumber},
-};
+//! Peripheral definitions for the E310x chip.
+//! This is a simple example of how to use the `riscv-peripheral` crate to generate
+//! peripheral definitions for a target.
+
+use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -20,25 +21,6 @@ unsafe impl HartIdNumber for HartId {
     #[inline]
     fn from_number(number: u16) -> Result<Self, u16> {
         if number > Self::MAX_HART_ID_NUMBER {
-            Err(number)
-        } else {
-            // SAFETY: valid context number
-            Ok(unsafe { core::mem::transmute(number) })
-        }
-    }
-}
-
-unsafe impl ContextNumber for HartId {
-    const MAX_CONTEXT_NUMBER: u16 = 0;
-
-    #[inline]
-    fn number(self) -> u16 {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: u16) -> Result<Self, u16> {
-        if number > Self::MAX_CONTEXT_NUMBER {
             Err(number)
         } else {
             // SAFETY: valid context number
@@ -160,6 +142,11 @@ riscv_peripheral::clint_codegen!(
     freq 32_768,
     mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
     msips [msip0=(HartId::H0,"`H0`")],
+);
+
+riscv_peripheral::plic_codegen!(
+    base 0x0C00_0000,
+    ctxs [ctx0=(HartId::H0,"`H0`")],
 );
 
 fn main() {}

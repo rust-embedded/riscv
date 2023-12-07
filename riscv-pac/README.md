@@ -1,5 +1,5 @@
-[![crates.io](https://img.shields.io/crates/d/riscv.svg)](https://crates.io/crates/riscv)
-[![crates.io](https://img.shields.io/crates/v/riscv.svg)](https://crates.io/crates/riscv)
+[![crates.io](https://img.shields.io/crates/d/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
+[![crates.io](https://img.shields.io/crates/v/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
 
 # `riscv-pac`
 
@@ -7,7 +7,7 @@
 
 This project is developed and maintained by the [RISC-V team][team].
 
-## [Documentation](https://docs.rs/crate/riscv)
+## [Documentation](https://docs.rs/crate/riscv-pac)
 
 ## Minimum Supported Rust Version (MSRV)
 

@@ -23,7 +23,7 @@
 ///
 /// let mswi = CLINT::mswi(); // MSWI peripheral
 /// let mtimer = CLINT::mtimer(); // MTIMER peripheral
-/// let delay = CLINT::delay(); // For the `embedded_hal::delay::DelayUs` and `embedded_hal_async::delay::DelayUs` traits
+/// let delay = CLINT::delay(); // For the `embedded_hal::delay::DelayNs` trait
 /// ```
 ///
 /// ## Base address and per-HART mtimecmp registers
@@ -205,8 +205,7 @@ macro_rules! clint_codegen {
             ///
             /// # Note
             ///
-            /// You must export the `riscv_peripheral::hal::delay::DelayUs` trait in order to use delay methods.
-            /// You must export the `riscv_peripheral::hal_async::delay::DelayUs` trait in order to use async delay methods.
+            /// You must export the `riscv_peripheral::hal::delay::DelayNs` trait in order to use delay methods.
             #[inline]
             pub const fn delay() -> $crate::hal::aclint::Delay {
                 $crate::hal::aclint::Delay::new(Self::mtime(), Self::freq())
@@ -303,10 +302,10 @@ macro_rules! plic_codegen {
                 $crate::plic::PLIC::<PLIC>::pendings()
             }
 
-            /// Returns the context proxy of a given PLIC context.
+            /// Returns the context proxy of a given PLIC HART context.
             #[inline]
-            pub fn ctx<C: $crate::plic::ContextNumber>(context: C) -> $crate::plic::CTX<Self> {
-                $crate::plic::PLIC::<PLIC>::ctx(context)
+            pub fn ctx<H: $crate::plic::HartIdNumber>(hart_id: H) -> $crate::plic::CTX<Self> {
+                $crate::plic::PLIC::<PLIC>::ctx(hart_id)
             }
         }
         $crate::plic_codegen!($($tail)*);
@@ -314,7 +313,7 @@ macro_rules! plic_codegen {
     (ctxs [$($fn:ident = ($ctx:expr , $sctx:expr)),+], $($tail:tt)*) => {
         impl PLIC {
             $(
-                #[doc = "Returns a PLIC context proxy for context "]
+                #[doc = "Returns a PLIC context proxy for context of HART "]
                 #[doc = $sctx]
                 #[doc = "."]
                 #[inline]

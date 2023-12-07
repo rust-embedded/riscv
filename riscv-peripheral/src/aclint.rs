@@ -7,32 +7,7 @@ pub mod mswi;
 pub mod mtimer;
 pub mod sswi;
 
-/// Trait for enums of HART IDs in (A)CLINT peripherals.
-///
-/// # Note
-///
-/// If your target only has one HART (HART ID 0), you don't need to implement this trait.
-/// Instead, you can access directly to the base registers through the `(A)CLINT` structs.
-///
-/// # Safety
-///
-/// * This trait must only be implemented on a PAC of a target with a PLIC peripheral.
-/// * This trait must only be implemented on enums of HART IDs.
-/// * Each enum variant must represent a distinct value (no duplicates are permitted).
-/// * Each enum variant must always return the same value (do not change at runtime).
-/// * All the HART ID numbers must be less than or equal to `MAX_HART_ID_NUMBER`.
-/// * `MAX_HART_ID_NUMBER` must coincide with the highest allowed HART ID number.
-pub unsafe trait HartIdNumber: Copy {
-    /// Highest number assigned to a HART ID.
-    const MAX_HART_ID_NUMBER: u16;
-
-    /// Converts a HART Id to its corresponding number.
-    fn number(self) -> u16;
-
-    /// Tries to convert a number to a valid HART ID.
-    /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u16) -> Result<Self, u16>;
-}
+pub use riscv_pac::HartIdNumber; // re-export useful riscv-pac traits
 
 /// Trait for a CLINT peripheral.
 ///
