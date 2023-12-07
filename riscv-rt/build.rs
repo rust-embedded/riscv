@@ -50,11 +50,23 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let _name = env::var("CARGO_PKG_NAME").unwrap();
 
+    // This is required until target_feature risc-v work is stable and in-use (rust 1.75.0)
+    let cargo_flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
+    let cargo_flags = cargo_flags
+        .split(0x1fu8 as char)
+        .filter(|arg| !arg.is_empty());
+    
+    let target_features = cargo_flags
+        .filter(|k| k.starts_with("target-feature=")).flat_map(|str| {
+            let flags = str.split('=').collect::<Vec<&str>>()[1];
+            flags.split(',')
+        });
+
     // set configuration flags depending on the target
     if target.starts_with("riscv") {
         println!("cargo:rustc-cfg=riscv");
 
-        let (bits, extensions) = parse_target(&target);
+        let (bits, mut extensions) = parse_target(&target);
 
         // generate the linker script and expose the ISA width
         let arch_width = match bits {
@@ -69,6 +81,15 @@ fn main() {
             _ => panic!("Unsupported bit width"),
         };
         add_linker_script(arch_width).unwrap();
+
+        target_features.for_each(|feature| {
+            let chars = feature.chars().collect::<Vec<char>>();
+            if chars[0] == '+' {
+                extensions.insert(chars[1]);
+            } else if chars[0] == '-' {
+                extensions.remove(&chars[1]);
+            }
+        });
 
         // expose the ISA extensions
         for ext in &extensions {
