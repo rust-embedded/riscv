@@ -9,7 +9,11 @@ extern crate proc_macro2;
 extern crate syn;
 
 use proc_macro2::Span;
-use syn::{parse::{self, Parse}, spanned::Spanned, FnArg, ItemFn, PathArguments, ReturnType, Type, Visibility, LitStr, LitInt};
+use syn::{
+    parse::{self, Parse},
+    spanned::Spanned,
+    FnArg, ItemFn, LitInt, LitStr, PathArguments, ReturnType, Type, Visibility,
+};
 
 use proc_macro::TokenStream;
 
@@ -230,9 +234,9 @@ impl Parse for AsmLoopArgs {
 /// See [the formatting syntax documentation in `std::fmt`](../std/fmt/index.html)
 /// for details.
 ///
-/// Argument 1 is an assembly expression, all "{}" in this assembly expression will be replaced with the 
+/// Argument 1 is an assembly expression, all "{}" in this assembly expression will be replaced with the
 /// current loop index.
-/// 
+///
 /// Argument 2 is the number of loops to do with the provided expression.
 ///
 /// # Examples
@@ -247,10 +251,13 @@ impl Parse for AsmLoopArgs {
 pub fn loop_asm(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as AsmLoopArgs);
 
-    let tokens = (0..args.count).map(|i| {
-        let i = i.to_string();
-        let asm = args.asm_template.replace("{}", &i);
-        format!("core::arch::asm!(\"{}\");", asm)
-    }).collect::<Vec<String>>().join("\n");
+    let tokens = (0..args.count)
+        .map(|i| {
+            let i = i.to_string();
+            let asm = args.asm_template.replace("{}", &i);
+            format!("core::arch::asm!(\"{}\");", asm)
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
     tokens.parse().unwrap()
 }

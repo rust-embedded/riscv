@@ -525,8 +525,8 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
 
         // Zero out floating point registers
         if cfg!(all(target_arch = "riscv32", riscvd)) {
-            // rv32 targets with double precision floating point can use fmvp.d.x 
-            // to combine 2 32 bit registers to fill the 64 bit floating point 
+            // rv32 targets with double precision floating point can use fmvp.d.x
+            // to combine 2 32 bit registers to fill the 64 bit floating point
             // register
             riscv_rt_macros::loop_asm!("fmvp.d.x f{}, x0, x0", 32);
         } else if cfg!(riscvd) {
