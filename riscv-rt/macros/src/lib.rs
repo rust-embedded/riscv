@@ -224,6 +224,25 @@ impl Parse for AsmLoopArgs {
     }
 }
 
+/// Loops an asm expression n times.
+///
+/// `loop_asm!` takes 2 arguments, the first is a string literal and the second is a number literal
+/// See [the formatting syntax documentation in `std::fmt`](../std/fmt/index.html)
+/// for details.
+///
+/// Argument 1 is an assembly expression, all "{}" in this assembly expression will be replaced with the 
+/// current loop index.
+/// 
+/// Argument 2 is the number of loops to do with the provided expression.
+///
+/// # Examples
+///
+/// ```
+/// # use riscv_rt_macros::loop_asm;
+/// unsafe {
+///     loop_asm!("fmv.w.x f{}, x0", 32); // => core::arch::asm!("fmv.w.x f0, x0") ... core::arch::asm!("fmv.w.x f31, x0")
+/// }
+/// ```
 #[proc_macro]
 pub fn loop_asm(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as AsmLoopArgs);
