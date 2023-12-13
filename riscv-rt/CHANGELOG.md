@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add FPU initialization
+- Static array for vectored-like handling of exceptions
 - New GitHub workflow for checking invalid labels in PRs
 - New GitHub workflow for checking modifications on CHANGELOG.md
 - New GitHub workflow for checking clippy lints in PRs
@@ -17,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed U-mode interrupts to align with latest RISC-V specification
+- Changed `Vector` union. Now, it uses `Option<fn>`, which is more idiomatic in Rust
 - Removed riscv-target dependency for build
 - Upgrade rust-version to 1.60
 - Cargo workspace for riscv and riscv-rt
