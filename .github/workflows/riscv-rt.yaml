@@ -35,11 +35,11 @@ jobs:
           targets: ${{ matrix.target }}
       - name: Build (no features)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }}
-      - name : Build example (s-mode)
+      - name : Build (s-mode)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=s-mode
-      - name : Build example (single-hart)
+      - name : Build (single-hart)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=single-hart
-      - name: Build example (all features)
+      - name: Build (all features)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --all-features
 
   # Job to check that all the builds succeeded
