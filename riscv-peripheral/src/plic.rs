@@ -65,6 +65,19 @@ impl<P: Plic> PLIC<P> {
         // SAFETY: valid context number
         unsafe { CTX::new(hart_id.number()) }
     }
+
+    /// Returns the PLIC HART context for the current HART.
+    ///
+    /// # Note
+    ///
+    /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+    /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
+    #[inline]
+    pub fn ctx_mhartid() -> CTX<P> {
+        let hart_id = riscv::register::mhartid::read();
+        // SAFETY: `hart_id` is valid for the target and is the current hart
+        unsafe { CTX::new(hart_id as _) }
+    }
 }
 
 /// PLIC context proxy. It provides access to the PLIC registers of a given context.

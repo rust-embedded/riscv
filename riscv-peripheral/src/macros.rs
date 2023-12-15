@@ -213,6 +213,34 @@ macro_rules! clint_codegen {
         }
         $crate::clint_codegen!($($tail)*);
     };
+    (async_delay, $($tail:tt)*) => {
+        impl CLINT {
+            /// Asynchronous delay implementation for CLINT peripherals.
+            /// You must specify which HART ID you want to use for the delay.
+            ///
+            /// # Note
+            ///
+            /// You must export the `riscv_peripheral::hal_async::delay::DelayNs` trait in order to use delay methods.
+            #[inline]
+            pub fn async_delay<H: $crate::plic::HartIdNumber>(hart_id: H) -> $crate::hal_async::aclint::Delay {
+                $crate::hal_async::aclint::Delay::new(Self::mtimer(), hart_id, Self::freq())
+            }
+
+            /// Asynchronous delay implementation for CLINT peripherals.
+            /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+            ///
+            /// # Note
+            ///
+            /// You must export the `riscv_peripheral::hal_async::delay::DelayNs` trait in order to use delay methods.
+            ///
+            /// This function can only be used in M-mode. For S-mode, use [`CLINT::async_delay`] instead.
+            #[inline]
+            pub fn async_delay_mhartid() -> $crate::hal_async::aclint::Delay {
+                $crate::hal_async::aclint::Delay::new_mhartid(Self::mtimer(), Self::freq())
+            }
+        }
+        $crate::clint_codegen!($($tail)*);
+    };
     (msips [$($fn:ident = ($hart:expr , $shart:expr)),+], $($tail:tt)*) => {
         impl CLINT {
             $(
@@ -306,6 +334,17 @@ macro_rules! plic_codegen {
             #[inline]
             pub fn ctx<H: $crate::plic::HartIdNumber>(hart_id: H) -> $crate::plic::CTX<Self> {
                 $crate::plic::PLIC::<PLIC>::ctx(hart_id)
+            }
+
+            /// Returns the PLIC HART context for the current HART.
+            ///
+            /// # Note
+            ///
+            /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+            /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
+            #[inline]
+            pub fn ctx_mhartid(&self) -> $crate::plic::CTX<Self> {
+                $crate::plic::PLIC::<PLIC>::ctx_mhartid()
             }
         }
         $crate::plic_codegen!($($tail)*);

@@ -137,6 +137,16 @@ unsafe impl PriorityNumber for Priority {
     }
 }
 
+#[cfg(feature = "aclint-hal-async")]
+riscv_peripheral::clint_codegen!(
+    base 0x0200_0000,
+    freq 32_768,
+    async_delay,
+    mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
+    msips [msip0=(HartId::H0,"`H0`")],
+);
+
+#[cfg(not(feature = "aclint-hal-async"))]
 riscv_peripheral::clint_codegen!(
     base 0x0200_0000,
     freq 32_768,

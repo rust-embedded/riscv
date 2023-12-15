@@ -37,6 +37,19 @@ impl MTIMER {
         // SAFETY: `hart_id` is valid for the target
         unsafe { MTIMECMP::new(self.mtimecmp0.get_ptr().offset(hart_id.number() as _) as _) }
     }
+
+    /// Returns the `MTIMECMP` register for the current HART.
+    ///
+    /// # Note
+    ///
+    /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+    /// Thus, it can only be used in M-mode. For S-mode, use [`MTIMER::mtimecmp`] instead.
+    #[inline]
+    pub fn mtimecmp_mhartid(&self) -> MTIMECMP {
+        let hart_id = riscv::register::mhartid::read();
+        // SAFETY: `hart_id` is valid for the target and is the current hart
+        unsafe { MTIMECMP::new(self.mtimecmp0.get_ptr().add(hart_id) as _) }
+    }
 }
 
 // MTIMECMP register.

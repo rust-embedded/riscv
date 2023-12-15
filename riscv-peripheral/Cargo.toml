@@ -6,13 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-embedded-hal = "1.0.0-rc.2"
-embedded-hal-async = { version = "1.0.0-rc.2", optional =  true }
+embedded-hal = "1.0.0-rc.3"
+embedded-hal-async = { version = "1.0.0-rc.3", optional =  true }
 riscv = { path = "../riscv", version = "0.10" }
 riscv-pac = { path = "../riscv-pac", version = "0.1.0" }
 
 [features]
-hal-async = ["embedded-hal-async"]
+aclint-hal-async = ["embedded-hal-async"]
 
 [package.metadata.docs.rs]
 default-target = "riscv64imac-unknown-none-elf"
