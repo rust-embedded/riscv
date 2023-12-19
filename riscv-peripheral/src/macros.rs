@@ -216,27 +216,18 @@ macro_rules! clint_codegen {
     (async_delay, $($tail:tt)*) => {
         impl CLINT {
             /// Asynchronous delay implementation for CLINT peripherals.
-            /// You must specify which HART ID you want to use for the delay.
-            ///
-            /// # Note
-            ///
-            /// You must export the `riscv_peripheral::hal_async::delay::DelayNs` trait in order to use delay methods.
-            #[inline]
-            pub fn async_delay<H: $crate::plic::HartIdNumber>(hart_id: H) -> $crate::hal_async::aclint::Delay {
-                $crate::hal_async::aclint::Delay::new(Self::mtimer(), hart_id, Self::freq())
-            }
-
-            /// Asynchronous delay implementation for CLINT peripherals.
-            /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
             ///
             /// # Note
             ///
             /// You must export the `riscv_peripheral::hal_async::delay::DelayNs` trait in order to use delay methods.
             ///
-            /// This function can only be used in M-mode. For S-mode, use [`CLINT::async_delay`] instead.
+            /// This implementation relies on the machine-level timer interrupts to wake futures.
+            /// Therefore, it needs to schedule the machine-level timer interrupts via the `MTIMECMP` register assigned to the current HART.
+            /// Thus, the `Delay` instance must be created on the same HART that is used to call the asynchronous delay methods.
+            /// Additionally, the rest of the application must not modify the `MTIMER` register assigned to the current HART.
             #[inline]
-            pub fn async_delay_mhartid() -> $crate::hal_async::aclint::Delay {
-                $crate::hal_async::aclint::Delay::new_mhartid(Self::mtimer(), Self::freq())
+            pub fn async_delay() -> $crate::hal_async::aclint::Delay {
+                $crate::hal_async::aclint::Delay::new(Self::freq())
             }
         }
         $crate::clint_codegen!($($tail)*);

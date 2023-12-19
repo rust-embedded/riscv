@@ -15,6 +15,7 @@ riscv-pac = { path = "../riscv-pac", version = "0.1.0" }
 aclint-hal-async = ["embedded-hal-async"]
 
 [package.metadata.docs.rs]
+all-features = true
 default-target = "riscv64imac-unknown-none-elf"
 targets = [
     "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
