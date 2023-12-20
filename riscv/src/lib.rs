@@ -15,10 +15,17 @@
 //!
 //! # Optional features
 //!
+//! ## `s-mode`
+//!
+//! This feature re-exports in `interrupt` S-mode interrupt functions defined in `interrupt::supervisor`.
+//! By default, the crate assumes that the target is running in M-mode.
+//! Thus, `interrupt` re-exports the M-mode functions defined in `interrupt::machine`.
+//!
 //! ## `critical-section-single-hart`
 //!
 //! This feature enables a [`critical-section`](https://github.com/rust-embedded/critical-section)
 //! implementation suitable for single-hart targets, based on disabling interrupts globally.
+//! This feature uses S-mode interrupt handling if the `s-mode` feature is enabled, and M-mode otherwise.
 //!
 //! It is **unsound** to enable it on multi-hart targets,
 //! and may cause functional problems in systems where some interrupts must NOT be disabled

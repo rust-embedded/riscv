@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- `s-mode` feature for reexporting `interrupt::machine` or `interrupt::supervisor` to `interrupt`
+- Support for supervisor-level interrupts in `interrupt::supervisor`
 - Add CI workflow to check that CHANGELOG.md file has been modified in PRs
 - Add `read_csr_as_rv32`, `set_rv32`, and `clear_rv32` macros
 - Add `mstatus::uxl` and `mstatus::sxl`
