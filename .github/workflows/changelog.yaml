@@ -19,10 +19,12 @@ jobs:
           filters: |
             riscv:
               - 'riscv/**'
-            riscv-rt:
-              - 'riscv-rt/**'
             riscv-pac:
               - 'riscv-pac/**'
+            riscv-rt:
+              - 'riscv-rt/**'
+            riscv-semihosting:
+              - 'riscv-semihosting/**'
 
       - name: Check for CHANGELOG.md (riscv)
         if: steps.changes.outputs.riscv == 'true'
@@ -32,6 +34,14 @@ jobs:
           skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the riscv/CHANGELOG.md file.'
 
+      - name: Check for CHANGELOG.md (riscv-pac)
+        if: steps.changes.outputs.riscv-pac == 'true'
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          changeLogPath: ./riscv-pac/CHANGELOG.md
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-pac/CHANGELOG.md file.'
+      
       - name: Check for CHANGELOG.md (riscv-rt)
         if: steps.changes.outputs.riscv-rt == 'true'
         uses: dangoslen/changelog-enforcer@v3
@@ -40,10 +50,10 @@ jobs:
           skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-rt/CHANGELOG.md file.'
       
-      - name: Check for CHANGELOG.md (riscv-pac)
-        if: steps.changes.outputs.riscv-pac == 'true'
+      - name: Check for CHANGELOG.md (riscv-semihosting)
+        if: steps.changes.outputs.riscv-semihosting == 'true'
         uses: dangoslen/changelog-enforcer@v3
         with:
-          changeLogPath: ./riscv-pac/CHANGELOG.md
+          changeLogPath: ./riscv-semihosting/CHANGELOG.md
           skipLabels: 'skip changelog'
-          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-pac/CHANGELOG.md file.'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-semihosting/CHANGELOG.md file.'

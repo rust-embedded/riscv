@@ -1,3 +1,6 @@
+[![crates.io](https://img.shields.io/crates/d/riscv-semihosting.svg)](https://crates.io/crates/riscv-semihosting)
+[![crates.io](https://img.shields.io/crates/v/riscv-semihosting.svg)](https://crates.io/crates/riscv-semihosting)
+
 # `riscv-semihosting`
 
 > Semihosting for RISC-V processors
@@ -10,10 +13,10 @@ to support the RISC-V Semihosting Specification as documented
 This crate can (almost) be used in exactly the same way as cortex-m-semihosting,
 simply by changing calls to `cortex_m_semihosting::*` to `riscv_semihosting::*`.
 Given this, the
-[cortex-m-semihosting documentation](https://docs.rs/cortex-m-semihosting) is
+[`cortex-m-semihosting documentation`](https://docs.rs/cortex-m-semihosting) is
 generally sufficient for using this library.
 
-A major difference between this library and cortex-m-semihosting is that there
+A major difference between this library and `cortex-m-semihosting` is that there
 are mandatory features to choose the privilege level at which the semihosting
 calls are executed. The "machine-mode" feature will cause the macros in `export`
 to execute the semihosting operation in an interrupt-free context, while
@@ -23,19 +26,24 @@ these two features will cause a compiler error.
 
 # Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.59.0 and up. It **won't**
+This crate is guaranteed to compile on stable Rust 1.60.0 and up. It **won't**
 compile with older versions.
 
 ## License
 
-Licensed under either of
+Copyright 2018-2023 [RISC-V team][team]
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](../LICENSE-APACHE) or
-  http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](../LICENSE-MIT) or
-  http://opensource.org/licenses/MIT)
+Permission to use, copy, modify, and/or distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
 
-at your option.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
 
 ### Contribution
 

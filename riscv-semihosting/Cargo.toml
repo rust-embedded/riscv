@@ -11,10 +11,10 @@ categories = ["no-std", "embedded"]
 license = "MIT OR Apache-2.0"
 name = "riscv-semihosting"
 readme = "README.md"
-repository = "https://github.com/riscv-rust/riscv-semihosting"
+repository = "https://github.com/riscv-rust/riscv"
 version = "0.0.1"
 edition = "2021"
-rust-version = "1.59.0"
+rust-version = "1.60.0"
 
 [features]
 default = ["jlink-quirks"]
