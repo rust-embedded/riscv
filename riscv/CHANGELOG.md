@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `asm::ecall()`, a wrapper for implementing an `ecall` instruction
+- Add `nested` function for nested ISRs in `interrupt::machine` and `interrupt::supervisor`
 - `s-mode` feature for reexporting `interrupt::machine` or `interrupt::supervisor` to `interrupt`
 - Support for supervisor-level interrupts in `interrupt::supervisor`
 - Add CI workflow to check that CHANGELOG.md file has been modified in PRs
