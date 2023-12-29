@@ -11,16 +11,14 @@
 //! ```no_run
 //! use riscv_semihosting::debug::{self, EXIT_SUCCESS, EXIT_FAILURE};
 //!
-//! fn main() {
-//!     if 2 == 2 {
-//!         // report success
-//!         debug::exit(EXIT_SUCCESS);
-//!     } else {
-//!         // report failure
-//!         debug::exit(EXIT_FAILURE);
-//!     }
+//! if 2 == 2 {
+//!     // report success
+//!     debug::exit(EXIT_SUCCESS);
+//! } else {
+//!     // report failure
+//!     debug::exit(EXIT_FAILURE);
 //! }
-//!
+//!```
 
 /// This values are taken from section 5.5.2 of
 /// ADS Debug Target Guide (DUI0058).

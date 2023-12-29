@@ -180,6 +180,7 @@
 #![deny(missing_docs)]
 #![no_std]
 
+#[cfg(all(riscv, not(feature = "no-semihosting")))]
 use core::arch::asm;
 
 #[macro_use]
@@ -192,23 +193,33 @@ pub mod hio;
 pub mod nr;
 
 /// Performs a semihosting operation, takes a pointer to an argument block
+///
+/// # Safety
+///
+/// The syscall number must be a valid [semihosting operation],
+/// and the arguments must be valid for the associated operation.
+///
+/// [semihosting operation]: https://developer.arm.com/documentation/dui0471/i/semihosting/semihosting-operations?lang=en
 #[inline(always)]
 pub unsafe fn syscall<T>(nr: usize, arg: &T) -> usize {
     syscall1(nr, arg as *const T as usize)
 }
 
 /// Performs a semihosting operation, takes one integer as an argument
+///
+/// # Safety
+///
+/// Same as [`syscall`].
 #[inline(always)]
 pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
     match () {
-        #[cfg(not(feature = "no-semihosting"))]
+        #[cfg(all(riscv, not(feature = "no-semihosting")))]
         () => {
             let mut nr = _nr;
             // The instructions below must always be uncompressed, otherwise
             // it will be treated as a regular break, hence the norvc option.
             //
-            // See https://github.com/riscv/riscv-semihosting-spec for more
-            // details.
+            // See https://github.com/riscv/riscv-semihosting-spec for more details.
             asm!("
                 .option push
                 .option norvc
@@ -222,8 +233,9 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
             );
             nr
         }
-
-        #[cfg(feature = "no-semihosting")]
+        #[cfg(all(riscv, feature = "no-semihosting"))]
         () => 0,
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
     }
 }

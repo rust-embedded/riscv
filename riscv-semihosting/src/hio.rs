@@ -1,5 +1,8 @@
 //! Host I/O
 
+// Fixing this lint requires a breaking change that does not add much value
+#![allow(clippy::result_unit_err)]
+
 use crate::nr;
 use core::{fmt, slice};
 
