@@ -32,14 +32,31 @@ jobs:
         toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
     - name: Build (M-mode)
-      run: cargo build --package riscv-semihosting --target ${{ matrix.target }} --features machine-mode 
+      run: cargo build --package riscv-semihosting --target ${{ matrix.target }}
     - name: Build (U-mode)
-      run: cargo build --package riscv-semihosting --target ${{ matrix.target }} --features=user-mode
+      run: cargo build --package riscv-semihosting --target ${{ matrix.target }} --features=u-mode
+    - name: Build (no semihosting)
+      run: cargo build --package riscv-semihosting --target ${{ matrix.target }} --features=no-semihosting
+
+  # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
+  build-others:
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build (no features)
+        run: cargo build --package riscv-semihosting
+      - name: Build (all features)
+        run: cargo build --package riscv-semihosting --all-features
 
   # Job to check that all the builds succeeded
   build-check:
     needs:
     - build-riscv
+    - build-others
     runs-on: ubuntu-latest
     if: always()
     steps:
