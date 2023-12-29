@@ -83,7 +83,7 @@ pub mod machine {
         }
 
         // Restore MSTATUS.PIE, MSTATUS.MPP, and SEPC
-        if !mstatus.mpie() {
+        if mstatus.mpie() {
             mstatus::set_mpie();
         }
         mstatus::set_mpp(mstatus.mpp());
@@ -172,7 +172,7 @@ pub mod supervisor {
         }
 
         // Restore SSTATUS.SPIE, SSTATUS.SPP, and SEPC
-        if !sstatus.spie() {
+        if sstatus.spie() {
             sstatus::set_spie();
         }
         sstatus::set_spp(sstatus.spp());
