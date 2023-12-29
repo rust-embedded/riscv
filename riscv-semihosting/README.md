@@ -18,10 +18,10 @@ generally sufficient for using this library.
 
 A major difference between this library and `cortex-m-semihosting` is that there
 are mandatory features to choose the privilege level at which the semihosting
-calls are executed. The "machine-mode" feature will cause the macros in `export`
+calls are executed. The *machine-mode (M-mode)* feature will cause the macros in `export`
 to execute the semihosting operation in an interrupt-free context, while
-"user-mode" causes them to just execute the operation. Failure to select one of
-these two features will cause a compiler error.
+*user-mode (U-mode)* causes them to just execute the operation.
+By default, M-mode is used. You can activate the U-mode via the `u-mode` feature.
 
 
 # Minimum Supported Rust Version (MSRV)
