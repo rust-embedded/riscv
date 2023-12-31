@@ -110,6 +110,28 @@ pub unsafe fn sfence_vma(asid: usize, addr: usize) {
     }
 }
 
+/// `ECALL` instruction wrapper
+///
+/// Generates an exception for a service request to the execution environment.
+/// When executed in U-mode, S-mode, or M-mode, it generates an environment-call-from-U-mode
+/// exception, environment-call-from-S-mode exception, or environment-call-from-M-mode exception,
+/// respectively, and performs no other operation.
+///
+/// # Note
+///
+/// The ECALL instruction will **NOT** save and restore the stack pointer, as it triggers an exception.
+/// The stack pointer must be saved and restored accordingly by the exception handler.
+#[inline]
+pub unsafe fn ecall() {
+    match () {
+        #[cfg(riscv)]
+        () => core::arch::asm!("ecall", options(nostack)),
+
+        #[cfg(not(riscv))]
+        () => unimplemented!(),
+    }
+}
+
 /// Blocks the program for *at least* `cycles` CPU cycles.
 ///
 /// This is implemented in assembly so its execution time is independent of the optimization
