@@ -4,7 +4,6 @@ use crate::hio::{self, HostStream};
 use core::fmt::{self, Write};
 
 static mut HSTDOUT: Option<HostStream> = None;
-
 static mut HSTDERR: Option<HostStream> = None;
 
 #[cfg(not(feature = "u-mode"))]
@@ -57,6 +56,7 @@ pub use machine::*;
 #[cfg(feature = "u-mode")]
 mod user {
     use super::*;
+
     pub fn hstdout_str(s: &str) {
         let _result = unsafe {
             if HSTDOUT.is_none() {
@@ -76,8 +76,6 @@ mod user {
             HSTDOUT.as_mut().unwrap().write_fmt(args).map_err(drop)
         };
     }
-
-    static mut HSTDERR: Option<HostStream> = None;
 
     pub fn hstderr_str(s: &str) {
         let _result = unsafe {
