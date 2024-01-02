@@ -216,11 +216,13 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
         #[cfg(all(riscv, not(feature = "no-semihosting")))]
         () => {
             let mut nr = _nr;
+            let mut arg = _arg;
             // The instructions below must always be uncompressed, otherwise
             // it will be treated as a regular break, hence the norvc option.
             //
             // See https://github.com/riscv/riscv-semihosting-spec for more details.
             asm!("
+                .balign 16
                 .option push
                 .option norvc
                 slli x0, x0, 0x1f
@@ -229,7 +231,8 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
                 .option pop
             ",
             inout("a0") nr,
-            in("a1") _arg,
+            inout("a1") arg,
+            options(nostack, preserves_flags),
             );
             nr
         }
