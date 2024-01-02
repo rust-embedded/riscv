@@ -1,0 +1,27 @@
+[package]
+authors = [
+    "The Cortex-M Team <cortex-m@teams.rust-embedded.org>",
+    "Jorge Aparicio <japaricious@gmail.com>",
+    "The RISC-V Team <risc-v@teams.rust-embedded.org>",
+]
+description = "Semihosting for RISCV processors"
+documentation = "https://docs.rs/riscv-semihosting"
+keywords = ["semihosting", "riscv"]
+categories = ["no-std", "embedded"]
+license = "MIT OR Apache-2.0"
+name = "riscv-semihosting"
+readme = "README.md"
+repository = "https://github.com/riscv-rust/riscv"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.60.0"
+
+[features]
+u-mode = []
+jlink-quirks = []
+no-semihosting = []
+default = ["jlink-quirks"]
+
+[dependencies]
+critical-section = "1.0.0"
+riscv = {path = "../riscv", version = "0.10.1"}
