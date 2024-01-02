@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Add recommendation for `semihosting` in README.md.
+- Bug fixes
 - Moved to the `riscv` Cargo workspace
 - Bring in API changes from
   [cortex-m-semihosting](https://github.com/rust-embedded/cortex-m/tree/master/cortex-m-semihosting),

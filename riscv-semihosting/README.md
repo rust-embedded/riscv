@@ -3,10 +3,10 @@
 
 # `riscv-semihosting`
 
-> Semihosting for RISC-V processors
+> Simple semihosting for RISC-V processors
 
 This is a fork of the
-[cortex-m-semihosting](https://docs.rs/cortex-m-semihosting) crate with changes
+[`cortex-m-semihosting`] crate with changes
 to support the RISC-V Semihosting Specification as documented
 [here](https://github.com/riscv/riscv-semihosting-spec/blob/main/riscv-semihosting-spec.adoc)
 
@@ -22,6 +22,15 @@ calls are executed. The *machine-mode (M-mode)* feature will cause the macros in
 to execute the semihosting operation in an interrupt-free context, while
 *user-mode (U-mode)* causes them to just execute the operation.
 By default, M-mode is used. You can activate the U-mode via the `u-mode` feature.
+
+# About the [`semihosting`] crate
+
+`riscv-semihosting` provides a simple semihosting API that matches [`cortex-m-semihosting`].
+This allows a simple port from Cortex-M applications to RISC-V applications.
+However, the [`semihosting`] crate presents a more advanced interface that is compatible
+for RISC-V as well as other architectures (e.g., ARM or MIPS).
+While `riscv-semihosting` is a good starting point for developing semihosted applications,
+**we recommend using the [`semihosting`] crate.**
 
 
 # Minimum Supported Rust Version (MSRV)
@@ -59,3 +68,5 @@ to intervene to uphold that code of conduct.
 
 [CoC]: ../CODE_OF_CONDUCT.md
 [team]: https://github.com/rust-embedded/wg#the-risc-v-team
+[`semihosting`]: https://crates.io/crates/semihosting
+[`cortex-m-semihosting`]: https://docs.rs/cortex-m-semihosting
