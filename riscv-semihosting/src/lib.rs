@@ -231,7 +231,7 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
                 .option pop
             ",
             inout("a0") nr,
-            inout("a1") arg,
+            inout("a1") arg => _,
             options(nostack, preserves_flags),
             );
             nr
