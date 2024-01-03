@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed _start_rust. Now, assembly directly jumps to main
 - Removed U-mode interrupts to align with latest RISC-V specification
 - Changed `Vector` union. Now, it uses `Option<fn>`, which is more idiomatic in Rust
 - Removed riscv-target dependency for build

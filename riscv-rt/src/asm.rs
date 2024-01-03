@@ -72,54 +72,36 @@ _abs_start:
     #[cfg(not(feature = "s-mode"))]
     "csrw mie, 0
     csrw mip, 0",
-    "li  x1, 0
-    li  x2, 0
-    li  x3, 0
-    li  x4, 0
-    li  x5, 0
-    li  x6, 0
-    li  x7, 0
-    li  x8, 0
-    li  x9, 0
-    // a0..a2 (x10..x12) skipped
-    li  x13, 0
-    li  x14, 0
-    li  x15, 0
-    li  x16, 0
-    li  x17, 0
-    li  x18, 0
-    li  x19, 0
-    li  x20, 0
-    li  x21, 0
-    li  x22, 0
-    li  x23, 0
-    li  x24, 0
-    li  x25, 0
-    li  x26, 0
-    li  x27, 0
-    li  x28, 0
-    li  x29, 0
-    li  x30, 0
-    li  x31, 0
+);
 
-    .option push
+// ZERO OUT GENERAL-PURPOSE REGISTERS
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
+// a0..a2 (x10..x12) skipped
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 32);
+
+// INITIALIZE GLOBAL POINTER
+cfg_global_asm!(
+    ".option push
     .option norelax
     la gp, __global_pointer$
-    .option pop
-    // Allocate stacks",
-    #[cfg(all(not(feature = "single-hart"), feature = "s-mode"))]
+    .option pop",
+);
+
+// INITIALIZE STACK POINTER AND FRAME POINTER
+#[cfg(not(feature = "single-hart"))]
+cfg_global_asm!(
+    #[cfg(feature = "s-mode")]
     "mv t2, a0 // the hartid is passed as parameter by SMODE",
-    #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
+    #[cfg(not(feature = "s-mode"))]
     "csrr t2, mhartid",
-    #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
     bgtu t2, t0, abort
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
-    #[cfg(all(not(feature = "single-hart"), riscvm))]
+    #[cfg(riscvm)]
     "mul t0, t2, t0",
-    #[cfg(all(not(feature = "single-hart"), not(riscvm)))]
+    #[cfg(not(riscvm))]
     "beqz t2, 2f  // Jump if single-hart
     mv t1, t2
     mv t3, t0
@@ -129,14 +111,109 @@ _abs_start:
     bnez t1, 1b
 2:  ",
     "la t1, _stack_start",
-    #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
-    "andi sp, t1, -16 // Force 16-byte alignment
-    // Set frame pointer
-    add s0, sp, zero
+);
+cfg_global_asm!(
+    "andi sp, t1, -16 // align stack to 16-bytes
+    add s0, sp, zero",
+);
 
-    jal zero, _start_rust
+// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
+cfg_global_asm!(
+    #[cfg(riscv32)]
+    "addi sp, sp, -4 * 3
+    sw a0, 4 * 0(sp)
+    sw a1, 4 * 1(sp)
+    sw a2, 4 * 2(sp)",
+    #[cfg(riscv64)]
+    "addi sp, sp, -8 * 3
+    sd a0, 8 * 0(sp)
+    sd a1, 8 * 1(sp)
+    sd a2, 8 * 2(sp)",
+);
 
+// SKIP RAM INITIALIZATION IF CURRENT HART IS NOT THE BOOT HART
+#[cfg(not(feature = "single-hart"))]
+cfg_global_asm!(
+    #[cfg(not(feature = "s-mode"))]
+    "csrr a0, mhartid",
+    "call _mp_hook
+    mv t0, a0
+
+    beqz a0, 4f",
+);
+// IF CURRENT HART IS THE BOOT HART CALL __pre_init AND INITIALIZE RAM
+cfg_global_asm!(
+    "call __pre_init
+    // Copy .data from flash to RAM
+    la t0, _sdata
+    la t2, _edata
+    la t1, _sidata
+    bgeu t0, t2, 2f
+1:  ",
+    #[cfg(target_arch = "riscv32")]
+    "lw t3, 0(t1)
+    addi t1, t1, 4
+    sw t3, 0(t0)
+    addi t0, t0, 4
+    bltu t0, t2, 1b",
+    #[cfg(target_arch = "riscv64")]
+    "ld t3, 0(t1)
+    addi t1, t1, 8
+    sd t3, 0(t0)
+    addi t0, t0, 8
+    bltu t0, t2, 1b",
+    "
+2:  // Zero out .bss
+    la t0, _sbss
+    la t2, _ebss
+    bgeu  t0, t2, 4f
+3:  ",
+    #[cfg(target_arch = "riscv32")]
+    "sw  zero, 0(t0)
+    addi t0, t0, 4
+    bltu t0, t2, 3b",
+    #[cfg(target_arch = "riscv64")]
+    "sd zero, 0(t0)
+    addi t0, t0, 8
+    bltu t0, t2, 3b",
+    "
+4: // RAM initilized",
+);
+
+// INITIALIZE FLOATING POINT UNIT
+#[cfg(any(riscvf, riscvd))]
+cfg_global_asm!(
+    #[cfg(feature = "s-mode")]
+    "csrrc x0, sstatus, 0x4000
+    csrrs x0, sstatus, 0x2000",
+    #[cfg(not(feature = "s-mode"))]
+    "csrrc x0, mstatus, 0x4000
+    csrrs x0, mstatus, 0x2000",
+    "fscsr x0",
+);
+// ZERO OUT FLOATING POINT REGISTERS
+#[cfg(all(riscv32, riscvd))]
+riscv_rt_macros::loop_global_asm!("    fcvt.d.w f{}, x0", 32);
+#[cfg(all(riscv64, riscvd))]
+riscv_rt_macros::loop_global_asm!("    fmv.d.x f{}, x0", 32);
+#[cfg(all(riscvf, not(riscvd)))]
+riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
+
+// SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
+cfg_global_asm!(
+    "call _setup_interrupts",
+    #[cfg(riscv32)]
+    "lw a0, 4 * 0(sp)
+    lw a1, 4 * 1(sp)
+    lw a2, 4 * 2(sp)
+    addi sp, sp, 4 * 3",
+    #[cfg(riscv64)]
+    "ld a0, 8 * 0(sp)
+    ld a1, 8 * 1(sp)
+    ld a2, 8 * 2(sp)
+    addi sp, sp, 8 * 3",
+    "jal zero, main
     .cfi_endproc",
 );
 

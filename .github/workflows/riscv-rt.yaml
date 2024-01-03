@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master ]
+    branches: [ master, riscv-rt-asm ]
   pull_request:
   merge_group:
 
