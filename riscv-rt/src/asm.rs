@@ -164,12 +164,16 @@ cfg_global_asm!(
 // INITIALIZE FLOATING POINT UNIT
 #[cfg(any(riscvf, riscvd))]
 cfg_global_asm!(
+    "
+    li t0, 0x4000 // bit 14 is FS most significant bit
+    li t2, 0x2000 // bit 13 is FS least significant bit
+    ",
     #[cfg(feature = "s-mode")]
-    "csrrc x0, sstatus, 0x4000
-    csrrs x0, sstatus, 0x2000",
+    "csrrc x0, sstatus, t0
+    csrrs x0, sstatus, t2",
     #[cfg(not(feature = "s-mode"))]
-    "csrrc x0, mstatus, 0x4000
-    csrrs x0, mstatus, 0x2000",
+    "csrrc x0, mstatus, t0
+    csrrs x0, mstatus, t2",
     "fscsr x0",
 );
 // ZERO OUT FLOATING POINT REGISTERS
