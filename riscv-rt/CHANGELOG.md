@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `links` field in `Cargo.toml`
 - Add FPU initialization
 - Static array for vectored-like handling of exceptions
 - New GitHub workflow for checking invalid labels in PRs

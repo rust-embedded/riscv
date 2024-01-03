@@ -10,6 +10,7 @@ documentation = "https://docs.rs/riscv-rt"
 keywords = ["riscv", "runtime", "startup"]
 license = "ISC"
 edition = "2021"
+links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 
 [features]
 s-mode = []

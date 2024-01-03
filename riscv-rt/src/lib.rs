@@ -423,6 +423,10 @@ use riscv::register::mstatus as xstatus;
 
 pub use riscv_rt_macros::{entry, pre_init};
 
+/// We export this static with an informative name so that if an application attempts to link
+/// two copies of riscv-rt together, linking will fail. We also declare a links key in
+/// Cargo.toml which is the more modern way to solve the same problem, but we have to keep
+/// __ONCE__ around to prevent linking with versions before the links key was added.
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
