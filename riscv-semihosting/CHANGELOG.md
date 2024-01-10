@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Address clippy warnings
 - Add recommendation for `semihosting` in README.md.
 - Bug fixes
 - Moved to the `riscv` Cargo workspace
