@@ -245,9 +245,47 @@
 //!
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 //!
+//!
+//! ### Core exception handlers
+//!
+//! This functions are called when corresponding exception occurs.
+//! You can define an exception handler with one of the following names:
+//! * `InstructionMisaligned`
+//! * `InstructionFault`
+//! * `IllegalInstruction`
+//! * `Breakpoint`
+//! * `LoadMisaligned`
+//! * `LoadFault`
+//! * `StoreMisaligned`
+//! * `StoreFault`
+//! * `UserEnvCall`
+//! * `SupervisorEnvCall`
+//! * `MachineEnvCall`
+//! * `InstructionPageFault`
+//! * `LoadPageFault`
+//! * `StorePageFault`
+//!
+//! For example:
+//! ``` no_run
+//! #[export_name = "MachineEnvCall"]
+//! fn custom_menv_call_handler(trap_frame: &riscv_rt::TrapFrame) {
+//!     // ...
+//! }
+//! ```
+//! or
+//! ``` no_run
+//! #[no_mangle]
+//! fn MachineEnvCall(trap_frame: &riscv_rt::TrapFrame) -> ! {
+//!     // ...
+//! }
+//! ```
+//!
+//! If exception handler is not explicitly defined, `ExceptionHandler` is called.
+//!
 //! ### `ExceptionHandler`
 //!
-//! This function is called when exception is occured. The exception reason can be decoded from the
+//! This function is called when exception without defined exception handler is occured.
+//! The exception reason can be decoded from the
 //! `mcause`/`scause` register.
 //!
 //! This function can be redefined in the following way:
@@ -377,8 +415,18 @@ use riscv::register::{mcause as xcause, mtvec as xtvec, mtvec::TrapMode as xTrap
 #[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
 use riscv::register::mhartid;
 
+#[cfg(all(feature = "s-mode", any(riscvf, riscvd)))]
+use riscv::register::sstatus as xstatus;
+
+#[cfg(all(not(feature = "s-mode"), any(riscvf, riscvd)))]
+use riscv::register::mstatus as xstatus;
+
 pub use riscv_rt_macros::{entry, pre_init};
 
+/// We export this static with an informative name so that if an application attempts to link
+/// two copies of riscv-rt together, linking will fail. We also declare a links key in
+/// Cargo.toml which is the more modern way to solve the same problem, but we have to keep
+/// __ONCE__ around to prevent linking with versions before the links key was added.
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
@@ -512,7 +560,21 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
         compiler_fence(Ordering::SeqCst);
     }
 
-    // TODO: Enable FPU when available
+    #[cfg(any(riscvf, riscvd))]
+    {
+        xstatus::set_fs(xstatus::FS::Initial); // Enable fpu in xstatus
+        core::arch::asm!("fscsr x0"); // Zero out fcsr register csrrw x0, fcsr, x0
+
+        // Zero out floating point registers
+        #[cfg(all(target_arch = "riscv32", riscvd))]
+        riscv_rt_macros::loop_asm!("fcvt.d.w f{}, x0", 32);
+
+        #[cfg(all(target_arch = "riscv64", riscvd))]
+        riscv_rt_macros::loop_asm!("fmv.d.x f{}, x0", 32);
+
+        #[cfg(not(riscvd))]
+        riscv_rt_macros::loop_asm!("fmv.w.x f{}, x0", 32);
+    }
 
     _setup_interrupts();
 
@@ -561,15 +623,27 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     }
 
     let cause = xcause::read();
+    let code = cause.code();
 
     if cause.is_exception() {
-        ExceptionHandler(&*trap_frame)
-    } else if cause.code() < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[cause.code()];
-        if h.reserved == 0 {
-            DefaultHandler();
+        let trap_frame = &*trap_frame;
+        if code < __EXCEPTIONS.len() {
+            let h = &__EXCEPTIONS[code];
+            if let Some(handler) = h {
+                handler(trap_frame);
+            } else {
+                ExceptionHandler(trap_frame);
+            }
         } else {
-            (h.handler)();
+            ExceptionHandler(trap_frame);
+        }
+        ExceptionHandler(trap_frame)
+    } else if code < __INTERRUPTS.len() {
+        let h = &__INTERRUPTS[code];
+        if let Some(handler) = h {
+            handler();
+        } else {
+            DefaultHandler();
         }
     } else {
         DefaultHandler();
@@ -589,7 +663,7 @@ pub fn DefaultExceptionHandler(trap_frame: &TrapFrame) -> ! {
 
 #[doc(hidden)]
 #[no_mangle]
-#[allow(unused_variables, non_snake_case)]
+#[allow(non_snake_case)]
 pub fn DefaultInterruptHandler() {
     loop {
         // Prevent this from turning into a UDF instruction
@@ -598,76 +672,78 @@ pub fn DefaultInterruptHandler() {
     }
 }
 
-/* Interrupts */
-#[doc(hidden)]
-pub enum Interrupt {
-    UserSoft,
-    SupervisorSoft,
-    MachineSoft,
-    UserTimer,
-    SupervisorTimer,
-    MachineTimer,
-    UserExternal,
-    SupervisorExternal,
-    MachineExternal,
+extern "C" {
+    fn InstructionMisaligned(trap_frame: &TrapFrame);
+    fn InstructionFault(trap_frame: &TrapFrame);
+    fn IllegalInstruction(trap_frame: &TrapFrame);
+    fn Breakpoint(trap_frame: &TrapFrame);
+    fn LoadMisaligned(trap_frame: &TrapFrame);
+    fn LoadFault(trap_frame: &TrapFrame);
+    fn StoreMisaligned(trap_frame: &TrapFrame);
+    fn StoreFault(trap_frame: &TrapFrame);
+    fn UserEnvCall(trap_frame: &TrapFrame);
+    fn SupervisorEnvCall(trap_frame: &TrapFrame);
+    fn MachineEnvCall(trap_frame: &TrapFrame);
+    fn InstructionPageFault(trap_frame: &TrapFrame);
+    fn LoadPageFault(trap_frame: &TrapFrame);
+    fn StorePageFault(trap_frame: &TrapFrame);
 }
 
-pub use self::Interrupt as interrupt;
+#[doc(hidden)]
+#[no_mangle]
+pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
+    Some(InstructionMisaligned),
+    Some(InstructionFault),
+    Some(IllegalInstruction),
+    Some(Breakpoint),
+    Some(LoadMisaligned),
+    Some(LoadFault),
+    Some(StoreMisaligned),
+    Some(StoreFault),
+    Some(UserEnvCall),
+    Some(SupervisorEnvCall),
+    None,
+    Some(MachineEnvCall),
+    Some(InstructionPageFault),
+    Some(LoadPageFault),
+    None,
+    Some(StorePageFault),
+];
 
 extern "C" {
-    fn UserSoft();
     fn SupervisorSoft();
     fn MachineSoft();
-    fn UserTimer();
     fn SupervisorTimer();
     fn MachineTimer();
-    fn UserExternal();
     fn SupervisorExternal();
     fn MachineExternal();
 }
 
 #[doc(hidden)]
-pub union Vector {
-    pub handler: unsafe extern "C" fn(),
-    pub reserved: usize,
-}
-
-#[doc(hidden)]
 #[no_mangle]
-pub static __INTERRUPTS: [Vector; 12] = [
-    Vector { handler: UserSoft },
-    Vector {
-        handler: SupervisorSoft,
-    },
-    Vector { reserved: 0 },
-    Vector {
-        handler: MachineSoft,
-    },
-    Vector { handler: UserTimer },
-    Vector {
-        handler: SupervisorTimer,
-    },
-    Vector { reserved: 0 },
-    Vector {
-        handler: MachineTimer,
-    },
-    Vector {
-        handler: UserExternal,
-    },
-    Vector {
-        handler: SupervisorExternal,
-    },
-    Vector { reserved: 0 },
-    Vector {
-        handler: MachineExternal,
-    },
+pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
+    None,
+    Some(SupervisorSoft),
+    None,
+    Some(MachineSoft),
+    None,
+    Some(SupervisorTimer),
+    None,
+    Some(MachineTimer),
+    None,
+    Some(SupervisorExternal),
+    None,
+    Some(MachineExternal),
 ];
 
+/// Default implementation of `_pre_init` does nothing.
+/// Users can override this function with the [`#[pre_init]`] macro.
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
-pub unsafe extern "Rust" fn default_pre_init() {}
+pub extern "Rust" fn default_pre_init() {}
 
+/// Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
@@ -681,7 +757,7 @@ pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
     }
 }
 
-/// Default implementation of `_setup_interrupts` that sets `mtvec`/`stvec` to a trap handler address.
+/// Default implementation of `_setup_interrupts` sets `mtvec`/`stvec` to the address of `_start_trap`.
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
