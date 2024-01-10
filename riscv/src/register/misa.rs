@@ -46,8 +46,8 @@ impl Misa {
     ///
     /// # Example
     ///
-    /// ``` no_run
-    /// let misa = unsafe { riscv::register::misa::read() };
+    /// ```no_run
+    /// let misa = unsafe { riscv::register::misa::read() }.unwrap();
     /// assert!(misa.has_extension('A')); // panics if atomic extension is not implemented
     /// ```
     #[inline]
