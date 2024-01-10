@@ -110,10 +110,11 @@ cfg_global_asm!(
     addi t1, t1, -1
     bnez t1, 1b
 2:  ",
-    "la t1, _stack_start",
-    "sub t1, t1, t0",
 );
 cfg_global_asm!(
+    "la t1, _stack_start",
+    #[cfg(not(feature = "single-hart"))]
+    "sub t1, t1, t0",
     "andi sp, t1, -16 // align stack to 16-bytes
     add s0, sp, zero",
 );
