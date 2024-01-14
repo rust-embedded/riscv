@@ -79,15 +79,13 @@ riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
 // a0..a2 (x10..x12) skipped
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 32);
 
-// INITIALIZE GLOBAL POINTER
+// INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
 cfg_global_asm!(
     ".option push
     .option norelax
     la gp, __global_pointer$
     .option pop",
 );
-
-// INITIALIZE STACK POINTER AND FRAME POINTER
 #[cfg(not(feature = "single-hart"))]
 cfg_global_asm!(
     #[cfg(feature = "s-mode")]
