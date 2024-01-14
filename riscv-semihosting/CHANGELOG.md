@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.0] - 2023-01-18
+
 - Add recommendation for `semihosting` in README.md.
 - Bug fixes
 - Moved to the `riscv` Cargo workspace

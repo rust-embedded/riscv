@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.11.0] - 2024-01-14
+
 ### Added
 
 - Add `asm::ecall()`, a wrapper for implementing an `ecall` instruction

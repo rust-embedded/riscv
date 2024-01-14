@@ -216,7 +216,7 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
         #[cfg(all(riscv, not(feature = "no-semihosting")))]
         () => {
             let mut nr = _nr;
-            let mut arg = _arg;
+            let arg = _arg;
             // The instructions below must always be uncompressed, otherwise
             // it will be treated as a regular break, hence the norvc option.
             //
