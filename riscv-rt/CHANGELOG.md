@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+
+## [v0.12.0] - 2024-01-14
+
 ### Added
 
 - Add `links` field in `Cargo.toml`
