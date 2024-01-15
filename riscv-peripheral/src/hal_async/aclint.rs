@@ -11,7 +11,6 @@
 //! The following `extern "Rust"` functions must be implemented:
 //!
 //! - `fn _riscv_peripheral_aclint_mtimer(hart_id: usize) -> MTIMER`: This function returns the `MTIMER` register for the given HART ID.
-//! This function is implemented by the [`crate::clint_codegen`] macro when asyn_delay is provided.
 //! - `fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer>`: This function pushes a new timer to a timer queue assigned to the given HART ID.
 //! If it fails (e.g., the timer queue is full), it returns back the timer that failed to be pushed.
 //! The logic of timer queues are application-specific and are not provided by this crate.
@@ -37,7 +36,7 @@ extern "Rust" {
     /// Do not call this function directly. It is only meant to be called by [`MachineTimer`].
     fn _riscv_peripheral_aclint_mtimer() -> MTIMER;
 
-    /// Tries to push a new timer to the timer queue assigned to the given HART ID.
+    /// Tries to push a new timer to the timer queue assigned to the `MTIMER` register for the current HART ID.
     /// If it fails (e.g., the timer queue is full), it returns back the timer that failed to be pushed.
     ///
     /// # Safety
@@ -45,10 +44,10 @@ extern "Rust" {
     /// Do not call this function directly. It is only meant to be called by [`DelayAsync`].
     fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer>;
 
-    /// Pops all the expired timers from the timer queue assigned to the current HART ID and wakes their associated wakers.
-    /// Once it is done, if the queue is empty, it returns `None`.
-    /// Alternatively, if the queue is not empty but the earliest timer has not expired yet,
-    /// it returns `Some(next_expires)` where `next_expires` is the tick at which this timer expires.
+    /// Pops all the expired timers from the timer queue assigned to the `MTIMER` register for the
+    /// current HART ID and wakes their associated wakers. Once it is done, if the queue is empty,
+    /// it returns `None`. Alternatively, if the queue is not empty but the earliest timer has not expired
+    /// yet, it returns `Some(next_expires)` where `next_expires` is the tick at which this timer expires.
     ///
     /// # Safety
     ///
@@ -75,7 +74,7 @@ fn schedule_machine_timer(mtime: MTIME, mtimercmp: MTIMECMP) {
     if let Some(next_expires) = unsafe { _riscv_peripheral_aclint_wake_timers(current_tick) } {
         debug_assert!(next_expires > current_tick);
         mtimercmp.write(next_expires); // schedule next interrupt at next_expires
-        unsafe { riscv::register::mie::set_mtimer() }; // enable machine timer interrupts again if necessary
+        unsafe { riscv::register::mie::set_mtimer() }; // enable machine timer interrupts
     }
 }
 
@@ -89,7 +88,6 @@ fn schedule_machine_timer(mtime: MTIME, mtimercmp: MTIMECMP) {
 /// Additionally, the rest of the application must not modify the [`MTIMER`] register assigned to the current HART.
 #[derive(Clone)]
 pub struct Delay {
-    hart_id: usize,
     freq: usize,
     mtime: MTIME,
     mtimecmp: MTIMECMP,
@@ -99,11 +97,9 @@ impl Delay {
     /// Creates a new `Delay` instance for the current HART.
     #[inline]
     pub fn new(freq: usize) -> Self {
-        let hart_id = riscv::register::mhartid::read();
         let mtimer = unsafe { _riscv_peripheral_aclint_mtimer() };
         let (mtime, mtimecmp) = (mtimer.mtime, mtimer.mtimecmp_mhartid());
         Self {
-            hart_id,
             freq,
             mtime,
             mtimecmp,
@@ -148,7 +144,6 @@ impl DelayNs for Delay {
 /// this entry provides the necessary information to adapt it to the timer queue implementation.
 #[derive(Debug)]
 pub struct Timer {
-    hart_id: usize,
     freq: usize,
     mtime: MTIME,
     mtimecmp: MTIMECMP,
@@ -160,7 +155,6 @@ impl Timer {
     /// Creates a new timer queue entry.
     #[inline]
     const fn new(
-        hart_id: usize,
         freq: usize,
         mtime: MTIME,
         mtimecmp: MTIMECMP,
@@ -168,19 +162,12 @@ impl Timer {
         waker: Waker,
     ) -> Self {
         Self {
-            hart_id,
             freq,
             mtime,
             mtimecmp,
             expires,
             waker,
         }
-    }
-
-    /// Returns the HART ID associated with this timer.
-    #[inline]
-    pub const fn hart_id(&self) -> usize {
-        self.hart_id
     }
 
     /// Returns the frequency of the [`MTIME`] register associated with this timer.
@@ -216,7 +203,7 @@ impl Timer {
 
 impl PartialEq for Timer {
     fn eq(&self, other: &Self) -> bool {
-        self.hart_id == other.hart_id && self.freq == other.freq && self.expires == other.expires
+        self.freq == other.freq && self.expires == other.expires
     }
 }
 
@@ -262,7 +249,6 @@ impl<'a> Future for DelayAsync<'a> {
                 // we only push the timer to the queue the first time we poll
                 self.pushed = true;
                 let timer = Timer::new(
-                    self.delay.hart_id,
                     self.delay.freq,
                     self.delay.mtime,
                     self.delay.mtimecmp,

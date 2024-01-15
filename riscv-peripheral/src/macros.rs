@@ -214,12 +214,6 @@ macro_rules! clint_codegen {
         $crate::clint_codegen!($($tail)*);
     };
     (async_delay, $($tail:tt)*) => {
-
-        #[no_mangle]
-        const fn _riscv_peripheral_aclint_mtimer() -> $crate::aclint::mtimer::MTIMER {
-            CLINT::mtimer()
-        }
-
         impl CLINT {
             /// Asynchronous delay implementation for CLINT peripherals.
             ///
