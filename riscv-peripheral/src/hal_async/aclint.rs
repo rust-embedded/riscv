@@ -11,11 +11,12 @@
 //! The following `extern "Rust"` functions must be implemented:
 //!
 //! - `fn _riscv_peripheral_aclint_mtimer(hart_id: usize) -> MTIMER`: This function returns the `MTIMER` register for the given HART ID.
+//! This function is implemented by the [`crate::clint_codegen`] macro when asyn_delay is provided.
 //! - `fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer>`: This function pushes a new timer to a timer queue assigned to the given HART ID.
 //! If it fails (e.g., the timer queue is full), it returns back the timer that failed to be pushed.
 //! The logic of timer queues are application-specific and are not provided by this crate.
-//! - `fn _riscv_peripheral_aclint_wake_timers(hart_id: usize, current_tick: u64) -> Option<u64>`:
-//! This function pops all the expired timers from a timer queue assigned to the given HART ID and wakes their associated wakers.
+//! - `fn _riscv_peripheral_aclint_wake_timers(current_tick: u64) -> Option<u64>`:
+//! This function pops all the expired timers from a timer queue assigned to the current HART ID and wakes their associated wakers.
 //! The function returns the next [`MTIME`] tick at which the next timer expires. If the queue is empty, it returns `None`.
 
 use crate::aclint::mtimer::{MTIME, MTIMECMP, MTIMER};
@@ -28,13 +29,13 @@ use core::{
 };
 
 extern "Rust" {
-    /// Returns the `MTIMER` register for the given HART ID.
+    /// Returns the `MTIMER` register for the current HART ID.
     /// This is necessary for [`MachineTimer`] to obtain the corresponding `MTIMER` register.
     ///
     /// # Safety
     ///
     /// Do not call this function directly. It is only meant to be called by [`MachineTimer`].
-    fn _riscv_peripheral_aclint_mtimer(hart_id: usize) -> MTIMER;
+    fn _riscv_peripheral_aclint_mtimer() -> MTIMER;
 
     /// Tries to push a new timer to the timer queue assigned to the given HART ID.
     /// If it fails (e.g., the timer queue is full), it returns back the timer that failed to be pushed.
@@ -44,7 +45,7 @@ extern "Rust" {
     /// Do not call this function directly. It is only meant to be called by [`DelayAsync`].
     fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer>;
 
-    /// Pops all the expired timers from the timer queue assigned to the given HART ID and wakes their associated wakers.
+    /// Pops all the expired timers from the timer queue assigned to the current HART ID and wakes their associated wakers.
     /// Once it is done, if the queue is empty, it returns `None`.
     /// Alternatively, if the queue is not empty but the earliest timer has not expired yet,
     /// it returns `Some(next_expires)` where `next_expires` is the tick at which this timer expires.
@@ -52,7 +53,7 @@ extern "Rust" {
     /// # Safety
     ///
     /// Do not call this function directly. It is only meant to be called by [`MachineTimer`] and [`DelayAsync`].
-    fn _riscv_peripheral_aclint_wake_timers(hart_id: usize, current_tick: u64) -> Option<u64>;
+    fn _riscv_peripheral_aclint_wake_timers(current_tick: u64) -> Option<u64>;
 }
 
 /// Machine-level timer interrupt handler. This handler is triggered whenever the `MTIME`
@@ -61,20 +62,17 @@ extern "Rust" {
 #[allow(non_snake_case)]
 fn MachineTimer() {
     // recover the MTIME and MTIMECMP registers for the current HART
-    let hart_id = riscv::register::mhartid::read();
-    let mtimer = unsafe { _riscv_peripheral_aclint_mtimer(hart_id) };
+    let mtimer = unsafe { _riscv_peripheral_aclint_mtimer() };
     let (mtime, mtimercmp) = (mtimer.mtime, mtimer.mtimecmp_mhartid());
     // schedule the next machine timer interrupt
-    schedule_machine_timer(hart_id, mtime, mtimercmp);
+    schedule_machine_timer(mtime, mtimercmp);
 }
 
 /// Schedules the next machine timer interrupt for the given HART ID according to the timer queue.
-fn schedule_machine_timer(hart_id: usize, mtime: MTIME, mtimercmp: MTIMECMP) {
+fn schedule_machine_timer(mtime: MTIME, mtimercmp: MTIMECMP) {
     unsafe { riscv::register::mie::clear_mtimer() }; // disable machine timer interrupts to avoid reentrancy
     let current_tick = mtime.read();
-    if let Some(next_expires) =
-        unsafe { _riscv_peripheral_aclint_wake_timers(hart_id, current_tick) }
-    {
+    if let Some(next_expires) = unsafe { _riscv_peripheral_aclint_wake_timers(current_tick) } {
         debug_assert!(next_expires > current_tick);
         mtimercmp.write(next_expires); // schedule next interrupt at next_expires
         unsafe { riscv::register::mie::set_mtimer() }; // enable machine timer interrupts again if necessary
@@ -102,7 +100,7 @@ impl Delay {
     #[inline]
     pub fn new(freq: usize) -> Self {
         let hart_id = riscv::register::mhartid::read();
-        let mtimer = unsafe { _riscv_peripheral_aclint_mtimer(hart_id) };
+        let mtimer = unsafe { _riscv_peripheral_aclint_mtimer() };
         let (mtime, mtimecmp) = (mtimer.mtime, mtimer.mtimecmp_mhartid());
         Self {
             hart_id,
@@ -275,7 +273,7 @@ impl<'a> Future for DelayAsync<'a> {
                     _riscv_peripheral_aclint_push_timer(timer).expect("timer queue is full");
                 };
                 // we also need to reschedule the machine timer interrupt
-                schedule_machine_timer(self.delay.hart_id, self.delay.mtime, self.delay.mtimecmp);
+                schedule_machine_timer(self.delay.mtime, self.delay.mtimecmp);
             }
             Poll::Pending
         } else {
