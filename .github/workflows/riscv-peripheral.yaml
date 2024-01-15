@@ -11,8 +11,8 @@ jobs:
   build-riscv:
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.61.0
-        toolchain: [ stable, nightly, 1.61.0 ]
+        # All generated code should be running on stable now, MRSV is 1.75.0
+        toolchain: [ stable, nightly, 1.75.0 ]
         target:
           - riscv32i-unknown-none-elf
           - riscv32imc-unknown-none-elf
@@ -33,9 +33,8 @@ jobs:
         targets: ${{ matrix.target }}
     - name: Build (no features)
       run: cargo build --package riscv-peripheral --target ${{ matrix.target }}
-    # not yet, let's wait for 1.75.0
-    # - name: Build (all features)
-    #  run: cargo build --package riscv-peripheral --target ${{ matrix.target }} --all-features
+    - name: Build (all features)
+      run: cargo build --package riscv-peripheral --target ${{ matrix.target }} --all-features
 
   # On MacOS, Ubuntu, and Windows, we run the tests.
   build-others:
@@ -48,9 +47,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Build (no features)
         run: cargo test --package riscv-peripheral
-      # not yet, let's wait for 1.75.0
-      # - name: Build (all features)
-      #  run: cargo test --package riscv-peripheral --all-features
+      - name: Build (all features)
+        run: cargo test --package riscv-peripheral --all-features
 
   # Job to check that all the builds succeeded
   build-check:

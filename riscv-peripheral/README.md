@@ -11,12 +11,12 @@ This project is developed and maintained by the [RISC-V team][team].
 
 ## Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.61 and up. It *might*
+This crate is guaranteed to compile on stable Rust 1.75 and up. It *might*
 compile with older versions but that may change in any new patch release.
 
 ## License
 
-Copyright 2023-2024s [RISC-V team][team]
+Copyright 2023-2024 [RISC-V team][team]
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice

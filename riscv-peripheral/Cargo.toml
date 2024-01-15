@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 embedded-hal = "1.0.0"
 embedded-hal-async = { version = "1.0.0", optional =  true }
-riscv = { path = "../riscv", version = "0.10" }
+riscv = { path = "../riscv", version = "0.11.0" }
 riscv-pac = { path = "../riscv-pac", version = "0.1.0" }
 
 [features]

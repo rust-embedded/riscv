@@ -29,11 +29,11 @@ use core::{
 
 extern "Rust" {
     /// Returns the `MTIMER` register for the given HART ID.
-    /// This is necessary for [`MachineExternal`] to obtain the corresponding `MTIMER` register.
+    /// This is necessary for [`MachineTimer`] to obtain the corresponding `MTIMER` register.
     ///
     /// # Safety
     ///
-    /// Do not call this function directly. It is only meant to be called by [`MachineExternal`].
+    /// Do not call this function directly. It is only meant to be called by [`MachineTimer`].
     fn _riscv_peripheral_aclint_mtimer(hart_id: usize) -> MTIMER;
 
     /// Tries to push a new timer to the timer queue assigned to the given HART ID.
@@ -51,7 +51,7 @@ extern "Rust" {
     ///
     /// # Safety
     ///
-    /// Do not call this function directly. It is only meant to be called by [`MachineExternal`] and [`DelayAsync`].
+    /// Do not call this function directly. It is only meant to be called by [`MachineTimer`] and [`DelayAsync`].
     fn _riscv_peripheral_aclint_wake_timers(hart_id: usize, current_tick: u64) -> Option<u64>;
 }
 
@@ -59,7 +59,7 @@ extern "Rust" {
 /// register reaches the value of the `MTIMECMP` register of the current HART.
 #[no_mangle]
 #[allow(non_snake_case)]
-fn MachineExternal() {
+fn MachineTimer() {
     // recover the MTIME and MTIMECMP registers for the current HART
     let hart_id = riscv::register::mhartid::read();
     let mtimer = unsafe { _riscv_peripheral_aclint_mtimer(hart_id) };

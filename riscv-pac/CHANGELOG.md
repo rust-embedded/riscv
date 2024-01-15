@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Fix crates.io badge links
+
 ## [v0.1.0] - 2024-01-14
 
 ### Added
