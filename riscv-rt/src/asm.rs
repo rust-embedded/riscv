@@ -30,6 +30,7 @@ macro_rules! cfg_global_asm {
 // - https://github.com/rust-lang/rust/issues/80608
 // - https://github.com/llvm/llvm-project/issues/61991
 cfg_global_asm!(
+    "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
     #[cfg(all(riscv32, riscvm))]
     ".attribute arch, \"rv32im\"",
     #[cfg(all(riscv64, riscvm, not(riscvg)))]
