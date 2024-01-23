@@ -19,6 +19,25 @@ macro_rules! cfg_global_asm {
     };
 }
 
+// Provisional patch to avoid LLVM spurious errors when compiling in release mode.
+// This patch is somewhat hardcoded and relies on the fact that the rustc compiler
+// only supports a limited combination of ISA extensions. This patch should be
+// removed when LLVM fixes the issue. Alternatively, it must be updated when rustc
+// supports more ISA extension combinations.
+//
+// Related issues:
+// - https://github.com/rust-embedded/riscv/issues/175
+// - https://github.com/rust-lang/rust/issues/80608
+// - https://github.com/llvm/llvm-project/issues/61991
+cfg_global_asm!(
+    #[cfg(all(riscv32, riscvm))]
+    ".attribute arch, \"rv32im\"",
+    #[cfg(all(riscv64, riscvm, not(riscvg)))]
+    ".attribute arch, \"rv64im\"",
+    #[cfg(all(riscv64, riscvg))]
+    ".attribute arch, \"rv64g\"",
+);
+
 // Entry point of all programs (_start). It initializes DWARF call frame information,
 // the stack pointer, the frame pointer (needed for closures to work in start_rust)
 // and the global pointer. Then it calls _start_rust.
