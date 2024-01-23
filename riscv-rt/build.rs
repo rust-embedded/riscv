@@ -34,8 +34,8 @@ fn parse_target(target: &str, cargo_flags: &str) -> (u32, HashSet<char>) {
         .unwrap();
 
     let mut extensions: HashSet<char> = arch.chars().skip_while(|c| c.is_ascii_digit()).collect();
-    // get rid of the 'g' shorthand extension
-    if extensions.remove(&'g') {
+    // expand the 'g' shorthand extension
+    if extensions.contains(&'g') {
         extensions.insert('i');
         extensions.insert('m');
         extensions.insert('a');
