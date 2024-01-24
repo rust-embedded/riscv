@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.12.1] - 2024-01-24
+
 ### Added
 
 - Patch in assembly code to avoid spurious errors from LLVM
