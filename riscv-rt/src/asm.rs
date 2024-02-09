@@ -35,6 +35,12 @@ cfg_global_asm!(
     ".attribute arch, \"rv32im\"",
     #[cfg(all(riscv32, riscve))]
     ".attribute arch, \"rv32e\"",
+    #[cfg(all(riscv32, riscve, riscvc))]
+    ".attribute arch, \"rv32ec\"",
+    #[cfg(all(riscv32, riscve, riscvm))]
+    ".attribute arch, \"rv32em\"",
+    #[cfg(all(riscv32, riscve, riscvm, riscvc))]
+    ".attribute arch, \"rv32emc\"",
     #[cfg(all(riscv64, riscvm, not(riscvg)))]
     ".attribute arch, \"rv64im\"",
     #[cfg(all(riscv64, riscvg))]
