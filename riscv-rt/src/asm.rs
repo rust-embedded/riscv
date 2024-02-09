@@ -33,6 +33,8 @@ cfg_global_asm!(
     "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
     #[cfg(all(riscv32, riscvm))]
     ".attribute arch, \"rv32im\"",
+    #[cfg(all(riscv32, riscve))]
+    ".attribute arch, \"rv32e\"",
     #[cfg(all(riscv64, riscvm, not(riscvg)))]
     ".attribute arch, \"rv64im\"",
     #[cfg(all(riscv64, riscvg))]
