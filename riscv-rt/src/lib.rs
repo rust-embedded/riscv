@@ -476,7 +476,6 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
         } else {
             ExceptionHandler(trap_frame);
         }
-        ExceptionHandler(trap_frame)
     } else if code < __INTERRUPTS.len() {
         let h = &__INTERRUPTS[code];
         if let Some(handler) = h {
