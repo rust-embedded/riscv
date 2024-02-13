@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Moved all the assembly code to `asm.rs`
+
+### Removed
+
+- start_rust is no longer needed, as it is now wrtten in assembly
+
 ## [v0.12.1] - 2024-01-24
 
 ### Added
