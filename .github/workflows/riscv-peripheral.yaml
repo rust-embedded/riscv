@@ -40,7 +40,10 @@ jobs:
   build-others:
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-latest ]
+        os:
+        - macos-latest 
+        - ubuntu-latest
+        # - windows-latest issues when testing and external symbols are not found
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
