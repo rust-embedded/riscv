@@ -1,17 +1,17 @@
-[![crates.io](https://img.shields.io/crates/d/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
-[![crates.io](https://img.shields.io/crates/v/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
+[![crates.io](https://img.shields.io/crates/d/riscv-peripheral.svg)](https://crates.io/crates/riscv-peripheral)
+[![crates.io](https://img.shields.io/crates/v/riscv-peripheral.svg)](https://crates.io/crates/riscv-peripheral)
 
-# `riscv-pac`
+# `riscv-peripheral`
 
-> Target-specific traits to be implemented by PACs
+> Interfaces for standard RISC-V peripherals
 
 This project is developed and maintained by the [RISC-V team][team].
 
-## [Documentation](https://docs.rs/crate/riscv-pac)
+## [Documentation](https://docs.rs/crate/riscv-peripheral)
 
 ## Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.60 and up. It *might*
+This crate is guaranteed to compile on stable Rust 1.75 and up. It *might*
 compile with older versions but that may change in any new patch release.
 
 ## License
