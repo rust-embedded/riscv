@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Implementation of `default_mp_hook` when `single-hart` feature is enabled.
+
 ## [v0.12.1] - 2024-01-24
 
 ### Added
