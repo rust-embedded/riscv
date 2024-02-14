@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
-- start_rust is no longer needed, as it is now wrtten in assembly
+- `start_rust` is no longer needed, as it is now written in assembly
 
 ## [v0.12.1] - 2024-01-24
 
