@@ -2,6 +2,14 @@
 name = "riscv-peripheral"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.75"
+repository = "https://github.com/rust-embedded/riscv"
+authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Interfaces for standard RISC-V peripherals"
+documentation = "https://docs.rs/riscv-peripheral"
+keywords = ["riscv", "peripheral", "clint", "plic"]
+license = "ISC"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
