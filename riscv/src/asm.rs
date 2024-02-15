@@ -48,7 +48,7 @@ instruction!(
     ///
     /// Provides a hint to the implementation that the current hart can be stalled until an interrupt might need servicing.
     /// The WFI instruction is just a hint, and a legal implementation is to implement WFI as a NOP.
-    , unsafe wfi, "wfi");
+    , wfi, "wfi");
 instruction!(
     /// `SFENCE.VMA` instruction wrapper (all address spaces and page table levels)
     ///

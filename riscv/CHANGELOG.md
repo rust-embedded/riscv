@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.11.1] - 2024-02-15
+
 ### Changed
 
-- Made `asm::fence`, `fence_i` and `sfence` safe (ie, removed `unsafe` from their definitions)
+- Made `asm::wfi`, `fence`, `fence_i` and `sfence` safe (ie, removed `unsafe` from their definitions)
 
 ## [v0.11.0] - 2024-01-14
 

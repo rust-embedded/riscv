@@ -756,7 +756,7 @@ pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
     match hartid {
         0 => true,
         _ => loop {
-            unsafe { riscv::asm::wfi() }
+            riscv::asm::wfi();
         },
     }
 }
