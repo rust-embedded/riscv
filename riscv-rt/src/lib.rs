@@ -311,13 +311,10 @@
 //!
 //! This functions are called when corresponding interrupt is occured.
 //! You can define an interrupt handler with one of the following names:
-//! * `UserSoft`
 //! * `SupervisorSoft`
 //! * `MachineSoft`
-//! * `UserTimer`
 //! * `SupervisorTimer`
 //! * `MachineTimer`
-//! * `UserExternal`
 //! * `SupervisorExternal`
 //! * `MachineExternal`
 //!
