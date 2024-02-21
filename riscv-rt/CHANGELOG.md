@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - `start_rust` is no longer needed, as it is now written in assembly
 
+## [v0.12.2] - 2024-02-15
+
+### Added
+
+- Implementation of `default_mp_hook` when `single-hart` feature is enabled.
+
 ## [v0.12.1] - 2024-01-24
 
 ### Added

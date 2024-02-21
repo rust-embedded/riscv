@@ -21,6 +21,8 @@ jobs:
               - 'riscv/**'
             riscv-pac:
               - 'riscv-pac/**'
+            riscv-peripheral:
+              - 'riscv-peripheral/**'
             riscv-rt:
               - 'riscv-rt/**'
             riscv-semihosting:
@@ -57,3 +59,11 @@ jobs:
           changeLogPath: ./riscv-semihosting/CHANGELOG.md
           skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-semihosting/CHANGELOG.md file.'
+
+      - name: Check for CHANGELOG.md (riscv-peripheral)
+        if: steps.changes.outputs.riscv-peripheral == 'true'
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          changeLogPath: ./riscv-peripheral/CHANGELOG.md
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-peripheral/CHANGELOG.md file.'

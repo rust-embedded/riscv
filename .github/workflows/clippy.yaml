@@ -29,7 +29,8 @@ jobs:
       - name: Run clippy (no features)
         run: cargo clippy --all --no-default-features -- -D warnings
       - name: Run clippy (all features)
-        run: cargo clippy --all --all-features -- -D warnings
+        # We exclude riscv-peripheral because it's not yet stable-compliant
+        run: cargo clippy --exclude riscv-peripheral --all --all-features -- -D warnings
   
   # Additonal clippy checks for riscv-rt
   clippy-riscv-rt:

@@ -579,15 +579,19 @@ pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
 pub extern "Rust" fn default_pre_init() {}
 
 /// Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
+/// Users can override this function by defining their own `_mp_hook`.
+/// 
+/// # Note
+/// 
+/// If the `single-hart` feature is enabled, `_mp_hook` is not called.
 #[doc(hidden)]
 #[no_mangle]
 #[rustfmt::skip]
-#[cfg(not(feature = "single-hart"))]
 pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
     match hartid {
         0 => true,
         _ => loop {
-            unsafe { riscv::asm::wfi() }
+            riscv::asm::wfi();
         },
     }
 }

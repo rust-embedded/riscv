@@ -7,16 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [v0.1.1] - 2024-02-15
-
-- Fix crates.io badge links
-
-## [v0.1.0] - 2024-01-14
+## [v0.1.0] - 2024-02-15
 
 ### Added
 
-- Add `InterruptNumber`, `PriorityNumber`, and `HartIdNumber` traits.
-
-### Changed
-
-- Update `README.md`
+- Add `ACLINT`, `CLINT`, and `PLIC` structs
