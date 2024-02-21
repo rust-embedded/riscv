@@ -1,9 +1,7 @@
 //! Interrupt pending bits register.
 
-use crate::{
-    common::{Reg, RO},
-    plic::InterruptNumber,
-};
+use crate::common::{Reg, RO};
+use riscv_pac::ExternalInterruptNumber;
 
 /// Interrupts pending bits register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -31,7 +29,7 @@ impl PENDINGS {
 
     /// Checks if an interrupt triggered by a given source is pending.
     #[inline]
-    pub fn is_pending<I: InterruptNumber>(self, source: I) -> bool {
+    pub fn is_pending<I: ExternalInterruptNumber>(self, source: I) -> bool {
         let source = source.number() as usize;
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number

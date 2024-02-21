@@ -145,8 +145,8 @@ impl<P: Plic> CTX<P> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use super::{HartIdNumber, InterruptNumber, PriorityNumber};
     use riscv_pac::result::{Error, Result};
+    use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
@@ -192,6 +192,8 @@ pub(crate) mod test {
             }
         }
     }
+
+    unsafe impl ExternalInterruptNumber for Interrupt {}
 
     unsafe impl PriorityNumber for Priority {
         const MAX_PRIORITY_NUMBER: u8 = 3;
