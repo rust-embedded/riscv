@@ -4,7 +4,7 @@ on:
   pull_request:
   merge_group:
 
-name: Build check (riscv)
+name: Build check (riscv-pac)
 
 jobs:
   # We check that the crate builds and links for all the toolchains and targets.
@@ -31,28 +31,23 @@ jobs:
       with:
         toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
-    - name: Build (M-mode)
-      run: cargo build --package riscv --target ${{ matrix.target }}
-    - name: Build (M-mode, critical section)
-      run: cargo build --package riscv --target ${{ matrix.target }} --features=critical-section-single-hart
-    - name: Build (S-mode)
-      run: cargo build --package riscv --target ${{ matrix.target }} --features=s-mode
-    - name: Build (all features)
-      run: cargo build --package riscv --target ${{ matrix.target }} --all-features
+    - name: Build
+      run: cargo build --package riscv-pac --target ${{ matrix.target }}
 
-  # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
+  # On MacOS, Ubuntu, and Windows, we run the tests.
   test-others:
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-latest ]
+        os:
+        - macos-latest 
+        - ubuntu-latest
+        - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Run tests (no features)
-        run: cargo test --package riscv
-      - name: Run tests (all features)
-        run: cargo test --package riscv --all-features
+      - name: Run tests
+        run: cargo test --package riscv-pac
 
   # Job to check that all the builds succeeded
   build-check:

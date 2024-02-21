@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `ExceptionNumber` trait.
+- Classify interrupt numbers in `CoreInterruptNumber` and `ExternalInterruptNumber`.
+- Added simple tests to illustrate how to implement all the provided traits.
+
 ## [v0.1.1] - 2024-02-15
 
 - Fix crates.io badge links

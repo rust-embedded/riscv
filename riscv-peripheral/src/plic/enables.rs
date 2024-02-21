@@ -1,9 +1,7 @@
 //! Interrupt enables register of a PLIC context.
 
-use crate::{
-    common::{Reg, RW},
-    plic::InterruptNumber,
-};
+use crate::common::{Reg, RW};
+use riscv_pac::ExternalInterruptNumber;
 
 /// Enables register of a PLIC context.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -31,7 +29,7 @@ impl ENABLES {
 
     /// Checks if an interrupt source is enabled for the PLIC context.
     #[inline]
-    pub fn is_enabled<I: InterruptNumber>(self, source: I) -> bool {
+    pub fn is_enabled<I: ExternalInterruptNumber>(self, source: I) -> bool {
         let source = source.number() as usize;
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
@@ -49,7 +47,7 @@ impl ENABLES {
     ///
     /// * Enabling an interrupt source can break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable<I: InterruptNumber>(self, source: I) {
+    pub unsafe fn enable<I: ExternalInterruptNumber>(self, source: I) {
         let source = source.number() as usize;
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
@@ -70,7 +68,7 @@ impl ENABLES {
     /// * Register must be properly aligned **for atomic operations**.
     /// * The register must not be accessed through non-atomic operations until this function returns.
     #[inline]
-    pub unsafe fn atomic_enable<I: InterruptNumber>(
+    pub unsafe fn atomic_enable<I: ExternalInterruptNumber>(
         self,
         source: I,
         order: core::sync::atomic::Ordering,
@@ -88,7 +86,7 @@ impl ENABLES {
     ///
     /// It performs non-atomic read-modify-write operations, which may lead to **wrong** behavior.
     #[inline]
-    pub fn disable<I: InterruptNumber>(self, source: I) {
+    pub fn disable<I: ExternalInterruptNumber>(self, source: I) {
         let source = source.number() as usize;
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
@@ -108,7 +106,7 @@ impl ENABLES {
     /// * Register must be properly aligned **for atomic operations**.
     /// * The register must not be accessed through non-atomic operations until this function returns.
     #[inline]
-    pub unsafe fn atomic_disable<I: InterruptNumber>(
+    pub unsafe fn atomic_disable<I: ExternalInterruptNumber>(
         self,
         source: I,
         order: core::sync::atomic::Ordering,
@@ -126,7 +124,7 @@ impl ENABLES {
     ///
     ///* Enabling all interrupt sources can break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable_all<I: InterruptNumber>(self) {
+    pub unsafe fn enable_all<I: ExternalInterruptNumber>(self) {
         for offset in 0..=(I::MAX_INTERRUPT_NUMBER as u32 / u32::BITS) as isize {
             // SAFETY: valid offset
             let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
@@ -136,7 +134,7 @@ impl ENABLES {
 
     /// Disables all the external interrupt sources for the PLIC context.
     #[inline]
-    pub fn disable_all<I: InterruptNumber>(self) {
+    pub fn disable_all<I: ExternalInterruptNumber>(self) {
         for offset in 0..=(I::MAX_INTERRUPT_NUMBER as u32 / u32::BITS) as _ {
             // SAFETY: valid offset
             let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };

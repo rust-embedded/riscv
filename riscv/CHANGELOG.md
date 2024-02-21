@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Implementation of `riscv-pac` traits for `Interrupt` and `Exception` enums.
+- Tests for the `riscv-pac` trait implementations of `Interrupt` and `Exception` enums.
+
+### Changed
+
+- More efficient implementation of `From` traits for `Interrupt` and `Exception` enums.
+
 ## [v0.11.1] - 2024-02-15
 
 ### Changed

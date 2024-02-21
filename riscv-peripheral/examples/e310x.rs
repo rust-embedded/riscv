@@ -2,7 +2,7 @@
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
-use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
+use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
 
 #[repr(u16)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -11,7 +11,7 @@ pub enum HartId {
 }
 
 unsafe impl HartIdNumber for HartId {
-    const MAX_HART_ID_NUMBER: u16 = 0;
+    const MAX_HART_ID_NUMBER: u16 = Self::H0 as u16;
 
     #[inline]
     fn number(self) -> u16 {
@@ -87,7 +87,7 @@ pub enum Interrupt {
 }
 
 unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: u16 = 52;
+    const MAX_INTERRUPT_NUMBER: u16 = Self::I2C0 as u16;
 
     #[inline]
     fn number(self) -> u16 {
@@ -105,6 +105,8 @@ unsafe impl InterruptNumber for Interrupt {
     }
 }
 
+unsafe impl ExternalInterruptNumber for Interrupt {}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Priority {
@@ -119,7 +121,7 @@ pub enum Priority {
 }
 
 unsafe impl PriorityNumber for Priority {
-    const MAX_PRIORITY_NUMBER: u8 = 7;
+    const MAX_PRIORITY_NUMBER: u8 = Self::P7 as u8;
 
     #[inline]
     fn number(self) -> u8 {
