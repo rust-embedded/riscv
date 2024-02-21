@@ -22,7 +22,8 @@
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
 //!
-//! - Support for a runtime in supervisor mode, that can be bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
+//! - Support for a runtime in supervisor mode, that can be bootstrapped via
+//!   [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc).
 //!
 //! ``` text
 //! $ cargo new --bin app && cd $_
@@ -30,7 +31,7 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-rt = "0.6.1"
+//! riscv-rt = "0.13.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
@@ -245,6 +246,8 @@
 //!
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 //!
+//! `_mp_hook` is only necessary in multi-core targets. If the `single-hart` feature is enabled,
+//! `_mp_hook` is not called, as it is assumed that there is only one hart on the target.
 //!
 //! ### Core exception handlers
 //!
@@ -358,11 +361,12 @@
 //!
 //! Default implementation of this function stucks in a busy-loop.
 //!
-//! # Features
+//! # Cargo Features
 //!
 //! ## `single-hart`
 //!
 //! This feature saves a little code size if there is only one hart on the target.
+//! If the `single-hart` feature is enabled, `_mp_hook` is not called.
 //!
 //! ## `s-mode`
 //!
@@ -373,9 +377,7 @@
 //! [dependencies]
 //! riscv-rt = {features=["s-mode"]}
 //! ```
-//! Internally, riscv-rt uses different versions of precompiled static libraries
-//! for (i) machine mode and (ii) supervisor mode. If the `s-mode` feature was activated,
-//! the build script selects the s-mode library. While most registers/instructions have variants for
+//! While most registers/instructions have variants for
 //! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
 //! mode. Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
 //!
