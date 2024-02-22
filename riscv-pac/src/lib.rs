@@ -1,11 +1,12 @@
 #![no_std]
 
+#[cfg(feature = "riscv-pac-macros")]
 pub use riscv_pac_macros::*;
 
 /// Trait for enums of target-specific exception numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-/// exceptions for a specific device. Alternatively, the [`riscv`] crate provides a default
+/// exceptions for a specific device. Alternatively, the `riscv` crate provides a default
 /// implementation for the RISC-V ISA. Each variant must convert to a `u16` of its exception number.
 ///
 /// # Safety
@@ -31,7 +32,7 @@ pub unsafe trait ExceptionNumber: Copy {
 /// Trait for enums of target-specific interrupt numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-// interrupts for a specific device. Alternatively, the [`riscv`] crate provides a default
+/// interrupts for a specific device. Alternatively, the `riscv` crate provides a default
 /// implementation for the RISC-V ISA. Each variant must convert to a `u16` of its interrupt number.
 ///
 /// # Safety
@@ -54,12 +55,11 @@ pub unsafe trait InterruptNumber: Copy {
     fn from_number(value: u16) -> Result<Self, u16>;
 }
 
-/// Trait for enums of target-specific core interrupt numbers.
+/// Marker trait for enums of target-specific core interrupt numbers.
 ///
-/// Core interrupts are interrupts are retrieved from the `mcause` CSR.
-/// Usually, vectored mode is only available for core interrupts.
-/// The `riscv` crate provides a default implementation for the RISC-V ISA.
-/// However, a PAC may override the default implementation if the target has a
+/// Core interrupts are interrupts are retrieved from the `mcause` CSR. Usually, vectored mode is
+/// only available for core interrupts. The `riscv` crate provides a default implementation for
+/// the RISC-V ISA. However, a PAC may override the default implementation if the target has a
 /// different interrupt numbering scheme (e.g., ESP32C3).
 ///
 /// # Safety
@@ -67,7 +67,7 @@ pub unsafe trait InterruptNumber: Copy {
 /// Each enum variant must represent a valid core interrupt number read from the `mcause` CSR.
 pub unsafe trait CoreInterruptNumber: InterruptNumber {}
 
-/// Trait for enums of target-specific external interrupt numbers.
+/// Marker trait for enums of target-specific external interrupt numbers.
 ///
 /// External interrupts are interrupts caused by external sources (e.g., GPIO, UART, SPI).
 /// External interrupts are **not** retrieved from the `mcause` CSR.
@@ -81,9 +81,8 @@ pub unsafe trait ExternalInterruptNumber: InterruptNumber {}
 
 /// Trait for enums of priority levels.
 ///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available priority numbers for a specific device.
-/// Each variant must convert to a `u8` of its priority level.
+/// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
+/// priority numbers for a specific device. Each variant must convert to a `u8` of its priority level.
 ///
 /// # Safety
 ///
@@ -107,9 +106,8 @@ pub unsafe trait PriorityNumber: Copy {
 
 /// Trait for enums of HART identifiers.
 ///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available HARTs for a specific device.
-/// Each variant must convert to a `u16` of its HART ID number.
+/// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
+/// HARTs for a specific device. Each variant must convert to a `u16` of its HART ID number.
 ///
 /// # Safety
 ///
@@ -129,93 +127,4 @@ pub unsafe trait HartIdNumber: Copy {
     /// Tries to convert a number to a valid HART ID.
     /// If the conversion fails, it returns an error with the number back.
     fn from_number(value: u16) -> Result<Self, u16>;
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, ExceptionNumber)]
-    #[repr(u16)]
-    enum Exception {
-        E1 = 1,
-        E3 = 3,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, InterruptNumber)]
-    #[repr(u16)]
-    enum Interrupt {
-        I1 = 1,
-        I2 = 2,
-        I4 = 4,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, PriorityNumber)]
-    #[repr(u8)]
-    enum Priority {
-        P0 = 0,
-        P1 = 1,
-        P2 = 2,
-        P3 = 3,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, HartIdNumber)]
-    #[repr(u16)]
-    enum HartId {
-        H0 = 0,
-        H1 = 1,
-        H2 = 2,
-    }
-
-    #[test]
-    fn check_exception_enum() {
-        assert_eq!(Exception::E1.number(), 1);
-        assert_eq!(Exception::E3.number(), 3);
-
-        assert_eq!(Exception::from_number(0), Err(0));
-        assert_eq!(Exception::from_number(1), Ok(Exception::E1));
-        assert_eq!(Exception::from_number(2), Err(2));
-        assert_eq!(Exception::from_number(3), Ok(Exception::E3));
-        assert_eq!(Exception::from_number(4), Err(4));
-    }
-
-    #[test]
-    fn check_interrupt_enum() {
-        assert_eq!(Interrupt::I1.number(), 1);
-        assert_eq!(Interrupt::I2.number(), 2);
-        assert_eq!(Interrupt::I4.number(), 4);
-
-        assert_eq!(Interrupt::from_number(0), Err(0));
-        assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
-        assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-        assert_eq!(Interrupt::from_number(3), Err(3));
-        assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-        assert_eq!(Interrupt::from_number(5), Err(5));
-    }
-
-    #[test]
-    fn check_priority_enum() {
-        assert_eq!(Priority::P0.number(), 0);
-        assert_eq!(Priority::P1.number(), 1);
-        assert_eq!(Priority::P2.number(), 2);
-        assert_eq!(Priority::P3.number(), 3);
-
-        assert_eq!(Priority::from_number(0), Ok(Priority::P0));
-        assert_eq!(Priority::from_number(1), Ok(Priority::P1));
-        assert_eq!(Priority::from_number(2), Ok(Priority::P2));
-        assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-        assert_eq!(Priority::from_number(4), Err(4));
-    }
-
-    #[test]
-    fn check_hart_id_enum() {
-        assert_eq!(HartId::H0.number(), 0);
-        assert_eq!(HartId::H1.number(), 1);
-        assert_eq!(HartId::H2.number(), 2);
-
-        assert_eq!(HartId::from_number(0), Ok(HartId::H0));
-        assert_eq!(HartId::from_number(1), Ok(HartId::H1));
-        assert_eq!(HartId::from_number(2), Ok(HartId::H2));
-        assert_eq!(HartId::from_number(3), Err(3));
-    }
 }

@@ -1,0 +1,9 @@
+error[E0512]: cannot transmute between types of different sizes, or dependently-sized types
+ --> tests/ui/fail_wrong_repr.rs:1:1
+  |
+1 | #[riscv_pac::pac_enum(unsafe InterruptNumber)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: source type: `u16` (16 bits)
+  = note: target type: `Interrupt` (8 bits)
+  = note: this error originates in the attribute macro `riscv_pac::pac_enum` (in Nightly builds, run with -Z macro-backtrace for more info)
