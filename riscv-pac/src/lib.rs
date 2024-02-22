@@ -1,5 +1,7 @@
 #![no_std]
 
+pub use riscv_pac_macros::*;
+
 /// Trait for enums of target-specific exception numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
@@ -133,23 +135,22 @@ pub unsafe trait HartIdNumber: Copy {
 mod test {
     use super::*;
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, ExceptionNumber)]
     #[repr(u16)]
     enum Exception {
         E1 = 1,
         E3 = 3,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, InterruptNumber)]
     #[repr(u16)]
     enum Interrupt {
         I1 = 1,
         I2 = 2,
-        I3 = 3,
         I4 = 4,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, PriorityNumber)]
     #[repr(u8)]
     enum Priority {
         P0 = 0,
@@ -158,90 +159,12 @@ mod test {
         P3 = 3,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, HartIdNumber)]
     #[repr(u16)]
-    enum Context {
-        C0 = 0,
-        C1 = 1,
-        C2 = 2,
-    }
-
-    unsafe impl ExceptionNumber for Exception {
-        const MAX_EXCEPTION_NUMBER: u16 = Self::E3 as u16;
-
-        #[inline]
-        fn number(self) -> u16 {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
-            if number > Self::MAX_EXCEPTION_NUMBER || number == 0 {
-                Err(number)
-            } else if number == 1 || number == 3 {
-                // SAFETY: valid exception number
-                Ok(unsafe { core::mem::transmute(number) })
-            } else {
-                Err(number)
-            }
-        }
-    }
-
-    unsafe impl InterruptNumber for Interrupt {
-        const MAX_INTERRUPT_NUMBER: u16 = Self::I4 as u16;
-
-        #[inline]
-        fn number(self) -> u16 {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
-            if number > Self::MAX_INTERRUPT_NUMBER || number == 0 {
-                Err(number)
-            } else {
-                // SAFETY: valid interrupt number
-                Ok(unsafe { core::mem::transmute(number) })
-            }
-        }
-    }
-
-    unsafe impl PriorityNumber for Priority {
-        const MAX_PRIORITY_NUMBER: u8 = Self::P3 as u8;
-
-        #[inline]
-        fn number(self) -> u8 {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: u8) -> Result<Self, u8> {
-            if number > Self::MAX_PRIORITY_NUMBER {
-                Err(number)
-            } else {
-                // SAFETY: valid priority number
-                Ok(unsafe { core::mem::transmute(number) })
-            }
-        }
-    }
-
-    unsafe impl HartIdNumber for Context {
-        const MAX_HART_ID_NUMBER: u16 = Self::C2 as u16;
-
-        #[inline]
-        fn number(self) -> u16 {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
-            if number > Self::MAX_HART_ID_NUMBER {
-                Err(number)
-            } else {
-                // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute(number) })
-            }
-        }
+    enum HartId {
+        H0 = 0,
+        H1 = 1,
+        H2 = 2,
     }
 
     #[test]
@@ -249,11 +172,10 @@ mod test {
         assert_eq!(Exception::E1.number(), 1);
         assert_eq!(Exception::E3.number(), 3);
 
-        assert_eq!(Exception::from_number(1), Ok(Exception::E1));
-        assert_eq!(Exception::from_number(3), Ok(Exception::E3));
-
         assert_eq!(Exception::from_number(0), Err(0));
+        assert_eq!(Exception::from_number(1), Ok(Exception::E1));
         assert_eq!(Exception::from_number(2), Err(2));
+        assert_eq!(Exception::from_number(3), Ok(Exception::E3));
         assert_eq!(Exception::from_number(4), Err(4));
     }
 
@@ -261,15 +183,13 @@ mod test {
     fn check_interrupt_enum() {
         assert_eq!(Interrupt::I1.number(), 1);
         assert_eq!(Interrupt::I2.number(), 2);
-        assert_eq!(Interrupt::I3.number(), 3);
         assert_eq!(Interrupt::I4.number(), 4);
 
+        assert_eq!(Interrupt::from_number(0), Err(0));
         assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
         assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-        assert_eq!(Interrupt::from_number(3), Ok(Interrupt::I3));
+        assert_eq!(Interrupt::from_number(3), Err(3));
         assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-
-        assert_eq!(Interrupt::from_number(0), Err(0));
         assert_eq!(Interrupt::from_number(5), Err(5));
     }
 
@@ -284,20 +204,18 @@ mod test {
         assert_eq!(Priority::from_number(1), Ok(Priority::P1));
         assert_eq!(Priority::from_number(2), Ok(Priority::P2));
         assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-
         assert_eq!(Priority::from_number(4), Err(4));
     }
 
     #[test]
-    fn check_context_enum() {
-        assert_eq!(Context::C0.number(), 0);
-        assert_eq!(Context::C1.number(), 1);
-        assert_eq!(Context::C2.number(), 2);
+    fn check_hart_id_enum() {
+        assert_eq!(HartId::H0.number(), 0);
+        assert_eq!(HartId::H1.number(), 1);
+        assert_eq!(HartId::H2.number(), 2);
 
-        assert_eq!(Context::from_number(0), Ok(Context::C0));
-        assert_eq!(Context::from_number(1), Ok(Context::C1));
-        assert_eq!(Context::from_number(2), Ok(Context::C2));
-
-        assert_eq!(Context::from_number(3), Err(3));
+        assert_eq!(HartId::from_number(0), Ok(HartId::H0));
+        assert_eq!(HartId::from_number(1), Ok(HartId::H1));
+        assert_eq!(HartId::from_number(2), Ok(HartId::H2));
+        assert_eq!(HartId::from_number(3), Err(3));
     }
 }
