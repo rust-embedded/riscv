@@ -22,7 +22,8 @@
 //!
 //! - A `_sheap` symbol at whose address you can locate a heap.
 //!
-//! - Support for a runtime in supervisor mode, that can be bootstrapped via [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc)
+//! - Support for a runtime in supervisor mode, that can be bootstrapped via
+//!   [Supervisor Binary Interface (SBI)](https://github.com/riscv-non-isa/riscv-sbi-doc).
 //!
 //! ``` text
 //! $ cargo new --bin app && cd $_
@@ -30,7 +31,7 @@
 //! $ # add this crate as a dependency
 //! $ edit Cargo.toml && cat $_
 //! [dependencies]
-//! riscv-rt = "0.6.1"
+//! riscv-rt = "0.13.0"
 //! panic-halt = "0.2.0"
 //!
 //! $ # memory layout of the device
@@ -245,6 +246,8 @@
 //!
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 //!
+//! `_mp_hook` is only necessary in multi-core targets. If the `single-hart` feature is enabled,
+//! `_mp_hook` is not called, as it is assumed that there is only one hart on the target.
 //!
 //! ### Core exception handlers
 //!
@@ -311,13 +314,10 @@
 //!
 //! This functions are called when corresponding interrupt is occured.
 //! You can define an interrupt handler with one of the following names:
-//! * `UserSoft`
 //! * `SupervisorSoft`
 //! * `MachineSoft`
-//! * `UserTimer`
 //! * `SupervisorTimer`
 //! * `MachineTimer`
-//! * `UserExternal`
 //! * `SupervisorExternal`
 //! * `MachineExternal`
 //!
@@ -361,11 +361,12 @@
 //!
 //! Default implementation of this function stucks in a busy-loop.
 //!
-//! # Features
+//! # Cargo Features
 //!
 //! ## `single-hart`
 //!
 //! This feature saves a little code size if there is only one hart on the target.
+//! If the `single-hart` feature is enabled, `_mp_hook` is not called.
 //!
 //! ## `s-mode`
 //!
@@ -376,9 +377,7 @@
 //! [dependencies]
 //! riscv-rt = {features=["s-mode"]}
 //! ```
-//! Internally, riscv-rt uses different versions of precompiled static libraries
-//! for (i) machine mode and (ii) supervisor mode. If the `s-mode` feature was activated,
-//! the build script selects the s-mode library. While most registers/instructions have variants for
+//! While most registers/instructions have variants for
 //! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
 //! mode. Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
 //!
@@ -404,22 +403,11 @@
 #[cfg(riscv)]
 mod asm;
 
-use core::sync::atomic::{compiler_fence, Ordering};
-
 #[cfg(feature = "s-mode")]
 use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
 
 #[cfg(not(feature = "s-mode"))]
 use riscv::register::{mcause as xcause, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
-
-#[cfg(all(not(feature = "single-hart"), not(feature = "s-mode")))]
-use riscv::register::mhartid;
-
-#[cfg(all(feature = "s-mode", any(riscvf, riscvd)))]
-use riscv::register::sstatus as xstatus;
-
-#[cfg(all(not(feature = "s-mode"), any(riscvf, riscvd)))]
-use riscv::register::mstatus as xstatus;
 
 pub use riscv_rt_macros::{entry, pre_init};
 
@@ -430,156 +418,6 @@ pub use riscv_rt_macros::{entry, pre_init};
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
-
-/// Rust entry point (_start_rust)
-///
-/// Zeros bss section, initializes data section and calls main. This function never returns.
-///
-/// # Safety
-///
-/// This function must be called only from assembly `_start` function.
-/// Do **NOT** call this function directly.
-#[link_section = ".init.rust"]
-#[export_name = "_start_rust"]
-pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
-    #[rustfmt::skip]
-    extern "Rust" {
-        // This symbol will be provided by the user via `#[entry]`
-        fn main(a0: usize, a1: usize, a2: usize) -> !;
-
-        // This symbol will be provided by the user via `#[pre_init]`
-        fn __pre_init();
-
-        fn _setup_interrupts();
-
-        fn _mp_hook(hartid: usize) -> bool;
-    }
-
-    #[cfg(not(feature = "single-hart"))]
-    let run_init = {
-        // sbi passes hartid as first parameter (a0)
-        #[cfg(feature = "s-mode")]
-        let hartid = a0;
-        #[cfg(not(feature = "s-mode"))]
-        let hartid = mhartid::read();
-
-        _mp_hook(hartid)
-    };
-    #[cfg(feature = "single-hart")]
-    let run_init = true;
-
-    if run_init {
-        __pre_init();
-
-        // Initialize RAM
-        // 1. Copy over .data from flash to RAM
-        // 2. Zero out .bss
-
-        #[cfg(target_arch = "riscv32")]
-        core::arch::asm!(
-            "
-                // Copy over .data
-                la      {start},_sdata
-                la      {end},_edata
-                la      {input},_sidata
-
-            	bgeu    {start},{end},2f
-            1:
-            	lw      {a},0({input})
-            	addi    {input},{input},4
-            	sw      {a},0({start})
-            	addi    {start},{start},4
-            	bltu    {start},{end},1b
-
-            2:
-                li      {a},0
-                li      {input},0
-
-                // Zero out .bss
-            	la      {start},_sbss
-            	la      {end},_ebss
-
-            	bgeu    {start},{end},3f
-            2:
-            	sw      zero,0({start})
-            	addi    {start},{start},4
-            	bltu    {start},{end},2b
-
-            3:
-                li      {start},0
-                li      {end},0
-            ",
-            start = out(reg) _,
-            end = out(reg) _,
-            input = out(reg) _,
-            a = out(reg) _,
-        );
-
-        #[cfg(target_arch = "riscv64")]
-        core::arch::asm!(
-            "
-                // Copy over .data
-                la      {start},_sdata
-                la      {end},_edata
-                la      {input},_sidata
-
-                bgeu    {start},{end},2f
-
-            1: // .data Main Loop
-            	ld      {a},0({input})
-            	addi    {input},{input},8
-            	sd      {a},0({start})
-            	addi    {start},{start},8
-            	bltu    {start},{end},1b
-
-            2: // .data zero registers
-                li      {a},0
-                li      {input},0
-
-            	la      {start},_sbss
-            	la      {end},_ebss
-
-                bgeu    {start},{end},4f
-
-            3: // .bss main loop
-            	sd      zero,0({start})
-            	addi    {start},{start},8
-            	bltu    {start},{end},3b
-
-            4: // .bss zero registers
-                //    Zero out used registers
-                li      {start},0
-                li      {end},0
-        ",
-            start = out(reg) _,
-            end = out(reg) _,
-            input = out(reg) _,
-            a = out(reg) _,
-        );
-
-        compiler_fence(Ordering::SeqCst);
-    }
-
-    #[cfg(any(riscvf, riscvd))]
-    {
-        xstatus::set_fs(xstatus::FS::Initial); // Enable fpu in xstatus
-        core::arch::asm!("fscsr x0"); // Zero out fcsr register csrrw x0, fcsr, x0
-
-        // Zero out floating point registers
-        #[cfg(all(target_arch = "riscv32", riscvd))]
-        riscv_rt_macros::loop_asm!("fcvt.d.w f{}, x0", 32);
-
-        #[cfg(all(target_arch = "riscv64", riscvd))]
-        riscv_rt_macros::loop_asm!("fmv.d.x f{}, x0", 32);
-
-        #[cfg(not(riscvd))]
-        riscv_rt_macros::loop_asm!("fmv.w.x f{}, x0", 32);
-    }
-
-    _setup_interrupts();
-
-    main(a0, a1, a2);
-}
 
 /// Registers saved in trap handler
 #[allow(missing_docs)]
@@ -637,7 +475,6 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
         } else {
             ExceptionHandler(trap_frame);
         }
-        ExceptionHandler(trap_frame)
     } else if code < __INTERRUPTS.len() {
         let h = &__INTERRUPTS[code];
         if let Some(handler) = h {

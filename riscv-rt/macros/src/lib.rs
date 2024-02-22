@@ -212,7 +212,8 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
 
 struct AsmLoopArgs {
     asm_template: String,
-    count: usize,
+    count_from: usize,
+    count_to: usize,
 }
 
 impl Parse for AsmLoopArgs {
@@ -220,24 +221,35 @@ impl Parse for AsmLoopArgs {
         let template: LitStr = input.parse().unwrap();
         _ = input.parse::<Token![,]>().unwrap();
         let count: LitInt = input.parse().unwrap();
-
-        Ok(Self {
-            asm_template: template.value(),
-            count: count.base10_parse().unwrap(),
-        })
+        if input.parse::<Token![,]>().is_ok() {
+            let count_to: LitInt = input.parse().unwrap();
+            Ok(Self {
+                asm_template: template.value(),
+                count_from: count.base10_parse().unwrap(),
+                count_to: count_to.base10_parse().unwrap(),
+            })
+        } else {
+            Ok(Self {
+                asm_template: template.value(),
+                count_from: 0,
+                count_to: count.base10_parse().unwrap(),
+            })
+        }
     }
 }
 
 /// Loops an asm expression n times.
 ///
-/// `loop_asm!` takes 2 arguments, the first is a string literal and the second is a number literal
-/// See [the formatting syntax documentation in `std::fmt`](../std/fmt/index.html)
-/// for details.
+/// `loop_asm!` takes 2 or 3 arguments, the first is a string literal and the rest are a number literal
+/// See [the formatting syntax documentation in `std::fmt`](../std/fmt/index.html) for details.
 ///
 /// Argument 1 is an assembly expression, all "{}" in this assembly expression will be replaced with the
 /// current loop index.
 ///
-/// Argument 2 is the number of loops to do with the provided expression.
+/// If 2 arguments are provided, the loop will start at 0 and end at the number provided in argument 2.
+///
+/// If 3 arguments are provided, the loop will start at the number provided in argument 2 and end at
+/// the number provided in argument 3.
 ///
 /// # Examples
 ///
@@ -245,13 +257,14 @@ impl Parse for AsmLoopArgs {
 /// # use riscv_rt_macros::loop_asm;
 /// unsafe {
 ///     loop_asm!("fmv.w.x f{}, x0", 32); // => core::arch::asm!("fmv.w.x f0, x0") ... core::arch::asm!("fmv.w.x f31, x0")
+///     loop_asm!("fmv.w.x f{}, x0", 1, 32); // => core::arch::asm!("fmv.w.x f1, x0") ... core::arch::asm!("fmv.w.x f31, x0")
 /// }
 /// ```
 #[proc_macro]
 pub fn loop_asm(input: TokenStream) -> TokenStream {
     let args = parse_macro_input!(input as AsmLoopArgs);
 
-    let tokens = (0..args.count)
+    let tokens = (args.count_from..args.count_to)
         .map(|i| {
             let i = i.to_string();
             let asm = args.asm_template.replace("{}", &i);
@@ -260,4 +273,42 @@ pub fn loop_asm(input: TokenStream) -> TokenStream {
         .collect::<Vec<String>>()
         .join("\n");
     tokens.parse().unwrap()
+}
+
+/// Loops a global_asm expression n times.
+///
+/// `loop_global_asm!` takes 2 or 3 arguments, the first is a string literal and the rest are a number literal
+/// See [the formatting syntax documentation in `std::fmt`](../std/fmt/index.html) for details.
+///
+/// Argument 1 is an assembly expression, all "{}" in this assembly expression will be replaced with the
+/// current loop index.
+///
+/// If 2 arguments are provided, the loop will start at 0 and end at the number provided in argument 2.
+///
+/// If 3 arguments are provided, the loop will start at the number provided in argument 2 and end at
+/// the number provided in argument 3.
+///
+/// # Examples
+///
+/// ```
+/// # use riscv_rt_macros::loop_global_asm;
+/// unsafe {
+///     loop_global_asm!("fmv.w.x f{}, x0", 32); // => core::arch::global_asm!("fmv.w.x f0, x0") ... core::arch::global_asm!("fmv.w.x f31, x0")
+///     loop_global_asm!("fmv.w.x f{}, x0", 1, 32); // => core::arch::global_asm!("fmv.w.x f1, x0") ... core::arch::global_asm!("fmv.w.x f31, x0")
+/// }
+/// ```
+#[proc_macro]
+pub fn loop_global_asm(input: TokenStream) -> TokenStream {
+    let args = parse_macro_input!(input as AsmLoopArgs);
+
+    let instructions = (args.count_from..args.count_to)
+        .map(|i| {
+            let i = i.to_string();
+            args.asm_template.replace("{}", &i)
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    let res = format!("core::arch::global_asm!(\n\"{}\"\n);", instructions);
+    res.parse().unwrap()
 }

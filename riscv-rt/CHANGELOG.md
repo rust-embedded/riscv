@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Moved all the assembly code to `asm.rs`
+
+### Removed
+
+- `start_rust` is no longer needed, as it is now written in assembly
+
 ## [v0.12.2] - 2024-02-15
 
 ### Added
@@ -33,6 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed _start_rust. Now, assembly directly jumps to main
 - Removed U-mode interrupts to align with latest RISC-V specification
 - Changed `Vector` union. Now, it uses `Option<fn>`, which is more idiomatic in Rust
 - Removed riscv-target dependency for build
