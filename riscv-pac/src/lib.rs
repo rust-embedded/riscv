@@ -4,12 +4,13 @@ pub mod result;
 
 use result::Result;
 
+#[cfg(feature = "riscv-pac-macros")]
 pub use riscv_pac_macros::*;
 
 /// Trait for enums of target-specific exception numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-/// exceptions for a specific device. Alternatively, the [`riscv`] crate provides a default
+/// exceptions for a specific device. Alternatively, the `riscv` crate provides a default
 /// implementation for the RISC-V ISA. Each variant must convert to a `u16` of its exception number.
 ///
 /// # Safety
@@ -35,7 +36,7 @@ pub unsafe trait ExceptionNumber: Copy {
 /// Trait for enums of target-specific interrupt numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-// interrupts for a specific device. Alternatively, the [`riscv`] crate provides a default
+/// interrupts for a specific device. Alternatively, the `riscv` crate provides a default
 /// implementation for the RISC-V ISA. Each variant must convert to a `u16` of its interrupt number.
 ///
 /// # Safety
@@ -58,12 +59,11 @@ pub unsafe trait InterruptNumber: Copy {
     fn from_number(value: u16) -> Result<Self>;
 }
 
-/// Trait for enums of target-specific core interrupt numbers.
+/// Marker trait for enums of target-specific core interrupt numbers.
 ///
-/// Core interrupts are interrupts are retrieved from the `mcause` CSR.
-/// Usually, vectored mode is only available for core interrupts.
-/// The `riscv` crate provides a default implementation for the RISC-V ISA.
-/// However, a PAC may override the default implementation if the target has a
+/// Core interrupts are interrupts are retrieved from the `mcause` CSR. Usually, vectored mode is
+/// only available for core interrupts. The `riscv` crate provides a default implementation for
+/// the RISC-V ISA. However, a PAC may override the default implementation if the target has a
 /// different interrupt numbering scheme (e.g., ESP32C3).
 ///
 /// # Safety
@@ -71,7 +71,7 @@ pub unsafe trait InterruptNumber: Copy {
 /// Each enum variant must represent a valid core interrupt number read from the `mcause` CSR.
 pub unsafe trait CoreInterruptNumber: InterruptNumber {}
 
-/// Trait for enums of target-specific external interrupt numbers.
+/// Marker trait for enums of target-specific external interrupt numbers.
 ///
 /// External interrupts are interrupts caused by external sources (e.g., GPIO, UART, SPI).
 /// External interrupts are **not** retrieved from the `mcause` CSR.
@@ -85,9 +85,8 @@ pub unsafe trait ExternalInterruptNumber: InterruptNumber {}
 
 /// Trait for enums of priority levels.
 ///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available priority numbers for a specific device.
-/// Each variant must convert to a `u8` of its priority level.
+/// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
+/// priority numbers for a specific device. Each variant must convert to a `u8` of its priority level.
 ///
 /// # Safety
 ///
@@ -111,9 +110,8 @@ pub unsafe trait PriorityNumber: Copy {
 
 /// Trait for enums of HART identifiers.
 ///
-/// This trait should be implemented by a peripheral access crate (PAC)
-/// on its enum of available HARTs for a specific device.
-/// Each variant must convert to a `u16` of its HART ID number.
+/// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
+/// HARTs for a specific device. Each variant must convert to a `u16` of its HART ID number.
 ///
 /// # Safety
 ///

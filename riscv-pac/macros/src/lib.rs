@@ -6,8 +6,8 @@ extern crate syn;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use std::{collections::HashMap, convert::TryFrom, ops::Range, str::FromStr};
-use syn::{parse_macro_input, Data, DeriveInput, Error, Ident};
+use std::{collections::HashMap, ops::Range, str::FromStr};
+use syn::{parse_macro_input, Data, DeriveInput, Ident};
 
 struct PacNumberEnum {
     name: Ident,
@@ -15,62 +15,7 @@ struct PacNumberEnum {
 }
 
 impl PacNumberEnum {
-    fn valid_condition(&self) -> TokenStream2 {
-        let mut arms = Vec::new();
-        for range in &self.valid_ranges {
-            let (start, end) = (range.start, range.end);
-            if end - start == 1 {
-                arms.push(TokenStream2::from_str(&format!("number == {start}")).unwrap());
-            } else {
-                arms.push(
-                    TokenStream2::from_str(&format!("({start}..{end}).contains(&number)")).unwrap(),
-                );
-            }
-        }
-        quote! { #(#arms) || * }
-    }
-
-    fn max_discriminant(&self) -> TokenStream2 {
-        let max_discriminant = self.valid_ranges.last().expect("invalid range").end - 1;
-        TokenStream2::from_str(&format!("{max_discriminant}")).unwrap()
-    }
-
-    fn quote(&self, trait_name: &str, num_type: &str, const_name: &str) -> TokenStream2 {
-        let name = &self.name;
-        let max_discriminant = self.max_discriminant();
-        let valid_condition = self.valid_condition();
-
-        let trait_name = TokenStream2::from_str(trait_name).unwrap();
-        let num_type = TokenStream2::from_str(num_type).unwrap();
-        let const_name = TokenStream2::from_str(const_name).unwrap();
-
-        quote! {
-            unsafe impl #trait_name for #name {
-                const #const_name: #num_type = #max_discriminant;
-
-                #[inline]
-                fn number(self) -> #num_type {
-                    self as _
-                }
-
-                #[inline]
-                fn from_number(number: #num_type) -> Result<Self, #num_type> {
-                    if #valid_condition {
-                        // SAFETY: The number is valid for this enum
-                        Ok(unsafe { core::mem::transmute(number) })
-                    } else {
-                        Err(number)
-                    }
-                }
-            }
-        }
-    }
-}
-
-impl TryFrom<DeriveInput> for PacNumberEnum {
-    type Error = Error;
-
-    fn try_from(input: DeriveInput) -> Result<Self, Self::Error> {
+    fn new(input: &DeriveInput) -> Self {
         let variants = match &input.data {
             Data::Enum(data) => &data.variants,
             _ => panic!("Input is not an enum"),
@@ -115,45 +60,146 @@ impl TryFrom<DeriveInput> for PacNumberEnum {
         }
         valid_ranges.push(start..end + 1);
 
-        Ok(PacNumberEnum {
+        Self {
             name: input.ident.clone(),
             valid_ranges,
-        })
+        }
+    }
+
+    fn valid_condition(&self) -> TokenStream2 {
+        let mut arms = Vec::new();
+        for range in &self.valid_ranges {
+            let (start, end) = (range.start, range.end);
+            if end - start == 1 {
+                arms.push(TokenStream2::from_str(&format!("number == {start}")).unwrap());
+            } else {
+                arms.push(
+                    TokenStream2::from_str(&format!("({start}..{end}).contains(&number)")).unwrap(),
+                );
+            }
+        }
+        quote! { #(#arms) || * }
+    }
+
+    fn max_discriminant(&self) -> TokenStream2 {
+        let max_discriminant = self.valid_ranges.last().expect("invalid range").end - 1;
+        TokenStream2::from_str(&format!("{max_discriminant}")).unwrap()
+    }
+
+    fn quote(&self, trait_name: &str, num_type: &str, const_name: &str) -> TokenStream2 {
+        let name = &self.name;
+        let max_discriminant = self.max_discriminant();
+        let valid_condition = self.valid_condition();
+
+        let trait_name = TokenStream2::from_str(trait_name).unwrap();
+        let num_type = TokenStream2::from_str(num_type).unwrap();
+        let const_name = TokenStream2::from_str(const_name).unwrap();
+
+        quote! {
+            unsafe impl riscv_pac::#trait_name for #name {
+                const #const_name: #num_type = #max_discriminant;
+
+                #[inline]
+                fn number(self) -> #num_type {
+                    self as _
+                }
+
+                #[inline]
+                fn from_number(number: #num_type) -> Result<Self, #num_type> {
+                    if #valid_condition {
+                        // SAFETY: The number is valid for this enum
+                        Ok(unsafe { core::mem::transmute(number) })
+                    } else {
+                        Err(number)
+                    }
+                }
+            }
+        }
     }
 }
 
-#[proc_macro_derive(ExceptionNumber)]
-pub fn exception_number_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let pac_enum = PacNumberEnum::try_from(input).unwrap();
-    pac_enum
-        .quote("ExceptionNumber", "u16", "MAX_EXCEPTION_NUMBER")
-        .into()
-}
+/// Attribute-like macro that implements the traits of the `riscv-pac` crate for a given enum.
+///
+/// As these traits are unsafe, the macro must be called with the `unsafe` keyword followed by the trait name.
+/// In this way, we warn callers that they must comply with the requirements of the trait.
+///
+/// The trait name must be one of `ExceptionNumber`, `InterruptNumber`, `PriorityNumber`, or `HartIdNumber`.
+/// Marker traits `CoreInterruptNumber` and `ExternalInterruptNumber` cannot be implemented using this macro.
+///
+/// # Note
+///
+/// To implement number-to-enum operation, the macro works with ranges of valid discriminant numbers.
+/// If the number is within any of the valid ranges, the number is transmuted to the enum variant.
+/// In this way, the macro achieves better performance for enums with a large number of consecutive variants.
+/// Thus, the enum must comply with the following requirements:
+///
+/// - All the enum variants must have a valid discriminant number (i.e., a number that is within the valid range of the enum).
+/// - For the `ExceptionNumber`, `InterruptNumber`, and `HartIdNumber` traits, the enum must be annotated as `#[repr(u16)]`
+/// - For the `PriorityNumber` trait, the enum must be annotated as `#[repr(u8)]`
+///
+/// If the enum does not meet these requirements, you will have to implement the traits manually (e.g., `riscv::mcause::Interrupt`).
+/// For enums with a small number of consecutive variants, it might be better to implement the traits manually.
+///
+/// # Safety
+///
+/// The struct to be implemented must comply with the requirements of the specified trait.
+///
+/// # Example
+///
+/// ```rust
+/// use riscv_pac::*;
+///
+/// #[repr(u16)]
+/// #[pac_enum(unsafe ExceptionNumber)]
+/// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+/// enum Exception {
+///     E1 = 1,
+///     E3 = 3,
+/// }
+///
+/// fn main() {
+///     assert_eq!(Exception::E1.number(), 1);
+///     assert_eq!(Exception::E3.number(), 3);
+///
+///     assert_eq!(Exception::from_number(1), Ok(Exception::E1));
+///     assert_eq!(Exception::from_number(2), Err(2));
+///     assert_eq!(Exception::from_number(3), Ok(Exception::E3));
+///
+///     assert_eq!(Exception::MAX_EXCEPTION_NUMBER, 3);
+/// }
+///```
+#[proc_macro_attribute]
+pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as DeriveInput);
+    let pac_enum = PacNumberEnum::new(&input);
 
-#[proc_macro_derive(InterruptNumber)]
-pub fn interrupt_number_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let pac_enum = PacNumberEnum::try_from(input).unwrap();
-    pac_enum
-        .quote("InterruptNumber", "u16", "MAX_INTERRUPT_NUMBER")
-        .into()
-}
+    // attr should be unsafe ExceptionNumber, unsafe InterruptNumber, unsafe PriorityNumber, or unsafe HartIdNumber
+    // assert that attribute starts with the unsafe token. If not, raise a panic error
+    let attr = attr.to_string();
+    // split string into words and check if the first word is "unsafe"
+    let attrs = attr.split_whitespace().collect::<Vec<&str>>();
+    if attrs.is_empty() {
+        panic!("Attribute is empty. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'");
+    }
+    if attrs.len() > 2 {
+        panic!(
+            "Wrong attribute format. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'"
+        );
+    }
+    if attrs[0] != "unsafe" {
+        panic!("Attribute does not start with 'unsafe'. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'");
+    }
 
-#[proc_macro_derive(PriorityNumber)]
-pub fn priority_number_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let pac_enum = PacNumberEnum::try_from(input).unwrap();
-    pac_enum
-        .quote("PriorityNumber", "u8", "MAX_PRIORITY_NUMBER")
-        .into()
-}
-
-#[proc_macro_derive(HartIdNumber)]
-pub fn hart_id_number_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let pac_enum = PacNumberEnum::try_from(input).unwrap();
-    pac_enum
-        .quote("HartIdNumber", "u16", "MAX_HART_ID_NUMBER")
-        .into()
+    let trait_impl = match attrs[1] {
+        "ExceptionNumber" => pac_enum.quote("ExceptionNumber", "u16", "MAX_EXCEPTION_NUMBER"),
+        "InterruptNumber" => pac_enum.quote("InterruptNumber", "u16", "MAX_INTERRUPT_NUMBER"),
+        "PriorityNumber" => pac_enum.quote("PriorityNumber", "u8", "MAX_PRIORITY_NUMBER"),
+        "HartIdNumber" => pac_enum.quote("HartIdNumber", "u16", "MAX_HART_ID_NUMBER"),
+        _ => panic!("Unknown trait '{}'. Expected: 'ExceptionNumber', 'InterruptNumber', 'PriorityNumber', or 'HartIdNumber'", attrs[1]),
+    };
+    quote! {
+        #input
+        #trait_impl
+    }
+    .into()
 }

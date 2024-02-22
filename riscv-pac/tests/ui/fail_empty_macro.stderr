@@ -1,0 +1,7 @@
+error: custom attribute panicked
+ --> tests/ui/fail_empty_macro.rs:1:1
+  |
+1 | #[riscv_pac::pac_enum]
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: message: Attribute is empty. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'

@@ -1,0 +1,7 @@
+error: custom attribute panicked
+ --> tests/ui/fail_unknown_trait.rs:1:1
+  |
+1 | #[riscv_pac::pac_enum(unsafe CoreInterruptNumber)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = help: message: Unknown trait 'CoreInterruptNumber'. Expected: 'ExceptionNumber', 'InterruptNumber', 'PriorityNumber', or 'HartIdNumber'
