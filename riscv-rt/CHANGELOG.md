@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `pre_init_trap` to detect early errors during the boot process.
+
 ### Changed
 
 - Moved all the assembly code to `asm.rs`

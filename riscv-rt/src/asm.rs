@@ -66,12 +66,19 @@ _abs_start:
     .option norelax
     .cfi_startproc
     .cfi_undefined ra",
+    // Disable interrupts
     #[cfg(feature = "s-mode")]
     "csrw sie, 0
     csrw sip, 0",
     #[cfg(not(feature = "s-mode"))]
     "csrw mie, 0
     csrw mip, 0",
+    // Set pre-init trap vector
+    "la t0, pre_init_trap",
+    #[cfg(feature = "s-mode")]
+    "csrw stvec, t0",
+    #[cfg(not(feature = "s-mode"))]
+    "csrw mtvec, t0",
 );
 
 // ZERO OUT GENERAL-PURPOSE REGISTERS
@@ -280,10 +287,14 @@ trap_handler!(
      (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
 );
 
-// Make sure there is an abort when linking
+#[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-     .globl abort
-abort:
-    j abort"
+    .global abort
+abort:  // make sure there is an abort symbol when linking
+    j abort
+
+    .align  2
+pre_init_trap:  // if you end up here, there is a bug in the boot code
+    j pre_init_trap"
 );
