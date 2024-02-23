@@ -172,9 +172,9 @@ cfg_global_asm!(
     bgeu t0, t2, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
-    "lw t3, 0(t1)
+    "lw a5, 0(t1)
     addi t1, t1, 4
-    sw t3, 0(t0)
+    sw a5, 0(t0)
     addi t0, t0, 4
     bltu t0, t2, 1b",
     #[cfg(target_arch = "riscv64")]
