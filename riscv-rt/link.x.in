@@ -7,7 +7,7 @@
   static mut _heap_size }`).
 
 - `EXTERN` forces the linker to keep a symbol in the final binary. We use this to make sure a
-  symbol if not dropped if it appears in or near the front of the linker arguments and "it's not
+  symbol is not dropped if it appears in or near the front of the linker arguments and "it's not
   needed" by any of the preceding objects (linker arguments)
 
 - `PROVIDE` is used to provide default values that can be overridden by a user linker script
@@ -28,6 +28,15 @@ PROVIDE(_max_hart_id = 0);
 PROVIDE(_hart_stack_size = 2K);
 PROVIDE(_heap_size = 0);
 
+/** EXCEPTION HANDLERS **/
+
+/* Default exception handler. The riscv-rt crate provides a weak alias of this function,
+   which is a busy loop. Users can override this alias by defining the symbol themselves */
+EXTERN(ExceptionHandler);
+
+/* It is possible to define a special handler for each exception type.
+   By default, all exceptions are handled by ExceptionHandler. However, users can
+   override these alias by defining the symbol themselves */
 PROVIDE(InstructionMisaligned = ExceptionHandler);
 PROVIDE(InstructionFault = ExceptionHandler);
 PROVIDE(IllegalInstruction = ExceptionHandler);
@@ -43,38 +52,21 @@ PROVIDE(InstructionPageFault = ExceptionHandler);
 PROVIDE(LoadPageFault = ExceptionHandler);
 PROVIDE(StorePageFault = ExceptionHandler);
 
+/** INTERRUPT HANDLERS **/
+
+/* Default interrupt handler. The riscv-rt crate provides a weak alias of this function,
+   which is a busy loop. Users can override this alias by defining the symbol themselves */
+EXTERN(DefaultHandler);
+
+/* It is possible to define a special handler for each interrupt type.
+   By default, all interrupts are handled by DefaultHandler. However, users can
+   override these alias by defining the symbol themselves */
 PROVIDE(SupervisorSoft = DefaultHandler);
 PROVIDE(MachineSoft = DefaultHandler);
 PROVIDE(SupervisorTimer = DefaultHandler);
 PROVIDE(MachineTimer = DefaultHandler);
 PROVIDE(SupervisorExternal = DefaultHandler);
 PROVIDE(MachineExternal = DefaultHandler);
-
-PROVIDE(DefaultHandler = DefaultInterruptHandler);
-PROVIDE(ExceptionHandler = DefaultExceptionHandler);
-
-/* # Pre-initialization function */
-/* If the user overrides this using the `#[pre_init]` attribute or by creating a `__pre_init` function,
-   then the function this points to will be called before the RAM is initialized. */
-PROVIDE(__pre_init = default_pre_init);
-
-/* A PAC/HAL defined routine that should initialize custom interrupt controller if needed. */
-PROVIDE(_setup_interrupts = default_setup_interrupts);
-
-/* # Multi-processing hook function
-   fn _mp_hook() -> bool;
-
-   This function is called from all the harts and must return true only for one hart,
-   which will perform memory initialization. For other harts it must return false
-   and implement wake-up in platform-dependent way (e.g. after waiting for a user interrupt).
-*/
-PROVIDE(_mp_hook = default_mp_hook);
-
-/* # Start trap function override
-  By default uses the riscv crates default trap handler
-  but by providing the `_start_trap` symbol external crates can override.
-*/
-PROVIDE(_start_trap = default_start_trap);
 
 SECTIONS
 {
@@ -90,6 +82,8 @@ SECTIONS
     /* point of the program. */
     KEEP(*(.init));
     KEEP(*(.init.rust));
+    . = ALIGN(4);
+    KEEP(*(.init.trap));
     . = ALIGN(4);
     *(.trap);
     *(.trap.rust);

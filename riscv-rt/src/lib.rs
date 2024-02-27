@@ -228,6 +228,16 @@
 //! }
 //! ```
 //!
+//! ## `_pre_init_trap`
+//!
+//! This function is set as a provisional trap handler for the early trap handling.
+//! If either an exception or an interrupt occurs during the boot process, this
+//! function is triggered. The default implementation of this function is a busy-loop.
+//! While this function can be redefined, it is not recommended to do so, as it is
+//! intended to be a temporary trap handler to detect bugs in the early boot process.
+//! Recall that this trap is triggered before the `.bss` and `.data` sections are
+//! initialized, so it is not safe to use any global variables in this function.
+//!
 //! ### `_mp_hook`
 //!
 //! This function is called from all the harts and must return true only for one hart,
@@ -247,7 +257,15 @@
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 //!
 //! `_mp_hook` is only necessary in multi-core targets. If the `single-hart` feature is enabled,
-//! `_mp_hook` is not called, as it is assumed that there is only one hart on the target.
+//! `_mp_hook` is not included in the binary.
+//!
+//! ### `_setup_interrupts`
+//!
+//! This function is called right before the main function and is responsible for setting up
+//! the interrupt controller.
+//!
+//! Default implementation sets the trap vector to `_start_trap` in direct mode.
+//! Users can override this function by defining their own `_setup_interrupts`
 //!
 //! ### Core exception handlers
 //!
@@ -404,10 +422,10 @@
 mod asm;
 
 #[cfg(feature = "s-mode")]
-use riscv::register::{scause as xcause, stvec as xtvec, stvec::TrapMode as xTrapMode};
+use riscv::register::scause as xcause;
 
 #[cfg(not(feature = "s-mode"))]
-use riscv::register::{mcause as xcause, mtvec as xtvec, mtvec::TrapMode as xTrapMode};
+use riscv::register::mcause as xcause;
 
 pub use riscv_rt_macros::{entry, pre_init};
 
@@ -487,28 +505,6 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     }
 }
 
-#[doc(hidden)]
-#[no_mangle]
-#[allow(unused_variables, non_snake_case)]
-pub fn DefaultExceptionHandler(trap_frame: &TrapFrame) -> ! {
-    loop {
-        // Prevent this from turning into a UDF instruction
-        // see rust-lang/rust#28728 for details
-        continue;
-    }
-}
-
-#[doc(hidden)]
-#[no_mangle]
-#[allow(non_snake_case)]
-pub fn DefaultInterruptHandler() {
-    loop {
-        // Prevent this from turning into a UDF instruction
-        // see rust-lang/rust#28728 for details
-        continue;
-    }
-}
-
 extern "C" {
     fn InstructionMisaligned(trap_frame: &TrapFrame);
     fn InstructionFault(trap_frame: &TrapFrame);
@@ -572,40 +568,3 @@ pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
     None,
     Some(MachineExternal),
 ];
-
-/// Default implementation of `_pre_init` does nothing.
-/// Users can override this function with the [`#[pre_init]`] macro.
-#[doc(hidden)]
-#[no_mangle]
-#[rustfmt::skip]
-pub extern "Rust" fn default_pre_init() {}
-
-/// Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
-/// Users can override this function by defining their own `_mp_hook`.
-/// 
-/// # Note
-/// 
-/// If the `single-hart` feature is enabled, `_mp_hook` is not called.
-#[doc(hidden)]
-#[no_mangle]
-#[rustfmt::skip]
-pub extern "Rust" fn default_mp_hook(hartid: usize) -> bool {
-    match hartid {
-        0 => true,
-        _ => loop {
-            riscv::asm::wfi();
-        },
-    }
-}
-
-/// Default implementation of `_setup_interrupts` sets `mtvec`/`stvec` to the address of `_start_trap`.
-#[doc(hidden)]
-#[no_mangle]
-#[rustfmt::skip]
-pub unsafe extern "Rust" fn default_setup_interrupts() {
-    extern "C" {
-        fn _start_trap();
-    }
-
-    xtvec::write(_start_trap as usize, xTrapMode::Direct);
-}
