@@ -66,12 +66,19 @@ _abs_start:
     .option norelax
     .cfi_startproc
     .cfi_undefined ra",
+    // Disable interrupts
     #[cfg(feature = "s-mode")]
     "csrw sie, 0
     csrw sip, 0",
     #[cfg(not(feature = "s-mode"))]
     "csrw mie, 0
     csrw mip, 0",
+    // Set pre-init trap vector
+    "la t0, _pre_init_trap",
+    #[cfg(feature = "s-mode")]
+    "csrw stvec, t0",
+    #[cfg(not(feature = "s-mode"))]
+    "csrw mtvec, t0",
 );
 
 // ZERO OUT GENERAL-PURPOSE REGISTERS
@@ -220,6 +227,53 @@ cfg_global_asm!(
     .cfi_endproc",
 );
 
+cfg_global_asm!(
+    // Default implementation of `__pre_init` does nothing.
+    // Users can override this function with the [`#[pre_init]`] macro.
+    ".weak __pre_init
+__pre_init:
+    ret",
+    #[cfg(not(feature = "single-hart"))]
+    // Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
+    // Users can override this function by defining their own `_mp_hook`.
+    // This function is only used when the `single-hart` feature is not enabled.
+    ".weak _mp_hook
+_mp_hook:
+    beqz a0, 2f // if hartid is 0, return true
+1:  wfi // Otherwise, wait for interrupt in a loop
+    j 1b
+2:  li a0, 1
+    ret",
+    // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap`.
+    // Trap mode is set to `Direct` by default.
+    // Users can override this function by defining their own `_setup_interrupts`
+    ".weak _setup_interrupts
+_setup_interrupts:
+    la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+    #[cfg(feature = "s-mode")]
+    "csrw stvec, t0",
+    #[cfg(not(feature = "s-mode"))]
+    "csrw mtvec, t0",
+    "ret",
+    // Default implementation of `ExceptionHandler` is an infinite loop.
+    // Users can override this function by defining their own `ExceptionHandler`
+    ".weak ExceptionHandler
+ExceptionHandler:
+    j ExceptionHandler",
+    // Default implementation of `DefaultHandler` is an infinite loop.
+    // Users can override this function by defining their own `DefaultHandler`
+    ".weak DefaultHandler
+DefaultHandler:
+    j DefaultHandler",
+    // Default implementation of `_pre_init_trap` is an infinite loop.
+    // Users can override this function by defining their own `_pre_init_trap`
+    // If the execution reaches this point, it means that there is a bug in the boot code.
+    ".section .init.trap, \"ax\"
+    .weak _pre_init_trap
+_pre_init_trap:
+    j _pre_init_trap",
+);
+
 /// Trap entry point (_start_trap). It saves caller saved registers, calls
 /// _start_trap_rust, restores caller saved registers and then returns.
 ///
@@ -241,8 +295,8 @@ macro_rules! trap_handler {
         global_asm!(
         "
             .section .trap, \"ax\"
-            .global default_start_trap
-        default_start_trap:",
+            .weak _start_trap
+            _start_trap:",
             // save space for trap handler in stack
             concat!("addi sp, sp, -", stringify!($TRAP_SIZE * $BYTES)),
             // save registers in the desired order
@@ -280,10 +334,10 @@ trap_handler!(
      (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
 );
 
-// Make sure there is an abort when linking
+#[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-     .globl abort
-abort:
+    .global abort
+abort:  // make sure there is an abort symbol when linking
     j abort"
 );

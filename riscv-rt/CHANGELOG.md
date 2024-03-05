@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `pre_init_trap` to detect early errors during the boot process.
+
 ### Changed
 
 - Moved all the assembly code to `asm.rs`
+- Use `weak` symbols for functions such as `_mp_hook` or `_start_trap`
 
 ### Removed
 
 - `start_rust` is no longer needed, as it is now written in assembly
+- `default_*` symbols are no longer needed, as we use `weak` symbols now.
 
 ## [v0.12.2] - 2024-02-15
 
