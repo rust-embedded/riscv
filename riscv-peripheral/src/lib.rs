@@ -17,4 +17,5 @@ pub mod hal_async; // async trait implementations for embedded-hal
 pub mod macros; // macros for easing the definition of peripherals in PACs
 
 pub mod aclint; // ACLINT and CLINT peripherals
+pub mod clic; // CLIC peripheral
 pub mod plic; // PLIC peripheral
