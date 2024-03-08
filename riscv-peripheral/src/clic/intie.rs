@@ -12,36 +12,34 @@ use crate::common::{Reg, RW};
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct INTIE {
-    ptr: *mut u8,
+    ptr: *mut u32,
 }
 
 impl INTIE {
-    /// Creates a new interrupt enable register from a base address.
+    const INTIE_OFFSET: usize = 0x1;
+
+    /// Creates a new interrupt enable register
     ///
     /// # Safety
     ///
-    /// The base address must point to a valid interrupt enable register.
+    /// The base address must point to a valid 32-bit clicintx register cluster.
     #[inline]
-    pub(crate) const unsafe fn new(address: usize) -> Self {
-        Self { ptr: address as _ }
-    }
-
-    #[cfg(test)]
-    #[inline]
-    pub(crate) fn address(self) -> usize {
-        self.ptr as _
+    pub(crate) const unsafe fn new(addr: usize) -> Self {
+        Self {
+            ptr: addr as *mut _,
+        }
     }
 
     /// Checks if an interrupt source is enabled.
     #[inline]
     pub fn is_enabled(self) -> bool {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // > Software should assume clicintie[i]=0 means no interrupt enabled, and clicintie[i]!=0
         // > indicates an interrupt is enabled to accommodate possible future expansion of the
         // > clicintie field.
-        reg.read() != 0
+        reg.read_bit(0 + 8 * Self::INTIE_OFFSET)
     }
 
     /// Enables an interrupt source.
@@ -52,19 +50,19 @@ impl INTIE {
     #[inline]
     pub unsafe fn enable(self) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // >  The enable bit is located in bit 0 of the byte.
-        reg.set_bit(0);
+        reg.set_bit(0 + 8 * Self::INTIE_OFFSET);
     }
 
     /// Disables an interrupt source.
     #[inline]
     pub fn disable(self) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // >  The enable bit is located in bit 0 of the byte.
-        reg.clear_bit(0);
+        reg.clear_bit(0 + 8 * Self::INTIE_OFFSET);
     }
 }
