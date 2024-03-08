@@ -4,7 +4,7 @@
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct INTCTL {
-    ptr: *mut u8,
+    ptr: *mut u32,
 }
 
 impl INTCTL {

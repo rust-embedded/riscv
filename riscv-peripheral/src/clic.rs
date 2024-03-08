@@ -44,11 +44,6 @@ impl<P: Clic> CLIC<P> {
     const INT_OFFSET: usize = 0x1000;
     const INT_SEPARATION: usize = 0x4;
 
-    const INTIP_OFFSET: usize = 0x0;
-    const INTIE_OFFSET: usize = 0x1;
-    const INTATTR_OFFSET: usize = 0x2;
-    const INTCTL_OFFSET: usize = 0x3;
-
     /// Returns the smclicconfig register of the CLIC.
     #[inline]
     #[cfg(feature = "clic-smclic")]
@@ -69,10 +64,7 @@ impl<P: Clic> CLIC<P> {
     /// Returns the interrupts pending register of a given interrupt number.
     #[inline]
     pub fn ip<I: InterruptNumber>(int_nr: I) -> intip::INTIP {
-        let addr = P::BASE
-            + Self::INT_OFFSET
-            + int_nr.number() as usize * Self::INT_SEPARATION
-            + Self::INTIP_OFFSET;
+        let addr = P::BASE + Self::INT_OFFSET + int_nr.number() as usize * Self::INT_SEPARATION;
         // SAFETY: valid address
         unsafe { intip::INTIP::new(addr) }
     }
@@ -80,21 +72,15 @@ impl<P: Clic> CLIC<P> {
     /// Returns the interrupts enable register of a given interrupt number.
     #[inline]
     pub fn ie<I: InterruptNumber>(int_nr: I) -> intie::INTIE {
-        let addr = P::BASE
-            + Self::INT_OFFSET
-            + int_nr.number() as usize * Self::INT_SEPARATION
-            + Self::INTIE_OFFSET;
-        // SAFETY: valid address
+        let addr = P::BASE + Self::INT_OFFSET + int_nr.number() as usize * Self::INT_SEPARATION;
+        // SAFETY: valid interrupt_number
         unsafe { intie::INTIE::new(addr) }
     }
 
     /// Returns the attribute register of a given interrupt number.
     #[inline]
     pub fn attr<I: InterruptNumber>(int_nr: I) -> intattr::INTATTR {
-        let addr = P::BASE
-            + Self::INT_OFFSET
-            + int_nr.number() as usize * Self::INT_SEPARATION
-            + Self::INTATTR_OFFSET;
+        let addr = P::BASE + Self::INT_OFFSET + int_nr.number() as usize * Self::INT_SEPARATION;
         // SAFETY: valid address
         unsafe { intattr::INTATTR::new(addr) }
     }
@@ -102,10 +88,7 @@ impl<P: Clic> CLIC<P> {
     /// Returns the control register of this interrupt.
     #[inline]
     pub fn ctl<I: InterruptNumber>(int_nr: I) -> intctl::INTCTL {
-        let addr = P::BASE
-            + Self::INT_OFFSET
-            + int_nr.number() as usize * Self::INT_SEPARATION
-            + Self::INTCTL_OFFSET;
+        let addr = P::BASE + Self::INT_OFFSET + int_nr.number() as usize * Self::INT_SEPARATION;
         // SAFETY: valid address
         unsafe { intctl::INTCTL::new(addr) }
     }

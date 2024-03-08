@@ -14,10 +14,12 @@ use crate::common::{Reg, RW};
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct INTIP {
-    ptr: *mut u8,
+    ptr: *mut u32,
 }
 
 impl INTIP {
+    const INTIP_OFFSET: usize = 0x0;
+
     /// Creates a new interrupt pending register from a base address.
     ///
     /// # Safety
@@ -39,12 +41,12 @@ impl INTIP {
     #[inline]
     pub unsafe fn is_pending(self) -> bool {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // > Software should assume clicintip[i]=0 means no interrupt pending, and clicintip[i]!=0
         // > indicates an interrupt is pending to accommodate possible future expansion of the
         // > clicintip field.
-        reg.read() != 0
+        reg.read_bit(0 + 8 * Self::INTIP_OFFSET)
     }
 
     /// Pends an interrupt source.
@@ -55,10 +57,10 @@ impl INTIP {
     #[inline]
     pub unsafe fn pend(self) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // >  The enable bit is located in bit 0 of the byte.
-        reg.set_bit(0);
+        reg.set_bit(0 + 8 * Self::INTIP_OFFSET);
     }
 
     /// Unpends an interrupt source.
@@ -69,9 +71,9 @@ impl INTIP {
     #[inline]
     pub unsafe fn unpend(self) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // >  The enable bit is located in bit 0 of the byte.
-        reg.clear_bit(0);
+        reg.clear_bit(0 + 8 * Self::INTIP_OFFSET);
     }
 }
