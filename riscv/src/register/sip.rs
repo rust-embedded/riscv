@@ -33,8 +33,8 @@ impl Sip {
 }
 
 read_csr_as!(Sip, 0x144);
-set!(0x344);
-clear!(0x104);
+set!(0x144);
+clear!(0x144);
 
 set_clear_csr!(
     /// Supervisor Software Interrupt Pending
