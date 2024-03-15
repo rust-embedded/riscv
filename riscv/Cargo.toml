@@ -22,6 +22,7 @@ targets = [
 [features]
 s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
+clic = []
 
 [dependencies]
 critical-section = "1.1.2"

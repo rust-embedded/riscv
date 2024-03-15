@@ -11,6 +11,8 @@ pub struct Mtvec {
 pub enum TrapMode {
     Direct = 0,
     Vectored = 1,
+    #[cfg(feature = "clic")]
+    Clic = 0b11,
 }
 
 impl Mtvec {
@@ -33,6 +35,8 @@ impl Mtvec {
         match mode {
             0 => Some(TrapMode::Direct),
             1 => Some(TrapMode::Vectored),
+            #[cfg(feature = "clic")]
+            0b11 => Some(TrapMode::Clic),
             _ => None,
         }
     }
