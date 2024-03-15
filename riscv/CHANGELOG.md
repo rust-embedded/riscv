@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `mtvec::TrapMode::Clic`
+
 ### Fixed
 
 - Fixed `sip::set_ssoft` and `sip::clear_ssoft` using wrong address
