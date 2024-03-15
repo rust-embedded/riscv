@@ -25,6 +25,8 @@ heapless = "0.8.0"
 [features]
 aclint-hal-async = ["embedded-hal-async"]
 clic-smclic = []
+# CLIC selective hardware vectoring extension
+clic-smclicshv = []
 
 [package.metadata.docs.rs]
 all-features = true
