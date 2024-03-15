@@ -33,6 +33,14 @@ cfg_global_asm!(
     "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
     #[cfg(all(riscv32, riscvm))]
     ".attribute arch, \"rv32im\"",
+    #[cfg(all(riscv32, riscve))]
+    ".attribute arch, \"rv32e\"",
+    #[cfg(all(riscv32, riscve, riscvc))]
+    ".attribute arch, \"rv32ec\"",
+    #[cfg(all(riscv32, riscve, riscvm))]
+    ".attribute arch, \"rv32em\"",
+    #[cfg(all(riscv32, riscve, riscvm, riscvc))]
+    ".attribute arch, \"rv32emc\"",
     #[cfg(all(riscv64, riscvm, not(riscvg)))]
     ".attribute arch, \"rv64im\"",
     #[cfg(all(riscv64, riscvg))]
@@ -84,7 +92,10 @@ _abs_start:
 // ZERO OUT GENERAL-PURPOSE REGISTERS
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
 // a0..a2 (x10..x12) skipped
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 32);
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 16);
+// RV32E removes x16..x31
+#[cfg(not(riscve))]
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 16, 32);
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
 cfg_global_asm!(
@@ -120,8 +131,11 @@ cfg_global_asm!(
     "la t1, _stack_start",
     #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
-    "andi sp, t1, -16 // align stack to 16-bytes
-    add s0, sp, zero",
+    #[cfg(riscvi)]
+    "andi sp, t1, -16", // align stack to 16-bytes (RVI)
+    #[cfg(riscve)]
+    "andi sp, t1, -4", // align stack to 4-bytes (RVE)
+    "add s0, sp, zero",
 );
 
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
@@ -158,9 +172,9 @@ cfg_global_asm!(
     bgeu t0, t2, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
-    "lw t3, 0(t1)
+    "lw a5, 0(t1)
     addi t1, t1, 4
-    sw t3, 0(t0)
+    sw a5, 0(t0)
     addi t0, t0, 4
     bltu t0, t2, 1b",
     #[cfg(target_arch = "riscv64")]
@@ -290,8 +304,11 @@ _pre_init_trap:
 #[rustfmt::skip]
 macro_rules! trap_handler {
     ($STORE:ident, $LOAD:ident, $BYTES:literal, $TRAP_SIZE:literal, [$(($REG:ident, $LOCATION:literal)),*]) => {
-        // ensure we do not break that sp is 16-byte aligned
+        // sp must be 16-byte aligned on 'I', and 4-byte aligned on 'E'
+        #[cfg(riscvi)]
         const _: () = assert!(($TRAP_SIZE * $BYTES) % 16 == 0);
+        #[cfg(riscve)]
+        const _: () = assert!(($TRAP_SIZE * $BYTES) % 4 == 0);
         global_asm!(
         "
             .section .trap, \"ax\"
@@ -320,11 +337,18 @@ macro_rules! trap_handler {
 }
 
 #[rustfmt::skip]
-#[cfg(riscv32)]
+#[cfg(all(riscv32, riscvi))]
 trap_handler!(
     sw, lw, 4, 16,
     [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
      (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
+);
+#[rustfmt::skip]
+#[cfg(all(riscv32, riscve))]
+trap_handler!(
+    sw, lw, 4, 10,
+    [(ra, 0), (t0, 1), (t1, 2), (t2, 3),
+     (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13)]
 );
 #[rustfmt::skip]
 #[cfg(riscv64)]

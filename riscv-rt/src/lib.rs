@@ -446,9 +446,13 @@ pub struct TrapFrame {
     pub t0: usize,
     pub t1: usize,
     pub t2: usize,
+    #[cfg(not(riscve))]
     pub t3: usize,
+    #[cfg(not(riscve))]
     pub t4: usize,
+    #[cfg(not(riscve))]
     pub t5: usize,
+    #[cfg(not(riscve))]
     pub t6: usize,
     pub a0: usize,
     pub a1: usize,
@@ -456,7 +460,9 @@ pub struct TrapFrame {
     pub a3: usize,
     pub a4: usize,
     pub a5: usize,
+    #[cfg(not(riscve))]
     pub a6: usize,
+    #[cfg(not(riscve))]
     pub a7: usize,
 }
 
