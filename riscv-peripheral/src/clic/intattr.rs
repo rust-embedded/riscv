@@ -112,4 +112,24 @@ impl INTATTR {
 
         reg.write_bits(2, 2, polarity as u8)
     }
+
+    /// Check the selective hardware vectoring mode for this interrupt.
+    #[inline]
+    #[cfg(feature = "clic-smclicshv")]
+    pub fn shv(self) -> bool {
+        // SAFETY: valid interrupt number
+        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+
+        reg.read_bit(0)
+    }
+
+    /// Set selective hardware vectoring mode for this interrupt.
+    #[inline]
+    #[cfg(feature = "clic-smclicshv")]
+    pub fn set_shv(self, shv: bool) {
+        // SAFETY: valid interrupt number
+        let reg: Reg<u8, RW> = unsafe { Reg::new(self.ptr) };
+
+        reg.write_bits(0, 0, shv as u8)
+    }
 }
