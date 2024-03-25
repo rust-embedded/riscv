@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add `Mcause::from(usize)` for use in unit tests
+- Add `Mstatus.bits()`
 
 ### Fixed
 
