@@ -337,7 +337,7 @@ trap_handler!(
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-    .global abort
+.weak abort
 abort:  // make sure there is an abort symbol when linking
     j abort"
 );

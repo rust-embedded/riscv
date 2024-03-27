@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Moved all the assembly code to `asm.rs`
 - Use `weak` symbols for functions such as `_mp_hook` or `_start_trap`
+- `abort` is now `weak`, so it is possible to link third-party libraries including this symbol.
 
 ### Removed
 
