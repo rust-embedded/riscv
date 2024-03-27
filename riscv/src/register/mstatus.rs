@@ -65,6 +65,12 @@ impl From<bool> for Endianness {
 }
 
 impl Mstatus {
+    /// Returns the contents of the register as raw bits
+    #[inline]
+    pub fn bits(&self) -> usize {
+        self.bits
+    }
+
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {

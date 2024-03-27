@@ -6,6 +6,13 @@ pub struct Mcause {
     bits: usize,
 }
 
+impl From<usize> for Mcause {
+    #[inline]
+    fn from(bits: usize) -> Self {
+        Self { bits }
+    }
+}
+
 /// Trap Cause
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Trap {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `Mcause::from(usize)` for use in unit tests
+- Add `Mstatus.bits()`
+
 ### Fixed
 
 - Fixed `sip::set_ssoft` and `sip::clear_ssoft` using wrong address
