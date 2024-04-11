@@ -331,6 +331,16 @@ pub fn interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
 fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
+    // check the function arguments
+    if !f.sig.inputs.is_empty() {
+        return parse::Error::new(
+            f.sig.inputs.first().unwrap().span(),
+            "`#[interrupt]` function should not have arguments",
+        )
+        .to_compile_error()
+        .into();
+    }
+
     // check the function signature
     let valid_signature = f.sig.constness.is_none()
         && f.sig.asyncness.is_none()
@@ -362,6 +372,7 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
     // XXX should we blacklist other attributes?
     let attrs = f.attrs;
     let ident = f.sig.ident;
+    let export_name = format!("{:#}", ident);
     let block = f.block;
 
     #[cfg(not(feature = "v-trap"))]
@@ -371,7 +382,7 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
 
     quote!(
         #start_trap
-        #[export_name = #ident]
+        #[export_name = #export_name]
         #(#attrs)*
         pub unsafe fn #ident() #block
     )
@@ -404,7 +415,7 @@ mod v_trap {
         "a7",
     ];
 
-    pub fn start_interrupt_trap_asm(
+    pub(crate) fn start_interrupt_trap_asm(
         ident: &syn::Ident,
         arch: RiscvArch,
     ) -> proc_macro2::TokenStream {
