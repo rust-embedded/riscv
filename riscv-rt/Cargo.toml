@@ -12,13 +12,14 @@ license = "ISC"
 edition = "2021"
 links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 
-[features]
-s-mode = []
-single-hart = []
-
 [dependencies]
 riscv = {path = "../riscv", version = "0.11.1"}
 riscv-rt-macros = { path = "macros", version = "0.2.1" }
 
 [dev-dependencies]
 panic-halt = "0.2.0"
+
+[features]
+s-mode = ["riscv-rt-macros/s-mode"]
+single-hart = []
+v-trap = ["riscv-rt-macros/v-trap"]

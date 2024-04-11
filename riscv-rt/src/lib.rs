@@ -429,6 +429,12 @@ use riscv::register::mcause as xcause;
 
 pub use riscv_rt_macros::{entry, pre_init};
 
+#[cfg(riscv32)]
+pub use riscv_rt_macros::interrupt_riscv32 as interrupt;
+
+#[cfg(riscv64)]
+pub use riscv_rt_macros::interrupt_riscv64 as interrupt;
+
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
 /// Cargo.toml which is the more modern way to solve the same problem, but we have to keep

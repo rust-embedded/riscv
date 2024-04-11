@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, riscv-rt-asm ]
+    branches: [ master, vectored-rt ]
   pull_request:
   merge_group:
 
@@ -39,6 +39,8 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=s-mode
       - name : Build (single-hart)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=single-hart
+      - name : Build (v-trap)
+        run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=v-trap
       - name: Build (all features)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --all-features
 

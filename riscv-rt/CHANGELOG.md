@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add `pre_init_trap` to detect early errors during the boot process.
+- Add `v-trap` feature to enable interrupt handling in vectored mode.
+- Add `interrupt` proc macro to help defining interrupt handlers.
+If `v-trap` feature is enabled, this macro also generates its corresponding trap.
 
 ### Changed
 

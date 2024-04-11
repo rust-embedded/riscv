@@ -245,11 +245,14 @@ _mp_hook:
 2:  li a0, 1
     ret",
     // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap`.
-    // Trap mode is set to `Direct` by default.
     // Users can override this function by defining their own `_setup_interrupts`
     ".weak _setup_interrupts
-_setup_interrupts:
-    la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+_setup_interrupts:",
+    #[cfg(not(feature = "v-trap"))]
+    "la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+    #[cfg(feature = "v-trap")]
+    "la t0, _vector_table
+    ori t0, t0, 0x1", // _vector_table is 16-byte aligned, so we must set the bit 0 to activate the Vectored trap mode
     #[cfg(feature = "s-mode")]
     "csrw stvec, t0",
     #[cfg(not(feature = "s-mode"))]
@@ -332,6 +335,38 @@ trap_handler!(
     sd, ld, 8, 16,
     [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
      (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
+);
+
+#[cfg(feature = "v-trap")]
+cfg_global_asm!(
+    // Set the vector mode to vectored.
+    ".section .trap, \"ax\"
+    .weak _vector_table
+    .type _vector_table, @function
+    
+    .option push
+    .balign 0x100 // TODO check if this is the correct alignment
+    .option norelax
+    .option norvc
+    
+    _vector_table:
+        j _start_trap                     // Interrupt 0 is used for exceptions
+        j _start_SupervisorSoft_trap
+        j _start_trap                     // Interrupt 2 is reserved
+        j _start_MachineSoft_trap
+        j _start_trap                     // Interrupt 4 is reserved
+        j _start_SupervisorTimer_trap
+        j _start_trap                     // Interrupt 6 is reserved
+        j _start_MachineTimer_trap
+        j _start_trap                     // Interrupt 8 is reserved
+        j _start_SupervisorExternal_trap
+        j _start_trap                     // Interrupt 10 is reserved
+        j _start_MachineExternal_trap
+
+        // default table does not include the remaining interrupts.
+        // Targets with extra interrupts should override this table.
+    
+    .option pop",
 );
 
 #[rustfmt::skip]
