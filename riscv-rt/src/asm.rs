@@ -277,65 +277,10 @@ _pre_init_trap:
     j _pre_init_trap",
 );
 
-/// Trap entry point (_start_trap). It saves caller saved registers, calls
-/// _start_trap_rust, restores caller saved registers and then returns.
-///
-/// # Usage
-///
-/// The macro takes 5 arguments:
-/// - `$STORE`: the instruction used to store a register in the stack (e.g. `sd` for riscv64)
-/// - `$LOAD`: the instruction used to load a register from the stack (e.g. `ld` for riscv64)
-/// - `$BYTES`: the number of bytes used to store a register (e.g. 8 for riscv64)
-/// - `$TRAP_SIZE`: the number of registers to store in the stack (e.g. 32 for all the user registers)
-/// - list of tuples of the form `($REG, $LOCATION)`, where:
-///     - `$REG`: the register to store/load
-///     - `$LOCATION`: the location in the stack where to store/load the register
-#[rustfmt::skip]
-macro_rules! trap_handler {
-    ($STORE:ident, $LOAD:ident, $BYTES:literal, $TRAP_SIZE:literal, [$(($REG:ident, $LOCATION:literal)),*]) => {
-        // ensure we do not break that sp is 16-byte aligned
-        const _: () = assert!(($TRAP_SIZE * $BYTES) % 16 == 0);
-        global_asm!(
-        "
-            .section .trap, \"ax\"
-            .weak _start_trap
-            _start_trap:",
-            // save space for trap handler in stack
-            concat!("addi sp, sp, -", stringify!($TRAP_SIZE * $BYTES)),
-            // save registers in the desired order
-            $(concat!(stringify!($STORE), " ", stringify!($REG), ", ", stringify!($LOCATION * $BYTES), "(sp)"),)*
-            // call rust trap handler
-            "add a0, sp, zero
-            jal ra, _start_trap_rust",
-            // restore registers in the desired order
-            $(concat!(stringify!($LOAD), " ", stringify!($REG), ", ", stringify!($LOCATION * $BYTES), "(sp)"),)*
-            // free stack
-            concat!("addi sp, sp, ", stringify!($TRAP_SIZE * $BYTES)),
-        );
-        cfg_global_asm!(
-            // return from trap
-            #[cfg(feature = "s-mode")]
-            "sret",
-            #[cfg(not(feature = "s-mode"))]
-            "mret",
-        );
-    };
-}
-
-#[rustfmt::skip]
 #[cfg(riscv32)]
-trap_handler!(
-    sw, lw, 4, 16,
-    [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
-     (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
-);
-#[rustfmt::skip]
+riscv_rt_macros::weak_start_trap_riscv32!();
 #[cfg(riscv64)]
-trap_handler!(
-    sd, ld, 8, 16,
-    [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
-     (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
-);
+riscv_rt_macros::weak_start_trap_riscv64!();
 
 #[cfg(feature = "v-trap")]
 cfg_global_asm!(
@@ -345,7 +290,7 @@ cfg_global_asm!(
     .type _vector_table, @function
     
     .option push
-    .balign 0x100 // TODO check if this is the correct alignment
+    .balign 0x4 // TODO check if this is the correct alignment
     .option norelax
     .option norvc
     
