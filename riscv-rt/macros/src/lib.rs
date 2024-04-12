@@ -370,21 +370,18 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
     }
 
     // XXX should we blacklist other attributes?
-    let attrs = f.attrs;
-    let ident = f.sig.ident;
+    let ident = &f.sig.ident;
     let export_name = format!("{:#}", ident);
-    let block = f.block;
 
     #[cfg(not(feature = "v-trap"))]
     let start_trap = proc_macro2::TokenStream::new();
     #[cfg(feature = "v-trap")]
-    let start_trap = v_trap::start_interrupt_trap_asm(&ident, _arch);
+    let start_trap = v_trap::start_interrupt_trap_asm(ident, _arch);
 
     quote!(
         #start_trap
         #[export_name = #export_name]
-        #(#attrs)*
-        pub unsafe fn #ident() #block
+        #f
     )
     .into()
 }
@@ -443,6 +440,7 @@ mod v_trap {
 core::arch::global_asm!(
     \".section .trap, \\\"ax\\\"
     .align {width}
+    .global _start_{function}_trap
     _start_{function}_trap:
         addi sp, sp, - {TRAP_SIZE} * {width}
 {store}
