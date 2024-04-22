@@ -8,6 +8,13 @@ pub struct Mstatus {
     bits: usize,
 }
 
+impl From<usize> for Mstatus {
+    #[inline]
+    fn from(bits: usize) -> Self {
+        Self { bits }
+    }
+}
+
 /// Additional extension state
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum XS {
