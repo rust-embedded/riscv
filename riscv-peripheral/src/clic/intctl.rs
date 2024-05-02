@@ -62,25 +62,29 @@ impl INTCTL {
     ///
     /// N.b., 2024-03-11 rt-ss/CLIC does not implement priority bits at all at this time
     #[inline]
-    pub fn priority(self) -> u32 {
+    pub fn priority(self) -> u8 {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // TODO: need to figure out how many are actually priority bits and how many are level bits
         // and mask accordingly
-        reg.read()
+        reg.read_bits(8 * Self::INTCTL_OFFSET, 7 + 8 * Self::INTCTL_OFFSET) as u8
     }
 
     /// Set interrupt priority for this interrupt.
     ///
     /// N.b., 2024-03-11 rt-ss/CLIC does not implement priority bits at all at this time
     #[inline]
-    pub fn set_priority(self, priority: u32) {
+    pub fn set_priority(self, priority: u8) {
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr) };
 
         // TODO: need to figure out how many are actually priority bits and how many are level bits
         // and mask accordingly
-        reg.write(priority)
+        reg.write_bits(
+            8 * Self::INTCTL_OFFSET,
+            7 + 8 * Self::INTCTL_OFFSET,
+            priority as _,
+        )
     }
 }
