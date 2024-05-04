@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Made `asm::wfi`, `fence`, `fence_i` and `sfence` safe (ie, removed `unsafe` from their definitions)
+- Made `cfg` variable selection more robust for custom targets
 
 ## [v0.11.0] - 2024-01-14
 
