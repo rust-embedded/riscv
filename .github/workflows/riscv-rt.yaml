@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [ master, vectored-rt ]
+    branches: [ master ]
   pull_request:
   merge_group:
 

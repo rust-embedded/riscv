@@ -319,9 +319,11 @@ enum RiscvArch {
     Rv64,
 }
 
+/// Size of the trap frame (in number of registers)
 const TRAP_SIZE: usize = 16;
 
 #[rustfmt::skip]
+/// List of the register names to be stored in the trap frame
 const TRAP_FRAME: [&str; TRAP_SIZE] = [
     "ra",
     "t0",
@@ -341,6 +343,14 @@ const TRAP_FRAME: [&str; TRAP_SIZE] = [
     "a7",
 ];
 
+/// Generate the assembly instructions to store the trap frame.
+///
+/// The `arch` parameter is used to determine the width of the registers.
+///
+/// The `filter` function is used to filter which registers to store.
+/// This is useful to optimize the binary size in vectored interrupt mode, which divides the trap
+/// frame storage in two parts: the first part saves space in the stack and stores only the `a0` register,
+/// while the second part stores the remaining registers.
 fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String {
     let (width, store) = match arch {
         RiscvArch::Rv32 => (4, "sw"),
@@ -357,6 +367,8 @@ fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String 
     stores.join("\n")
 }
 
+/// Generate the assembly instructions to load the trap frame.
+/// The `arch` parameter is used to determine the width of the registers.
 fn load_trap(arch: RiscvArch) -> String {
     let (width, load) = match arch {
         RiscvArch::Rv32 => (4, "lw"),
@@ -369,16 +381,31 @@ fn load_trap(arch: RiscvArch) -> String {
     loads.join("\n")
 }
 
+/// Generates weak `_start_trap` function in assembly for RISCV-32 targets.
+///
+/// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
+/// The trap frame is allocated on the stack and deallocated after the call.
 #[proc_macro]
 pub fn weak_start_trap_riscv32(_input: TokenStream) -> TokenStream {
     weak_start_trap(RiscvArch::Rv32)
 }
 
+/// Generates weak `_start_trap` function in assembly for RISCV-64 targets.
+///
+/// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
+/// The trap frame is allocated on the stack and deallocated after the call.
 #[proc_macro]
 pub fn weak_start_trap_riscv64(_input: TokenStream) -> TokenStream {
     weak_start_trap(RiscvArch::Rv64)
 }
 
+/// Generates weak `_start_trap` function in assembly.
+///
+/// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
+/// The trap frame is allocated on the stack and deallocated after the call.
+///
+/// The `arch` parameter is used to determine the width of the registers.
+/// The macro also ensures that the trap frame size is 16-byte aligned.
 fn weak_start_trap(arch: RiscvArch) -> TokenStream {
     let width = match arch {
         RiscvArch::Rv32 => 4,
@@ -398,7 +425,7 @@ fn weak_start_trap(arch: RiscvArch) -> TokenStream {
     #[cfg(not(feature = "s-mode"))]
     let ret = "mret";
 
-    let instructions: proc_macro2::TokenStream = format!(
+    format!(
         "
 core::arch::global_asm!(
 \".section .trap, \\\"ax\\\"
@@ -415,26 +442,76 @@ _start_trap:
 \");"
     )
     .parse()
-    .unwrap();
+    .unwrap()
+}
 
-    #[cfg(feature = "v-trap")]
-    let v_trap = v_trap::continue_interrupt_trap(arch);
-    #[cfg(not(feature = "v-trap"))]
-    let v_trap = proc_macro2::TokenStream::new();
+/// Generates vectored interrupt trap functions in assembly for RISCV-32 targets.
+#[cfg(feature = "v-trap")]
+#[proc_macro]
+pub fn vectored_interrupt_trap_riscv32(_input: TokenStream) -> TokenStream {
+    vectored_interrupt_trap(RiscvArch::Rv32)
+}
 
-    quote!(
-        #instructions
-        #v_trap
-    )
-    .into()
+/// Generates vectored interrupt trap functions in assembly for RISCV-64 targets.
+#[cfg(feature = "v-trap")]
+#[proc_macro]
+pub fn vectored_interrupt_trap_riscv64(_input: TokenStream) -> TokenStream {
+    vectored_interrupt_trap(RiscvArch::Rv64)
+}
+
+#[cfg(feature = "v-trap")]
+/// Generates global '_start_DefaultHandler_trap' and '_continue_interrupt_trap' functions in assembly.
+/// The '_start_DefaultHandler_trap' function stores the trap frame partially (only register a0) and
+/// jumps to the interrupt handler. The '_continue_interrupt_trap' function stores the trap frame
+/// partially (all registers except a0), jumps to the interrupt handler, and restores the trap frame.
+fn vectored_interrupt_trap(arch: RiscvArch) -> TokenStream {
+    let width = match arch {
+        RiscvArch::Rv32 => 4,
+        RiscvArch::Rv64 => 8,
+    };
+    let store_start = store_trap(arch, |reg| reg == "a0");
+    let store_continue = store_trap(arch, |reg| reg != "a0");
+    let load = load_trap(arch);
+
+    #[cfg(feature = "s-mode")]
+    let ret = "sret";
+    #[cfg(not(feature = "s-mode"))]
+    let ret = "mret";
+
+    let instructions = format!(
+        "
+core::arch::global_asm!(
+\".section .trap, \\\"ax\\\"
+
+.global _start_DefaultHandler_trap
+_start_DefaultHandler_trap:
+    addi sp, sp, -{TRAP_SIZE} * {width} // allocate space for trap frame
+    {store_start}                       // store trap partially (only register a0)
+    la a0, DefaultHandler               // load interrupt handler address into a0
+
+.global _continue_interrupt_trap
+_continue_interrupt_trap:
+    {store_continue}                   // store trap partially (all registers except a0)
+    jalr ra, a0, 0                     // jump to corresponding interrupt handler (address stored in a0)
+    {load}                             // restore trap frame
+    addi sp, sp, {TRAP_SIZE} * {width} // deallocate space for trap frame
+    {ret}                              // return from interrupt
+\");"
+    );
+
+    instructions.parse().unwrap()
 }
 
 #[proc_macro_attribute]
+/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
 pub fn interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv32)
 }
 
 #[proc_macro_attribute]
+/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
 pub fn interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv64)
 }
@@ -487,7 +564,7 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
     #[cfg(not(feature = "v-trap"))]
     let start_trap = proc_macro2::TokenStream::new();
     #[cfg(feature = "v-trap")]
-    let start_trap = v_trap::start_interrupt_trap(ident, _arch);
+    let start_trap = start_interrupt_trap(ident, _arch);
 
     quote!(
         #start_trap
@@ -498,25 +575,19 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
 }
 
 #[cfg(feature = "v-trap")]
-mod v_trap {
-    use super::*;
+fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::TokenStream {
+    let interrupt = ident.to_string();
+    let width = match arch {
+        RiscvArch::Rv32 => 4,
+        RiscvArch::Rv64 => 8,
+    };
+    let store = store_trap(arch, |r| r == "a0");
 
-    pub(crate) fn start_interrupt_trap(
-        ident: &syn::Ident,
-        arch: RiscvArch,
-    ) -> proc_macro2::TokenStream {
-        let interrupt = ident.to_string();
-        let width = match arch {
-            RiscvArch::Rv32 => 4,
-            RiscvArch::Rv64 => 8,
-        };
-        let store = store_trap(arch, |r| r == "a0");
-
-        let instructions = format!(
-            "
+    let instructions = format!(
+        "
 core::arch::global_asm!(
     \".section .trap, \\\"ax\\\"
-    .align {width}
+    .align 2
     .global _start_{interrupt}_trap
     _start_{interrupt}_trap:
         addi sp, sp, -{TRAP_SIZE} * {width} // allocate space for trap frame
@@ -524,39 +595,7 @@ core::arch::global_asm!(
         la a0, {interrupt}                  // load interrupt handler address into a0
         j _continue_interrupt_trap          // jump to common part of interrupt trap
 \");"
-        );
+    );
 
-        instructions.parse().unwrap()
-    }
-
-    pub(crate) fn continue_interrupt_trap(arch: RiscvArch) -> proc_macro2::TokenStream {
-        let width = match arch {
-            RiscvArch::Rv32 => 4,
-            RiscvArch::Rv64 => 8,
-        };
-        let store = store_trap(arch, |reg| reg != "a0");
-        let load = load_trap(arch);
-
-        #[cfg(feature = "s-mode")]
-        let ret = "sret";
-        #[cfg(not(feature = "s-mode"))]
-        let ret = "mret";
-
-        let instructions = format!(
-            "
-core::arch::global_asm!(
-    \".section .trap, \\\"ax\\\"
-    .align {width} // TODO is this necessary?
-    .global _continue_interrupt_trap
-    _continue_interrupt_trap:
-        {store}                            // store trap partially (all registers except a0)
-        jalr ra, a0, 0                     // jump to corresponding interrupt handler (address stored in a0)
-        {load}                             // restore trap frame
-        addi sp, sp, {TRAP_SIZE} * {width} // deallocate space for trap frame
-        {ret}                              // return from interrupt
-\");"
-        );
-
-        instructions.parse().unwrap()
-    }
+    instructions.parse().unwrap()
 }
