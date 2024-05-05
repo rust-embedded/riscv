@@ -1,4 +1,4 @@
-/// `RV64`: Convenience macro to wrap the `csrrs` assembly instruction for reading a CSR register.
+/// Convenience macro to wrap the `csrrs` assembly instruction for reading a CSR register.
 ///
 /// This macro should generally not be called directly.
 ///
@@ -10,14 +10,14 @@ macro_rules! read_csr {
         #[inline]
         unsafe fn _read() -> usize {
             match () {
-                #[cfg(riscv)]
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => {
                     let r: usize;
                     core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
                     r
                 }
 
-                #[cfg(not(riscv))]
+                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => unimplemented!(),
             }
         }
@@ -36,21 +36,21 @@ macro_rules! read_csr_rv32 {
         #[inline]
         unsafe fn _read() -> usize {
             match () {
-                #[cfg(riscv32)]
+                #[cfg(target_arch = "riscv32")]
                 () => {
                     let r: usize;
                     core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
                     r
                 }
 
-                #[cfg(not(riscv32))]
+                #[cfg(not(target_arch = "riscv32"))]
                 () => unimplemented!(),
             }
         }
     };
 }
 
-/// `RV64`: Convenience macro to read a CSR register value as a `register` type.
+/// Convenience macro to read a CSR register value as a `register` type.
 ///
 /// The `register` type must be a defined type in scope of the macro call.
 #[macro_export]
@@ -86,7 +86,7 @@ macro_rules! read_csr_as_rv32 {
     };
 }
 
-/// `RV64`: Convenience macro to read a CSR register value as a [`usize`].
+/// Convenience macro to read a CSR register value as a [`usize`].
 #[macro_export]
 macro_rules! read_csr_as_usize {
     ($csr_number:literal) => {
@@ -114,7 +114,7 @@ macro_rules! read_csr_as_usize_rv32 {
     };
 }
 
-/// `RV64`: Convenience macro to wrap the `csrrw` assembly instruction for writing to CSR registers.
+/// Convenience macro to wrap the `csrrw` assembly instruction for writing to CSR registers.
 ///
 /// This macro should generally not be called directly.
 ///
@@ -127,10 +127,10 @@ macro_rules! write_csr {
         #[allow(unused_variables)]
         unsafe fn _write(bits: usize) {
             match () {
-                #[cfg(riscv)]
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv))]
+                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => unimplemented!(),
             }
         }
@@ -150,17 +150,17 @@ macro_rules! write_csr_rv32 {
         #[allow(unused_variables)]
         unsafe fn _write(bits: usize) {
             match () {
-                #[cfg(riscv32)]
+                #[cfg(target_arch = "riscv32")]
                 () => core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv32))]
+                #[cfg(not(target_arch = "riscv32"))]
                 () => unimplemented!(),
             }
         }
     };
 }
 
-/// `RV64`: Convenience macro to write a [`usize`] value to a CSR register.
+/// Convenience macro to write a [`usize`] value to a CSR register.
 #[macro_export]
 macro_rules! write_csr_as_usize {
     ($csr_number:literal) => {
@@ -188,7 +188,7 @@ macro_rules! write_csr_as_usize_rv32 {
     };
 }
 
-/// `RV64`: Convenience macro around the `csrrs` assembly instruction to set the CSR register.
+/// Convenience macro around the `csrrs` assembly instruction to set the CSR register.
 ///
 /// This macro is intended for use with the [set_csr](crate::set_csr) or [set_clear_csr](crate::set_clear_csr) macros.
 #[macro_export]
@@ -199,10 +199,10 @@ macro_rules! set {
         #[allow(unused_variables)]
         unsafe fn _set(bits: usize) {
             match () {
-                #[cfg(riscv)]
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv))]
+                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => unimplemented!(),
             }
         }
@@ -220,17 +220,17 @@ macro_rules! set_rv32 {
         #[allow(unused_variables)]
         unsafe fn _set(bits: usize) {
             match () {
-                #[cfg(riscv32)]
+                #[cfg(target_arch = "riscv32")]
                 () => core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv32))]
+                #[cfg(not(target_arch = "riscv32"))]
                 () => unimplemented!(),
             }
         }
     };
 }
 
-/// `RV64`: Convenience macro around the `csrrc` assembly instruction to clear the CSR register.
+/// Convenience macro around the `csrrc` assembly instruction to clear the CSR register.
 ///
 /// This macro is intended for use with the [clear_csr](crate::clear_csr) or [set_clear_csr](crate::set_clear_csr) macros.
 #[macro_export]
@@ -241,10 +241,10 @@ macro_rules! clear {
         #[allow(unused_variables)]
         unsafe fn _clear(bits: usize) {
             match () {
-                #[cfg(riscv)]
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 () => core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv))]
+                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
                 () => unimplemented!(),
             }
         }
@@ -262,10 +262,10 @@ macro_rules! clear_rv32 {
         #[allow(unused_variables)]
         unsafe fn _clear(bits: usize) {
             match () {
-                #[cfg(riscv32)]
+                #[cfg(target_arch = "riscv32")]
                 () => core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits),
 
-                #[cfg(not(riscv32))]
+                #[cfg(not(target_arch = "riscv32"))]
                 () => unimplemented!(),
             }
         }
@@ -316,7 +316,7 @@ macro_rules! read_composite_csr {
         #[inline]
         pub fn read64() -> u64 {
             match () {
-                #[cfg(riscv32)]
+                #[cfg(target_arch = "riscv32")]
                 () => loop {
                     let hi = $hi;
                     let lo = $lo;
@@ -325,7 +325,7 @@ macro_rules! read_composite_csr {
                     }
                 },
 
-                #[cfg(not(riscv32))]
+                #[cfg(not(target_arch = "riscv32"))]
                 () => $lo as u64,
             }
         }
@@ -337,10 +337,10 @@ macro_rules! set_pmp {
         /// Set the pmp configuration corresponding to the index
         #[inline]
         pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-            #[cfg(riscv32)]
+            #[cfg(target_arch = "riscv32")]
             assert!(index < 4);
 
-            #[cfg(riscv64)]
+            #[cfg(target_arch = "riscv64")]
             assert!(index < 8);
 
             let mut value = _read();
@@ -357,10 +357,10 @@ macro_rules! clear_pmp {
         /// Clear the pmp configuration corresponding to the index
         #[inline]
         pub unsafe fn clear_pmp(index: usize) {
-            #[cfg(riscv32)]
+            #[cfg(target_arch = "riscv32")]
             assert!(index < 4);
 
-            #[cfg(riscv64)]
+            #[cfg(target_arch = "riscv64")]
             assert!(index < 8);
 
             let mut value = _read();
