@@ -39,7 +39,6 @@ impl PacNumberEnum {
                 },
                 _ => panic!("Variant must have a discriminant"),
             };
-            // check for duplicate discriminant values
             var_map.insert(value, ident);
             numbers.push(value);
         }

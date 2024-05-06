@@ -158,6 +158,8 @@ pub(crate) mod test {
         I4 = 4,
     }
 
+    unsafe impl ExternalInterruptNumber for Interrupt {}
+
     #[pac_enum(unsafe PriorityNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u8)]
