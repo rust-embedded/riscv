@@ -593,3 +593,19 @@ pub unsafe fn set_mbe(endianness: Endianness) {
         },
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_mpp() {
+        let mut mstatus = Mstatus { bits: 0 };
+        mstatus = mstatus.update_mpp(MPP::User);
+        assert_eq!(mstatus.mpp(), MPP::User);
+        mstatus = mstatus.update_mpp(MPP::Machine);
+        assert_eq!(mstatus.mpp(), MPP::Machine);
+        mstatus = mstatus.update_mpp(MPP::Supervisor);
+        assert_eq!(mstatus.mpp(), MPP::Supervisor);
+    }
+}
