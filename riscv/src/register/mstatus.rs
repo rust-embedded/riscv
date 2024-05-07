@@ -72,6 +72,15 @@ impl From<bool> for Endianness {
 }
 
 impl Mstatus {
+    /// Helper to insert a bitfield into Mstatus
+    #[inline]
+    fn bf_insert(&self, bit: usize, width: usize, val: usize) -> Self {
+        let mask = (1 << width) - 1;
+        Self {
+            bits: self.bits & !(mask << bit) | ((val & mask) << bit),
+        }
+    }
+
     /// Returns the contents of the register as raw bits
     #[inline]
     pub fn bits(&self) -> usize {
@@ -84,10 +93,22 @@ impl Mstatus {
         self.bits & (1 << 1) != 0
     }
 
+    /// Set Supervisor Interrupt Enable
+    #[inline]
+    pub fn set_sie(&self, sie: bool) -> Self {
+        self.bf_insert(1, 1, sie as usize)
+    }
+
     /// Machine Interrupt Enable
     #[inline]
     pub fn mie(&self) -> bool {
         self.bits & (1 << 3) != 0
+    }
+
+    /// Set Machine Interrupt Enable
+    #[inline]
+    pub fn set_mie(&self, mie: bool) -> Self {
+        self.bf_insert(3, 1, mie as usize)
     }
 
     /// Supervisor Previous Interrupt Enable
@@ -96,16 +117,34 @@ impl Mstatus {
         self.bits & (1 << 5) != 0
     }
 
+    /// Supervisor Previous Interrupt Enable
+    #[inline]
+    pub fn set_spie(&self, spie: bool) -> Self {
+        self.bf_insert(5, 1, spie as usize)
+    }
+
     /// U-mode non-instruction-fetch memory endianness
     #[inline]
     pub fn ube(&self) -> Endianness {
         Endianness::from(self.bits & (1 << 6) != 0)
     }
 
+    /// Set U-mode non-instruction-fetch memory endianness
+    #[inline]
+    pub fn set_ube(&self, endianness: Endianness) -> Self {
+        self.bf_insert(6, 1, endianness as usize)
+    }
+
     /// Machine Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
         self.bits & (1 << 7) != 0
+    }
+
+    /// Set Machine Previous Interrupt Enable
+    #[inline]
+    pub fn set_mpie(&self, mpie: bool) -> Self {
+        self.bf_insert(7, 1, mpie as usize)
     }
 
     /// Supervisor Previous Privilege Mode
@@ -115,6 +154,12 @@ impl Mstatus {
             true => SPP::Supervisor,
             false => SPP::User,
         }
+    }
+
+    /// Set Supervisor Previous Privilege Mode
+    #[inline]
+    pub fn set_spp(&self, spp: SPP) -> Self {
+        self.bf_insert(8, 1, spp as usize)
     }
 
     /// Machine Previous Privilege Mode
@@ -127,6 +172,12 @@ impl Mstatus {
             0b11 => MPP::Machine,
             _ => unreachable!(),
         }
+    }
+
+    /// Set Machine Previous Privilege Mode
+    #[inline]
+    pub fn set_mpp(&self, mpp: MPP) -> Self {
+        self.bf_insert(11, 2, mpp as usize)
     }
 
     /// Floating-point extension state
@@ -145,6 +196,12 @@ impl Mstatus {
         }
     }
 
+    /// Set Floating-point extension state
+    #[inline]
+    pub fn set_fs(&self, fs: FS) -> Self {
+        self.bf_insert(13, 2, fs as usize)
+    }
+
     /// Additional extension state
     ///
     /// Encodes the status of additional user-mode extensions and associated state.
@@ -160,10 +217,22 @@ impl Mstatus {
         }
     }
 
+    /// Set Additional extension state
+    #[inline]
+    pub fn set_xs(&self, xs: XS) -> Self {
+        self.bf_insert(15, 2, xs as usize)
+    }
+
     /// Modify Memory PRiVilege
     #[inline]
     pub fn mprv(&self) -> bool {
         self.bits & (1 << 17) != 0
+    }
+
+    /// Set Modify Memory PRiVilege
+    #[inline]
+    pub fn set_mprv(&self, mprv: bool) -> Self {
+        self.bf_insert(17, 1, mprv as usize)
     }
 
     /// Permit Supervisor User Memory access
@@ -172,10 +241,22 @@ impl Mstatus {
         self.bits & (1 << 18) != 0
     }
 
+    /// Set Permit Supervisor User Memory access
+    #[inline]
+    pub fn set_sum(&self, sum: bool) -> Self {
+        self.bf_insert(18, 1, sum as usize)
+    }
+
     /// Make eXecutable Readable
     #[inline]
     pub fn mxr(&self) -> bool {
         self.bits & (1 << 19) != 0
+    }
+
+    /// Set Make eXecutable Readable
+    #[inline]
+    pub fn set_mxr(&self, mxr: bool) -> Self {
+        self.bf_insert(19, 1, mxr as usize)
     }
 
     /// Trap Virtual Memory
@@ -187,6 +268,12 @@ impl Mstatus {
     #[inline]
     pub fn tvm(&self) -> bool {
         self.bits & (1 << 20) != 0
+    }
+
+    /// Set Trap Virtual Memory
+    #[inline]
+    pub fn set_tvm(&self, tvm: bool) -> Self {
+        self.bf_insert(20, 1, tvm as usize)
     }
 
     /// Timeout Wait
@@ -203,6 +290,12 @@ impl Mstatus {
         self.bits & (1 << 21) != 0
     }
 
+    /// Set Timeout Wait
+    #[inline]
+    pub fn set_tw(&self, tw: bool) -> Self {
+        self.bf_insert(21, 1, tw as usize)
+    }
+
     /// Trap SRET
     ///
     /// Indicates that if SRET instruction should be trapped to raise illegal
@@ -212,6 +305,12 @@ impl Mstatus {
     #[inline]
     pub fn tsr(&self) -> bool {
         self.bits & (1 << 22) != 0
+    }
+
+    /// Set Trap SRET
+    #[inline]
+    pub fn set_tsr(&self, tsr: bool) -> Self {
+        self.bf_insert(22, 1, tsr as usize)
     }
 
     /// Effective xlen in U-mode (i.e., `UXLEN`).
@@ -227,6 +326,17 @@ impl Mstatus {
         }
     }
 
+    /// Set Effective xlen in U-mode (i.e., `UXLEN`).
+    #[inline]
+    pub fn set_uxl(&self, uxl: XLEN) -> Self {
+        #[cfg(riscv32)]
+        {
+            *self
+        }
+        #[cfg(not(riscv32))]
+        self.bf_insert(32, 2, uxl as usize)
+    }
+
     /// Effective xlen in S-mode (i.e., `SXLEN`).
     ///
     /// In RISCV-32, SXL does not exist, and SXLEN is always [`XLEN::XLEN32`].
@@ -238,6 +348,17 @@ impl Mstatus {
             #[cfg(not(riscv32))]
             () => XLEN::from((self.bits >> 34) as u8 & 0x3),
         }
+    }
+
+    /// Set Effective xlen in S-mode (i.e., `SXLEN`).
+    #[inline]
+    pub fn set_sxl(&self, sxl: XLEN) -> Self {
+        #[cfg(riscv32)]
+        {
+            *self
+        }
+        #[cfg(not(riscv32))]
+        self.bf_insert(34, 2, sxl as usize)
     }
 
     /// S-mode non-instruction-fetch memory endianness.
@@ -252,6 +373,17 @@ impl Mstatus {
         }
     }
 
+    /// Set S-mode non-instruction-fetch memory endianness
+    #[inline]
+    pub fn set_sbe(&self, endianness: Endianness) -> Self {
+        #[cfg(riscv32)]
+        {
+            *self
+        }
+        #[cfg(not(riscv32))]
+        self.bf_insert(36, 1, endianness as usize)
+    }
+
     /// M-mode non-instruction-fetch memory endianness
     ///
     /// In RISCV-32, this field is read from the [`crate::register::mstatush`] register
@@ -264,10 +396,26 @@ impl Mstatus {
         }
     }
 
+    /// Set M-mode non-instruction-fetch memory endianness
+    pub fn set_mbe(&self, endianness: Endianness) -> Self {
+        #[cfg(riscv32)]
+        {
+            *self
+        }
+        #[cfg(not(riscv32))]
+        self.bf_insert(37, 1, endianness as usize)
+    }
+
     /// Whether either the FS field or XS field signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
         self.bits & (1 << (usize::BITS as usize - 1)) != 0
+    }
+
+    /// Set whether either the FS field or XS field signals the presence of some dirty state
+    #[inline]
+    pub fn set_sd(&self, sd: bool) -> Self {
+        self.bf_insert(usize::BITS as usize - 1, 1, sd as usize)
     }
 }
 
