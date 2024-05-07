@@ -75,12 +75,9 @@ fn main() {
     println!("cargo:rustc-check-cfg=cfg(riscv)");
     println!("cargo:rustc-check-cfg=cfg(riscv32)");
     println!("cargo:rustc-check-cfg=cfg(riscv64)");
-    println!("cargo:rustc-check-cfg=cfg(riscvi)");
-    println!("cargo:rustc-check-cfg=cfg(riscvm)");
-    println!("cargo:rustc-check-cfg=cfg(riscva)");
-    println!("cargo:rustc-check-cfg=cfg(riscvf)");
-    println!("cargo:rustc-check-cfg=cfg(riscvd)");
-    println!("cargo:rustc-check-cfg=cfg(riscvc)");
+    for ext in ['i', 'e', 'm', 'a', 'f', 'd', 'g', 'c'] {
+        println!("cargo:rustc-check-cfg=cfg(riscv{})", ext);
+    }
 
     let target = env::var("TARGET").unwrap();
     let cargo_flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
