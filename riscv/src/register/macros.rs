@@ -160,6 +160,34 @@ macro_rules! write_csr_rv32 {
     };
 }
 
+/// Convenience macro to write a value with `bits` to a CSR
+#[macro_export]
+macro_rules! write_csr_as {
+    ($csr_type:ty, $csr_number:literal) => {
+        $crate::write_csr!($csr_number);
+
+        /// Writes the CSR
+        #[inline]
+        pub fn write(value: $csr_type) {
+            unsafe { _write(value.bits) }
+        }
+    };
+}
+
+/// Convenience macro to write a value to a CSR register.
+#[macro_export]
+macro_rules! write_csr_as_rv32 {
+    ($csr_type:ty, $csr_number:literal) => {
+        $crate::write_csr_rv32!($csr_number);
+
+        /// Writes the CSR
+        #[inline]
+        pub fn write(value: $csr_type) {
+            unsafe { _write(value.bits) }
+        }
+    };
+}
+
 /// Convenience macro to write a [`usize`] value to a CSR register.
 #[macro_export]
 macro_rules! write_csr_as_usize {
