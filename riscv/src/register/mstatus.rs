@@ -481,7 +481,7 @@ impl Mstatus {
 }
 
 read_csr_as!(Mstatus, 0x300);
-write_csr!(0x300);
+write_csr_as!(Mstatus, 0x300);
 set!(0x300);
 clear!(0x300);
 
