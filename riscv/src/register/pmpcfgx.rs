@@ -1,7 +1,7 @@
 //! Physical memory protection configuration
 
 /// Permission enum contains all possible permission modes for pmp registers
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Permission {
     NONE = 0b000,
     R = 0b001,
@@ -14,7 +14,7 @@ pub enum Permission {
 }
 
 /// Range enum contains all possible addressing modes for pmp registers
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Range {
     OFF = 0b00,
     TOR = 0b01,
