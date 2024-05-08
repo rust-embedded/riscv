@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add `Mcause::from(usize)` for use in unit tests
+- Add `Mstatus::from(usize)` for use in unit tests
 - Add `Mstatus.bits()`
+- Add `Eq` and `PartialEq` for `pmpcfgx::{Range, Permission}`
+- Export `riscv::register::macros` module macros for external use
 
 ### Fixed
 
@@ -21,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Made `asm::wfi`, `fence`, `fence_i` and `sfence` safe (ie, removed `unsafe` from their definitions)
+- Made `cfg` variable selection more robust for custom targets
 
 ## [v0.11.0] - 2024-01-14
 

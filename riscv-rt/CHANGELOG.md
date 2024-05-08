@@ -19,6 +19,7 @@ If `v-trap` feature is enabled, this macro also generates its corresponding trap
 - Moved all the assembly code to `asm.rs`
 - Use `weak` symbols for functions such as `_mp_hook` or `_start_trap`
 - `abort` is now `weak`, so it is possible to link third-party libraries including this symbol.
+- Made `cfg` variable selection more robust for custom targets
 - `_start_trap_rust` now only deals with exceptions. When an interrupt is detected, it now calls
 to `_dispatch_interrupt`.
 

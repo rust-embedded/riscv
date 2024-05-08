@@ -72,6 +72,13 @@ fn parse_target(target: &str, cargo_flags: &str) -> (u32, HashSet<char>) {
 }
 
 fn main() {
+    println!("cargo:rustc-check-cfg=cfg(riscv)");
+    println!("cargo:rustc-check-cfg=cfg(riscv32)");
+    println!("cargo:rustc-check-cfg=cfg(riscv64)");
+    for ext in ['i', 'e', 'm', 'a', 'f', 'd', 'g', 'c'] {
+        println!("cargo:rustc-check-cfg=cfg(riscv{})", ext);
+    }
+
     let target = env::var("TARGET").unwrap();
     let cargo_flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
     let _name = env::var("CARGO_PKG_NAME").unwrap();
@@ -79,7 +86,6 @@ fn main() {
     // set configuration flags depending on the target
     if target.starts_with("riscv") {
         println!("cargo:rustc-cfg=riscv");
-
         // This is required until target_arch & target_feature risc-v work is
         // stable and in-use (rust 1.75.0)
         let (bits, extensions) = parse_target(&target, &cargo_flags);
