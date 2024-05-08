@@ -95,10 +95,11 @@ impl Mstatus {
 
     /// Update Supervisor Interrupt Enable
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_sie`]/[`clear_sie`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sie`]/[`clear_sie`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_sie(&self, sie: bool) -> Self {
+    pub fn set_sie(&self, sie: bool) -> Self {
         self.bf_insert(1, 1, sie as usize)
     }
 
@@ -110,10 +111,11 @@ impl Mstatus {
 
     /// Update Machine Interrupt Enable
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mie`]/[`clear_mie`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mie`]/[`clear_mie`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_mie(&self, mie: bool) -> Self {
+    pub fn set_mie(&self, mie: bool) -> Self {
         self.bf_insert(3, 1, mie as usize)
     }
 
@@ -123,12 +125,13 @@ impl Mstatus {
         self.bits & (1 << 5) != 0
     }
 
-    /// Updateervisor Previous Interrupt Enable
+    /// Update Supervisor Previous Interrupt Enable
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_spie`]` to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_spie`]` to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_spie(&self, spie: bool) -> Self {
+    pub fn set_spie(&self, spie: bool) -> Self {
         self.bf_insert(5, 1, spie as usize)
     }
 
@@ -140,10 +143,11 @@ impl Mstatus {
 
     /// Update U-mode non-instruction-fetch memory endianness
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_ube`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_ube`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_ube(&self, endianness: Endianness) -> Self {
+    pub fn set_ube(&self, endianness: Endianness) -> Self {
         self.bf_insert(6, 1, endianness as usize)
     }
 
@@ -155,10 +159,11 @@ impl Mstatus {
 
     /// Update Machine Previous Interrupt Enable
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mpie`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mpie`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_mpie(&self, mpie: bool) -> Self {
+    pub fn set_mpie(&self, mpie: bool) -> Self {
         self.bf_insert(7, 1, mpie as usize)
     }
 
@@ -173,10 +178,11 @@ impl Mstatus {
 
     /// Update Supervisor Previous Privilege Mode
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_spp`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_spp`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_spp(&self, spp: SPP) -> Self {
+    pub fn set_spp(&self, spp: SPP) -> Self {
         self.bf_insert(8, 1, spp as usize)
     }
 
@@ -194,17 +200,18 @@ impl Mstatus {
 
     /// Update Machine Previous Privilege Mode
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mpp`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mpp`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_mpp(&self, mpp: MPP) -> Self {
+    pub fn set_mpp(&self, mpp: MPP) -> Self {
         self.bf_insert(11, 2, mpp as usize)
     }
 
     /// Floating-point extension state
     ///
-    /// Encodes the status of the floating-point unit,
-    /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
+    /// Encodes the status of the floating-point unit, including the CSR `fcsr`
+    /// and floating-point data registers `f0–f31`.
     #[inline]
     pub fn fs(&self) -> FS {
         let fs = (self.bits >> 13) & 0x3; // bits 13-14
@@ -219,16 +226,18 @@ impl Mstatus {
 
     /// Update Floating-point extension state
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_fs`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_fs`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_fs(&self, fs: FS) -> Self {
+    pub fn set_fs(&self, fs: FS) -> Self {
         self.bf_insert(13, 2, fs as usize)
     }
 
     /// Additional extension state
     ///
-    /// Encodes the status of additional user-mode extensions and associated state.
+    /// Encodes the status of additional user-mode extensions and associated
+    /// state.
     #[inline]
     pub fn xs(&self) -> XS {
         let xs = (self.bits >> 15) & 0x3; // bits 15-16
@@ -243,10 +252,10 @@ impl Mstatus {
 
     /// Update Additional extension state
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
     #[inline]
-    pub fn update_xs(&self, xs: XS) -> Self {
+    pub fn set_xs(&self, xs: XS) -> Self {
         self.bf_insert(15, 2, xs as usize)
     }
 
@@ -258,10 +267,11 @@ impl Mstatus {
 
     /// Update Modify Memory PRiVilege
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mprv`]/[`clear_mprv`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mprv`]/[`clear_mprv`] to
+    /// directly update the CSR.
     #[inline]
-    pub fn update_mprv(&self, mprv: bool) -> Self {
+    pub fn set_mprv(&self, mprv: bool) -> Self {
         self.bf_insert(17, 1, mprv as usize)
     }
 
@@ -273,10 +283,11 @@ impl Mstatus {
 
     /// Update Permit Supervisor User Memory access
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_sum`]/[`clear_sum`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sum`]/[`clear_sum`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_sum(&self, sum: bool) -> Self {
+    pub fn set_sum(&self, sum: bool) -> Self {
         self.bf_insert(18, 1, sum as usize)
     }
 
@@ -288,10 +299,11 @@ impl Mstatus {
 
     /// Update Make eXecutable Readable
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mxr`]/[`clear_mxr`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not affect
+    /// the mstatus CSR itself. See [`set_mxr`]/[`clear_mxr`] to directly update
+    /// the CSR.
     #[inline]
-    pub fn update_mxr(&self, mxr: bool) -> Self {
+    pub fn set_mxr(&self, mxr: bool) -> Self {
         self.bf_insert(19, 1, mxr as usize)
     }
 
@@ -308,10 +320,11 @@ impl Mstatus {
 
     /// Update Trap Virtual Memory
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_tvm`]/[`clear_tvm`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tvm`]/[`clear_tvm`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_tvm(&self, tvm: bool) -> Self {
+    pub fn set_tvm(&self, tvm: bool) -> Self {
         self.bf_insert(20, 1, tvm as usize)
     }
 
@@ -331,10 +344,11 @@ impl Mstatus {
 
     /// Update Timeout Wait
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_tw`]/[`clear_tw`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tw`]/[`clear_tw`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_tw(&self, tw: bool) -> Self {
+    pub fn set_tw(&self, tw: bool) -> Self {
         self.bf_insert(21, 1, tw as usize)
     }
 
@@ -351,10 +365,11 @@ impl Mstatus {
 
     /// Update Trap SRET
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_tsr`]/[`clear_tsr`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tsr`]/[`clear_tsr`] to directly
+    /// update the CSR.
     #[inline]
-    pub fn update_tsr(&self, tsr: bool) -> Self {
+    pub fn set_tsr(&self, tsr: bool) -> Self {
         self.bf_insert(22, 1, tsr as usize)
     }
 
@@ -373,10 +388,10 @@ impl Mstatus {
 
     /// Update Effective xlen in U-mode (i.e., `UXLEN`).
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
     #[inline]
-    pub fn update_uxl(&self, uxl: XLEN) -> Self {
+    pub fn set_uxl(&self, uxl: XLEN) -> Self {
         #[cfg(riscv32)]
         {
             *self
@@ -400,10 +415,10 @@ impl Mstatus {
 
     /// Update Effective xlen in S-mode (i.e., `SXLEN`).
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
     #[inline]
-    pub fn update_sxl(&self, sxl: XLEN) -> Self {
+    pub fn set_sxl(&self, sxl: XLEN) -> Self {
         #[cfg(riscv32)]
         {
             *self
@@ -426,10 +441,11 @@ impl Mstatus {
 
     /// Update S-mode non-instruction-fetch memory endianness
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_sbe`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sbe`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_sbe(&self, endianness: Endianness) -> Self {
+    pub fn set_sbe(&self, endianness: Endianness) -> Self {
         #[cfg(riscv32)]
         {
             *self
@@ -451,10 +467,11 @@ impl Mstatus {
     }
     /// Update M-mode non-instruction-fetch memory endianness
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself. See [`set_mbe`] to directly update the CSR.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mbe`] to directly update the
+    /// CSR.
     #[inline]
-    pub fn update_mbe(&self, endianness: Endianness) -> Self {
+    pub fn set_mbe(&self, endianness: Endianness) -> Self {
         #[cfg(riscv32)]
         {
             *self
@@ -472,10 +489,10 @@ impl Mstatus {
     /// Update whether either the FS field or XS field signals the presence of
     /// some dirty state
     ///
-    /// Note this updates the [`Mstatus`] value, but does not affect the mstatus
-    /// CSR itself.
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
     #[inline]
-    pub fn update_sd(&self, sd: bool) -> Self {
+    pub fn set_sd(&self, sd: bool) -> Self {
         self.bf_insert(usize::BITS as usize - 1, 1, sd as usize)
     }
 }
@@ -601,11 +618,11 @@ mod test {
     #[test]
     fn test_mpp() {
         let mut mstatus = Mstatus { bits: 0 };
-        mstatus = mstatus.update_mpp(MPP::User);
+        mstatus = mstatus.set_mpp(MPP::User);
         assert_eq!(mstatus.mpp(), MPP::User);
-        mstatus = mstatus.update_mpp(MPP::Machine);
+        mstatus = mstatus.set_mpp(MPP::Machine);
         assert_eq!(mstatus.mpp(), MPP::Machine);
-        mstatus = mstatus.update_mpp(MPP::Supervisor);
+        mstatus = mstatus.set_mpp(MPP::Supervisor);
         assert_eq!(mstatus.mpp(), MPP::Supervisor);
     }
 }
