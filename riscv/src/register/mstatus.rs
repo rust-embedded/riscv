@@ -1,6 +1,7 @@
 //! mstatus register
 
 pub use super::misa::XLEN;
+use crate::bits::{bf_extract, bf_insert};
 
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
@@ -75,10 +76,15 @@ impl Mstatus {
     /// Helper to insert a bitfield into Mstatus
     #[inline]
     fn bf_insert(&self, bit: usize, width: usize, val: usize) -> Self {
-        let mask = (1 << width) - 1;
         Self {
-            bits: self.bits & !(mask << bit) | ((val & mask) << bit),
+            bits: bf_insert(self.bits, bit, width, val),
         }
+    }
+
+    /// Helper to extract a bitfield from Mstatus
+    #[inline]
+    fn bf_extract(&self, bit: usize, width: usize) -> usize {
+        bf_extract(self.bits, bit, width)
     }
 
     /// Returns the contents of the register as raw bits
@@ -90,7 +96,7 @@ impl Mstatus {
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
-        self.bits & (1 << 1) != 0
+        self.bf_extract(1, 1) != 0
     }
 
     /// Update Supervisor Interrupt Enable
@@ -106,7 +112,7 @@ impl Mstatus {
     /// Machine Interrupt Enable
     #[inline]
     pub fn mie(&self) -> bool {
-        self.bits & (1 << 3) != 0
+        self.bf_extract(3, 1) != 0
     }
 
     /// Update Machine Interrupt Enable
@@ -122,7 +128,7 @@ impl Mstatus {
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
-        self.bits & (1 << 5) != 0
+        self.bf_extract(5, 1) != 0
     }
 
     /// Update Supervisor Previous Interrupt Enable
@@ -138,7 +144,7 @@ impl Mstatus {
     /// U-mode non-instruction-fetch memory endianness
     #[inline]
     pub fn ube(&self) -> Endianness {
-        Endianness::from(self.bits & (1 << 6) != 0)
+        Endianness::from(self.bf_extract(6, 1) != 0)
     }
 
     /// Update U-mode non-instruction-fetch memory endianness
@@ -154,7 +160,7 @@ impl Mstatus {
     /// Machine Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
-        self.bits & (1 << 7) != 0
+        self.bf_extract(7, 1) != 0
     }
 
     /// Update Machine Previous Interrupt Enable
@@ -170,7 +176,7 @@ impl Mstatus {
     /// Supervisor Previous Privilege Mode
     #[inline]
     pub fn spp(&self) -> SPP {
-        match self.bits & (1 << 8) != 0 {
+        match self.bf_extract(7, 1) != 0 {
             true => SPP::Supervisor,
             false => SPP::User,
         }
@@ -189,7 +195,7 @@ impl Mstatus {
     /// Machine Previous Privilege Mode
     #[inline]
     pub fn mpp(&self) -> MPP {
-        let mpp = (self.bits >> 11) & 0x3; // bits 11-12
+        let mpp = self.bf_extract(11, 2); // bits 11-12
         match mpp {
             0b00 => MPP::User,
             0b01 => MPP::Supervisor,
@@ -214,7 +220,7 @@ impl Mstatus {
     /// and floating-point data registers `f0–f31`.
     #[inline]
     pub fn fs(&self) -> FS {
-        let fs = (self.bits >> 13) & 0x3; // bits 13-14
+        let fs = self.bf_extract(13, 2); // bits 13-14
         match fs {
             0b00 => FS::Off,
             0b01 => FS::Initial,
@@ -240,7 +246,7 @@ impl Mstatus {
     /// state.
     #[inline]
     pub fn xs(&self) -> XS {
-        let xs = (self.bits >> 15) & 0x3; // bits 15-16
+        let xs = self.bf_extract(15, 2); // bits 15-16
         match xs {
             0b00 => XS::AllOff,
             0b01 => XS::NoneDirtyOrClean,
@@ -262,7 +268,7 @@ impl Mstatus {
     /// Modify Memory PRiVilege
     #[inline]
     pub fn mprv(&self) -> bool {
-        self.bits & (1 << 17) != 0
+        self.bf_extract(17, 1) != 0
     }
 
     /// Update Modify Memory PRiVilege
@@ -278,7 +284,7 @@ impl Mstatus {
     /// Permit Supervisor User Memory access
     #[inline]
     pub fn sum(&self) -> bool {
-        self.bits & (1 << 18) != 0
+        self.bf_extract(18, 1) != 0
     }
 
     /// Update Permit Supervisor User Memory access
@@ -294,7 +300,7 @@ impl Mstatus {
     /// Make eXecutable Readable
     #[inline]
     pub fn mxr(&self) -> bool {
-        self.bits & (1 << 19) != 0
+        self.bf_extract(19, 1) != 0
     }
 
     /// Update Make eXecutable Readable
@@ -315,7 +321,7 @@ impl Mstatus {
     /// TVM is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tvm(&self) -> bool {
-        self.bits & (1 << 20) != 0
+        self.bf_extract(20, 1) != 0
     }
 
     /// Update Trap Virtual Memory
@@ -339,7 +345,7 @@ impl Mstatus {
     /// TW is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tw(&self) -> bool {
-        self.bits & (1 << 21) != 0
+        self.bf_extract(21, 1) != 0
     }
 
     /// Update Timeout Wait
@@ -360,7 +366,7 @@ impl Mstatus {
     /// If S-mode is not supported, TSR bit is hard-wired to 0.
     #[inline]
     pub fn tsr(&self) -> bool {
-        self.bits & (1 << 22) != 0
+        self.bf_extract(22, 1) != 0
     }
 
     /// Update Trap SRET
@@ -382,7 +388,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
+            () => XLEN::from(self.bf_extract(32, 2) as u8),
         }
     }
 
@@ -409,7 +415,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits >> 34) as u8 & 0x3),
+            () => XLEN::from(self.bf_extract(34, 2) as u8),
         }
     }
 
@@ -435,7 +441,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => super::mstatush::read().sbe(),
             #[cfg(not(riscv32))]
-            () => Endianness::from(self.bits & (1 << 36) != 0),
+            () => Endianness::from(self.bf_extract(36, 1) != 0),
         }
     }
 
@@ -462,7 +468,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => super::mstatush::read().mbe(),
             #[cfg(not(riscv32))]
-            () => Endianness::from(self.bits & (1 << 37) != 0),
+            () => Endianness::from(self.bf_extract(37, 1) != 0),
         }
     }
     /// Update M-mode non-instruction-fetch memory endianness
@@ -483,7 +489,7 @@ impl Mstatus {
     /// Whether either the FS field or XS field signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits & (1 << (usize::BITS as usize - 1)) != 0
+        self.bf_extract(usize::BITS as usize - 1, 1) != 0
     }
 
     /// Update whether either the FS field or XS field signals the presence of
