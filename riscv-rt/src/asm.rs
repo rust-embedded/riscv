@@ -290,7 +290,7 @@ riscv_rt_macros::vectored_interrupt_trap_riscv64!();
 #[cfg(feature = "v-trap")]
 cfg_global_asm!(
     // Set the vector mode to vectored.
-    ".section .trap, \"ax\"
+    r#".section .trap, "ax"
     .weak _vector_table
     .type _vector_table, @function
     
@@ -316,7 +316,7 @@ cfg_global_asm!(
         // default table does not include the remaining interrupts.
         // Targets with extra interrupts should override this table.
     
-    .option pop",
+    .option pop"#,
 );
 
 #[rustfmt::skip]

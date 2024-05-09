@@ -426,9 +426,9 @@ fn weak_start_trap(arch: RiscvArch) -> TokenStream {
     let ret = "mret";
 
     format!(
-        "
+        r#"
 core::arch::global_asm!(
-\".section .trap, \\\"ax\\\"
+".section .trap, \\"ax\\"
 .align {width}
 .weak _start_trap
 _start_trap:
@@ -439,7 +439,7 @@ _start_trap:
     {load}
     addi sp, sp, {TRAP_SIZE} * {width}
     {ret}
-\");"
+");"#
     )
     .parse()
     .unwrap()
@@ -479,9 +479,9 @@ fn vectored_interrupt_trap(arch: RiscvArch) -> TokenStream {
     let ret = "mret";
 
     let instructions = format!(
-        "
+        r#"
 core::arch::global_asm!(
-\".section .trap, \\\"ax\\\"
+".section .trap, \\"ax\\"
 
 .global _start_DefaultHandler_trap
 _start_DefaultHandler_trap:
@@ -496,7 +496,7 @@ _continue_interrupt_trap:
     {load}                             // restore trap frame
     addi sp, sp, {TRAP_SIZE} * {width} // deallocate space for trap frame
     {ret}                              // return from interrupt
-\");"
+");"#
     );
 
     instructions.parse().unwrap()
@@ -584,9 +584,9 @@ fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::Tok
     let store = store_trap(arch, |r| r == "a0");
 
     let instructions = format!(
-        "
+        r#"
 core::arch::global_asm!(
-    \".section .trap, \\\"ax\\\"
+    ".section .trap, \\"ax\\"
     .align 2
     .global _start_{interrupt}_trap
     _start_{interrupt}_trap:
@@ -594,7 +594,7 @@ core::arch::global_asm!(
         {store}                             // store trap partially (only register a0)
         la a0, {interrupt}                  // load interrupt handler address into a0
         j _continue_interrupt_trap          // jump to common part of interrupt trap
-\");"
+");"#
     );
 
     instructions.parse().unwrap()
