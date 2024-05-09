@@ -356,15 +356,14 @@ fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String 
         RiscvArch::Rv32 => (4, "sw"),
         RiscvArch::Rv64 => (8, "sd"),
     };
-    let mut stores = Vec::new();
-    for (i, reg) in TRAP_FRAME
+
+    TRAP_FRAME
         .iter()
         .enumerate()
         .filter(|(_, &reg)| filter(reg))
-    {
-        stores.push(format!("{store} {reg}, {i}*{width}(sp)"));
-    }
-    stores.join("\n")
+        .map(|(i, reg)| format!("{store} {reg}, {i}*{width}(sp)"))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Generate the assembly instructions to load the trap frame.
@@ -374,11 +373,12 @@ fn load_trap(arch: RiscvArch) -> String {
         RiscvArch::Rv32 => (4, "lw"),
         RiscvArch::Rv64 => (8, "ld"),
     };
-    let mut loads = Vec::new();
-    for (i, reg) in TRAP_FRAME.iter().enumerate() {
-        loads.push(format!("{load} {reg}, {i}*{width}(sp)"));
-    }
-    loads.join("\n")
+    TRAP_FRAME
+        .iter()
+        .enumerate()
+        .map(|(i, reg)| format!("{load} {reg}, {i}*{width}(sp)"))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// Generates weak `_start_trap` function in assembly for RISCV-32 targets.
@@ -428,7 +428,7 @@ fn weak_start_trap(arch: RiscvArch) -> TokenStream {
     format!(
         r#"
 core::arch::global_asm!(
-".section .trap, \\"ax\\"
+".section .trap, \"ax\"
 .align {width}
 .weak _start_trap
 _start_trap:
@@ -481,7 +481,7 @@ fn vectored_interrupt_trap(arch: RiscvArch) -> TokenStream {
     let instructions = format!(
         r#"
 core::arch::global_asm!(
-".section .trap, \\"ax\\"
+".section .trap, \"ax\"
 
 .global _start_DefaultHandler_trap
 _start_DefaultHandler_trap:
@@ -586,7 +586,7 @@ fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::Tok
     let instructions = format!(
         r#"
 core::arch::global_asm!(
-    ".section .trap, \\"ax\\"
+    ".section .trap, \"ax\"
     .align 2
     .global _start_{interrupt}_trap
     _start_{interrupt}_trap:
