@@ -1,6 +1,7 @@
 //! mstatus register
 
 pub use super::misa::XLEN;
+use crate::bits::{bf_extract, bf_insert};
 
 /// mstatus register
 #[derive(Clone, Copy, Debug)]
@@ -81,46 +82,106 @@ impl Mstatus {
     /// Supervisor Interrupt Enable
     #[inline]
     pub fn sie(&self) -> bool {
-        self.bits & (1 << 1) != 0
+        bf_extract(self.bits, 1, 1) != 0
+    }
+
+    /// Update Supervisor Interrupt Enable
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sie`]/[`clear_sie`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_sie(&mut self, sie: bool) {
+        self.bits = bf_insert(self.bits, 1, 1, sie as usize);
     }
 
     /// Machine Interrupt Enable
     #[inline]
     pub fn mie(&self) -> bool {
-        self.bits & (1 << 3) != 0
+        bf_extract(self.bits, 3, 1) != 0
+    }
+
+    /// Update Machine Interrupt Enable
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mie`]/[`clear_mie`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_mie(&mut self, mie: bool) {
+        self.bits = bf_insert(self.bits, 3, 1, mie as usize);
     }
 
     /// Supervisor Previous Interrupt Enable
     #[inline]
     pub fn spie(&self) -> bool {
-        self.bits & (1 << 5) != 0
+        bf_extract(self.bits, 5, 1) != 0
+    }
+
+    /// Update Supervisor Previous Interrupt Enable
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_spie`]` to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_spie(&mut self, spie: bool) {
+        self.bits = bf_insert(self.bits, 5, 1, spie as usize);
     }
 
     /// U-mode non-instruction-fetch memory endianness
     #[inline]
     pub fn ube(&self) -> Endianness {
-        Endianness::from(self.bits & (1 << 6) != 0)
+        Endianness::from(bf_extract(self.bits, 6, 1) != 0)
+    }
+
+    /// Update U-mode non-instruction-fetch memory endianness
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_ube`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_ube(&mut self, endianness: Endianness) {
+        self.bits = bf_insert(self.bits, 6, 1, endianness as usize);
     }
 
     /// Machine Previous Interrupt Enable
     #[inline]
     pub fn mpie(&self) -> bool {
-        self.bits & (1 << 7) != 0
+        bf_extract(self.bits, 7, 1) != 0
+    }
+
+    /// Update Machine Previous Interrupt Enable
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mpie`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_mpie(&mut self, mpie: bool) {
+        self.bits = bf_insert(self.bits, 7, 1, mpie as usize);
     }
 
     /// Supervisor Previous Privilege Mode
     #[inline]
     pub fn spp(&self) -> SPP {
-        match self.bits & (1 << 8) != 0 {
+        match bf_extract(self.bits, 8, 1) != 0 {
             true => SPP::Supervisor,
             false => SPP::User,
         }
     }
 
+    /// Update Supervisor Previous Privilege Mode
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_spp`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_spp(&mut self, spp: SPP) {
+        self.bits = bf_insert(self.bits, 8, 1, spp as usize);
+    }
+
     /// Machine Previous Privilege Mode
     #[inline]
     pub fn mpp(&self) -> MPP {
-        let mpp = (self.bits >> 11) & 0x3; // bits 11-12
+        let mpp = bf_extract(self.bits, 11, 2); // bits 11-12
         match mpp {
             0b00 => MPP::User,
             0b01 => MPP::Supervisor,
@@ -129,13 +190,23 @@ impl Mstatus {
         }
     }
 
+    /// Update Machine Previous Privilege Mode
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mpp`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_mpp(&mut self, mpp: MPP) {
+        self.bits = bf_insert(self.bits, 11, 2, mpp as usize);
+    }
+
     /// Floating-point extension state
     ///
-    /// Encodes the status of the floating-point unit,
-    /// including the CSR `fcsr` and floating-point data registers `f0–f31`.
+    /// Encodes the status of the floating-point unit, including the CSR `fcsr`
+    /// and floating-point data registers `f0–f31`.
     #[inline]
     pub fn fs(&self) -> FS {
-        let fs = (self.bits >> 13) & 0x3; // bits 13-14
+        let fs = bf_extract(self.bits, 13, 2); // bits 13-14
         match fs {
             0b00 => FS::Off,
             0b01 => FS::Initial,
@@ -145,12 +216,23 @@ impl Mstatus {
         }
     }
 
+    /// Update Floating-point extension state
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_fs`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_fs(&mut self, fs: FS) {
+        self.bits = bf_insert(self.bits, 13, 2, fs as usize);
+    }
+
     /// Additional extension state
     ///
-    /// Encodes the status of additional user-mode extensions and associated state.
+    /// Encodes the status of additional user-mode extensions and associated
+    /// state.
     #[inline]
     pub fn xs(&self) -> XS {
-        let xs = (self.bits >> 15) & 0x3; // bits 15-16
+        let xs = bf_extract(self.bits, 15, 2); // bits 15-16
         match xs {
             0b00 => XS::AllOff,
             0b01 => XS::NoneDirtyOrClean,
@@ -160,22 +242,61 @@ impl Mstatus {
         }
     }
 
+    /// Update Additional extension state
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
+    #[inline]
+    pub fn set_xs(&mut self, xs: XS) {
+        self.bits = bf_insert(self.bits, 15, 2, xs as usize);
+    }
+
     /// Modify Memory PRiVilege
     #[inline]
     pub fn mprv(&self) -> bool {
-        self.bits & (1 << 17) != 0
+        bf_extract(self.bits, 17, 1) != 0
+    }
+
+    /// Update Modify Memory PRiVilege
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mprv`]/[`clear_mprv`] to
+    /// directly update the CSR.
+    #[inline]
+    pub fn set_mprv(&mut self, mprv: bool) {
+        self.bits = bf_insert(self.bits, 17, 1, mprv as usize);
     }
 
     /// Permit Supervisor User Memory access
     #[inline]
     pub fn sum(&self) -> bool {
-        self.bits & (1 << 18) != 0
+        bf_extract(self.bits, 18, 1) != 0
+    }
+
+    /// Update Permit Supervisor User Memory access
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sum`]/[`clear_sum`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_sum(&mut self, sum: bool) {
+        self.bits = bf_insert(self.bits, 18, 1, sum as usize);
     }
 
     /// Make eXecutable Readable
     #[inline]
     pub fn mxr(&self) -> bool {
-        self.bits & (1 << 19) != 0
+        bf_extract(self.bits, 19, 1) != 0
+    }
+
+    /// Update Make eXecutable Readable
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not affect
+    /// the mstatus CSR itself. See [`set_mxr`]/[`clear_mxr`] to directly update
+    /// the CSR.
+    #[inline]
+    pub fn set_mxr(&mut self, mxr: bool) {
+        self.bits = bf_insert(self.bits, 19, 1, mxr as usize);
     }
 
     /// Trap Virtual Memory
@@ -186,7 +307,17 @@ impl Mstatus {
     /// TVM is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tvm(&self) -> bool {
-        self.bits & (1 << 20) != 0
+        bf_extract(self.bits, 20, 1) != 0
+    }
+
+    /// Update Trap Virtual Memory
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tvm`]/[`clear_tvm`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_tvm(&mut self, tvm: bool) {
+        self.bits = bf_insert(self.bits, 20, 1, tvm as usize);
     }
 
     /// Timeout Wait
@@ -200,7 +331,17 @@ impl Mstatus {
     /// TW is hard-wired to 0 when S-mode is not supported.
     #[inline]
     pub fn tw(&self) -> bool {
-        self.bits & (1 << 21) != 0
+        bf_extract(self.bits, 21, 1) != 0
+    }
+
+    /// Update Timeout Wait
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tw`]/[`clear_tw`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_tw(&mut self, tw: bool) {
+        self.bits = bf_insert(self.bits, 21, 1, tw as usize);
     }
 
     /// Trap SRET
@@ -211,7 +352,17 @@ impl Mstatus {
     /// If S-mode is not supported, TSR bit is hard-wired to 0.
     #[inline]
     pub fn tsr(&self) -> bool {
-        self.bits & (1 << 22) != 0
+        bf_extract(self.bits, 22, 1) != 0
+    }
+
+    /// Update Trap SRET
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_tsr`]/[`clear_tsr`] to directly
+    /// update the CSR.
+    #[inline]
+    pub fn set_tsr(&mut self, tsr: bool) {
+        self.bits = bf_insert(self.bits, 22, 1, tsr as usize);
     }
 
     /// Effective xlen in U-mode (i.e., `UXLEN`).
@@ -223,7 +374,19 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
+            () => XLEN::from(bf_extract(self.bits, 32, 2) as u8),
+        }
+    }
+
+    /// Update Effective xlen in U-mode (i.e., `UXLEN`).
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
+    #[inline]
+    pub fn set_uxl(&mut self, uxl: XLEN) {
+        #[cfg(not(riscv32))]
+        {
+            self.bits = bf_insert(self.bits, 32, 2, uxl as usize);
         }
     }
 
@@ -236,7 +399,19 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits >> 34) as u8 & 0x3),
+            () => XLEN::from(bf_extract(self.bits, 34, 2) as u8),
+        }
+    }
+
+    /// Update Effective xlen in S-mode (i.e., `SXLEN`).
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
+    #[inline]
+    pub fn set_sxl(&mut self, sxl: XLEN) {
+        #[cfg(not(riscv32))]
+        {
+            self.bits = bf_insert(self.bits, 34, 2, sxl as usize);
         }
     }
 
@@ -248,7 +423,20 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => super::mstatush::read().sbe(),
             #[cfg(not(riscv32))]
-            () => Endianness::from(self.bits & (1 << 36) != 0),
+            () => Endianness::from(bf_extract(self.bits, 36, 1) != 0),
+        }
+    }
+
+    /// Update S-mode non-instruction-fetch memory endianness
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_sbe`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_sbe(&mut self, endianness: Endianness) {
+        #[cfg(not(riscv32))]
+        {
+            self.bits = bf_insert(self.bits, 36, 1, endianness as usize);
         }
     }
 
@@ -260,19 +448,41 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => super::mstatush::read().mbe(),
             #[cfg(not(riscv32))]
-            () => Endianness::from(self.bits & (1 << 37) != 0),
+            () => Endianness::from(bf_extract(self.bits, 37, 1) != 0),
+        }
+    }
+    /// Update M-mode non-instruction-fetch memory endianness
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_mbe`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_mbe(&mut self, endianness: Endianness) {
+        #[cfg(not(riscv32))]
+        {
+            self.bits = bf_insert(self.bits, 37, 1, endianness as usize);
         }
     }
 
     /// Whether either the FS field or XS field signals the presence of some dirty state
     #[inline]
     pub fn sd(&self) -> bool {
-        self.bits & (1 << (usize::BITS as usize - 1)) != 0
+        bf_extract(self.bits, usize::BITS as usize - 1, 1) != 0
+    }
+
+    /// Update whether either the FS field or XS field signals the presence of
+    /// some dirty state
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself.
+    #[inline]
+    pub fn set_sd(&mut self, sd: bool) {
+        self.bits = bf_insert(self.bits, usize::BITS as usize - 1, 1, sd as usize);
     }
 }
 
 read_csr_as!(Mstatus, 0x300);
-write_csr!(0x300);
+write_csr_as!(Mstatus, 0x300);
 set!(0x300);
 clear!(0x300);
 
@@ -382,5 +592,21 @@ pub unsafe fn set_mbe(endianness: Endianness) {
             Endianness::BigEndian => _set(1 << 37),
             Endianness::LittleEndian => _clear(1 << 37),
         },
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_mpp() {
+        let mut mstatus = Mstatus { bits: 0 };
+        mstatus = mstatus.set_mpp(MPP::User);
+        assert_eq!(mstatus.mpp(), MPP::User);
+        mstatus = mstatus.set_mpp(MPP::Machine);
+        assert_eq!(mstatus.mpp(), MPP::Machine);
+        mstatus = mstatus.set_mpp(MPP::Supervisor);
+        assert_eq!(mstatus.mpp(), MPP::Supervisor);
     }
 }
