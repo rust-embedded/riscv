@@ -354,6 +354,18 @@
 //! }
 //! ```
 //!
+//! You can also use the `#[interrupt]` macro to define interrupt handlers:
+//!
+//! ``` no_run
+//! #[riscv_rt::interrupt]
+//! fn MachineTimer() {
+//!    // ...
+//! }
+//! ```
+//!
+//! In direct mode, this macro is equivalent to defining a function with the same name.
+//! However, in vectored mode, this macro will generate a proper trap handler for the interrupt.
+//!
 //! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
 //!
 //! ### `DefaultHandler`
@@ -413,6 +425,33 @@
 //!   FLASH : ORIGIN = 0x20000000, LENGTH = 16M
 //! }
 //! ```
+//!
+//! ## `v-trap`
+//!
+//! The vectored trap feature (`v-trap`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
+//!
+//! For example:
+//! ``` text
+//! [dependencies]
+//! riscv-rt = {features=["v-trap"]}
+//! ```
+//! When the vectored trap feature is enabled, the trap vector is set to `_vector_table` in vectored mode.
+//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the interrupt.
+//!
+//! ### Defining interrupt handlers in vectored mode
+//!
+//! In vectored mode, each interrupt must also have a corresponding trap handler.
+//! Therefore, using `export_name` or `no_mangle` is not enough to define an interrupt handler.
+//! The [`interrupt`] macro will generate the trap handler for the interrupt:
+//!
+//! ``` no_run
+//! #[riscv_rt::interrupt]
+//! fn MachineTimer() {
+//!    // ...
+//! }
+//! ```
+//!
+//! This will generate a function named `_start_MachineTimer_trap` that calls the interrupt handler `MachineTimer`.
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
@@ -428,6 +467,12 @@ use riscv::register::scause as xcause;
 use riscv::register::mcause as xcause;
 
 pub use riscv_rt_macros::{entry, pre_init};
+
+#[cfg(riscv32)]
+pub use riscv_rt_macros::interrupt_riscv32 as interrupt;
+
+#[cfg(riscv64)]
+pub use riscv_rt_macros::interrupt_riscv64 as interrupt;
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
@@ -475,7 +520,7 @@ pub struct TrapFrame {
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
         fn ExceptionHandler(trap_frame: &TrapFrame);
-        fn DefaultHandler();
+        fn _dispatch_interrupt(code: usize);
     }
 
     let cause = xcause::read();
@@ -493,15 +538,8 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
         } else {
             ExceptionHandler(trap_frame);
         }
-    } else if code < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[code];
-        if let Some(handler) = h {
-            handler();
-        } else {
-            DefaultHandler();
-        }
     } else {
-        DefaultHandler();
+        _dispatch_interrupt(code);
     }
 }
 
@@ -542,6 +580,24 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     None,
     Some(StorePageFault),
 ];
+
+#[export_name = "_dispatch_interrupt"]
+unsafe extern "C" fn dispatch_interrupt(code: usize) {
+    extern "C" {
+        fn DefaultHandler();
+    }
+
+    if code < __INTERRUPTS.len() {
+        let h = &__INTERRUPTS[code];
+        if let Some(handler) = h {
+            handler();
+        } else {
+            DefaultHandler();
+        }
+    } else {
+        DefaultHandler();
+    }
+}
 
 extern "C" {
     fn SupervisorSoft();

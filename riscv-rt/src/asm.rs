@@ -245,11 +245,14 @@ _mp_hook:
 2:  li a0, 1
     ret",
     // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap`.
-    // Trap mode is set to `Direct` by default.
     // Users can override this function by defining their own `_setup_interrupts`
     ".weak _setup_interrupts
-_setup_interrupts:
-    la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+_setup_interrupts:",
+    #[cfg(not(feature = "v-trap"))]
+    "la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+    #[cfg(feature = "v-trap")]
+    "la t0, _vector_table
+    ori t0, t0, 0x1", // _vector_table is 16-byte aligned, so we must set the bit 0 to activate the Vectored trap mode
     #[cfg(feature = "s-mode")]
     "csrw stvec, t0",
     #[cfg(not(feature = "s-mode"))]
@@ -274,64 +277,46 @@ _pre_init_trap:
     j _pre_init_trap",
 );
 
-/// Trap entry point (_start_trap). It saves caller saved registers, calls
-/// _start_trap_rust, restores caller saved registers and then returns.
-///
-/// # Usage
-///
-/// The macro takes 5 arguments:
-/// - `$STORE`: the instruction used to store a register in the stack (e.g. `sd` for riscv64)
-/// - `$LOAD`: the instruction used to load a register from the stack (e.g. `ld` for riscv64)
-/// - `$BYTES`: the number of bytes used to store a register (e.g. 8 for riscv64)
-/// - `$TRAP_SIZE`: the number of registers to store in the stack (e.g. 32 for all the user registers)
-/// - list of tuples of the form `($REG, $LOCATION)`, where:
-///     - `$REG`: the register to store/load
-///     - `$LOCATION`: the location in the stack where to store/load the register
-#[rustfmt::skip]
-macro_rules! trap_handler {
-    ($STORE:ident, $LOAD:ident, $BYTES:literal, $TRAP_SIZE:literal, [$(($REG:ident, $LOCATION:literal)),*]) => {
-        // ensure we do not break that sp is 16-byte aligned
-        const _: () = assert!(($TRAP_SIZE * $BYTES) % 16 == 0);
-        global_asm!(
-        "
-            .section .trap, \"ax\"
-            .weak _start_trap
-            _start_trap:",
-            // save space for trap handler in stack
-            concat!("addi sp, sp, -", stringify!($TRAP_SIZE * $BYTES)),
-            // save registers in the desired order
-            $(concat!(stringify!($STORE), " ", stringify!($REG), ", ", stringify!($LOCATION * $BYTES), "(sp)"),)*
-            // call rust trap handler
-            "add a0, sp, zero
-            jal ra, _start_trap_rust",
-            // restore registers in the desired order
-            $(concat!(stringify!($LOAD), " ", stringify!($REG), ", ", stringify!($LOCATION * $BYTES), "(sp)"),)*
-            // free stack
-            concat!("addi sp, sp, ", stringify!($TRAP_SIZE * $BYTES)),
-        );
-        cfg_global_asm!(
-            // return from trap
-            #[cfg(feature = "s-mode")]
-            "sret",
-            #[cfg(not(feature = "s-mode"))]
-            "mret",
-        );
-    };
-}
-
-#[rustfmt::skip]
 #[cfg(riscv32)]
-trap_handler!(
-    sw, lw, 4, 16,
-    [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
-     (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
-);
-#[rustfmt::skip]
+riscv_rt_macros::weak_start_trap_riscv32!();
 #[cfg(riscv64)]
-trap_handler!(
-    sd, ld, 8, 16,
-    [(ra, 0), (t0, 1), (t1, 2), (t2, 3), (t3, 4), (t4, 5), (t5, 6), (t6, 7),
-     (a0, 8), (a1, 9), (a2, 10), (a3, 11), (a4, 12), (a5, 13), (a6, 14), (a7, 15)]
+riscv_rt_macros::weak_start_trap_riscv64!();
+
+#[cfg(all(riscv32, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap_riscv32!();
+#[cfg(all(riscv64, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap_riscv64!();
+
+#[cfg(feature = "v-trap")]
+cfg_global_asm!(
+    // Set the vector mode to vectored.
+    r#".section .trap, "ax"
+    .weak _vector_table
+    .type _vector_table, @function
+    
+    .option push
+    .balign 0x4 // TODO check if this is the correct alignment
+    .option norelax
+    .option norvc
+    
+    _vector_table:
+        j _start_trap                     // Interrupt 0 is used for exceptions
+        j _start_SupervisorSoft_trap
+        j _start_DefaultHandler_trap      // Interrupt 2 is reserved
+        j _start_MachineSoft_trap
+        j _start_DefaultHandler_trap      // Interrupt 4 is reserved
+        j _start_SupervisorTimer_trap
+        j _start_DefaultHandler_trap      // Interrupt 6 is reserved
+        j _start_MachineTimer_trap
+        j _start_DefaultHandler_trap      // Interrupt 8 is reserved
+        j _start_SupervisorExternal_trap
+        j _start_DefaultHandler_trap      // Interrupt 10 is reserved
+        j _start_MachineExternal_trap
+
+        // default table does not include the remaining interrupts.
+        // Targets with extra interrupts should override this table.
+    
+    .option pop"#,
 );
 
 #[rustfmt::skip]
