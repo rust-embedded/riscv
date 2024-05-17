@@ -483,12 +483,14 @@ fn vectored_interrupt_trap(arch: RiscvArch) -> TokenStream {
 core::arch::global_asm!(
 ".section .trap, \"ax\"
 
+.align 4
 .global _start_DefaultHandler_trap
 _start_DefaultHandler_trap:
     addi sp, sp, -{TRAP_SIZE} * {width} // allocate space for trap frame
     {store_start}                       // store trap partially (only register a0)
     la a0, DefaultHandler               // load interrupt handler address into a0
 
+.align 4
 .global _continue_interrupt_trap
 _continue_interrupt_trap:
     {store_continue}                   // store trap partially (all registers except a0)
