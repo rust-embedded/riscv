@@ -98,7 +98,7 @@ impl From<usize> for Exception {
             Self::Unknown
         } else {
             // SAFETY: valid exception number
-            unsafe { core::mem::transmute(nr) }
+            unsafe { core::mem::transmute::<usize, Self>(nr) }
         }
     }
 }
