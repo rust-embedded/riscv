@@ -602,11 +602,11 @@ mod test {
     #[test]
     fn test_mpp() {
         let mut mstatus = Mstatus { bits: 0 };
-        mstatus = mstatus.set_mpp(MPP::User);
+        mstatus.set_mpp(MPP::User);
         assert_eq!(mstatus.mpp(), MPP::User);
-        mstatus = mstatus.set_mpp(MPP::Machine);
+        mstatus.set_mpp(MPP::Machine);
         assert_eq!(mstatus.mpp(), MPP::Machine);
-        mstatus = mstatus.set_mpp(MPP::Supervisor);
+        mstatus.set_mpp(MPP::Supervisor);
         assert_eq!(mstatus.mpp(), MPP::Supervisor);
     }
 }
