@@ -95,6 +95,7 @@ mod pmpaddrx;
 pub use self::pmpaddrx::*;
 
 // Machine Counter/Timers
+pub mod mcountinhibit;
 pub mod mcycle;
 pub mod mcycleh;
 mod mhpmcounterx;
