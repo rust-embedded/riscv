@@ -89,6 +89,10 @@ pub fn exit(status: ExitStatus) {
 pub fn report_exception(reason: Exception) {
     let code = reason as usize;
     unsafe {
+        #[cfg(target_arch = "riscv64")]
+        syscall!(REPORT_EXCEPTION, code, 0);
+
+        #[cfg(not(target_arch = "riscv64"))]
         syscall1!(REPORT_EXCEPTION, code);
     }
 }
