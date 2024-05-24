@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `Mstatus::update_*` helpers to manipulate Mstatus values without touching
   the CSR
 - Export `riscv::register::macros` module macros for external use
+- Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
 
 ### Fixed
 

@@ -3,7 +3,7 @@
 //! ## Features
 //!
 //! - `aclint-hal-async`: enables the [`hal_async::delay::DelayNs`] implementation for the ACLINT peripheral.
-//! This feature relies on external functions that must be provided by the user. See [`hal_async::aclint`] for more information.
+//!   This feature relies on external functions that must be provided by the user. See [`hal_async::aclint`] for more information.
 
 #![deny(missing_docs)]
 #![no_std]

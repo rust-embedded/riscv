@@ -62,7 +62,7 @@ pub mod machine {
     /// - Do not call this function inside a critical section.
     /// - This method is assumed to be called within an interrupt handler.
     /// - Make sure to clear the interrupt flag that caused the interrupt before calling
-    /// this method. Otherwise, the interrupt will be re-triggered before executing `f`.
+    ///   this method. Otherwise, the interrupt will be re-triggered before executing `f`.
     #[inline]
     pub unsafe fn nested<F, R>(f: F) -> R
     where
@@ -151,7 +151,7 @@ pub mod supervisor {
     /// - Do not call this function inside a critical section.
     /// - This method is assumed to be called within an interrupt handler.
     /// - Make sure to clear the interrupt flag that caused the interrupt before calling
-    /// this method. Otherwise, the interrupt will be re-triggered before executing `f`.
+    ///   this method. Otherwise, the interrupt will be re-triggered before executing `f`.
     #[inline]
     pub unsafe fn nested<F, R>(f: F) -> R
     where
