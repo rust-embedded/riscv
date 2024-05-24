@@ -89,6 +89,6 @@ pub fn exit(status: ExitStatus) {
 pub fn report_exception(reason: Exception) {
     let code = reason as usize;
     unsafe {
-        syscall1!(REPORT_EXCEPTION, code);
+        syscall!(REPORT_EXCEPTION, code, 0);
     }
 }
