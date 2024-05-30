@@ -150,7 +150,7 @@ pub(crate) mod test {
 
     #[pac_enum(unsafe InterruptNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(u16)]
+    #[repr(usize)]
     pub(crate) enum Interrupt {
         I1 = 1,
         I2 = 2,

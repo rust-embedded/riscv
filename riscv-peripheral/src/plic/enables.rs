@@ -30,7 +30,7 @@ impl ENABLES {
     /// Checks if an interrupt source is enabled for the PLIC context.
     #[inline]
     pub fn is_enabled<I: ExternalInterruptNumber>(self, source: I) -> bool {
-        let source = source.number() as usize;
+        let source = source.number();
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
@@ -48,7 +48,7 @@ impl ENABLES {
     /// * Enabling an interrupt source can break mask-based critical sections.
     #[inline]
     pub unsafe fn enable<I: ExternalInterruptNumber>(self, source: I) {
-        let source = source.number() as usize;
+        let source = source.number();
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
@@ -73,7 +73,7 @@ impl ENABLES {
         source: I,
         order: core::sync::atomic::Ordering,
     ) {
-        let source = source.number() as usize;
+        let source = source.number();
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
@@ -87,7 +87,7 @@ impl ENABLES {
     /// It performs non-atomic read-modify-write operations, which may lead to **wrong** behavior.
     #[inline]
     pub fn disable<I: ExternalInterruptNumber>(self, source: I) {
-        let source = source.number() as usize;
+        let source = source.number();
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
@@ -111,7 +111,7 @@ impl ENABLES {
         source: I,
         order: core::sync::atomic::Ordering,
     ) {
-        let source = source.number() as usize;
+        let source = source.number();
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };

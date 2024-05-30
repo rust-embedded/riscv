@@ -31,7 +31,7 @@ impl PRIORITIES {
     #[inline]
     pub fn get_priority<I: ExternalInterruptNumber, P: PriorityNumber>(self, source: I) -> P {
         // SAFETY: valid interrupt number
-        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(source.number() as _)) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.add(source.number())) };
         P::from_number(reg.read() as _).unwrap()
     }
 
@@ -47,7 +47,7 @@ impl PRIORITIES {
         priority: P,
     ) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(source.number() as _)) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.add(source.number())) };
         reg.write(priority.number() as _);
     }
 
