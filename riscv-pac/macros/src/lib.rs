@@ -107,7 +107,7 @@ impl PacNumberEnum {
                 fn from_number(number: #num_type) -> Result<Self, #num_type> {
                     if #valid_condition {
                         // SAFETY: The number is valid for this enum
-                        Ok(unsafe { core::mem::transmute(number) })
+                        Ok(unsafe { core::mem::transmute::<#num_type, Self>(number) })
                     } else {
                         Err(number)
                     }
@@ -148,7 +148,7 @@ impl PacNumberEnum {
 /// ```rust
 /// use riscv_pac::*;
 ///
-/// #[repr(u16)]
+/// #[repr(usize)]
 /// #[pac_enum(unsafe ExceptionNumber)]
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 /// enum Exception {
@@ -190,8 +190,8 @@ pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     let trait_impl = match attrs[1] {
-        "ExceptionNumber" => pac_enum.quote("ExceptionNumber", "u16", "MAX_EXCEPTION_NUMBER"),
-        "InterruptNumber" => pac_enum.quote("InterruptNumber", "u16", "MAX_INTERRUPT_NUMBER"),
+        "ExceptionNumber" => pac_enum.quote("ExceptionNumber", "usize", "MAX_EXCEPTION_NUMBER"),
+        "InterruptNumber" => pac_enum.quote("InterruptNumber", "usize", "MAX_INTERRUPT_NUMBER"),
         "PriorityNumber" => pac_enum.quote("PriorityNumber", "u8", "MAX_PRIORITY_NUMBER"),
         "HartIdNumber" => pac_enum.quote("HartIdNumber", "u16", "MAX_HART_ID_NUMBER"),
         _ => panic!("Unknown trait '{}'. Expected: 'ExceptionNumber', 'InterruptNumber', 'PriorityNumber', or 'HartIdNumber'", attrs[1]),

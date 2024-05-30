@@ -3,27 +3,7 @@
 use riscv_pac::CoreInterruptNumber;
 pub use riscv_pac::{ExceptionNumber, InterruptNumber}; // re-export useful riscv-pac traits
 
-/// mcause register
-#[derive(Clone, Copy, Debug)]
-pub struct Mcause {
-    bits: usize,
-}
-
-impl From<usize> for Mcause {
-    #[inline]
-    fn from(bits: usize) -> Self {
-        Self { bits }
-    }
-}
-
-/// Trap Cause
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Trap {
-    Interrupt(Interrupt),
-    Exception(Exception),
-}
-
-/// Interrupt
+/// Standard M-mode RISC-V interrupts
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(usize)]
 pub enum Interrupt {
@@ -33,10 +13,32 @@ pub enum Interrupt {
     MachineTimer = 7,
     SupervisorExternal = 9,
     MachineExternal = 11,
-    Unknown,
 }
 
-/// Exception
+/// SAFETY: `Interrupt` represents the standard RISC-V interrupts
+unsafe impl InterruptNumber for Interrupt {
+    const MAX_INTERRUPT_NUMBER: usize = Self::MachineExternal as usize;
+
+    #[inline]
+    fn number(self) -> usize {
+        self as usize
+    }
+
+    #[inline]
+    fn from_number(value: usize) -> Result<Self, usize> {
+        if value > 11 || value % 2 == 0 {
+            Err(value)
+        } else {
+            // SAFETY: valid interrupt number
+            unsafe { Ok(core::mem::transmute::<usize, Self>(value)) }
+        }
+    }
+}
+
+/// SAFETY: `Interrupt` represents the standard RISC-V core interrupts
+unsafe impl CoreInterruptNumber for Interrupt {}
+
+/// Standard M-mode RISC-V exceptions
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(usize)]
 pub enum Exception {
@@ -54,93 +56,52 @@ pub enum Exception {
     InstructionPageFault = 12,
     LoadPageFault = 13,
     StorePageFault = 15,
-    Unknown,
-}
-
-impl From<usize> for Interrupt {
-    #[inline]
-    fn from(nr: usize) -> Self {
-        if nr > 11 || nr % 2 == 0 {
-            Self::Unknown
-        } else {
-            // SAFETY: valid interrupt number
-            unsafe { core::mem::transmute::<usize, Self>(nr) }
-        }
-    }
-}
-
-impl TryFrom<Interrupt> for usize {
-    type Error = Interrupt;
-
-    #[inline]
-    fn try_from(value: Interrupt) -> Result<Self, Self::Error> {
-        match value {
-            Interrupt::Unknown => Err(Self::Error::Unknown),
-            _ => Ok(value as Self),
-        }
-    }
-}
-
-/// SAFETY: `Interrupt` represents the standard RISC-V interrupts
-unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: u16 = Self::MachineExternal as u16;
-
-    #[inline]
-    fn number(self) -> u16 {
-        self as u16
-    }
-
-    #[inline]
-    fn from_number(value: u16) -> Result<Self, u16> {
-        match (value as usize).into() {
-            Self::Unknown => Err(value),
-            value => Ok(value),
-        }
-    }
-}
-
-/// SAFETY: `Interrupt` represents the standard RISC-V core interrupts
-unsafe impl CoreInterruptNumber for Interrupt {}
-
-impl From<usize> for Exception {
-    #[inline]
-    fn from(nr: usize) -> Self {
-        if nr == 10 || nr == 14 || nr > 15 {
-            Self::Unknown
-        } else {
-            // SAFETY: valid exception number
-            unsafe { core::mem::transmute::<usize, Self>(nr) }
-        }
-    }
-}
-
-impl TryFrom<Exception> for usize {
-    type Error = Exception;
-
-    #[inline]
-    fn try_from(value: Exception) -> Result<Self, Self::Error> {
-        match value {
-            Exception::Unknown => Err(Self::Error::Unknown),
-            _ => Ok(value as Self),
-        }
-    }
 }
 
 /// SAFETY: `Exception` represents the standard RISC-V exceptions
 unsafe impl ExceptionNumber for Exception {
-    const MAX_EXCEPTION_NUMBER: u16 = Self::StorePageFault as u16;
+    const MAX_EXCEPTION_NUMBER: usize = Self::StorePageFault as usize;
 
     #[inline]
-    fn number(self) -> u16 {
-        self as u16
+    fn number(self) -> usize {
+        self as usize
     }
 
     #[inline]
-    fn from_number(value: u16) -> Result<Self, u16> {
-        match (value as usize).into() {
-            Self::Unknown => Err(value),
-            value => Ok(value),
+    fn from_number(value: usize) -> Result<Self, usize> {
+        if value == 10 || value == 14 || value > 15 {
+            Err(value)
+        } else {
+            // SAFETY: valid exception number
+            unsafe { Ok(core::mem::transmute::<usize, Self>(value)) }
         }
+    }
+}
+
+/// Trap Cause
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Trap<I, E> {
+    Interrupt(I),
+    Exception(E),
+}
+
+/// Trap Error
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum TrapError {
+    InvalidInterrupt(usize),
+    InvalidException(usize),
+}
+
+/// mcause register
+#[derive(Clone, Copy, Debug)]
+pub struct Mcause {
+    bits: usize,
+}
+
+impl From<usize> for Mcause {
+    #[inline]
+    fn from(bits: usize) -> Self {
+        Self { bits }
     }
 }
 
@@ -157,14 +118,30 @@ impl Mcause {
         self.bits & !(1 << (usize::BITS as usize - 1))
     }
 
+    /// Try to get the trap cause
+    #[inline]
+    pub fn try_cause<I, E>(&self) -> Result<Trap<I, E>, TrapError>
+    where
+        I: CoreInterruptNumber,
+        E: ExceptionNumber,
+    {
+        if self.is_interrupt() {
+            match I::from_number(self.code()) {
+                Ok(interrupt) => Ok(Trap::Interrupt(interrupt)),
+                Err(code) => Err(TrapError::InvalidInterrupt(code)),
+            }
+        } else {
+            match E::from_number(self.code()) {
+                Ok(exception) => Ok(Trap::Exception(exception)),
+                Err(code) => Err(TrapError::InvalidException(code)),
+            }
+        }
+    }
+
     /// Trap Cause
     #[inline]
-    pub fn cause(&self) -> Trap {
-        if self.is_interrupt() {
-            Trap::Interrupt(Interrupt::from(self.code()))
-        } else {
-            Trap::Exception(Exception::from(self.code()))
-        }
+    pub fn cause<I: CoreInterruptNumber, E: ExceptionNumber>(&self) -> Trap<I, E> {
+        self.try_cause().unwrap()
     }
 
     /// Is trap cause an interrupt.

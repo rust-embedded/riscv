@@ -1,6 +1,6 @@
 use riscv_pac::*;
 
-#[repr(u16)]
+#[repr(usize)]
 #[pac_enum(unsafe ExceptionNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Exception {
@@ -8,7 +8,7 @@ enum Exception {
     E3 = 3,
 }
 
-#[repr(u16)]
+#[repr(usize)]
 #[pac_enum(unsafe InterruptNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Interrupt {

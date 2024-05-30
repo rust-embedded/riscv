@@ -92,6 +92,7 @@ pub mod machine {
         r
     }
 }
+
 pub mod supervisor {
     use crate::register::{sepc, sstatus};
 
