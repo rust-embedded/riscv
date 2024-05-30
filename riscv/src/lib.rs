@@ -36,7 +36,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 pub mod asm;
-pub(crate) mod bits;
+pub mod bits;
 pub mod delay;
 pub mod interrupt;
 pub mod register;
