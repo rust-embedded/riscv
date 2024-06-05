@@ -23,11 +23,11 @@ unsafe impl InterruptNumber for Interrupt {
 
     #[inline]
     fn from_number(value: usize) -> Result<Self, usize> {
-        if value == 1 || value == 5 || value == 9 {
-            // SAFETY: valid interrupt number
-            Ok(unsafe { core::mem::transmute::<usize, Self>(value) })
-        } else {
-            Err(value)
+        match value {
+            1 => Ok(Self::SupervisorSoft),
+            5 => Ok(Self::SupervisorTimer),
+            9 => Ok(Self::SupervisorExternal),
+            _ => Err(value),
         }
     }
 }
@@ -65,11 +65,21 @@ unsafe impl ExceptionNumber for Exception {
 
     #[inline]
     fn from_number(value: usize) -> Result<Self, usize> {
-        if value == 10 || value == 11 || value == 14 || value > 15 {
-            Err(value)
-        } else {
-            // SAFETY: valid exception number
-            unsafe { Ok(core::mem::transmute::<usize, Self>(value)) }
+        match value {
+            0 => Ok(Self::InstructionMisaligned),
+            1 => Ok(Self::InstructionFault),
+            2 => Ok(Self::IllegalInstruction),
+            3 => Ok(Self::Breakpoint),
+            4 => Ok(Self::LoadMisaligned),
+            5 => Ok(Self::LoadFault),
+            6 => Ok(Self::StoreMisaligned),
+            7 => Ok(Self::StoreFault),
+            8 => Ok(Self::UserEnvCall),
+            9 => Ok(Self::SupervisorEnvCall),
+            12 => Ok(Self::InstructionPageFault),
+            13 => Ok(Self::LoadPageFault),
+            15 => Ok(Self::StorePageFault),
+            _ => Err(value),
         }
     }
 }

@@ -26,11 +26,14 @@ unsafe impl InterruptNumber for Interrupt {
 
     #[inline]
     fn from_number(value: usize) -> Result<Self, usize> {
-        if value > 11 || value % 2 == 0 {
-            Err(value)
-        } else {
-            // SAFETY: valid interrupt number
-            unsafe { Ok(core::mem::transmute::<usize, Self>(value)) }
+        match value {
+            1 => Ok(Self::SupervisorSoft),
+            3 => Ok(Self::MachineSoft),
+            5 => Ok(Self::SupervisorTimer),
+            7 => Ok(Self::MachineTimer),
+            9 => Ok(Self::SupervisorExternal),
+            11 => Ok(Self::MachineExternal),
+            _ => Err(value),
         }
     }
 }
@@ -69,11 +72,22 @@ unsafe impl ExceptionNumber for Exception {
 
     #[inline]
     fn from_number(value: usize) -> Result<Self, usize> {
-        if value == 10 || value == 14 || value > 15 {
-            Err(value)
-        } else {
-            // SAFETY: valid exception number
-            unsafe { Ok(core::mem::transmute::<usize, Self>(value)) }
+        match value {
+            0 => Ok(Self::InstructionMisaligned),
+            1 => Ok(Self::InstructionFault),
+            2 => Ok(Self::IllegalInstruction),
+            3 => Ok(Self::Breakpoint),
+            4 => Ok(Self::LoadMisaligned),
+            5 => Ok(Self::LoadFault),
+            6 => Ok(Self::StoreMisaligned),
+            7 => Ok(Self::StoreFault),
+            8 => Ok(Self::UserEnvCall),
+            9 => Ok(Self::SupervisorEnvCall),
+            11 => Ok(Self::MachineEnvCall),
+            12 => Ok(Self::InstructionPageFault),
+            13 => Ok(Self::LoadPageFault),
+            15 => Ok(Self::StorePageFault),
+            _ => Err(value),
         }
     }
 }
