@@ -601,7 +601,6 @@ macro_rules! clear_pmp {
     };
 }
 
-
 /// Helper macro to define a CSR type.
 ///
 /// This macro creates a type represents a CSR register, without defining any bitfields.
@@ -639,6 +638,56 @@ macro_rules! csr {
                 Self::BITMASK
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! csr_field_enum {
+    ($field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+    ) => {
+         #[doc = $field_ty_doc]
+         #[repr(usize)]
+         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+         pub enum $field_ty {
+             $($variant = $value),+
+         }
+
+         impl $field_ty {
+             /// Creates a new field variant.
+             pub const fn new() -> Self {
+                 Self::$default_variant
+             }
+
+             /// Attempts to convert a [`usize`] into a valid variant.
+             pub const fn from_usize(val: usize) -> Option<Self> {
+                 match val {
+                     $($value => Some(Self::$variant),)+
+                     _ => None,
+                 }
+             }
+
+             /// Converts the variant into a [`usize`].
+             pub const fn into_usize(self) -> usize {
+                 self as usize
+             }
+         }
+
+         impl Default for $field_ty {
+             fn default() -> Self {
+                 Self::new()
+             }
+         }
+
+         impl From<$field_ty> for usize {
+             fn from(val: $field_ty) -> Self {
+                 val.into_usize()
+             }
+         }
     };
 }
 
@@ -729,6 +778,45 @@ macro_rules! read_write_csr {
         $crate::set!($csr);
         $crate::clear!($csr);
     };
+
+    ($doc:expr,
+     $ty:ident: $csr:tt,
+     $mask:tt,
+     $(
+     $field_doc:expr,
+     $field:ident,
+     $set_field_doc:expr,
+     $set_field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+     )+) => {
+        $crate::csr!($doc, $ty: $csr, $mask);
+
+        $(
+            $crate::read_write_csr_field!(
+                $ty,
+                $field_doc,
+                $field,
+                $set_field_doc,
+                $set_field,
+                $field_ty_doc,
+                $field_ty {
+                    range: [$field_start : $field_end],
+                    default: $field_default,
+                    $($variant = $value),+
+                },
+            );
+        )+
+
+        $crate::read_csr_as!($ty, $csr);
+        $crate::write_csr_as!($ty, $csr);
+        $crate::set!($csr);
+        $crate::clear!($csr);
+    };
 }
 
 /// Helper macro to create a read-only CSR type.
@@ -737,41 +825,29 @@ macro_rules! read_write_csr {
 #[macro_export]
 macro_rules! read_only_csr {
     ($doc:expr,
-     $ty:ident: $csr:expr,
-     $mask:literal,
-     $(
-     $field_doc:expr,
-     $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?
-     )+) => {
+     $ty:ident: $csr:tt,
+     $mask:tt,
+     $($field_doc:expr, $field:ident: $bit:literal$(,)?)+
+    ) => {
         $crate::csr! { $doc, $ty: $csr, $mask }
 
         $(
             $crate::read_only_csr_field! {
                 $ty,
                 $field_doc,
-                $field: [$bit_start:$bit_end],
+                $field: $bit,
             }
         )+
-    };
 
-    ($doc:expr, $ty:ident: $csr:tt, $mask:tt, $($field_doc:expr, $field:ident, $bit:tt$(,)?)+) => {
-        $crate::csr! { $doc, $ty: $csr, $mask }
-
-        $(
-            $crate::read_only_csr_field! {
-                $ty,
-                $field_doc,
-                $field: $bit..=$bit_end,
-            }
-        )+
+        $crate::read_csr_as!($ty, $csr);
     };
 
     ($doc:expr,
-     $ty:ident: $csr:expr,
-     $mask:literal,
+     $ty:ident: $csr:tt,
+     $mask:tt,
      $(
      $field_doc:expr,
-     $field:ident: $bit:tt ..= $bit_end:tt$(,)?
+     $field:ident: $bit:literal ..= $bit_end:literal$(,)?
      )+) => {
         $crate::csr! { $doc, $ty: $csr, $mask }
 
@@ -779,8 +855,60 @@ macro_rules! read_only_csr {
             $crate::read_only_csr_field! {
                 $ty,
                 $field_doc,
-                $field: $bit..=$bit_end,
+                $field: $bit ..= $bit_end,
             }
+        )+
+
+        $crate::read_csr_as!($ty, $csr);
+    };
+
+    ($doc:expr,
+     $ty:ident: $csr:literal,
+     $mask:literal,
+     $(
+     $field_doc:expr,
+     $field:ident: [$bit:tt : $bit_end:tt]$(,)?
+     )+) => {
+        $crate::csr! { $doc, $ty: $csr, $mask }
+
+        $(
+            $crate::read_only_csr_field! {
+                $ty,
+                $field_doc,
+                $field: [$bit : $bit_end],
+            }
+        )+
+
+        $crate::read_csr_as!($ty, $csr);
+    };
+
+    ($doc:expr,
+     $ty:ident: $csr:tt,
+     $mask:tt,
+     $(
+     $field_doc:expr,
+     $field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+     )+) => {
+        $crate::csr!($doc, $ty: $csr, $mask);
+
+        $(
+            $crate::read_only_csr_field!(
+                $ty,
+                $field_doc,
+                $field,
+                $field_ty_doc,
+                $field_ty {
+                    range: [$field_start : $field_end],
+                    default: $field_default,
+                    $($variant = $value),+
+                },
+            );
         )+
 
         $crate::read_csr_as!($ty, $csr);
@@ -850,6 +978,41 @@ macro_rules! write_only_csr {
             }
         )+
 
+        $crate::write_csr_as!($ty, $csr);
+        $crate::set!($csr);
+        $crate::clear!($csr);
+    };
+
+    ($doc:expr,
+     $ty:ident: $csr:tt,
+     $mask:tt,
+     $(
+     $field_doc:expr,
+     $field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+     )+) => {
+        $crate::csr!($doc, $ty: $csr, $mask);
+
+        $(
+            $crate::write_only_csr_field!(
+                $ty,
+                $field_doc,
+                $field,
+                $field_ty_doc,
+                $field_ty {
+                    range: [$field_start : $field_end],
+                    default: $field_default,
+                    $($variant = $value),+
+                },
+            );
+        )+
+
+        $crate::read_csr_as!($ty, $csr);
         $crate::write_csr_as!($ty, $csr);
         $crate::set!($csr);
         $crate::clear!($csr);
@@ -929,6 +1092,51 @@ macro_rules! read_write_csr_field {
             }
         }
     };
+
+    ($ty:ident,
+     $field_doc:expr,
+     $field:ident,
+     $set_field_doc:expr,
+     $set_field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+    ) => {
+        $crate::csr_field_enum!(
+            $field_ty_doc,
+            $field_ty {
+                range: [$field_start : $field_end],
+                default: $default_variant,
+                $($variant = $value,)+
+            },
+         );
+
+         impl $ty {
+             #[doc = $field_doc]
+             #[inline]
+             pub fn $field(&self) -> Option<$field_ty> {
+                 $field_ty::from_usize($crate::bits::bf_extract(
+                     self.bits,
+                     $field_start,
+                     $field_end - $field_start + 1,
+                 ))
+             }
+
+             #[doc = $set_field_doc]
+             #[inline]
+             pub fn $set_field(&mut self, $field: $field_ty) {
+                 self.bits = $crate::bits::bf_insert(
+                     self.bits,
+                     $field_start,
+                     $field_end - $field_start + 1,
+                     $field.into(),
+                 );
+             }
+         }
+    };
 }
 
 /// Defines field accesor functions for a read-only CSR type.
@@ -959,10 +1167,42 @@ macro_rules! read_only_csr_field {
         impl $ty {
             #[doc = $field_doc]
             #[inline]
-            pub fn $field(&self) -> bool {
-                $crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1) != 0
+            pub fn $field(&self) -> usize {
+                $crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1)
             }
         }
+    };
+
+    ($ty:ident,
+     $field_doc:expr,
+     $field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+    ) => {
+        $crate::csr_field_enum!(
+            $field_ty_doc,
+            $field_ty {
+                range: [$field_start : $field_end],
+                default: $default_variant,
+                $($variant = $value,)+
+            },
+         );
+
+         impl $ty {
+             #[doc = $field_doc]
+             #[inline]
+             pub fn $field(&self) -> Option<$field_ty> {
+                 $field_ty::from_usize($crate::bits::bf_extract(
+                     self.bits,
+                     $field_start,
+                     $field_end - $field_start + 1,
+                 ))
+             }
+         }
     };
 }
 
@@ -973,8 +1213,8 @@ macro_rules! write_only_csr_field {
         impl $ty {
             #[doc = $field_doc]
             #[inline]
-            pub fn $field(&self) -> bool {
-                $crate::bits::bf_insert(self.bits, $bit, 1) != 0
+            pub fn $field(&mut self, $field: bool) {
+                self.bits = $crate::bits::bf_insert(self.bits, $bit, 1, $field as usize);
             }
         }
     };
@@ -994,8 +1234,7 @@ macro_rules! write_only_csr_field {
         impl $ty {
             #[doc = $field_doc]
             #[inline]
-            pub fn $field(&mut self, index: usize, $field: usize) {
-                assert!(($bit_start..=$bit_end).contains(&index));
+            pub fn $field(&mut self, $field: usize) {
                 self.bits = $crate::bits::bf_insert(
                     self.bits,
                     $bit_start,
@@ -1004,5 +1243,38 @@ macro_rules! write_only_csr_field {
                 );
             }
         }
+    };
+
+    ($ty:ident,
+     $field_doc:expr,
+     $field:ident,
+     $field_ty_doc:expr,
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+    ) => {
+        $crate::csr_field_enum!(
+            $field_ty_doc,
+            $field_ty {
+                range: [$field_start : $field_end],
+                default: $default_variant,
+                $($variant = $value,)+
+            },
+         );
+
+         impl $ty {
+             #[doc = $field_doc]
+             #[inline]
+             pub fn $field(&mut self, $field: $field_ty) {
+                 self.bits = $crate::bits::bf_insert(
+                     self.bits,
+                     $field_start,
+                     $field_end - $field_start + 1,
+                     $field.into(),
+                 );
+             }
+         }
     };
 }
