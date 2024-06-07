@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export `riscv::register::macros` module macros for external use
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
 - Add `Mcounteren` in-memory update functions 
+- Add `Mstatus` vector extension support
 
 ### Fixed
 
