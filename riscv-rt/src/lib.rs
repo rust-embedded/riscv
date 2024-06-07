@@ -523,23 +523,21 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
         fn _dispatch_interrupt(code: usize);
     }
 
-    let cause = xcause::read();
-    let code = cause.code();
-
-    if cause.is_exception() {
-        let trap_frame = &*trap_frame;
-        if code < __EXCEPTIONS.len() {
-            let h = &__EXCEPTIONS[code];
-            if let Some(handler) = h {
-                handler(trap_frame);
+    match xcause::read().cause() {
+        xcause::Trap::Interrupt(code) => _dispatch_interrupt(code),
+        xcause::Trap::Exception(code) => {
+            let trap_frame = &*trap_frame;
+            if code < __EXCEPTIONS.len() {
+                let h = &__EXCEPTIONS[code];
+                if let Some(handler) = h {
+                    handler(trap_frame);
+                } else {
+                    ExceptionHandler(trap_frame);
+                }
             } else {
                 ExceptionHandler(trap_frame);
             }
-        } else {
-            ExceptionHandler(trap_frame);
         }
-    } else {
-        _dispatch_interrupt(code);
     }
 }
 
