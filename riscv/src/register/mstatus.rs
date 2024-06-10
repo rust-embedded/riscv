@@ -41,6 +41,15 @@ pub enum FS {
     Dirty = 3,
 }
 
+/// Vector extension state
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum VS {
+    Off = 0,
+    Initial = 1,
+    Clean = 2,
+    Dirty = 3,
+}
+
 /// Machine Previous Privilege Mode
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MPP {
@@ -216,6 +225,19 @@ impl Mstatus {
         }
     }
 
+    /// Vector extension state
+    #[inline]
+    pub fn vs(&self) -> VS {
+        let fs = bf_extract(self.bits, 9, 2); // bits 9-10
+        match fs {
+            0b00 => VS::Off,
+            0b01 => VS::Initial,
+            0b10 => VS::Clean,
+            0b11 => VS::Dirty,
+            _ => unreachable!(),
+        }
+    }
+
     /// Update Floating-point extension state
     ///
     /// Note this updates a previously read [`Mstatus`] value, but does not
@@ -224,6 +246,16 @@ impl Mstatus {
     #[inline]
     pub fn set_fs(&mut self, fs: FS) {
         self.bits = bf_insert(self.bits, 13, 2, fs as usize);
+    }
+
+    /// Update vector extension state
+    ///
+    /// Note this updates a previously read [`Mstatus`] value, but does not
+    /// affect the mstatus CSR itself. See [`set_vs`] to directly update the
+    /// CSR.
+    #[inline]
+    pub fn set_vs(&mut self, vs: VS) {
+        self.bits = bf_insert(self.bits, 9, 2, vs as usize);
     }
 
     /// Additional extension state
@@ -556,6 +588,15 @@ pub unsafe fn set_fs(fs: FS) {
     let mut value = _read();
     value &= !(0x3 << 13); // clear previous value
     value |= (fs as usize) << 13;
+    _write(value);
+}
+
+/// Vector extension state
+#[inline]
+pub unsafe fn set_vs(vs: VS) {
+    let mut value = _read();
+    value &= !(0x3 << 9); // clear previous value
+    value |= (vs as usize) << 9;
     _write(value);
 }
 
