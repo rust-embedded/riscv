@@ -1,7 +1,5 @@
-error: custom attribute panicked
- --> tests/ui/fail_no_unsafe.rs:1:1
+error: expected `unsafe`
+ --> tests/ui/fail_no_unsafe.rs:1:23
   |
 1 | #[riscv_pac::pac_enum(InterruptNumber)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  |
-  = help: message: Attribute does not start with 'unsafe'. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'
+  |                       ^^^^^^^^^^^^^^^

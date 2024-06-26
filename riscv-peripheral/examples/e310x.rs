@@ -2,8 +2,8 @@
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
+use riscv_pac::pac_enum;
 use riscv_pac::result::{Error, Result};
-use riscv_pac::{pac_enum, ExternalInterruptNumber};
 
 #[repr(u16)]
 #[pac_enum(unsafe HartIdNumber)]

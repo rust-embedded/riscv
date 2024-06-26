@@ -520,11 +520,11 @@ pub struct TrapFrame {
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
         fn ExceptionHandler(trap_frame: &TrapFrame);
-        fn _dispatch_interrupt(code: usize);
+        fn _dispatch_core_interrupt(code: usize);
     }
 
     match xcause::read().cause() {
-        xcause::Trap::Interrupt(code) => _dispatch_interrupt(code),
+        xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
         xcause::Trap::Exception(code) => {
             let trap_frame = &*trap_frame;
             if code < __EXCEPTIONS.len() {
@@ -579,8 +579,8 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(StorePageFault),
 ];
 
-#[export_name = "_dispatch_interrupt"]
-unsafe extern "C" fn dispatch_interrupt(code: usize) {
+#[export_name = "_dispatch_core_interrupt"]
+unsafe extern "C" fn dispatch_core_interrupt(code: usize) {
     extern "C" {
         fn DefaultHandler();
     }

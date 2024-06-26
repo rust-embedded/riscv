@@ -148,7 +148,7 @@ pub(crate) mod test {
     use riscv_pac::result::{Error, Result};
     use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
 
-    #[pac_enum(unsafe InterruptNumber)]
+    #[pac_enum(unsafe ExternalInterruptNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(usize)]
     pub(crate) enum Interrupt {
@@ -157,8 +157,6 @@ pub(crate) mod test {
         I3 = 3,
         I4 = 4,
     }
-
-    unsafe impl ExternalInterruptNumber for Interrupt {}
 
     #[pac_enum(unsafe PriorityNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -1,7 +1,7 @@
-error: custom attribute panicked
+error: unexpected end of input, expected `unsafe`
  --> tests/ui/fail_empty_macro.rs:1:1
   |
 1 | #[riscv_pac::pac_enum]
   | ^^^^^^^^^^^^^^^^^^^^^^
   |
-  = help: message: Attribute is empty. Expected: 'riscv_pac::pac_enum(unsafe <PacTraitToImplement>)'
+  = note: this error originates in the attribute macro `riscv_pac::pac_enum` (in Nightly builds, run with -Z macro-backtrace for more info)
