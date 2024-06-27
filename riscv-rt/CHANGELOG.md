@@ -22,6 +22,8 @@ If `v-trap` feature is enabled, this macro also generates its corresponding trap
 - Made `cfg` variable selection more robust for custom targets
 - `_start_trap_rust` now only deals with exceptions. When an interrupt is detected, it now calls
 to `_dispatch_interrupt`.
+- Upgrade rust-version to 1.61
+- Update `syn` to version 2.0
 
 ### Removed
 
