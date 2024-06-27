@@ -460,6 +460,8 @@
 #[cfg(riscv)]
 mod asm;
 
+mod interrupt;
+
 #[cfg(feature = "s-mode")]
 use riscv::register::scause as xcause;
 
@@ -577,48 +579,4 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(LoadPageFault),
     None,
     Some(StorePageFault),
-];
-
-#[export_name = "_dispatch_core_interrupt"]
-unsafe extern "C" fn dispatch_core_interrupt(code: usize) {
-    extern "C" {
-        fn DefaultHandler();
-    }
-
-    if code < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[code];
-        if let Some(handler) = h {
-            handler();
-        } else {
-            DefaultHandler();
-        }
-    } else {
-        DefaultHandler();
-    }
-}
-
-extern "C" {
-    fn SupervisorSoft();
-    fn MachineSoft();
-    fn SupervisorTimer();
-    fn MachineTimer();
-    fn SupervisorExternal();
-    fn MachineExternal();
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
-    None,
-    Some(SupervisorSoft),
-    None,
-    Some(MachineSoft),
-    None,
-    Some(SupervisorTimer),
-    None,
-    Some(MachineTimer),
-    None,
-    Some(SupervisorExternal),
-    None,
-    Some(MachineExternal),
 ];
