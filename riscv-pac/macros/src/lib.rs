@@ -192,6 +192,42 @@ impl PacEnumItem {
         vectors
     }
 
+    fn vector_table(&self) -> TokenStream2 {
+        let mut asm = String::from(
+            r#"
+core::arch::global_asm!("
+    .section .trap, \"ax\"
+    .global _vector_table
+    .type _vector_table, @function
+    
+    .option push
+    .balign 0x4 // TODO check if this is the correct alignment
+    .option norelax
+    .option norvc
+    
+    _vector_table:
+        j _start_trap  // Interrupt 0 is used for exceptions
+"#,
+        );
+
+        for i in 1..=self.max_number {
+            if let Some(ident) = self.numbers.get(&i) {
+                asm.push_str(&format!("        j _start_{ident}_trap\n"));
+            } else {
+                asm.push_str(&format!(
+                    "        j _start_DefaultHandler_trap // Interrupt {i} is reserved\n"
+                ));
+            }
+        }
+
+        asm.push_str(
+            r#"    .option pop"
+);"#,
+        );
+
+        TokenStream2::from_str(&asm).unwrap()
+    }
+
     /// Returns a vector of token streams representing the trait implementations for
     /// the enum. If the trait is an interrupt trait, the implementation also includes
     /// the interrupt handler functions and the interrupt array.
@@ -269,6 +305,10 @@ impl PacEnumItem {
                     }
                 }
             });
+
+            if let InterruptType::Core = interrupt_type {
+                res.push(self.vector_table());
+            }
         }
 
         res
