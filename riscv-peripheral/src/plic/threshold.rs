@@ -1,6 +1,7 @@
 //! Priority threshold register.
 
-use crate::{common::unsafe_peripheral, plic::PriorityNumber};
+use crate::common::unsafe_peripheral;
+use riscv_pac::PriorityNumber;
 
 unsafe_peripheral!(THRESHOLD, u32, RW);
 

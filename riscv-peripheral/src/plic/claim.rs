@@ -1,6 +1,7 @@
 //! Interrupt claim/complete register
 
-use crate::{common::unsafe_peripheral, plic::InterruptNumber};
+use crate::common::unsafe_peripheral;
+use riscv_pac::ExternalInterruptNumber;
 
 unsafe_peripheral!(CLAIM, u32, RW);
 
@@ -8,7 +9,7 @@ impl CLAIM {
     /// Claims the number of a pending interrupt for for the PLIC context.
     /// If no interrupt is pending for this context, it returns [`None`].
     #[inline]
-    pub fn claim<I: InterruptNumber>(self) -> Option<I> {
+    pub fn claim<I: ExternalInterruptNumber>(self) -> Option<I> {
         match self.register.read() {
             0 => None,
             i => Some(I::from_number(i as _).unwrap()),
@@ -22,7 +23,7 @@ impl CLAIM {
     /// If the source ID does not match an interrupt source that is
     /// currently enabled for the target, the completion is silently ignored.
     #[inline]
-    pub fn complete<I: InterruptNumber>(self, source: I) {
+    pub fn complete<I: ExternalInterruptNumber>(self, source: I) {
         self.register.write(source.number() as _)
     }
 }
@@ -31,6 +32,7 @@ impl CLAIM {
 mod test {
     use super::super::test::Interrupt;
     use super::*;
+    use riscv_pac::InterruptNumber;
 
     #[test]
     fn test_claim() {

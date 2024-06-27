@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Bump MSRV to 1.61.
+- Implementation of `riscv-pac` traits for `Interrupt` and `Exception` enums.
+- Tests for the `riscv-pac` trait implementations of `Interrupt` and `Exception` enums.
 - Add `Mcause::from(usize)` for use in unit tests
 - Add `Mstatus::from(usize)` for use in unit tests
 - Add `Mstatus.bits()`
@@ -19,6 +22,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
 - Add `Mcounteren` in-memory update functions 
 - Add `Mstatus` vector extension support
+
+### Changed
+
+- More efficient implementation of `From` traits for `Interrupt` and `Exception` enums.
 
 ### Fixed
 

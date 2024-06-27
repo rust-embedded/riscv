@@ -460,6 +460,8 @@
 #[cfg(riscv)]
 mod asm;
 
+mod interrupt;
+
 #[cfg(feature = "s-mode")]
 use riscv::register::scause as xcause;
 
@@ -520,26 +522,24 @@ pub struct TrapFrame {
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
         fn ExceptionHandler(trap_frame: &TrapFrame);
-        fn _dispatch_interrupt(code: usize);
+        fn _dispatch_core_interrupt(code: usize);
     }
 
-    let cause = xcause::read();
-    let code = cause.code();
-
-    if cause.is_exception() {
-        let trap_frame = &*trap_frame;
-        if code < __EXCEPTIONS.len() {
-            let h = &__EXCEPTIONS[code];
-            if let Some(handler) = h {
-                handler(trap_frame);
+    match xcause::read().cause() {
+        xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
+        xcause::Trap::Exception(code) => {
+            let trap_frame = &*trap_frame;
+            if code < __EXCEPTIONS.len() {
+                let h = &__EXCEPTIONS[code];
+                if let Some(handler) = h {
+                    handler(trap_frame);
+                } else {
+                    ExceptionHandler(trap_frame);
+                }
             } else {
                 ExceptionHandler(trap_frame);
             }
-        } else {
-            ExceptionHandler(trap_frame);
         }
-    } else {
-        _dispatch_interrupt(code);
     }
 }
 
@@ -579,48 +579,4 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(LoadPageFault),
     None,
     Some(StorePageFault),
-];
-
-#[export_name = "_dispatch_interrupt"]
-unsafe extern "C" fn dispatch_interrupt(code: usize) {
-    extern "C" {
-        fn DefaultHandler();
-    }
-
-    if code < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[code];
-        if let Some(handler) = h {
-            handler();
-        } else {
-            DefaultHandler();
-        }
-    } else {
-        DefaultHandler();
-    }
-}
-
-extern "C" {
-    fn SupervisorSoft();
-    fn MachineSoft();
-    fn SupervisorTimer();
-    fn MachineTimer();
-    fn SupervisorExternal();
-    fn MachineExternal();
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
-    None,
-    Some(SupervisorSoft),
-    None,
-    Some(MachineSoft),
-    None,
-    Some(SupervisorTimer),
-    None,
-    Some(MachineTimer),
-    None,
-    Some(SupervisorExternal),
-    None,
-    Some(MachineExternal),
 ];
