@@ -1,5 +1,7 @@
 #![no_std]
 
+pub mod result;
+
 /// Trait for enums of target-specific external interrupt numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC)
