@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
 - Add `Mcounteren` in-memory update functions 
 - Add `Mstatus` vector extension support
+- Add fallible counterparts to all functions that `panic`
 
 ### Fixed
 
