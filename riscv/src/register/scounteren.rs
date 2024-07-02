@@ -1,5 +1,7 @@
 //! scounteren register
 
+use crate::result::{Error, Result};
+
 /// scounteren register
 #[derive(Clone, Copy, Debug)]
 pub struct Scounteren {
@@ -31,6 +33,22 @@ impl Scounteren {
         assert!((3..32).contains(&index));
         self.bits & (1 << index) != 0
     }
+
+    /// User "hpm\[x\]" Enable (bits 3-31)
+    ///
+    /// Attempts to read the "hpm\[x\]" value, and returns an error if the index is invalid.
+    #[inline]
+    pub fn try_hpm(&self, index: usize) -> Result<bool> {
+        if (3..32).contains(&index) {
+            Ok(self.bits & (1 << index) != 0)
+        } else {
+            Err(Error::IndexOutOfBounds {
+                index,
+                min: 3,
+                max: 31,
+            })
+        }
+    }
 }
 
 read_csr_as!(Scounteren, 0x106);
@@ -57,7 +75,33 @@ pub unsafe fn set_hpm(index: usize) {
 }
 
 #[inline]
+pub unsafe fn try_set_hpm(index: usize) -> Result<()> {
+    if (3..32).contains(&index) {
+        _try_set(1 << index)
+    } else {
+        Err(Error::IndexOutOfBounds {
+            index,
+            min: 3,
+            max: 31,
+        })
+    }
+}
+
+#[inline]
 pub unsafe fn clear_hpm(index: usize) {
     assert!((3..32).contains(&index));
     _clear(1 << index);
+}
+
+#[inline]
+pub unsafe fn try_clear_hpm(index: usize) -> Result<()> {
+    if (3..32).contains(&index) {
+        _try_clear(1 << index)
+    } else {
+        Err(Error::IndexOutOfBounds {
+            index,
+            min: 3,
+            max: 31,
+        })
+    }
 }
