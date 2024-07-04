@@ -20,6 +20,7 @@ targets = [
 ]
 
 [features]
+default = ["riscv-pac/default"]
 s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
 

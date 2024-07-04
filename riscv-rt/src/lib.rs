@@ -534,8 +534,6 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
             }
         }
         xcause::Trap::Exception(_) => ExceptionHandler(&*trap_frame),
-            }
-        }
     }
 }
 
