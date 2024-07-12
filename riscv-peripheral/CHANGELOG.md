@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- use `riscv-pac` result types for trait implementations
+
 ### Fixed
 
 - `clippy` fixes

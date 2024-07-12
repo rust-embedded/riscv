@@ -8,7 +8,8 @@ pub mod pendings;
 pub mod priorities;
 pub mod threshold;
 
-pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber}; // re-export useful riscv-pac traits
+// re-export useful riscv-pac traits
+pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
 /// Trait for a PLIC peripheral.
 ///
@@ -145,6 +146,7 @@ impl<P: Plic> CTX<P> {
 #[cfg(test)]
 pub(crate) mod test {
     use super::{HartIdNumber, InterruptNumber, PriorityNumber};
+    use riscv_pac::result::{Error, Result};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
@@ -181,9 +183,12 @@ pub(crate) mod test {
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
+        fn from_number(number: u16) -> Result<Self> {
             if number > Self::MAX_INTERRUPT_NUMBER || number == 0 {
-                Err(number)
+                Err(Error::InvalidVariant {
+                    field: "interrupt",
+                    value: number as usize,
+                })
             } else {
                 // SAFETY: valid interrupt number
                 Ok(unsafe { core::mem::transmute(number) })
@@ -200,9 +205,12 @@ pub(crate) mod test {
         }
 
         #[inline]
-        fn from_number(number: u8) -> Result<Self, u8> {
+        fn from_number(number: u8) -> Result<Self> {
             if number > Self::MAX_PRIORITY_NUMBER {
-                Err(number)
+                Err(Error::InvalidVariant {
+                    field: "priority",
+                    value: number as usize,
+                })
             } else {
                 // SAFETY: valid priority number
                 Ok(unsafe { core::mem::transmute(number) })
@@ -219,9 +227,12 @@ pub(crate) mod test {
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
+        fn from_number(number: u16) -> Result<Self> {
             if number > Self::MAX_HART_ID_NUMBER {
-                Err(number)
+                Err(Error::InvalidVariant {
+                    field: "context",
+                    value: number as usize,
+                })
             } else {
                 // SAFETY: valid context number
                 Ok(unsafe { core::mem::transmute(number) })
@@ -241,8 +252,20 @@ pub(crate) mod test {
         assert_eq!(Interrupt::from_number(3), Ok(Interrupt::I3));
         assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
 
-        assert_eq!(Interrupt::from_number(0), Err(0));
-        assert_eq!(Interrupt::from_number(5), Err(5));
+        assert_eq!(
+            Interrupt::from_number(0),
+            Err(Error::InvalidVariant {
+                field: "interrupt",
+                value: 0
+            })
+        );
+        assert_eq!(
+            Interrupt::from_number(5),
+            Err(Error::InvalidVariant {
+                field: "interrupt",
+                value: 5
+            })
+        );
     }
 
     #[test]
@@ -257,7 +280,13 @@ pub(crate) mod test {
         assert_eq!(Priority::from_number(2), Ok(Priority::P2));
         assert_eq!(Priority::from_number(3), Ok(Priority::P3));
 
-        assert_eq!(Priority::from_number(4), Err(4));
+        assert_eq!(
+            Priority::from_number(4),
+            Err(Error::InvalidVariant {
+                field: "priority",
+                value: 4
+            })
+        );
     }
 
     #[test]
@@ -270,7 +299,13 @@ pub(crate) mod test {
         assert_eq!(Context::from_number(1), Ok(Context::C1));
         assert_eq!(Context::from_number(2), Ok(Context::C2));
 
-        assert_eq!(Context::from_number(3), Err(3));
+        assert_eq!(
+            Context::from_number(3),
+            Err(Error::InvalidVariant {
+                field: "context",
+                value: 3
+            })
+        );
     }
 
     #[allow(dead_code)]

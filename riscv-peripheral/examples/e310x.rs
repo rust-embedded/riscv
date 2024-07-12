@@ -2,6 +2,7 @@
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
+use riscv_pac::result::{Error, Result};
 use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
 #[repr(u16)]
@@ -19,9 +20,12 @@ unsafe impl HartIdNumber for HartId {
     }
 
     #[inline]
-    fn from_number(number: u16) -> Result<Self, u16> {
+    fn from_number(number: u16) -> Result<Self> {
         if number > Self::MAX_HART_ID_NUMBER {
-            Err(number)
+            Err(Error::InvalidVariant {
+                field: "hart_id",
+                value: number as usize,
+            })
         } else {
             // SAFETY: valid context number
             Ok(unsafe { core::mem::transmute(number) })
@@ -95,9 +99,12 @@ unsafe impl InterruptNumber for Interrupt {
     }
 
     #[inline]
-    fn from_number(number: u16) -> Result<Self, u16> {
+    fn from_number(number: u16) -> Result<Self> {
         if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
-            Err(number)
+            Err(Error::InvalidVariant {
+                field: "interrupt",
+                value: number as usize,
+            })
         } else {
             // SAFETY: valid interrupt number
             Ok(unsafe { core::mem::transmute(number) })
@@ -127,9 +134,12 @@ unsafe impl PriorityNumber for Priority {
     }
 
     #[inline]
-    fn from_number(number: u8) -> Result<Self, u8> {
+    fn from_number(number: u8) -> Result<Self> {
         if number > Self::MAX_PRIORITY_NUMBER {
-            Err(number)
+            Err(Error::InvalidVariant {
+                field: "priority",
+                value: number as usize,
+            })
         } else {
             // SAFETY: valid priority number
             Ok(unsafe { core::mem::transmute(number) })

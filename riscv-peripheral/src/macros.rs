@@ -30,6 +30,7 @@
 ///
 /// ```
 /// use riscv_peripheral::clint_codegen;
+/// use riscv_pac::result::{Error, Result};
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -40,9 +41,9 @@
 /// unsafe impl riscv_peripheral::aclint::HartIdNumber for HartId {
 ///   const MAX_HART_ID_NUMBER: u16 = 2;
 ///   fn number(self) -> u16 { self as _ }
-///   fn from_number(number: u16) -> Result<Self, u16> {
+///   fn from_number(number: u16) -> Result<Self> {
 ///     if number > Self::MAX_HART_ID_NUMBER {
-///        Err(number)
+///        Err(Error::InvalidVariant { field: "hart_id", value: number as usize })
 ///     } else {
 ///        // SAFETY: valid context number
 ///        Ok(unsafe { core::mem::transmute(number) })
