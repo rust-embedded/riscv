@@ -43,7 +43,7 @@
 ///   fn number(self) -> u16 { self as _ }
 ///   fn from_number(number: u16) -> Result<Self> {
 ///     if number > Self::MAX_HART_ID_NUMBER {
-///        Err(Error::InvalidVariant { field: "hart_id", value: number as usize })
+///        Err(Error::InvalidVariant(number as usize))
 ///     } else {
 ///        // SAFETY: valid context number
 ///        Ok(unsafe { core::mem::transmute(number) })

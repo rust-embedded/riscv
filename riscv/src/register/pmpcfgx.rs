@@ -28,7 +28,7 @@ impl TryFrom<u8> for Permission {
             0b101 => Ok(Self::RX),
             0b110 => Ok(Self::WX),
             0b111 => Ok(Self::RWX),
-            _ => Err(Error::InvalidValue {
+            _ => Err(Error::InvalidFieldValue {
                 field: "permission",
                 value: val as usize,
                 bitmask: 0b111,
@@ -55,7 +55,7 @@ impl TryFrom<u8> for Range {
             0b01 => Ok(Self::TOR),
             0b10 => Ok(Self::NA4),
             0b11 => Ok(Self::NAPOT),
-            _ => Err(Error::InvalidValue {
+            _ => Err(Error::InvalidFieldValue {
                 field: "range",
                 value: val as usize,
                 bitmask: 0b11,

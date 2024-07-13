@@ -22,10 +22,7 @@ unsafe impl HartIdNumber for HartId {
     #[inline]
     fn from_number(number: u16) -> Result<Self> {
         if number > Self::MAX_HART_ID_NUMBER {
-            Err(Error::InvalidVariant {
-                field: "hart_id",
-                value: number as usize,
-            })
+            Err(Error::InvalidVariant(number as usize))
         } else {
             // SAFETY: valid context number
             Ok(unsafe { core::mem::transmute(number) })
@@ -101,10 +98,7 @@ unsafe impl InterruptNumber for Interrupt {
     #[inline]
     fn from_number(number: u16) -> Result<Self> {
         if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
-            Err(Error::InvalidVariant {
-                field: "interrupt",
-                value: number as usize,
-            })
+            Err(Error::InvalidVariant(number as usize))
         } else {
             // SAFETY: valid interrupt number
             Ok(unsafe { core::mem::transmute(number) })
@@ -136,10 +130,7 @@ unsafe impl PriorityNumber for Priority {
     #[inline]
     fn from_number(number: u8) -> Result<Self> {
         if number > Self::MAX_PRIORITY_NUMBER {
-            Err(Error::InvalidVariant {
-                field: "priority",
-                value: number as usize,
-            })
+            Err(Error::InvalidVariant(number as usize))
         } else {
             // SAFETY: valid priority number
             Ok(unsafe { core::mem::transmute(number) })

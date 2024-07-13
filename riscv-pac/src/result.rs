@@ -13,13 +13,17 @@ pub enum Error {
         max: usize,
     },
     /// Invalid field value.
-    InvalidValue {
+    InvalidFieldValue {
         field: &'static str,
         value: usize,
         bitmask: usize,
     },
     /// Invalid value of a register field that does not match any known variants.
-    InvalidVariant { field: &'static str, value: usize },
+    InvalidFieldVariant { field: &'static str, value: usize },
+    /// Invalid value.
+    InvalidValue { value: usize, bitmask: usize },
+    /// Invalid value that does not match any known variants.
+    InvalidVariant(usize),
     /// Unimplemented function or type.
     Unimplemented,
 }
@@ -31,7 +35,7 @@ impl fmt::Display for Error {
                 f,
                 "out-of-bounds access, index: {index}, min: {min}, max: {max}"
             ),
-            Self::InvalidValue {
+            Self::InvalidFieldValue {
                 field,
                 value,
                 bitmask,
@@ -39,8 +43,14 @@ impl fmt::Display for Error {
                 f,
                 "invalid {field} field value: {value:#x}, valid bitmask: {bitmask:#x}",
             ),
-            Self::InvalidVariant { field, value } => {
+            Self::InvalidFieldVariant { field, value } => {
                 write!(f, "invalid {field} field variant: {value:#x}")
+            }
+            Self::InvalidValue { value, bitmask } => {
+                write!(f, "invalid value: {value:#x}, valid bitmask: {bitmask:#x}",)
+            }
+            Self::InvalidVariant(value) => {
+                write!(f, "invalid variant: {value:#x}")
             }
             Self::Unimplemented => write!(f, "unimplemented"),
         }

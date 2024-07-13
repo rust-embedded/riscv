@@ -110,7 +110,7 @@ impl TryFrom<u8> for Mode {
         match val {
             0 => Ok(Mode::Bare),
             1 => Ok(Mode::Sv32),
-            _ => Err(Error::InvalidVariant {
+            _ => Err(Error::InvalidFieldVariant {
                 field: "mode",
                 value: val as usize,
             }),
@@ -129,7 +129,7 @@ impl TryFrom<u8> for Mode {
             9 => Ok(Mode::Sv48),
             10 => Ok(Mode::Sv57),
             11 => Ok(Mode::Sv64),
-            _ => Err(Error::InvalidVariant {
+            _ => Err(Error::InvalidFieldVariant {
                 field: "mode",
                 value: val as usize,
             }),
@@ -157,13 +157,13 @@ pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
 #[cfg(target_pointer_width = "32")]
 pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
     if asid != asid & 0x1FF {
-        Err(Error::InvalidValue {
+        Err(Error::InvalidFieldValue {
             field: "asid",
             value: asid,
             bitmask: 0x1FF,
         })
     } else if ppn != ppn & 0x3F_FFFF {
-        Err(Error::InvalidValue {
+        Err(Error::InvalidFieldValue {
             field: "ppn",
             value: ppn,
             bitmask: 0x3F_FFFF,
@@ -191,13 +191,13 @@ pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
 #[cfg(target_pointer_width = "64")]
 pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
     if asid != asid & 0xFFFF {
-        Err(Error::InvalidValue {
+        Err(Error::InvalidFieldValue {
             field: "asid",
             value: asid,
             bitmask: 0xFFFF,
         })
     } else if ppn != ppn & 0xFFF_FFFF_FFFF {
-        Err(Error::InvalidValue {
+        Err(Error::InvalidFieldValue {
             field: "ppn",
             value: ppn,
             bitmask: 0xFFF_FFFF_FFFF,
