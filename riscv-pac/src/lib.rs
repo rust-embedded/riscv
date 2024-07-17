@@ -1,5 +1,9 @@
 #![no_std]
 
+pub mod result;
+
+use result::Result;
+
 /// Trait for enums of target-specific external interrupt numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC)
@@ -23,7 +27,7 @@ pub unsafe trait InterruptNumber: Copy {
 
     /// Tries to convert a number to a valid interrupt source.
     /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u16) -> Result<Self, u16>;
+    fn from_number(value: u16) -> Result<Self>;
 }
 
 /// Trait for enums of priority levels.
@@ -49,7 +53,7 @@ pub unsafe trait PriorityNumber: Copy {
 
     /// Tries to convert a number to a valid priority level.
     /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u8) -> Result<Self, u8>;
+    fn from_number(value: u8) -> Result<Self>;
 }
 
 /// Trait for enums of HART identifiers.
@@ -75,5 +79,5 @@ pub unsafe trait HartIdNumber: Copy {
 
     /// Tries to convert a number to a valid HART ID.
     /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u16) -> Result<Self, u16>;
+    fn from_number(value: u16) -> Result<Self>;
 }

@@ -63,6 +63,7 @@ impl<C: Clint> CLINT<C> {
 #[cfg(test)]
 pub(crate) mod test {
     use super::HartIdNumber;
+    use riscv_pac::result::{Error, Result};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
@@ -81,9 +82,9 @@ pub(crate) mod test {
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
+        fn from_number(number: u16) -> Result<Self> {
             if number > Self::MAX_HART_ID_NUMBER {
-                Err(number)
+                Err(Error::InvalidVariant(number as usize))
             } else {
                 // SAFETY: valid context number
                 Ok(unsafe { core::mem::transmute(number) })
@@ -101,7 +102,7 @@ pub(crate) mod test {
         assert_eq!(HartId::from_number(1), Ok(HartId::H1));
         assert_eq!(HartId::from_number(2), Ok(HartId::H2));
 
-        assert_eq!(HartId::from_number(3), Err(3));
+        assert_eq!(HartId::from_number(3), Err(Error::InvalidVariant(3)));
     }
 
     #[allow(dead_code)]

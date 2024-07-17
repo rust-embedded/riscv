@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `result` module for `Error` and `Result` types
+
 ## [v0.1.1] - 2024-02-15
 
 - Fix crates.io badge links

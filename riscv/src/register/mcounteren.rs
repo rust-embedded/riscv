@@ -1,6 +1,7 @@
 //! mcounteren register
 
 use crate::bits::{bf_extract, bf_insert};
+use crate::result::{Error, Result};
 
 /// mcounteren register
 #[derive(Clone, Copy, Debug)]
@@ -52,19 +53,56 @@ impl Mcounteren {
     }
 
     /// Supervisor "hpm\[x\]" Enable (bits 3-31)
+    ///
+    /// **WARNING**: panics on `index` out-of-bounds
     #[inline]
     pub fn hpm(&self, index: usize) -> bool {
-        assert!((3..32).contains(&index));
-        bf_extract(self.bits, index, 1) != 0
+        self.try_hpm(index).unwrap()
+    }
+
+    /// Fallible Supervisor "hpm\[x\]" Enable (bits 3-31).
+    ///
+    /// Attempts to read the "hpm\[x\]" value, and returns an error if the `index` is invalid.
+    #[inline]
+    pub fn try_hpm(&self, index: usize) -> Result<bool> {
+        if (3..32).contains(&index) {
+            Ok(bf_extract(self.bits, index, 1) != 0)
+        } else {
+            Err(Error::IndexOutOfBounds {
+                index,
+                min: 3,
+                max: 31,
+            })
+        }
     }
 
     /// Sets whether to enable the "hpm\[X\]" counter.
     ///
     /// Only updates the in-memory value, does not modify the `mcounteren` register.
+    ///
+    /// **WARNING**: panics on `index` out-of-bounds
     #[inline]
     pub fn set_hpm(&mut self, index: usize, hpm: bool) {
-        assert!((3..32).contains(&index));
-        self.bits = bf_insert(self.bits, index, 1, hpm as usize);
+        self.try_set_hpm(index, hpm).unwrap()
+    }
+
+    /// Sets whether to enable the "hpm\[X\]" counter.
+    ///
+    /// Only updates the in-memory value, does not modify the `mcounteren` register.
+    ///
+    /// Attempts to update the "hpm\[x\]" value, and returns an error if the `index` is invalid.
+    #[inline]
+    pub fn try_set_hpm(&mut self, index: usize, hpm: bool) -> Result<()> {
+        if (3..32).contains(&index) {
+            self.bits = bf_insert(self.bits, index, 1, hpm as usize);
+            Ok(())
+        } else {
+            Err(Error::IndexOutOfBounds {
+                index,
+                min: 3,
+                max: 31,
+            })
+        }
     }
 }
 
@@ -85,16 +123,62 @@ set_clear_csr!(
 /// Supervisor instret Enable
     , set_ir, clear_ir, 1 << 2);
 
+/// Enables the "hpm\[X\]" counter.
+///
+/// Updates the `mcounteren` register.
+///
+/// **WARNING**: panics on:
+///
+/// - non-`riscv` targets
+/// - `index` out-of-bounds
 #[inline]
 pub unsafe fn set_hpm(index: usize) {
-    assert!((3..32).contains(&index));
-    _set(1 << index);
+    try_set_hpm(index).unwrap();
 }
 
+/// Attempts to enable the "hpm\[X\]" counter.
+///
+/// Updates the `mcounteren` register.
+#[inline]
+pub unsafe fn try_set_hpm(index: usize) -> Result<()> {
+    if (3..32).contains(&index) {
+        _try_set(1 << index)
+    } else {
+        Err(Error::IndexOutOfBounds {
+            index,
+            min: 3,
+            max: 31,
+        })
+    }
+}
+
+/// Disables the "hpm\[X\]" counter.
+///
+/// Updates the `mcounteren` register.
+///
+/// **WARNING**: panics on:
+///
+/// - non-`riscv` targets
+/// - `index` out-of-bounds
 #[inline]
 pub unsafe fn clear_hpm(index: usize) {
-    assert!((3..32).contains(&index));
-    _clear(1 << index);
+    try_clear_hpm(index).unwrap();
+}
+
+/// Attempts to disable the "hpm\[X\]" counter.
+///
+/// Updates the `mcounteren` register.
+#[inline]
+pub unsafe fn try_clear_hpm(index: usize) -> Result<()> {
+    if (3..32).contains(&index) {
+        _try_clear(1 << index)
+    } else {
+        Err(Error::IndexOutOfBounds {
+            index,
+            min: 3,
+            max: 31,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -131,12 +215,34 @@ mod tests {
 
         (3..32).for_each(|i| {
             assert!(!m.hpm(i));
+            assert_eq!(m.try_hpm(i), Ok(false));
 
             m.set_hpm(i, true);
             assert!(m.hpm(i));
 
-            m.set_hpm(i, false);
+            assert_eq!(m.try_set_hpm(i, false), Ok(()));
+            assert_eq!(m.try_hpm(i), Ok(false));
+
             assert!(!m.hpm(i));
         });
+
+        (0..3).chain(32..64).for_each(|index| {
+            assert_eq!(
+                m.try_hpm(index),
+                Err(Error::IndexOutOfBounds {
+                    index,
+                    min: 3,
+                    max: 31
+                })
+            );
+            assert_eq!(
+                m.try_set_hpm(index, false),
+                Err(Error::IndexOutOfBounds {
+                    index,
+                    min: 3,
+                    max: 31
+                })
+            );
+        })
     }
 }

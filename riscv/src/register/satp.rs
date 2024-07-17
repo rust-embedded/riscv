@@ -1,5 +1,7 @@
 //! satp register
 
+use crate::result::{Error, Result};
+
 /// satp register
 #[derive(Clone, Copy, Debug)]
 pub struct Satp {
@@ -14,27 +16,35 @@ impl Satp {
     }
 
     /// Current address-translation scheme
+    ///
+    /// **WARNING**: panics if the field has an invalid variant.
     #[inline]
     #[cfg(target_pointer_width = "32")]
     pub fn mode(&self) -> Mode {
-        match self.bits & (1 << 31) != 0 {
-            false => Mode::Bare,
-            true => Mode::Sv32,
-        }
+        self.try_mode().unwrap()
+    }
+
+    /// Attempts to get the current address-translation scheme.
+    #[inline]
+    #[cfg(target_pointer_width = "32")]
+    pub fn try_mode(&self) -> Result<Mode> {
+        ((self.bits >> 31) as u8).try_into()
     }
 
     /// Current address-translation scheme
+    ///
+    /// **WARNING**: panics if the field has an invalid variant.
     #[inline]
     #[cfg(target_pointer_width = "64")]
     pub fn mode(&self) -> Mode {
-        match self.bits >> 60 {
-            0 => Mode::Bare,
-            8 => Mode::Sv39,
-            9 => Mode::Sv48,
-            10 => Mode::Sv57,
-            11 => Mode::Sv64,
-            _ => unreachable!(),
-        }
+        self.try_mode().unwrap()
+    }
+
+    /// Attempts to get the current address-translation scheme.
+    #[inline]
+    #[cfg(target_pointer_width = "64")]
+    pub fn try_mode(&self) -> Result<Mode> {
+        ((self.bits >> 60) as u8).try_into()
     }
 
     /// Address space identifier
@@ -92,25 +102,108 @@ pub enum Mode {
     Sv64 = 11,
 }
 
+#[cfg(target_pointer_width = "32")]
+impl TryFrom<u8> for Mode {
+    type Error = Error;
+
+    fn try_from(val: u8) -> Result<Self> {
+        match val {
+            0 => Ok(Mode::Bare),
+            1 => Ok(Mode::Sv32),
+            _ => Err(Error::InvalidFieldVariant {
+                field: "mode",
+                value: val as usize,
+            }),
+        }
+    }
+}
+
+#[cfg(target_pointer_width = "64")]
+impl TryFrom<u8> for Mode {
+    type Error = Error;
+
+    fn try_from(val: u8) -> Result<Self> {
+        match val {
+            0 => Ok(Mode::Bare),
+            8 => Ok(Mode::Sv39),
+            9 => Ok(Mode::Sv48),
+            10 => Ok(Mode::Sv57),
+            11 => Ok(Mode::Sv64),
+            _ => Err(Error::InvalidFieldVariant {
+                field: "mode",
+                value: val as usize,
+            }),
+        }
+    }
+}
+
 read_csr_as!(Satp, 0x180);
 write_csr_as_usize!(0x180);
 
 /// Sets the register to corresponding page table mode, physical page number and address space id.
+///
+/// **WARNING**: panics on:
+///
+/// - non-`riscv` targets
+/// - invalid field values
 #[inline]
 #[cfg(target_pointer_width = "32")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    assert_eq!(asid, asid & 0x1FF, "invalid value for asid");
-    assert_eq!(ppn, ppn & 0x3F_FFFF, "invalid value for ppn");
-    let bits = (mode as usize) << 31 | (asid << 22) | ppn;
-    _write(bits);
+    try_set(mode, asid, ppn).unwrap();
+}
+
+/// Attempts to set the register to corresponding page table mode, physical page number and address space id.
+#[inline]
+#[cfg(target_pointer_width = "32")]
+pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
+    if asid != asid & 0x1FF {
+        Err(Error::InvalidFieldValue {
+            field: "asid",
+            value: asid,
+            bitmask: 0x1FF,
+        })
+    } else if ppn != ppn & 0x3F_FFFF {
+        Err(Error::InvalidFieldValue {
+            field: "ppn",
+            value: ppn,
+            bitmask: 0x3F_FFFF,
+        })
+    } else {
+        let bits = (mode as usize) << 31 | (asid << 22) | ppn;
+        _try_write(bits)
+    }
 }
 
 /// Sets the register to corresponding page table mode, physical page number and address space id.
+///
+/// **WARNING**: panics on:
+///
+/// - non-`riscv` targets
+/// - invalid field values
 #[inline]
 #[cfg(target_pointer_width = "64")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    assert_eq!(asid, asid & 0xFFFF, "invalid value for asid");
-    assert_eq!(ppn, ppn & 0xFFF_FFFF_FFFF, "invalid value for ppn");
-    let bits = (mode as usize) << 60 | (asid << 44) | ppn;
-    _write(bits);
+    try_set(mode, asid, ppn).unwrap()
+}
+
+/// Attempts to set the register to corresponding page table mode, physical page number and address space id.
+#[inline]
+#[cfg(target_pointer_width = "64")]
+pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
+    if asid != asid & 0xFFFF {
+        Err(Error::InvalidFieldValue {
+            field: "asid",
+            value: asid,
+            bitmask: 0xFFFF,
+        })
+    } else if ppn != ppn & 0xFFF_FFFF_FFFF {
+        Err(Error::InvalidFieldValue {
+            field: "ppn",
+            value: ppn,
+            bitmask: 0xFFF_FFFF_FFFF,
+        })
+    } else {
+        let bits = (mode as usize) << 60 | (asid << 44) | ppn;
+        _try_write(bits)
+    }
 }

@@ -1,5 +1,7 @@
 //! Physical memory protection configuration
 
+use crate::result::{Error, Result};
+
 /// Permission enum contains all possible permission modes for pmp registers
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Permission {
@@ -13,6 +15,28 @@ pub enum Permission {
     RWX = 0b111,
 }
 
+impl TryFrom<u8> for Permission {
+    type Error = Error;
+
+    fn try_from(val: u8) -> Result<Self> {
+        match val {
+            0b000 => Ok(Self::NONE),
+            0b001 => Ok(Self::R),
+            0b010 => Ok(Self::W),
+            0b011 => Ok(Self::RW),
+            0b100 => Ok(Self::X),
+            0b101 => Ok(Self::RX),
+            0b110 => Ok(Self::WX),
+            0b111 => Ok(Self::RWX),
+            _ => Err(Error::InvalidFieldValue {
+                field: "permission",
+                value: val as usize,
+                bitmask: 0b111,
+            }),
+        }
+    }
+}
+
 /// Range enum contains all possible addressing modes for pmp registers
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Range {
@@ -20,6 +44,24 @@ pub enum Range {
     TOR = 0b01,
     NA4 = 0b10,
     NAPOT = 0b11,
+}
+
+impl TryFrom<u8> for Range {
+    type Error = Error;
+
+    fn try_from(val: u8) -> Result<Self> {
+        match val {
+            0b00 => Ok(Self::OFF),
+            0b01 => Ok(Self::TOR),
+            0b10 => Ok(Self::NA4),
+            0b11 => Ok(Self::NAPOT),
+            _ => Err(Error::InvalidFieldValue {
+                field: "range",
+                value: val as usize,
+                bitmask: 0b11,
+            }),
+        }
+    }
 }
 
 /// Pmp struct holds a high-level representation of a single pmp configuration
@@ -42,38 +84,46 @@ pub struct Pmpcsr {
 
 impl Pmpcsr {
     /// Take the register contents and translate into a Pmp configuration struct
+    ///
+    /// **WARNING**: panics on:
+    ///
+    /// - non-`riscv` targets
+    /// - `index` is out of bounds
+    /// - register fields contain invalid values
     #[inline]
     pub fn into_config(&self, index: usize) -> Pmp {
-        #[cfg(riscv32)]
-        assert!(index < 4);
+        self.try_into_config(index).unwrap()
+    }
 
-        #[cfg(riscv64)]
-        assert!(index < 8);
+    /// Attempts to take the register contents, and translate into a Pmp configuration struct.
+    #[inline]
+    pub fn try_into_config(&self, index: usize) -> Result<Pmp> {
+        let max = match () {
+            #[cfg(riscv32)]
+            () => Ok(4usize),
+            #[cfg(riscv64)]
+            () => Ok(8usize),
+            #[cfg(not(any(riscv32, riscv64)))]
+            () => Err(Error::Unimplemented),
+        }?;
 
-        let byte = (self.bits >> (8 * index)) as u8; // move config to LSB and drop the rest
-        let permission = byte & 0x7; // bits 0-2
-        let range = (byte >> 3) & 0x3; // bits 3-4
-        Pmp {
-            byte,
-            permission: match permission {
-                0 => Permission::NONE,
-                1 => Permission::R,
-                2 => Permission::W,
-                3 => Permission::RW,
-                4 => Permission::X,
-                5 => Permission::RX,
-                6 => Permission::WX,
-                7 => Permission::RWX,
-                _ => unreachable!(),
-            },
-            range: match range {
-                0 => Range::OFF,
-                1 => Range::TOR,
-                2 => Range::NA4,
-                3 => Range::NAPOT,
-                _ => unreachable!(),
-            },
-            locked: (byte & (1 << 7)) != 0,
+        if index < max {
+            let byte = (self.bits >> (8 * index)) as u8; // move config to LSB and drop the rest
+            let permission = byte & 0x7; // bits 0-2
+            let range = (byte >> 3) & 0x3; // bits 3-4
+
+            Ok(Pmp {
+                byte,
+                permission: permission.try_into()?,
+                range: range.try_into()?,
+                locked: (byte & (1 << 7)) != 0,
+            })
+        } else {
+            Err(Error::IndexOutOfBounds {
+                index,
+                min: 0,
+                max: max - 1,
+            })
         }
     }
 }

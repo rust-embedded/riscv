@@ -40,6 +40,7 @@ pub(crate) mod bits;
 pub mod delay;
 pub mod interrupt;
 pub mod register;
+pub use riscv_pac::*;
 
 #[macro_use]
 mod macros;
