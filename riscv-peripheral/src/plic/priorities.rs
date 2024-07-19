@@ -1,9 +1,7 @@
 //! Interrupts Priorities register.
 
-use crate::{
-    common::{Reg, RW},
-    plic::{InterruptNumber, PriorityNumber},
-};
+use crate::common::{Reg, RW};
+use riscv_pac::{ExternalInterruptNumber, PriorityNumber};
 
 /// Interrupts priorities register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -31,9 +29,9 @@ impl PRIORITIES {
 
     /// Returns the priority assigned to a given interrupt source.
     #[inline]
-    pub fn get_priority<I: InterruptNumber, P: PriorityNumber>(self, source: I) -> P {
+    pub fn get_priority<I: ExternalInterruptNumber, P: PriorityNumber>(self, source: I) -> P {
         // SAFETY: valid interrupt number
-        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(source.number() as _)) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.add(source.number())) };
         P::from_number(reg.read() as _).unwrap()
     }
 
@@ -43,13 +41,13 @@ impl PRIORITIES {
     ///
     /// Changing the priority level can break priority-based critical sections.
     #[inline]
-    pub unsafe fn set_priority<I: InterruptNumber, P: PriorityNumber>(
+    pub unsafe fn set_priority<I: ExternalInterruptNumber, P: PriorityNumber>(
         self,
         source: I,
         priority: P,
     ) {
         // SAFETY: valid interrupt number
-        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(source.number() as _)) };
+        let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.add(source.number())) };
         reg.write(priority.number() as _);
     }
 
@@ -60,7 +58,7 @@ impl PRIORITIES {
     /// Priority level 0 is reserved for "no interrupt".
     /// Thus, this method effectively disables the all the external interrupts.
     #[inline]
-    pub fn reset<I: InterruptNumber>(self) {
+    pub fn reset<I: ExternalInterruptNumber>(self) {
         for source in 0..=I::MAX_INTERRUPT_NUMBER as _ {
             // SAFETY: interrupt number within range
             let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(source)) };
@@ -73,6 +71,7 @@ impl PRIORITIES {
 mod test {
     use super::super::test::{Interrupt, Priority};
     use super::*;
+    use riscv_pac::InterruptNumber;
 
     #[test]
     fn test_priorities() {
