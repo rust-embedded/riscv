@@ -175,20 +175,21 @@ pub(crate) mod test {
     }
 
     unsafe impl InterruptNumber for Interrupt {
-        const MAX_INTERRUPT_NUMBER: u16 = 4;
+        const MAX_INTERRUPT_NUMBER: usize = 4;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_INTERRUPT_NUMBER || number == 0 {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid interrupt number
-                Ok(unsafe { core::mem::transmute(number) })
+        fn from_number(number: usize) -> Result<Self> {
+            match number {
+                1 => Ok(Interrupt::I1),
+                2 => Ok(Interrupt::I2),
+                3 => Ok(Interrupt::I3),
+                4 => Ok(Interrupt::I4),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
@@ -203,11 +204,12 @@ pub(crate) mod test {
 
         #[inline]
         fn from_number(number: u8) -> Result<Self> {
-            if number > Self::MAX_PRIORITY_NUMBER {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid priority number
-                Ok(unsafe { core::mem::transmute(number) })
+            match number {
+                0 => Ok(Priority::P0),
+                1 => Ok(Priority::P1),
+                2 => Ok(Priority::P2),
+                3 => Ok(Priority::P3),
+                _ => Err(Error::InvalidVariant(number as usize)),
             }
         }
     }
@@ -222,11 +224,11 @@ pub(crate) mod test {
 
         #[inline]
         fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_HART_ID_NUMBER {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute(number) })
+            match number {
+                0 => Ok(Context::C0),
+                1 => Ok(Context::C1),
+                2 => Ok(Context::C2),
+                _ => Err(Error::InvalidVariant(number as usize)),
             }
         }
     }
