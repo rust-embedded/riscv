@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Bump `riscv-pac` version
+- `PLIC` now expects interrupt enums to implement the `riscv_pac::ExternalInterruptNumber` trait.
 
 ### Fixed
 
