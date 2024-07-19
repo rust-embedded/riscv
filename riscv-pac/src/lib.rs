@@ -4,9 +4,6 @@ pub mod result;
 
 use result::Result;
 
-#[cfg(feature = "riscv-pac-macros")]
-pub use riscv_pac_macros::*;
-
 /// Trait for enums of target-specific exception numbers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
@@ -136,24 +133,22 @@ pub unsafe trait HartIdNumber: Copy {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::result::Error;
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, ExceptionNumber)]
-    #[repr(u16)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     enum Exception {
         E1 = 1,
         E3 = 3,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, InterruptNumber)]
-    #[repr(u16)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     enum Interrupt {
         I1 = 1,
         I2 = 2,
         I4 = 4,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, PriorityNumber)]
-    #[repr(u8)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     enum Priority {
         P0 = 0,
         P1 = 1,
@@ -161,50 +156,46 @@ mod test {
         P3 = 3,
     }
 
-    #[derive(Clone, Copy, Debug, Eq, PartialEq, HartIdNumber)]
-    #[repr(u16)]
-    enum Context {
-        C0 = 0,
-        C1 = 1,
-        C2 = 2,
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    enum HartId {
+        H0 = 0,
+        H1 = 1,
+        H2 = 2,
     }
 
     unsafe impl ExceptionNumber for Exception {
-        const MAX_EXCEPTION_NUMBER: u16 = Self::E3 as u16;
+        const MAX_EXCEPTION_NUMBER: usize = Self::E3 as usize;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_EXCEPTION_NUMBER || number == 0 {
-                Err(number)
-            } else if number == 1 || number == 3 {
-                // SAFETY: valid exception number
-                Ok(unsafe { core::mem::transmute(number) })
-            } else {
-                Err(number)
+        fn from_number(number: usize) -> Result<Self> {
+            match number {
+                1 => Ok(Exception::E1),
+                3 => Ok(Exception::E3),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
 
     unsafe impl InterruptNumber for Interrupt {
-        const MAX_INTERRUPT_NUMBER: u16 = Self::I4 as u16;
+        const MAX_INTERRUPT_NUMBER: usize = Self::I4 as usize;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_INTERRUPT_NUMBER || number == 0 {
-                Err(number)
-            } else {
-                // SAFETY: valid interrupt number
-                Ok(unsafe { core::mem::transmute(number) })
+        fn from_number(number: usize) -> Result<Self> {
+            match number {
+                1 => Ok(Interrupt::I1),
+                2 => Ok(Interrupt::I2),
+                4 => Ok(Interrupt::I4),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
@@ -218,18 +209,19 @@ mod test {
         }
 
         #[inline]
-        fn from_number(number: u8) -> Result<Self, u8> {
-            if number > Self::MAX_PRIORITY_NUMBER {
-                Err(number)
-            } else {
-                // SAFETY: valid priority number
-                Ok(unsafe { core::mem::transmute(number) })
+        fn from_number(number: u8) -> Result<Self> {
+            match number {
+                0 => Ok(Priority::P0),
+                1 => Ok(Priority::P1),
+                2 => Ok(Priority::P2),
+                3 => Ok(Priority::P3),
+                _ => Err(Error::InvalidVariant(number as _)),
             }
         }
     }
 
-    unsafe impl HartIdNumber for Context {
-        const MAX_HART_ID_NUMBER: u16 = Self::C2 as u16;
+    unsafe impl HartIdNumber for HartId {
+        const MAX_HART_ID_NUMBER: u16 = Self::H2 as u16;
 
         #[inline]
         fn number(self) -> u16 {
@@ -237,12 +229,12 @@ mod test {
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self, u16> {
-            if number > Self::MAX_HART_ID_NUMBER {
-                Err(number)
-            } else {
-                // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute(number) })
+        fn from_number(number: u16) -> Result<Self> {
+            match number {
+                0 => Ok(HartId::H0),
+                1 => Ok(HartId::H1),
+                2 => Ok(HartId::H2),
+                _ => Err(Error::InvalidVariant(number as _)),
             }
         }
     }
@@ -252,11 +244,11 @@ mod test {
         assert_eq!(Exception::E1.number(), 1);
         assert_eq!(Exception::E3.number(), 3);
 
-        assert_eq!(Exception::from_number(0), Err(0));
+        assert_eq!(Exception::from_number(0), Err(Error::InvalidVariant(0)));
         assert_eq!(Exception::from_number(1), Ok(Exception::E1));
-        assert_eq!(Exception::from_number(2), Err(2));
+        assert_eq!(Exception::from_number(2), Err(Error::InvalidVariant(2)));
         assert_eq!(Exception::from_number(3), Ok(Exception::E3));
-        assert_eq!(Exception::from_number(4), Err(4));
+        assert_eq!(Exception::from_number(4), Err(Error::InvalidVariant(4)));
     }
 
     #[test]
@@ -265,12 +257,12 @@ mod test {
         assert_eq!(Interrupt::I2.number(), 2);
         assert_eq!(Interrupt::I4.number(), 4);
 
-        assert_eq!(Interrupt::from_number(0), Err(0));
+        assert_eq!(Interrupt::from_number(0), Err(Error::InvalidVariant(0)));
         assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
         assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-        assert_eq!(Interrupt::from_number(3), Err(3));
+        assert_eq!(Interrupt::from_number(3), Err(Error::InvalidVariant(3)));
         assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-        assert_eq!(Interrupt::from_number(5), Err(5));
+        assert_eq!(Interrupt::from_number(5), Err(Error::InvalidVariant(5)));
     }
 
     #[test]
@@ -284,7 +276,7 @@ mod test {
         assert_eq!(Priority::from_number(1), Ok(Priority::P1));
         assert_eq!(Priority::from_number(2), Ok(Priority::P2));
         assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-        assert_eq!(Priority::from_number(4), Err(4));
+        assert_eq!(Priority::from_number(4), Err(Error::InvalidVariant(4)));
     }
 
     #[test]
@@ -296,6 +288,6 @@ mod test {
         assert_eq!(HartId::from_number(0), Ok(HartId::H0));
         assert_eq!(HartId::from_number(1), Ok(HartId::H1));
         assert_eq!(HartId::from_number(2), Ok(HartId::H2));
-        assert_eq!(HartId::from_number(3), Err(3));
+        assert_eq!(HartId::from_number(3), Err(Error::InvalidVariant(3)));
     }
 }

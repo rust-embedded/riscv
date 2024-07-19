@@ -2,7 +2,10 @@
 
 // NOTE: Adapted from cortex-m/src/interrupt.rs
 
-pub use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber}; // re-export useful riscv-pac traits
+use crate::result::Result;
+
+// re-export useful riscv-pac traits
+pub use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber};
 
 pub mod machine;
 pub mod supervisor;
@@ -38,20 +41,14 @@ impl Trap<usize, usize> {
 
     /// Tries to convert the generic trap cause to a target-specific trap cause
     #[inline]
-    pub fn try_into<I, E>(self) -> Result<Trap<I, E>, TrapError>
+    pub fn try_into<I, E>(self) -> Result<Trap<I, E>>
     where
         I: CoreInterruptNumber,
         E: ExceptionNumber,
     {
         match self {
-            Trap::Interrupt(code) => match I::from_number(code) {
-                Ok(interrupt) => Ok(Trap::Interrupt(interrupt)),
-                Err(code) => Err(TrapError::InvalidInterrupt(code)),
-            },
-            Trap::Exception(code) => match E::from_number(code) {
-                Ok(exception) => Ok(Trap::Exception(exception)),
-                Err(code) => Err(TrapError::InvalidException(code)),
-            },
+            Trap::Interrupt(code) => Ok(Trap::Interrupt(I::from_number(code)?)),
+            Trap::Exception(code) => Ok(Trap::Exception(E::from_number(code)?)),
         }
     }
 }
@@ -65,7 +62,7 @@ impl<I: CoreInterruptNumber, E: ExceptionNumber> Trap<I, E> {
 
     /// Tries to convert the generic trap cause to a target-specific trap cause
     #[inline]
-    pub fn try_from(trap: Trap<usize, usize>) -> Result<Self, TrapError> {
+    pub fn try_from(trap: Trap<usize, usize>) -> Result<Self> {
         trap.try_into()
     }
 }

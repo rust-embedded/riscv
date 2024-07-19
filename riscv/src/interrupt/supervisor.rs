@@ -1,8 +1,11 @@
 use crate::{
-    interrupt::{Trap, TrapError},
+    interrupt::Trap,
     register::{scause, sepc, sstatus},
 };
-use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber};
+use riscv_pac::{
+    result::{Error, Result},
+    CoreInterruptNumber, ExceptionNumber, InterruptNumber,
+};
 
 /// Interrupt
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -23,12 +26,12 @@ unsafe impl InterruptNumber for Interrupt {
     }
 
     #[inline]
-    fn from_number(value: usize) -> Result<Self, usize> {
+    fn from_number(value: usize) -> Result<Self> {
         match value {
             1 => Ok(Self::SupervisorSoft),
             5 => Ok(Self::SupervisorTimer),
             9 => Ok(Self::SupervisorExternal),
-            _ => Err(value),
+            _ => Err(Error::InvalidVariant(value)),
         }
     }
 }
@@ -65,7 +68,7 @@ unsafe impl ExceptionNumber for Exception {
     }
 
     #[inline]
-    fn from_number(value: usize) -> Result<Self, usize> {
+    fn from_number(value: usize) -> Result<Self> {
         match value {
             0 => Ok(Self::InstructionMisaligned),
             1 => Ok(Self::InstructionFault),
@@ -80,7 +83,7 @@ unsafe impl ExceptionNumber for Exception {
             12 => Ok(Self::InstructionPageFault),
             13 => Ok(Self::LoadPageFault),
             15 => Ok(Self::StorePageFault),
-            _ => Err(value),
+            _ => Err(Error::InvalidVariant(value)),
         }
     }
 }
@@ -107,7 +110,7 @@ pub unsafe fn enable() {
 /// This function expects the target-specific interrupt and exception types.
 /// If the raw cause is not a valid interrupt or exception for the target, it returns an error.
 #[inline]
-pub fn try_cause<I: CoreInterruptNumber, E: ExceptionNumber>() -> Result<Trap<I, E>, TrapError> {
+pub fn try_cause<I: CoreInterruptNumber, E: ExceptionNumber>() -> Result<Trap<I, E>> {
     scause::read().cause().try_into()
 }
 
@@ -198,17 +201,17 @@ mod test {
     #[test]
     fn test_interrupt() {
         assert_eq!(Interrupt::from_number(1), Ok(SupervisorSoft));
-        assert_eq!(Interrupt::from_number(2), Err(2));
-        assert_eq!(Interrupt::from_number(3), Err(3));
-        assert_eq!(Interrupt::from_number(4), Err(4));
+        assert_eq!(Interrupt::from_number(2), Err(Error::InvalidVariant(2)));
+        assert_eq!(Interrupt::from_number(3), Err(Error::InvalidVariant(3)));
+        assert_eq!(Interrupt::from_number(4), Err(Error::InvalidVariant(4)));
         assert_eq!(Interrupt::from_number(5), Ok(SupervisorTimer));
-        assert_eq!(Interrupt::from_number(6), Err(6));
-        assert_eq!(Interrupt::from_number(7), Err(7));
-        assert_eq!(Interrupt::from_number(8), Err(8));
+        assert_eq!(Interrupt::from_number(6), Err(Error::InvalidVariant(6)));
+        assert_eq!(Interrupt::from_number(7), Err(Error::InvalidVariant(7)));
+        assert_eq!(Interrupt::from_number(8), Err(Error::InvalidVariant(8)));
         assert_eq!(Interrupt::from_number(9), Ok(SupervisorExternal));
-        assert_eq!(Interrupt::from_number(10), Err(10));
-        assert_eq!(Interrupt::from_number(11), Err(11));
-        assert_eq!(Interrupt::from_number(12), Err(12));
+        assert_eq!(Interrupt::from_number(10), Err(Error::InvalidVariant(10)));
+        assert_eq!(Interrupt::from_number(11), Err(Error::InvalidVariant(11)));
+        assert_eq!(Interrupt::from_number(12), Err(Error::InvalidVariant(12)));
 
         assert_eq!(SupervisorSoft.number(), 1);
         assert_eq!(SupervisorTimer.number(), 5);
@@ -229,13 +232,13 @@ mod test {
         assert_eq!(Exception::from_number(7), Ok(StoreFault));
         assert_eq!(Exception::from_number(8), Ok(UserEnvCall));
         assert_eq!(Exception::from_number(9), Ok(SupervisorEnvCall));
-        assert_eq!(Exception::from_number(10), Err(10));
-        assert_eq!(Exception::from_number(11), Err(11));
+        assert_eq!(Exception::from_number(10), Err(Error::InvalidVariant(10)));
+        assert_eq!(Exception::from_number(11), Err(Error::InvalidVariant(11)));
         assert_eq!(Exception::from_number(12), Ok(InstructionPageFault));
         assert_eq!(Exception::from_number(13), Ok(LoadPageFault));
-        assert_eq!(Exception::from_number(14), Err(14));
+        assert_eq!(Exception::from_number(14), Err(Error::InvalidVariant(14)));
         assert_eq!(Exception::from_number(15), Ok(StorePageFault));
-        assert_eq!(Exception::from_number(16), Err(16));
+        assert_eq!(Exception::from_number(16), Err(Error::InvalidVariant(16)));
 
         assert_eq!(InstructionMisaligned.number(), 0);
         assert_eq!(InstructionFault.number(), 1);

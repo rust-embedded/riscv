@@ -195,6 +195,7 @@ impl PacEnumItem {
     fn vector_table(&self) -> TokenStream2 {
         let mut asm = String::from(
             r#"
+#[cfg(all(feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
 core::arch::global_asm!("
     .section .trap, \"ax\"
     .global _vector_table
@@ -245,7 +246,7 @@ core::arch::global_asm!("
 
         // Push the trait implementation
         res.push(quote! {
-            unsafe impl riscv_pac::#trait_name for #name {
+            unsafe impl riscv::#trait_name for #name {
                 const #const_name: #num_type = #max_discriminant;
 
                 #[inline]
@@ -254,10 +255,10 @@ core::arch::global_asm!("
                 }
 
                 #[inline]
-                fn from_number(number: #num_type) -> Result<Self, #num_type> {
+                fn from_number(number: #num_type) -> riscv::result::Result<Self> {
                     match number {
                         #(#valid_matches,)*
-                        _ => Err(number),
+                        _ => Err(riscv::result::Error::InvalidVariant(number as _)),
                     }
                 }
             }
@@ -271,7 +272,7 @@ core::arch::global_asm!("
             let dispatch_fn_name = interrupt_type.dispatch_fn_name();
 
             // Push the marker trait implementation
-            res.push(quote! { unsafe impl riscv_pac::#marker_trait_name for #name {} });
+            res.push(quote! { unsafe impl riscv::#marker_trait_name for #name {} });
 
             let interrupt_handlers = self.interrupt_handlers();
             let interrupt_array = self.interrupt_array();
@@ -330,7 +331,7 @@ core::arch::global_asm!("
 /// # Example
 ///
 /// ```rust
-/// use riscv_pac::*;
+/// use riscv::*;
 ///
 /// #[repr(usize)]
 /// #[pac_enum(unsafe ExceptionNumber)]

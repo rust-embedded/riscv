@@ -1,5 +1,0 @@
-error: expected `unsafe`
- --> tests/ui/fail_no_unsafe.rs:1:23
-  |
-1 | #[riscv_pac::pac_enum(InterruptNumber)]
-  |                       ^^^^^^^^^^^^^^^

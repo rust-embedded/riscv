@@ -25,37 +25,6 @@ impl SSWI {
         }
     }
 
-    /// Returns `true` if a supervisor software interrupt is pending.
-    #[inline]
-    pub fn is_interrupting() -> bool {
-        riscv::register::sip::read().ssoft()
-    }
-
-    /// Returns `true` if Supervisor Software Interrupts are enabled.
-    #[inline]
-    pub fn is_enabled() -> bool {
-        riscv::register::mie::read().ssoft()
-    }
-
-    /// Sets the Supervisor Software Interrupt bit of the `mie` CSR.
-    /// This bit must be set for the `SSWI` to trigger supervisor software interrupts.
-    ///
-    /// # Safety
-    ///
-    /// Enabling the `SSWI` may break mask-based critical sections.
-    #[inline]
-    pub unsafe fn enable() {
-        riscv::register::mie::set_ssoft();
-    }
-
-    /// Clears the Supervisor Software Interrupt bit of the `mie` CSR.
-    /// When cleared, the `SSWI` cannot trigger supervisor software interrupts.
-    #[inline]
-    pub fn disable() {
-        // SAFETY: it is safe to disable interrupts
-        unsafe { riscv::register::mie::clear_ssoft() };
-    }
-
     /// Returns the `SETSSIP` register for the HART which ID is `hart_id`.
     ///
     /// # Note

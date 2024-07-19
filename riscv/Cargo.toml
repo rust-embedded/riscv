@@ -20,11 +20,15 @@ targets = [
 ]
 
 [features]
-default = ["riscv-pac/default"]
+default = ["riscv-macros"]
 s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
 
 [dependencies]
 critical-section = "1.1.2"
 embedded-hal = "1.0.0"
-riscv-pac = { path = "../riscv-pac", version = "0.1.2", default-features = false }
+riscv-pac = { path = "../riscv-pac", version = "0.1.2" }
+riscv-macros = { path = "macros", version = "0.1.0", optional = true }
+
+[dev-dependencies]
+trybuild = "1.0"

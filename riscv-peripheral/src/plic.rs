@@ -148,7 +148,6 @@ pub(crate) mod test {
     use riscv_pac::result::{Error, Result};
     use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
 
-    #[pac_enum(unsafe ExternalInterruptNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(usize)]
     pub(crate) enum Interrupt {
@@ -158,7 +157,6 @@ pub(crate) mod test {
         I4 = 4,
     }
 
-    #[pac_enum(unsafe PriorityNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u8)]
     pub(crate) enum Priority {
@@ -168,7 +166,6 @@ pub(crate) mod test {
         P3 = 3,
     }
 
-    #[pac_enum(unsafe HartIdNumber)]
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     #[repr(u16)]
     pub(crate) enum Context {
@@ -177,61 +174,63 @@ pub(crate) mod test {
         C2 = 2,
     }
 
-    // unsafe impl InterruptNumber for Interrupt {
-    //     const MAX_INTERRUPT_NUMBER: u16 = 4;
-
-    //     #[inline]
-    //     fn number(self) -> u16 {
-    //         self as _
-    //     }
+    unsafe impl InterruptNumber for Interrupt {
+        const MAX_INTERRUPT_NUMBER: usize = 4;
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_INTERRUPT_NUMBER || number == 0 {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid interrupt number
-                Ok(unsafe { core::mem::transmute(number) })
+        fn number(self) -> usize {
+            self as _
+        }
+
+        #[inline]
+        fn from_number(number: usize) -> Result<Self> {
+            match number {
+                1 => Ok(Interrupt::I1),
+                2 => Ok(Interrupt::I2),
+                3 => Ok(Interrupt::I3),
+                4 => Ok(Interrupt::I4),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
 
     unsafe impl ExternalInterruptNumber for Interrupt {}
 
-    // unsafe impl PriorityNumber for Priority {
-    //     const MAX_PRIORITY_NUMBER: u8 = 3;
+    unsafe impl PriorityNumber for Priority {
+        const MAX_PRIORITY_NUMBER: u8 = 3;
 
-    //     #[inline]
-    //     fn number(self) -> u8 {
-    //         self as _
-    //     }
+        #[inline]
+        fn number(self) -> u8 {
+            self as _
+        }
 
         #[inline]
         fn from_number(number: u8) -> Result<Self> {
-            if number > Self::MAX_PRIORITY_NUMBER {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid priority number
-                Ok(unsafe { core::mem::transmute(number) })
+            match number {
+                0 => Ok(Priority::P0),
+                1 => Ok(Priority::P1),
+                2 => Ok(Priority::P2),
+                3 => Ok(Priority::P3),
+                _ => Err(Error::InvalidVariant(number as usize)),
             }
         }
     }
 
-    // unsafe impl HartIdNumber for Context {
-    //     const MAX_HART_ID_NUMBER: u16 = 2;
+    unsafe impl HartIdNumber for Context {
+        const MAX_HART_ID_NUMBER: u16 = 2;
 
-    //     #[inline]
-    //     fn number(self) -> u16 {
-    //         self as _
-    //     }
+        #[inline]
+        fn number(self) -> u16 {
+            self as _
+        }
 
         #[inline]
         fn from_number(number: u16) -> Result<Self> {
-            if number > Self::MAX_HART_ID_NUMBER {
-                Err(Error::InvalidVariant(number as usize))
-            } else {
-                // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute(number) })
+            match number {
+                0 => Ok(Context::C0),
+                1 => Ok(Context::C1),
+                2 => Ok(Context::C2),
+                _ => Err(Error::InvalidVariant(number as usize)),
             }
         }
     }

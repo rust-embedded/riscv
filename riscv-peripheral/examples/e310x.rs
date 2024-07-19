@@ -2,11 +2,11 @@
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
-use riscv_pac::pac_enum;
-use riscv_pac::result::{Error, Result};
+use riscv_pac::{
+    result::{Error, Result},
+    ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber,
+};
 
-#[repr(u16)]
-#[pac_enum(unsafe HartIdNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum HartId {
     H0 = 0,
@@ -22,11 +22,9 @@ unsafe impl HartIdNumber for HartId {
 
     #[inline]
     fn from_number(number: u16) -> Result<Self> {
-        if number > Self::MAX_HART_ID_NUMBER {
-            Err(Error::InvalidVariant(number as usize))
-        } else {
-            // SAFETY: valid context number
-            Ok(unsafe { core::mem::transmute(number) })
+        match number {
+            0 => Ok(HartId::H0),
+            _ => Err(Error::InvalidVariant(number as usize)),
         }
     }
 }
@@ -88,28 +86,26 @@ pub enum Interrupt {
 }
 
 unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: u16 = Self::I2C0 as u16;
+    const MAX_INTERRUPT_NUMBER: usize = Self::I2C0 as usize;
 
     #[inline]
-    fn number(self) -> u16 {
+    fn number(self) -> usize {
         self as _
     }
 
     #[inline]
-    fn from_number(number: u16) -> Result<Self> {
+    fn from_number(number: usize) -> Result<Self> {
         if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
             Err(Error::InvalidVariant(number as usize))
         } else {
             // SAFETY: valid interrupt number
-            Ok(unsafe { core::mem::transmute(number) })
+            Ok(unsafe { core::mem::transmute(number as u8) })
         }
     }
 }
 
 unsafe impl ExternalInterruptNumber for Interrupt {}
 
-#[repr(u8)]
-#[pac_enum(unsafe PriorityNumber)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Priority {
     P0 = 0,

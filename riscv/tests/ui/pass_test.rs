@@ -1,6 +1,6 @@
-use riscv_pac::*;
+use riscv::result::Error;
+use riscv::*;
 
-#[repr(usize)]
 #[pac_enum(unsafe ExceptionNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Exception {
@@ -8,7 +8,6 @@ enum Exception {
     E3 = 3,
 }
 
-#[repr(usize)]
 #[pac_enum(unsafe CoreInterruptNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Interrupt {
@@ -18,7 +17,6 @@ enum Interrupt {
     I7 = 7,
 }
 
-#[repr(u8)]
 #[pac_enum(unsafe PriorityNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum Priority {
@@ -28,7 +26,6 @@ enum Priority {
     P3 = 3,
 }
 
-#[repr(u16)]
 #[pac_enum(unsafe HartIdNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum HartId {
@@ -58,11 +55,11 @@ fn main() {
     assert_eq!(Exception::E1.number(), 1);
     assert_eq!(Exception::E3.number(), 3);
 
-    assert_eq!(Exception::from_number(0), Err(0));
+    assert_eq!(Exception::from_number(0), Err(Error::InvalidVariant(0)));
     assert_eq!(Exception::from_number(1), Ok(Exception::E1));
-    assert_eq!(Exception::from_number(2), Err(2));
+    assert_eq!(Exception::from_number(2), Err(Error::InvalidVariant(2)));
     assert_eq!(Exception::from_number(3), Ok(Exception::E3));
-    assert_eq!(Exception::from_number(4), Err(4));
+    assert_eq!(Exception::from_number(4), Err(Error::InvalidVariant(4)));
 
     assert_eq!(Exception::MAX_EXCEPTION_NUMBER, 3);
 
@@ -71,13 +68,13 @@ fn main() {
     assert_eq!(Interrupt::I4.number(), 4);
     assert_eq!(Interrupt::I7.number(), 7);
 
-    assert_eq!(Interrupt::from_number(0), Err(0));
+    assert_eq!(Interrupt::from_number(0), Err(Error::InvalidVariant(0)));
     assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
     assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-    assert_eq!(Interrupt::from_number(3), Err(3));
+    assert_eq!(Interrupt::from_number(3), Err(Error::InvalidVariant(3)));
     assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-    assert_eq!(Interrupt::from_number(5), Err(5));
-    assert_eq!(Interrupt::from_number(6), Err(6));
+    assert_eq!(Interrupt::from_number(5), Err(Error::InvalidVariant(5)));
+    assert_eq!(Interrupt::from_number(6), Err(Error::InvalidVariant(6)));
     assert_eq!(Interrupt::from_number(7), Ok(Interrupt::I7));
 
     assert_eq!(Interrupt::MAX_INTERRUPT_NUMBER, 7);
@@ -102,7 +99,7 @@ fn main() {
     assert_eq!(Priority::from_number(1), Ok(Priority::P1));
     assert_eq!(Priority::from_number(2), Ok(Priority::P2));
     assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-    assert_eq!(Priority::from_number(4), Err(4));
+    assert_eq!(Priority::from_number(4), Err(Error::InvalidVariant(4)));
 
     assert_eq!(Priority::MAX_PRIORITY_NUMBER, 3);
 
@@ -113,7 +110,7 @@ fn main() {
     assert_eq!(HartId::from_number(0), Ok(HartId::H0));
     assert_eq!(HartId::from_number(1), Ok(HartId::H1));
     assert_eq!(HartId::from_number(2), Ok(HartId::H2));
-    assert_eq!(HartId::from_number(3), Err(3));
+    assert_eq!(HartId::from_number(3), Err(Error::InvalidVariant(3)));
 
     assert_eq!(HartId::MAX_HART_ID_NUMBER, 2);
 }

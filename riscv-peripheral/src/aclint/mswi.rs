@@ -35,19 +35,6 @@ impl MSWI {
         // SAFETY: `hart_id` is valid for the target
         unsafe { MSIP::new(self.msip0.get_ptr().offset(hart_id.number() as _) as _) }
     }
-
-    /// Returns the `MSIP` register for the current HART.
-    ///
-    /// # Note
-    ///
-    /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
-    /// Thus, it can only be used in M-mode. For S-mode, use [`MSWI::msip`] instead.
-    #[inline]
-    pub fn msip_mhartid(&self) -> MSIP {
-        let hart_id = riscv::register::mhartid::read();
-        // SAFETY: `hart_id` is valid for the target and is the current hart
-        unsafe { MSIP::new(self.msip0.get_ptr().add(hart_id) as _) }
-    }
 }
 
 unsafe_peripheral!(MSIP, u32, RW);

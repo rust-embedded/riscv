@@ -1,4 +1,4 @@
-#[riscv_pac::pac_enum(InterruptNumber)]
+#[riscv::pac_enum(InterruptNumber)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Interrupt {
     I1 = 1,

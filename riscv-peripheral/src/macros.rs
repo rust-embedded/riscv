@@ -1,12 +1,14 @@
-//! Utility macros for generating standard peripherals-related code in RISC-V PACs.
+//! macros for easing the definition of peripherals in PACs
 
 /// Macro to create interfaces to CLINT peripherals in PACs.
 /// The resulting struct will be named `CLINT`, and will provide safe access to the CLINT registers.
 ///
-/// This macro expects 4 different argument types:
+/// This macro expects 5 different argument types:
 ///
 /// - Base address (**MANDATORY**): base address of the CLINT peripheral of the target.
 /// - Frequency (**OPTIONAL**): clock frequency (in Hz) of the `MTIME` register. It enables the `delay` method of the `CLINT` struct.
+/// - Async flag (**OPTIONAL**): It enables the `async_delay` method of the `CLINT struct`.
+///   You must activate the `embedded-hal-async` feature to use this flag.
 /// - Per-HART mtimecmp registers (**OPTIONAL**): a list of `mtimecmp` registers for easing access to per-HART mtimecmp regs.
 /// - Per-HART msip registers (**OPTIONAL**): a list of `msip` registers for easing access to per-HART msip regs.
 ///
@@ -17,24 +19,20 @@
 /// ## Base address only
 ///
 /// ```
-/// use riscv_peripheral::clint_codegen;
+/// riscv_peripheral::clint_codegen!(base 0x0200_0000, freq 32_768,); // do not forget the ending comma!
 ///
-/// clint_codegen!(base 0x0200_0000, freq 32_768,); // do not forget the ending comma!
-///
-/// let mswi = CLINT::mswi(); // MSWI peripheral
+/// let mswi = CLINT::mswi();     // MSWI peripheral
 /// let mtimer = CLINT::mtimer(); // MTIMER peripheral
-/// let delay = CLINT::delay(); // For the `embedded_hal::delay::DelayNs` trait
+/// let delay = CLINT::delay();   // For the `embedded_hal::delay::DelayNs` trait
 /// ```
 ///
 /// ## Base address and per-HART mtimecmp registers
 ///
 /// ```
-/// use riscv_peripheral::clint_codegen;
 /// use riscv_pac::result::{Error, Result};
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-/// #[repr(u16)]
 /// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
 ///
 /// // Implement `HartIdNumber` for `HartId`
@@ -42,16 +40,16 @@
 ///   const MAX_HART_ID_NUMBER: u16 = 2;
 ///   fn number(self) -> u16 { self as _ }
 ///   fn from_number(number: u16) -> Result<Self> {
-///     if number > Self::MAX_HART_ID_NUMBER {
-///        Err(Error::InvalidVariant(number as usize))
-///     } else {
-///        // SAFETY: valid context number
-///        Ok(unsafe { core::mem::transmute(number) })
+///     match number {
+///      0 => Ok(HartId::H0),
+///      1 => Ok(HartId::H1),
+///      2 => Ok(HartId::H2),
+///      _ => Err(Error::InvalidVariant(number as _)),
 ///     }
 ///   }
 /// }
 ///
-/// clint_codegen!(
+/// riscv_peripheral::clint_codegen!(
 ///     base 0x0200_0000,
 ///     mtimecmps [mtimecmp0 = (HartId::H0, "`H0`"), mtimecmp1 = (HartId::H1, "`H1`"), mtimecmp2 = (HartId::H2, "`H2`")],
 ///     msips [msip0=(HartId::H0,"`H0`"), msip1=(HartId::H1,"`H1`"), msip2=(HartId::H2,"`H2`")], // do not forget the ending comma!
@@ -206,7 +204,7 @@ macro_rules! clint_codegen {
             ///
             /// # Note
             ///
-            /// You must export the `riscv_peripheral::hal::delay::DelayNs` trait in order to use delay methods.
+            /// You must export the [`embedded_hal::delay::DelayNs`] trait in order to use delay methods.
             #[inline]
             pub const fn delay() -> $crate::hal::aclint::Delay {
                 $crate::hal::aclint::Delay::new(Self::mtime(), Self::freq())
@@ -220,7 +218,7 @@ macro_rules! clint_codegen {
             ///
             /// # Note
             ///
-            /// You must export the `riscv_peripheral::hal_async::delay::DelayNs` trait in order to use delay methods.
+            /// You must export the [`embedded_hal_async::delay::DelayNs`] trait in order to use delay methods.
             ///
             /// This implementation relies on the machine-level timer interrupts to wake futures.
             /// Therefore, it needs to schedule the machine-level timer interrupts via the `MTIMECMP` register assigned to the current HART.
@@ -264,6 +262,28 @@ macro_rules! clint_codegen {
 }
 
 /// Macro to create interfaces to PLIC peripherals in PACs.
+/// The resulting struct will be named `PLIC`, and will provide safe access to the PLIC registers.
+///
+/// This macro expects 5 different argument types:
+///
+/// - Base address (**MANDATORY**): base address of the PLIC peripheral of the target.
+/// - Per-HART mtimecmp registers (**OPTIONAL**): a list of `mtimecmp` registers for easing access to per-HART mtimecmp regs.
+/// - Per-HART msip registers (**OPTIONAL**): a list of `msip` registers for easing access to per-HART msip regs.
+///
+/// Check the examples below for more details about the usage and syntax of this macro.
+///
+/// # Example
+///
+/// ## Base address only
+///
+/// ```
+/// use riscv_peripheral::clint_codegen;
+///
+/// riscv_peripheral::plic_codegen!(base 0x0C00_0000,); // do not forget the ending comma!
+///
+/// let priorities = PLIC::priorities();     // MSWI peripheral
+/// let pendings = PLIC::pendings(); // MTIMER peripheral
+/// ```
 #[macro_export]
 macro_rules! plic_codegen {
     () => {

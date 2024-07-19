@@ -1,0 +1,7 @@
+error: unexpected end of input, expected `unsafe`
+ --> tests/ui/fail_empty_macro.rs:1:1
+  |
+1 | #[riscv::pac_enum]
+  | ^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `riscv::pac_enum` (in Nightly builds, run with -Z macro-backtrace for more info)

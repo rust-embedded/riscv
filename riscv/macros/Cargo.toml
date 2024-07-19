@@ -3,11 +3,11 @@ authors = [
     "The RISC-V Team <risc-v@teams.rust-embedded.org>",
 ]
 categories = ["embedded", "no-std"]
-description = "Derive macros re-exported in `riscv-pac`"
-documentation = "https://docs.rs/riscv-rt"
+description = "Procedural macros re-exported in `riscv`"
+documentation = "https://docs.rs/riscv"
 keywords = ["riscv", "register", "peripheral"]
 license = "MIT OR Apache-2.0"
-name = "riscv-pac-macros"
+name = "riscv-macros"
 repository = "https://github.com/rust-embedded/riscv"
 version = "0.1.0"
 edition = "2021"
