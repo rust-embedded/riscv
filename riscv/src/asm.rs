@@ -149,9 +149,9 @@ pub fn delay(cycles: u32) {
         () => unsafe {
             let real_cyc = 1 + cycles / 2;
             core::arch::asm!(
-            "1:",
+            "2:",
             "addi {0}, {0}, -1",
-            "bne {0}, zero, 1b",
+            "bne {0}, zero, 2b",
             inout(reg) real_cyc => _,
             options(nomem, nostack),
             )

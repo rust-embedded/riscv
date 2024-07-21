@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Modified delay function to avoid using binary labels in inline assembly.
 - More efficient implementation of `From` traits for `Interrupt` and `Exception` enums.
 
 ### Fixed
