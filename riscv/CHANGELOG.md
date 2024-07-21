@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed `sip::set_ssoft` and `sip::clear_ssoft` using wrong address
 - Fixed assignment in `mstatus` unit tests.
+- delay implementation does not use binary labels in inline assembly.
 
 ## [v0.11.1] - 2024-02-15
 
