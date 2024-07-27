@@ -24,4 +24,4 @@ default = ["jlink-quirks"]
 
 [dependencies]
 critical-section = "1.0.0"
-riscv = { path = "../riscv", version = "0.11.0" }
+riscv = { path = "../riscv", version = "0.12.0" }

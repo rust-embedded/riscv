@@ -473,6 +473,12 @@
 #[cfg(riscv)]
 mod asm;
 
+#[cfg(not(feature = "no-exceptions"))]
+mod exceptions;
+
+#[cfg(not(feature = "no-interrupts"))]
+mod interrupts;
+
 #[cfg(feature = "s-mode")]
 use riscv::register::scause as xcause;
 
@@ -532,108 +538,12 @@ pub struct TrapFrame {
 #[export_name = "_start_trap_rust"]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
-        fn ExceptionHandler(trap_frame: &TrapFrame);
-        fn _dispatch_interrupt(code: usize);
+        fn _dispatch_core_interrupt(code: usize);
+        fn _dispatch_exception(trap_frame: &TrapFrame, code: usize);
     }
 
-    let cause = xcause::read();
-    let code = cause.code();
-
-    if cause.is_exception() {
-        let trap_frame = &*trap_frame;
-        if code < __EXCEPTIONS.len() {
-            let h = &__EXCEPTIONS[code];
-            if let Some(handler) = h {
-                handler(trap_frame);
-            } else {
-                ExceptionHandler(trap_frame);
-            }
-        } else {
-            ExceptionHandler(trap_frame);
-        }
-    } else {
-        _dispatch_interrupt(code);
+    match xcause::read().cause() {
+        xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
+        xcause::Trap::Exception(code) => _dispatch_exception(&*trap_frame, code),
     }
 }
-
-extern "C" {
-    fn InstructionMisaligned(trap_frame: &TrapFrame);
-    fn InstructionFault(trap_frame: &TrapFrame);
-    fn IllegalInstruction(trap_frame: &TrapFrame);
-    fn Breakpoint(trap_frame: &TrapFrame);
-    fn LoadMisaligned(trap_frame: &TrapFrame);
-    fn LoadFault(trap_frame: &TrapFrame);
-    fn StoreMisaligned(trap_frame: &TrapFrame);
-    fn StoreFault(trap_frame: &TrapFrame);
-    fn UserEnvCall(trap_frame: &TrapFrame);
-    fn SupervisorEnvCall(trap_frame: &TrapFrame);
-    fn MachineEnvCall(trap_frame: &TrapFrame);
-    fn InstructionPageFault(trap_frame: &TrapFrame);
-    fn LoadPageFault(trap_frame: &TrapFrame);
-    fn StorePageFault(trap_frame: &TrapFrame);
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
-    Some(InstructionMisaligned),
-    Some(InstructionFault),
-    Some(IllegalInstruction),
-    Some(Breakpoint),
-    Some(LoadMisaligned),
-    Some(LoadFault),
-    Some(StoreMisaligned),
-    Some(StoreFault),
-    Some(UserEnvCall),
-    Some(SupervisorEnvCall),
-    None,
-    Some(MachineEnvCall),
-    Some(InstructionPageFault),
-    Some(LoadPageFault),
-    None,
-    Some(StorePageFault),
-];
-
-#[export_name = "_dispatch_interrupt"]
-unsafe extern "C" fn dispatch_interrupt(code: usize) {
-    extern "C" {
-        fn DefaultHandler();
-    }
-
-    if code < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[code];
-        if let Some(handler) = h {
-            handler();
-        } else {
-            DefaultHandler();
-        }
-    } else {
-        DefaultHandler();
-    }
-}
-
-extern "C" {
-    fn SupervisorSoft();
-    fn MachineSoft();
-    fn SupervisorTimer();
-    fn MachineTimer();
-    fn SupervisorExternal();
-    fn MachineExternal();
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
-    None,
-    Some(SupervisorSoft),
-    None,
-    Some(MachineSoft),
-    None,
-    Some(SupervisorTimer),
-    None,
-    Some(MachineTimer),
-    None,
-    Some(SupervisorExternal),
-    None,
-    Some(MachineExternal),
-];

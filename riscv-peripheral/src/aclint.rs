@@ -87,7 +87,7 @@ pub(crate) mod test {
                 Err(Error::InvalidVariant(number as usize))
             } else {
                 // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute(number) })
+                Ok(unsafe { core::mem::transmute::<u16, HartId>(number) })
             }
         }
     }
