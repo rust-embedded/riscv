@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `no-interrupts` feature to opt-out the default implementation of `_dispatch_core_interrupt`
 - Add `pre_init_trap` to detect early errors during the boot process.
 - Add `v-trap` feature to enable interrupt handling in vectored mode.
-- Add `interrupt` proc macro to help defining interrupt handlers.
+- Add `core_interrupt` proc macro to help defining core interrupt handlers.
+- Add `external_interrupt` proc macro to help defining external interrupt handlers.
+- Add `exception` proc macro to help defining exception handlers.
   If `v-trap` feature is enabled, this macro also generates its corresponding trap.
 - Add `u-boot` feature, so that you can start your elf binary with u-boot and
 work with passed arguments.

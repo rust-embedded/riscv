@@ -485,13 +485,14 @@ use riscv::register::scause as xcause;
 #[cfg(not(feature = "s-mode"))]
 use riscv::register::mcause as xcause;
 
-pub use riscv_rt_macros::{entry, pre_init};
+pub use riscv_rt_macros::{entry, exception, external_interrupt, pre_init};
+
+pub use riscv_pac::*;
 
 #[cfg(riscv32)]
-pub use riscv_rt_macros::interrupt_riscv32 as interrupt;
-
+pub use riscv_rt_macros::core_interrupt_riscv32 as core_interrupt;
 #[cfg(riscv64)]
-pub use riscv_rt_macros::interrupt_riscv64 as interrupt;
+pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt;
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in

@@ -13,7 +13,7 @@ use syn::{
     parse::{self, Parse},
     punctuated::Punctuated,
     spanned::Spanned,
-    FnArg, ItemFn, LitInt, LitStr, PatType, ReturnType, Type, Visibility,
+    FnArg, ItemFn, LitInt, LitStr, PatType, Path, ReturnType, Type, Visibility,
 };
 
 use proc_macro::TokenStream;
@@ -357,10 +357,16 @@ pub fn loop_global_asm(input: TokenStream) -> TokenStream {
     res.parse().unwrap()
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum RiscvArch {
     Rv32,
     Rv64,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum RiscvPacItem {
+    ExternalInterrupt,
+    CoreInterrupt,
 }
 
 /// Size of the trap frame (in number of registers)
@@ -549,26 +555,122 @@ _continue_interrupt_trap:
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the
-/// interrupt trap handler in assembly for RISCV-32 targets.
-pub fn interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
-    interrupt(args, input, RiscvArch::Rv32)
+/// Attribute to declare an exception handler. The function must have the signature `[unsafe] fn(&[mut] riscv_rt::TrapFrame) [-> !]`.
+pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
+    let f = parse_macro_input!(input as ItemFn);
+
+    // check the function arguments
+    if f.sig.inputs.len() > 1 {
+        return parse::Error::new(
+            f.sig.inputs.span(),
+            "`#[exception]` function must at have most one input argument",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    if let Some(param) = f.sig.inputs.first() {
+        let first_param_type = match param {
+            FnArg::Typed(t) => *t.ty.clone(),
+            _ => {
+                return parse::Error::new(param.span(), "invalid argument")
+                    .to_compile_error()
+                    .into();
+            }
+        };
+
+        let expected_types: Vec<Type> = vec![
+            parse_quote!(&riscv_rt::TrapFrame),
+            parse_quote!(&mut riscv_rt::TrapFrame),
+        ];
+
+        if !expected_types.iter().any(|t| first_param_type == *t) {
+            return parse::Error::new(
+                first_param_type.span(),
+                "`#[exception]` function argument must be `&[mut] riscv_rt::TrapFrame`",
+            )
+            .to_compile_error()
+            .into();
+        }
+    }
+
+    // check the function signature
+    let valid_signature = f.sig.constness.is_none()
+        && f.sig.asyncness.is_none()
+        && f.vis == Visibility::Inherited
+        && f.sig.abi.is_none()
+        && f.sig.generics.params.is_empty()
+        && f.sig.generics.where_clause.is_none()
+        && f.sig.variadic.is_none()
+        && match f.sig.output {
+            ReturnType::Default => true,
+            ReturnType::Type(_, ref ty) => matches!(**ty, Type::Never(_)),
+        };
+
+    if !valid_signature {
+        return parse::Error::new(
+            f.span(),
+            "`#[exception]` function must have signature `[unsafe] fn(&riscv_rt::TrapFrame) [-> !]`",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let int_path = parse_macro_input!(args as Path);
+    let int_ident = &int_path.segments.last().unwrap().ident;
+    let export_name = format!("{:#}", int_ident);
+
+    quote!(
+        // Compile-time check to ensure the interrupt path implements the CoreInterruptNumber trait
+        const _: fn() = || {
+            fn assert_impl<T: riscv_rt::ExceptionNumber>(_arg: T) {}
+            assert_impl(#int_path);
+        };
+
+        #[export_name = #export_name]
+        #f
+    )
+    .into()
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the
-/// interrupt trap handler in assembly for RISCV-64 targets.
-pub fn interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
-    interrupt(args, input, RiscvArch::Rv64)
+/// Attribute to declare an core interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
+pub fn core_interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
+    let arch = match () {
+        #[cfg(feature = "v-trap")]
+        () => Some(RiscvArch::Rv32),
+        #[cfg(not(feature = "v-trap"))]
+        () => None,
+    };
+    interrupt(args, input, RiscvPacItem::CoreInterrupt, arch)
 }
 
-fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenStream {
+#[proc_macro_attribute]
+/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
+pub fn core_interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
+    let arch = match () {
+        #[cfg(feature = "v-trap")]
+        () => Some(RiscvArch::Rv64),
+        #[cfg(not(feature = "v-trap"))]
+        () => None,
+    };
+    interrupt(args, input, RiscvPacItem::CoreInterrupt, arch)
+}
+
+#[proc_macro_attribute]
+/// Attribute to declare an external interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
+pub fn external_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
+    interrupt(args, input, RiscvPacItem::ExternalInterrupt, None)
+}
+
+fn interrupt(
+    args: TokenStream,
+    input: TokenStream,
+    pac_item: RiscvPacItem,
+    arch: Option<RiscvArch>,
+) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
     // check the function arguments
@@ -603,22 +705,28 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
         .into();
     }
 
-    if !args.is_empty() {
-        return parse::Error::new(Span::call_site(), "This attribute accepts no arguments")
-            .to_compile_error()
-            .into();
-    }
+    let int_path = parse_macro_input!(args as Path);
+    let int_ident = &int_path.segments.last().unwrap().ident;
+    let export_name = format!("{:#}", int_ident);
 
-    // XXX should we blacklist other attributes?
-    let ident = &f.sig.ident;
-    let export_name = format!("{:#}", ident);
+    let start_trap = match arch {
+        Some(RiscvArch::Rv32) => start_interrupt_trap(int_ident, RiscvArch::Rv32),
+        Some(RiscvArch::Rv64) => start_interrupt_trap(int_ident, RiscvArch::Rv64),
+        None => proc_macro2::TokenStream::new(),
+    };
 
-    #[cfg(not(feature = "v-trap"))]
-    let start_trap = proc_macro2::TokenStream::new();
-    #[cfg(feature = "v-trap")]
-    let start_trap = start_interrupt_trap(ident, _arch);
+    let pac_trait = match pac_item {
+        RiscvPacItem::ExternalInterrupt => quote!(riscv_rt::ExternalInterruptNumber),
+        RiscvPacItem::CoreInterrupt => quote!(riscv_rt::CoreInterruptNumber),
+    };
 
     quote!(
+        // Compile-time check to ensure the interrupt path implements the CoreInterruptNumber trait
+        const _: fn() = || {
+            fn assert_impl<T: #pac_trait>(_arg: T) {}
+            assert_impl(#int_path);
+        };
+
         #start_trap
         #[export_name = #export_name]
         #f
@@ -626,7 +734,6 @@ fn interrupt(args: TokenStream, input: TokenStream, _arch: RiscvArch) -> TokenSt
     .into()
 }
 
-#[cfg(feature = "v-trap")]
 fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::TokenStream {
     let interrupt = ident.to_string();
     let width = match arch {

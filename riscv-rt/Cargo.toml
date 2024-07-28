@@ -14,6 +14,7 @@ links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 
 [dependencies]
 riscv = { path = "../riscv", version = "0.12.0" }
+riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 riscv-rt-macros = { path = "macros", version = "0.2.1" }
 
 [dev-dependencies]
