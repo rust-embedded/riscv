@@ -121,7 +121,7 @@ impl PacEnumItem {
         };
         for v in variants.iter() {
             let ident = v.ident.clone();
-           let value = match v.discriminant.as_ref() {
+            let value = match v.discriminant.as_ref() {
                 Some((_, syn::Expr::Lit(expr_lit))) => match &expr_lit.lit {
                     syn::Lit::Int(lit_int) => {
                         lit_int.base10_parse::<usize>().unwrap_or_else(|_| {
@@ -291,13 +291,9 @@ core::arch::global_asm!("
                         fn DefaultHandler();
                     }
 
-                    if code < #isr_array_name.len() {
-                        match &#isr_array_name[code] {
-                            Some(handler) => handler(),
-                            None => DefaultHandler(),
-                        }
-                    } else {
-                        DefaultHandler();
+                    match #isr_array_name.get(code) {
+                        Some(Some(handler)) => handler(),
+                        _ => DefaultHandler(),
                     }
                 }
             });
