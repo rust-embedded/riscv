@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - use `riscv-pac` result types for trait implementations
 
+### Changed
+
+- `PLIC` now expects interrupt enums to implement the `riscv_pac::ExternalInterruptNumber` trait.
+
 ### Fixed
 
 - `clippy` fixes

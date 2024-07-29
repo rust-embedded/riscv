@@ -2,17 +2,18 @@
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
-use riscv_pac::result::{Error, Result};
-use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
+use riscv_pac::{
+    result::{Error, Result},
+    ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber,
+};
 
-#[repr(u16)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum HartId {
     H0 = 0,
 }
 
 unsafe impl HartIdNumber for HartId {
-    const MAX_HART_ID_NUMBER: u16 = 0;
+    const MAX_HART_ID_NUMBER: u16 = Self::H0 as u16;
 
     #[inline]
     fn number(self) -> u16 {
@@ -21,17 +22,15 @@ unsafe impl HartIdNumber for HartId {
 
     #[inline]
     fn from_number(number: u16) -> Result<Self> {
-        if number > Self::MAX_HART_ID_NUMBER {
-            Err(Error::InvalidVariant(number as usize))
-        } else {
-            // SAFETY: valid context number
-            Ok(unsafe { core::mem::transmute(number) })
+        match number {
+            0 => Ok(Self::H0),
+            _ => Err(Error::InvalidVariant(number as usize)),
         }
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(u16)]
+#[repr(usize)]
 pub enum Interrupt {
     WATCHDOG = 1,
     RTC = 2,
@@ -88,26 +87,27 @@ pub enum Interrupt {
 }
 
 unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: u16 = 52;
+    const MAX_INTERRUPT_NUMBER: usize = Self::I2C0 as usize;
 
     #[inline]
-    fn number(self) -> u16 {
+    fn number(self) -> usize {
         self as _
     }
 
     #[inline]
-    fn from_number(number: u16) -> Result<Self> {
+    fn from_number(number: usize) -> Result<Self> {
         if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
-            Err(Error::InvalidVariant(number as usize))
+            Err(Error::InvalidVariant(number))
         } else {
             // SAFETY: valid interrupt number
-            Ok(unsafe { core::mem::transmute(number) })
+            Ok(unsafe { core::mem::transmute::<usize, Interrupt>(number) })
         }
     }
 }
 
+unsafe impl ExternalInterruptNumber for Interrupt {}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(u8)]
 pub enum Priority {
     P0 = 0,
     P1 = 1,
@@ -120,7 +120,7 @@ pub enum Priority {
 }
 
 unsafe impl PriorityNumber for Priority {
-    const MAX_PRIORITY_NUMBER: u8 = 7;
+    const MAX_PRIORITY_NUMBER: u8 = Self::P7 as u8;
 
     #[inline]
     fn number(self) -> u8 {
@@ -133,7 +133,7 @@ unsafe impl PriorityNumber for Priority {
             Err(Error::InvalidVariant(number as usize))
         } else {
             // SAFETY: valid priority number
-            Ok(unsafe { core::mem::transmute(number) })
+            Ok(unsafe { core::mem::transmute::<u8, Priority>(number) })
         }
     }
 }

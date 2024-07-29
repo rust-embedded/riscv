@@ -1,104 +1,12 @@
 //! scause register
 
+pub use crate::interrupt::Trap;
+pub use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber}; // re-export useful riscv-pac traits
+
 /// scause register
 #[derive(Clone, Copy)]
 pub struct Scause {
     bits: usize,
-}
-
-/// Trap Cause
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum Trap {
-    Interrupt(Interrupt),
-    Exception(Exception),
-}
-
-/// Interrupt
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[repr(usize)]
-pub enum Interrupt {
-    SupervisorSoft = 1,
-    SupervisorTimer = 5,
-    SupervisorExternal = 9,
-    Unknown,
-}
-
-/// Exception
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[repr(usize)]
-pub enum Exception {
-    InstructionMisaligned = 0,
-    InstructionFault = 1,
-    IllegalInstruction = 2,
-    Breakpoint = 3,
-    LoadMisaligned = 4,
-    LoadFault = 5,
-    StoreMisaligned = 6,
-    StoreFault = 7,
-    UserEnvCall = 8,
-    SupervisorEnvCall = 9,
-    InstructionPageFault = 12,
-    LoadPageFault = 13,
-    StorePageFault = 15,
-    Unknown,
-}
-
-impl From<usize> for Interrupt {
-    #[inline]
-    fn from(nr: usize) -> Self {
-        match nr {
-            1 => Self::SupervisorSoft,
-            5 => Self::SupervisorTimer,
-            9 => Self::SupervisorExternal,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-impl TryFrom<Interrupt> for usize {
-    type Error = Interrupt;
-
-    #[inline]
-    fn try_from(value: Interrupt) -> Result<Self, Self::Error> {
-        match value {
-            Interrupt::Unknown => Err(Self::Error::Unknown),
-            _ => Ok(value as Self),
-        }
-    }
-}
-
-impl From<usize> for Exception {
-    #[inline]
-    fn from(nr: usize) -> Self {
-        match nr {
-            0 => Self::InstructionMisaligned,
-            1 => Self::InstructionFault,
-            2 => Self::IllegalInstruction,
-            3 => Self::Breakpoint,
-            4 => Self::LoadMisaligned,
-            5 => Self::LoadFault,
-            6 => Self::StoreMisaligned,
-            7 => Self::StoreFault,
-            8 => Self::UserEnvCall,
-            9 => Self::SupervisorEnvCall,
-            12 => Self::InstructionPageFault,
-            13 => Self::LoadPageFault,
-            15 => Self::StorePageFault,
-            _ => Self::Unknown,
-        }
-    }
-}
-
-impl TryFrom<Exception> for usize {
-    type Error = Exception;
-
-    #[inline]
-    fn try_from(value: Exception) -> Result<Self, Self::Error> {
-        match value {
-            Exception::Unknown => Err(Self::Error::Unknown),
-            _ => Ok(value as Self),
-        }
-    }
 }
 
 impl Scause {
@@ -114,13 +22,18 @@ impl Scause {
         self.bits & !(1 << (usize::BITS as usize - 1))
     }
 
-    /// Trap Cause
+    /// Returns the trap cause represented by this register.
+    ///
+    /// # Note
+    ///
+    /// This method returns a **raw trap cause**, which means that values are represented as `usize`.
+    /// To get a target-specific trap cause, use [`Trap::try_into`] with your target-specific S-Mode trap cause types.
     #[inline]
-    pub fn cause(&self) -> Trap {
+    pub fn cause(&self) -> Trap<usize, usize> {
         if self.is_interrupt() {
-            Trap::Interrupt(Interrupt::from(self.code()))
+            Trap::Interrupt(self.code())
         } else {
-            Trap::Exception(Exception::from(self.code()))
+            Trap::Exception(self.code())
         }
     }
 
@@ -148,13 +61,12 @@ pub unsafe fn write(bits: usize) {
 
 /// Set supervisor cause register to corresponding cause.
 #[inline]
-pub unsafe fn set(cause: Trap) {
+pub unsafe fn set<I: CoreInterruptNumber, E: ExceptionNumber>(cause: Trap<I, E>) {
     let bits = match cause {
         Trap::Interrupt(i) => {
-            let i = usize::try_from(i).expect("unknown interrupt");
-            i | (1 << (usize::BITS as usize - 1)) // interrupt bit is 1
+            i.number() | (1 << (usize::BITS as usize - 1)) // interrupt bit is 1
         }
-        Trap::Exception(e) => usize::try_from(e).expect("unknown exception"),
+        Trap::Exception(e) => e.number(),
     };
     _write(bits);
 }
