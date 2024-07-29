@@ -121,20 +121,17 @@ impl PacEnumItem {
         };
         for v in variants.iter() {
             let ident = v.ident.clone();
-            let value = match &v.discriminant {
-                Some(d) => match &d.1 {
-                    syn::Expr::Lit(expr_lit) => match &expr_lit.lit {
-                        syn::Lit::Int(lit_int) => match lit_int.base10_parse::<usize>() {
-                            Ok(num) => num,
-                            Err(_) => {
-                                panic!("All variant discriminants must be unsigned integers")
-                            }
-                        },
-                        _ => panic!("All variant discriminants must be unsigned integers"),
-                    },
+           let value = match v.discriminant.as_ref() {
+                Some((_, syn::Expr::Lit(expr_lit))) => match &expr_lit.lit {
+                    syn::Lit::Int(lit_int) => {
+                        lit_int.base10_parse::<usize>().unwrap_or_else(|_| {
+                            panic!("All variant discriminants must be unsigned integers")
+                        })
+                    }
                     _ => panic!("All variant discriminants must be unsigned integers"),
                 },
-                _ => panic!("Variant must have a discriminant"),
+                None => panic!("Variant must have a discriminant"),
+                _ => panic!("All variant discriminants must be literal expressions"),
             };
 
             if numbers.insert(value, ident).is_some() {

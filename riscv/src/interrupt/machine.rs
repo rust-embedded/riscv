@@ -192,10 +192,12 @@ where
     }
 
     // Restore MSTATUS.PIE, MSTATUS.MPP, and SEPC
+    let mut after_mstatus = mstatus::read();
     if mstatus.mpie() {
-        mstatus::set_mpie();
+        after_mstatus.set_mpie(mstatus.mpie());
     }
-    mstatus::set_mpp(mstatus.mpp());
+    after_mstatus.set_mpp(mstatus.mpp());
+    mstatus::write(after_mstatus);
     mepc::write(mepc);
 
     r
