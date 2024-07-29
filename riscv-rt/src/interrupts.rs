@@ -28,13 +28,9 @@ pub static __CORE_INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
 #[export_name = "_dispatch_core_interrupt"]
 #[inline]
 unsafe extern "C" fn dispatch_core_interrupt(code: usize) {
-    if code < __CORE_INTERRUPTS.len() {
-        match &__CORE_INTERRUPTS[code] {
-            Some(handler) => handler(),
-            None => DefaultHandler(),
-        }
-    } else {
-        DefaultHandler();
+    match __CORE_INTERRUPTS.get(code) {
+        Some(Some(handler)) => handler(),
+        _ => DefaultHandler(),
     }
 }
 

@@ -42,12 +42,8 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
 #[export_name = "_dispatch_exception"]
 #[inline]
 unsafe extern "C" fn dispatch_exception(trap_frame: &TrapFrame, code: usize) {
-    if code < __EXCEPTIONS.len() {
-        match &__EXCEPTIONS[code] {
-            Some(handler) => handler(trap_frame),
-            None => ExceptionHandler(trap_frame),
-        }
-    } else {
-        ExceptionHandler(trap_frame);
+    match __EXCEPTIONS.get(code) {
+        Some(Some(handler)) => handler(trap_frame),
+        _ => ExceptionHandler(trap_frame),
     }
 }
