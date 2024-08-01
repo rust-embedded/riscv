@@ -209,7 +209,7 @@ pub unsafe fn syscall<T>(nr: usize, arg: &T) -> usize {
 ///
 /// # Safety
 ///
-/// Same as [`syscall`].
+/// Same as [`syscall()`].
 #[inline(always)]
 pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
     match () {
