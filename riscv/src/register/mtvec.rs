@@ -23,7 +23,7 @@ impl Mtvec {
     /// Returns the trap-vector base-address
     #[inline]
     pub fn address(&self) -> usize {
-        self.bits - (self.bits & 0b11)
+        self.bits >> 2
     }
 
     /// Returns the trap-vector mode
@@ -45,6 +45,6 @@ write_csr!(0x305);
 /// Writes the CSR
 #[inline]
 pub unsafe fn write(addr: usize, mode: TrapMode) {
-    let bits = addr + mode as usize;
+    let bits = (addr << 2) | mode as usize;
     _write(bits);
 }
