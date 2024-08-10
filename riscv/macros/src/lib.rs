@@ -10,6 +10,65 @@ use syn::{
     Data, DeriveInput, Ident, Token,
 };
 
+/// Struct to represent a function parameter.
+struct FunctionParam {
+    /// Name of the parameter.
+    param_name: TokenStream2,
+    /// Data type of the parameter.
+    param_type: TokenStream2,
+}
+
+/// Configuration parameters of a trap. It is useful to abstract the
+/// differences between exception handlers and core interrupt handlers.
+struct TrapConfig {
+    /// Name of the default handler (e.g., `DefaultHandler` for core interrupts).
+    default_handler: TokenStream2,
+    /// Vector describing all the function parameters of these kind of trap handlers.
+    handler_params: Vec<FunctionParam>,
+    /// Dispatch function name (e.g., `_dispatch_exception` or `_dispatch_core_interrupt`).
+    dispatch_fn_name: TokenStream2,
+    /// Name of the array that sorts all the trap handlers (e.g., `__CORE_INTERRUPTS`).
+    handlers_array_name: TokenStream2,
+}
+
+impl TrapConfig {
+    /// Vector with all the input parameters expected when declaring extern handler functions
+    fn extern_signature(&self) -> Vec<TokenStream2> {
+        let mut res = Vec::new();
+        for param in self.handler_params.iter() {
+            let param_name = &param.param_name;
+            let param_type = &param.param_type;
+            res.push(quote! { #param_name: #param_type });
+        }
+        res
+    }
+
+    /// Similar to [`Self::extern_signature`], but skipping the parameter names.
+    fn array_signature(&self) -> Vec<TokenStream2> {
+        let mut res = Vec::new();
+        for param in self.handler_params.iter() {
+            res.push(param.param_type.clone())
+        }
+        res
+    }
+
+    /// Similar to [`Self::extern_signature`], but skipping the parameter data types.
+    fn handler_input(&self) -> Vec<TokenStream2> {
+        let mut res = Vec::new();
+        for param in self.handler_params.iter() {
+            res.push(param.param_name.clone())
+        }
+        res
+    }
+
+    /// Similar to [`Self::extern_signature`], but pushing the trap `code` to the vector.
+    fn dispatch_fn_signature(&self) -> Vec<TokenStream2> {
+        let mut res = self.extern_signature();
+        res.push(quote! {code: usize});
+        res
+    }
+}
+
 /// Traits that can be implemented using the `pac_enum` macro
 enum PacTrait {
     Exception,
@@ -26,6 +85,14 @@ impl PacTrait {
             Self::Interrupt(_) => quote!(InterruptNumber),
             Self::Priority => quote!(PriorityNumber),
             Self::HartId => quote!(HartIdNumber),
+        }
+    }
+
+    /// Returns a token stream representing an additional marker trait, if any.
+    fn marker_trait_name(&self) -> Option<TokenStream2> {
+        match self {
+            Self::Interrupt(interrupt_type) => Some(interrupt_type.marker_trait_name()),
+            _ => None,
         }
     }
 
@@ -46,6 +113,28 @@ impl PacTrait {
             Self::Interrupt(_) => quote!(MAX_INTERRUPT_NUMBER),
             Self::Priority => quote!(MAX_PRIORITY_NUMBER),
             Self::HartId => quote!(MAX_HART_ID_NUMBER),
+        }
+    }
+
+    /// For Exception or an Interrupt enums, it returns the trap configuration details.
+    fn trap_config(&self) -> Option<TrapConfig> {
+        match self {
+            Self::Exception => Some(TrapConfig {
+                default_handler: quote! { ExceptionHandler },
+                handler_params: vec![FunctionParam {
+                    param_name: quote! { trap_frame },
+                    param_type: quote! { &riscv_rt::TrapFrame },
+                }],
+                dispatch_fn_name: quote! { _dispatch_exception },
+                handlers_array_name: quote! { __EXCEPTIONS },
+            }),
+            Self::Interrupt(interrupt_type) => Some(TrapConfig {
+                default_handler: quote! { DefaultHandler },
+                handler_params: Vec::new(),
+                dispatch_fn_name: interrupt_type.dispatch_fn_name(),
+                handlers_array_name: interrupt_type.isr_array_name(),
+            }),
+            _ => None,
         }
     }
 }
@@ -165,11 +254,12 @@ impl PacEnumItem {
     }
 
     /// Returns a vector of token streams representing the interrupt handler functions
-    fn interrupt_handlers(&self) -> Vec<TokenStream2> {
+    fn handlers(&self, trap_config: &TrapConfig) -> Vec<TokenStream2> {
+        let signature = trap_config.extern_signature();
         self.numbers
             .values()
             .map(|ident| {
-                quote! { fn #ident () }
+                quote! { fn #ident (#(#signature),*) }
             })
             .collect()
     }
@@ -177,7 +267,7 @@ impl PacEnumItem {
     /// Returns a sorted vector of token streams representing all the elements of the interrupt array.
     /// If an interrupt number is not present in the enum, the corresponding element is `None`.
     /// Otherwise, it is `Some(<interrupt_handler>)`.
-    fn interrupt_array(&self) -> Vec<TokenStream2> {
+    fn handlers_array(&self) -> Vec<TokenStream2> {
         let mut vectors = vec![];
         for i in 0..=self.max_number {
             if let Some(ident) = self.numbers.get(&i) {
@@ -261,46 +351,51 @@ core::arch::global_asm!("
             }
         });
 
-        // Interrupt traits require additional code
-        if let PacTrait::Interrupt(interrupt_type) = attr {
-            let marker_trait_name = interrupt_type.marker_trait_name();
-
-            let isr_array_name = interrupt_type.isr_array_name();
-            let dispatch_fn_name = interrupt_type.dispatch_fn_name();
-
-            // Push the marker trait implementation
+        if let Some(marker_trait_name) = attr.marker_trait_name() {
             res.push(quote! { unsafe impl riscv::#marker_trait_name for #name {} });
+        }
 
-            let interrupt_handlers = self.interrupt_handlers();
-            let interrupt_array = self.interrupt_array();
+        if let Some(trap_config) = attr.trap_config() {
+            let default_handler = &trap_config.default_handler;
+            let extern_signature = trap_config.extern_signature();
+            let handler_input = trap_config.handler_input();
+            let array_signature = trap_config.array_signature();
+            let dispatch_fn_name = &trap_config.dispatch_fn_name;
+            let dispatch_fn_args = &trap_config.dispatch_fn_signature();
+            let vector_table = &trap_config.handlers_array_name;
+
+            let handlers = self.handlers(&trap_config);
+            let interrupt_array = self.handlers_array();
 
             // Push the interrupt handler functions and the interrupt array
             res.push(quote! {
                 extern "C" {
-                    #(#interrupt_handlers;)*
+                    #(#handlers;)*
                 }
 
+                #[doc(hidden)]
                 #[no_mangle]
-                pub static #isr_array_name: [Option<unsafe extern "C" fn()>; #max_discriminant + 1] = [
+                pub static #vector_table: [Option<unsafe extern "C" fn(#(#array_signature),*)>; #max_discriminant + 1] = [
                     #(#interrupt_array),*
                 ];
 
+                #[inline]
                 #[no_mangle]
-                unsafe extern "C" fn #dispatch_fn_name(code: usize) {
+                unsafe extern "C" fn #dispatch_fn_name(#(#dispatch_fn_args),*) {
                     extern "C" {
-                        fn DefaultHandler();
+                        fn #default_handler(#(#extern_signature),*);
                     }
 
-                    match #isr_array_name.get(code) {
-                        Some(Some(handler)) => handler(),
-                        _ => DefaultHandler(),
+                    match #vector_table.get(code) {
+                        Some(Some(handler)) => handler(#(#handler_input),*),
+                        _ => #default_handler(#(#handler_input),*),
                     }
                 }
             });
+        }
 
-            if let InterruptType::Core = interrupt_type {
-                res.push(self.vector_table());
-            }
+        if let PacTrait::Interrupt(InterruptType::Core) = attr {
+            res.push(self.vector_table());
         }
 
         res
