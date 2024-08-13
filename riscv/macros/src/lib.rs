@@ -96,16 +96,6 @@ impl PacTrait {
         }
     }
 
-    /// Returns a token stream representing the data type used to represent the number
-    fn num_type(&self) -> TokenStream2 {
-        match self {
-            Self::Exception => quote!(usize),
-            Self::Interrupt(_) => quote!(usize),
-            Self::Priority => quote!(u8),
-            Self::HartId => quote!(u16),
-        }
-    }
-
     /// Returns a token stream representing the name of the constant that holds the maximum number
     fn const_name(&self) -> TokenStream2 {
         match self {
@@ -238,11 +228,6 @@ impl PacEnumItem {
         }
     }
 
-    /// Returns a token stream representing the maximum discriminant value of the enum
-    fn max_discriminant(&self) -> TokenStream2 {
-        TokenStream2::from_str(&format!("{}", self.max_number)).unwrap()
-    }
-
     /// Returns a vector of token streams representing the valid matches in the `pac::from_number` function
     fn valid_matches(&self) -> Vec<TokenStream2> {
         self.numbers
@@ -325,27 +310,26 @@ core::arch::global_asm!("
         let name = &self.name;
 
         let trait_name = attr.trait_name();
-        let num_type = attr.num_type();
         let const_name = attr.const_name();
 
-        let max_discriminant = self.max_discriminant();
+        let max_discriminant = self.max_number;
         let valid_matches = self.valid_matches();
 
         // Push the trait implementation
         res.push(quote! {
             unsafe impl riscv::#trait_name for #name {
-                const #const_name: #num_type = #max_discriminant;
+                const #const_name: usize = #max_discriminant;
 
                 #[inline]
-                fn number(self) -> #num_type {
+                fn number(self) -> usize {
                     self as _
                 }
 
                 #[inline]
-                fn from_number(number: #num_type) -> riscv::result::Result<Self> {
+                fn from_number(number: usize) -> riscv::result::Result<Self> {
                     match number {
                         #(#valid_matches,)*
-                        _ => Err(riscv::result::Error::InvalidVariant(number as _)),
+                        _ => Err(riscv::result::Error::InvalidVariant(number)),
                     }
                 }
             }

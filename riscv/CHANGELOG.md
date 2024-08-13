@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- riscv-macros crate for non-standard interrupt enums.
+- `riscv-macros` crate for `riscv-pac` enums.
 - Bump MSRV to 1.61.
 - Implementation of `riscv-pac` traits for `Interrupt` and `Exception` enums.
 - Tests for the `riscv-pac` trait implementations of `Interrupt` and `Exception` enums.

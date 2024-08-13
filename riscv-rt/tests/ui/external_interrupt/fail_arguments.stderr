@@ -1,0 +1,5 @@
+error: `#[external_interrupt]` function must have signature `[unsafe] fn() [-> !]`
+  --> tests/ui/external_interrupt/fail_arguments.rs:29:1
+   |
+29 | fn my_interrupt(code: usize) {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

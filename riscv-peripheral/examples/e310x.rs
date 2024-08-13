@@ -13,18 +13,18 @@ pub enum HartId {
 }
 
 unsafe impl HartIdNumber for HartId {
-    const MAX_HART_ID_NUMBER: u16 = Self::H0 as u16;
+    const MAX_HART_ID_NUMBER: usize = Self::H0 as usize;
 
     #[inline]
-    fn number(self) -> u16 {
+    fn number(self) -> usize {
         self as _
     }
 
     #[inline]
-    fn from_number(number: u16) -> Result<Self> {
+    fn from_number(number: usize) -> Result<Self> {
         match number {
             0 => Ok(Self::H0),
-            _ => Err(Error::InvalidVariant(number as usize)),
+            _ => Err(Error::InvalidVariant(number)),
         }
     }
 }
@@ -108,6 +108,7 @@ unsafe impl InterruptNumber for Interrupt {
 unsafe impl ExternalInterruptNumber for Interrupt {}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(usize)]
 pub enum Priority {
     P0 = 0,
     P1 = 1,
@@ -120,20 +121,20 @@ pub enum Priority {
 }
 
 unsafe impl PriorityNumber for Priority {
-    const MAX_PRIORITY_NUMBER: u8 = Self::P7 as u8;
+    const MAX_PRIORITY_NUMBER: usize = Self::P7 as usize;
 
     #[inline]
-    fn number(self) -> u8 {
+    fn number(self) -> usize {
         self as _
     }
 
     #[inline]
-    fn from_number(number: u8) -> Result<Self> {
+    fn from_number(number: usize) -> Result<Self> {
         if number > Self::MAX_PRIORITY_NUMBER {
-            Err(Error::InvalidVariant(number as usize))
+            Err(Error::InvalidVariant(number))
         } else {
             // SAFETY: valid priority number
-            Ok(unsafe { core::mem::transmute::<u8, Priority>(number) })
+            Ok(unsafe { core::mem::transmute::<usize, Priority>(number) })
         }
     }
 }

@@ -64,7 +64,7 @@ impl SSWI {
     #[inline]
     pub fn setssip<H: HartIdNumber>(&self, hart_id: H) -> SETSSIP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { SETSSIP::new(self.setssip0.get_ptr().offset(hart_id.number() as _) as _) }
+        unsafe { SETSSIP::new(self.setssip0.get_ptr().add(hart_id.number()) as _) }
     }
 }
 

@@ -1,3 +1,16 @@
+//! Exception handling for targets that comply with the RISC-V exception handling standard.
+//!
+//! Exception dispatching is performed by the [`_dispatch_exception`] function.
+//! This function is called by the [crate::start_trap_rust] whenever an exception is triggered.
+//! This approach relies on the [`__EXCEPTIONS`] array, which sorts all the exception handlers
+//! depending on their corresponding exception source code.
+//!
+//! # Note
+//!
+//! If your target has custom exception sources, the target PAC might provide equivalent
+//! code to adapt for the target needs. In this case, you may need to opt out this module.
+//! To do so, activate the `no-exceptions` feature of the `riscv-rt` crate.
+
 use crate::TrapFrame;
 
 extern "C" {
@@ -15,10 +28,9 @@ extern "C" {
     fn InstructionPageFault(trap_frame: &TrapFrame);
     fn LoadPageFault(trap_frame: &TrapFrame);
     fn StorePageFault(trap_frame: &TrapFrame);
-    fn ExceptionHandler(trap_frame: &TrapFrame);
 }
 
-#[doc(hidden)]
+/// Array with all the exception handlers sorted according to their exception source code.
 #[no_mangle]
 pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(InstructionMisaligned),
@@ -39,9 +51,18 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(StorePageFault),
 ];
 
-#[export_name = "_dispatch_exception"]
+/// It calls the corresponding exception handler depending on the exception source code.
+///
+/// # Safety
+///
+/// This function must be called only from the [`crate::start_trap_rust`] function.
+/// Do **NOT** call this function directly.
 #[inline]
-unsafe extern "C" fn dispatch_exception(trap_frame: &TrapFrame, code: usize) {
+#[no_mangle]
+pub unsafe extern "C" fn _dispatch_exception(trap_frame: &TrapFrame, code: usize) {
+    extern "C" {
+        fn ExceptionHandler(trap_frame: &TrapFrame);
+    }
     match __EXCEPTIONS.get(code) {
         Some(Some(handler)) => handler(trap_frame),
         _ => ExceptionHandler(trap_frame),

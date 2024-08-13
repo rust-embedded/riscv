@@ -64,7 +64,7 @@ impl<P: Plic> PLIC<P> {
     #[inline]
     pub fn ctx<H: HartIdNumber>(hart_id: H) -> CTX<P> {
         // SAFETY: valid context number
-        unsafe { CTX::new(hart_id.number()) }
+        unsafe { CTX::new(hart_id.number() as _) }
     }
 
     /// Returns the PLIC HART context for the current HART.
@@ -149,7 +149,6 @@ pub(crate) mod test {
     use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(usize)]
     pub(crate) enum Interrupt {
         I1 = 1,
         I2 = 2,
@@ -158,7 +157,6 @@ pub(crate) mod test {
     }
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(u8)]
     pub(crate) enum Priority {
         P0 = 0,
         P1 = 1,
@@ -167,7 +165,6 @@ pub(crate) mod test {
     }
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(u16)]
     pub(crate) enum Context {
         C0 = 0,
         C1 = 1,
@@ -175,7 +172,7 @@ pub(crate) mod test {
     }
 
     unsafe impl InterruptNumber for Interrupt {
-        const MAX_INTERRUPT_NUMBER: usize = 4;
+        const MAX_INTERRUPT_NUMBER: usize = Self::I4 as usize;
 
         #[inline]
         fn number(self) -> usize {
@@ -197,40 +194,40 @@ pub(crate) mod test {
     unsafe impl ExternalInterruptNumber for Interrupt {}
 
     unsafe impl PriorityNumber for Priority {
-        const MAX_PRIORITY_NUMBER: u8 = 3;
+        const MAX_PRIORITY_NUMBER: usize = Self::P3 as usize;
 
         #[inline]
-        fn number(self) -> u8 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u8) -> Result<Self> {
+        fn from_number(number: usize) -> Result<Self> {
             match number {
                 0 => Ok(Priority::P0),
                 1 => Ok(Priority::P1),
                 2 => Ok(Priority::P2),
                 3 => Ok(Priority::P3),
-                _ => Err(Error::InvalidVariant(number as usize)),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
 
     unsafe impl HartIdNumber for Context {
-        const MAX_HART_ID_NUMBER: u16 = 2;
+        const MAX_HART_ID_NUMBER: usize = Self::C2 as usize;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
+        fn from_number(number: usize) -> Result<Self> {
             match number {
                 0 => Ok(Context::C0),
                 1 => Ok(Context::C1),
                 2 => Ok(Context::C2),
-                _ => Err(Error::InvalidVariant(number as usize)),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }

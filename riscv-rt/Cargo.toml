@@ -12,12 +12,20 @@ license = "ISC"
 edition = "2021"
 links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 
+[package.metadata.docs.rs]
+default-target = "riscv64imac-unknown-none-elf"
+targets = [
+    "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
+    "riscv64imac-unknown-none-elf", "riscv64gc-unknown-none-elf",
+]
+
 [dependencies]
 riscv = { path = "../riscv", version = "0.12.0" }
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 riscv-rt-macros = { path = "macros", version = "0.2.1" }
 
 [dev-dependencies]
+trybuild = "1.0"
 panic-halt = "0.2.0"
 
 [features]

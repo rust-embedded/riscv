@@ -66,7 +66,7 @@ pub(crate) mod test {
     use riscv_pac::result::{Error, Result};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(u16)]
+    #[repr(usize)]
     pub(crate) enum HartId {
         H0 = 0,
         H1 = 1,
@@ -74,20 +74,20 @@ pub(crate) mod test {
     }
 
     unsafe impl HartIdNumber for HartId {
-        const MAX_HART_ID_NUMBER: u16 = 2;
+        const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
+        fn from_number(number: usize) -> Result<Self> {
             if number > Self::MAX_HART_ID_NUMBER {
-                Err(Error::InvalidVariant(number as usize))
+                Err(Error::InvalidVariant(number))
             } else {
                 // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute::<u16, HartId>(number) })
+                Ok(unsafe { core::mem::transmute::<usize, HartId>(number) })
             }
         }
     }

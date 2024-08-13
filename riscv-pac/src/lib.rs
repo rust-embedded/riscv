@@ -26,7 +26,6 @@ pub unsafe trait ExceptionNumber: Copy {
     fn number(self) -> usize;
 
     /// Tries to convert a number to a valid exception.
-    /// If the conversion fails, it returns an error with the number back.
     fn from_number(value: usize) -> Result<Self>;
 }
 
@@ -51,8 +50,7 @@ pub unsafe trait InterruptNumber: Copy {
     /// Converts an interrupt source to its corresponding number.
     fn number(self) -> usize;
 
-    /// Tries to convert a number to a valid interrupt source.
-    /// If the conversion fails, it returns an error with the number back.
+    /// Tries to convert a number to a valid interrupt.
     fn from_number(value: usize) -> Result<Self>;
 }
 
@@ -83,7 +81,7 @@ pub unsafe trait ExternalInterruptNumber: InterruptNumber {}
 /// Trait for enums of priority levels.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-/// priority numbers for a specific device. Each variant must convert to a `u8` of its priority level.
+/// priority numbers for a specific device. Each variant must convert to a `usize` of its priority level.
 ///
 /// # Safety
 ///
@@ -95,20 +93,19 @@ pub unsafe trait ExternalInterruptNumber: InterruptNumber {}
 /// * `MAX_PRIORITY_NUMBER` must coincide with the highest allowed priority number.
 pub unsafe trait PriorityNumber: Copy {
     /// Number assigned to the highest priority level.
-    const MAX_PRIORITY_NUMBER: u8;
+    const MAX_PRIORITY_NUMBER: usize;
 
     /// Converts a priority level to its corresponding number.
-    fn number(self) -> u8;
+    fn number(self) -> usize;
 
     /// Tries to convert a number to a valid priority level.
-    /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u8) -> Result<Self>;
+    fn from_number(value: usize) -> Result<Self>;
 }
 
 /// Trait for enums of HART identifiers.
 ///
 /// This trait should be implemented by a peripheral access crate (PAC) on its enum of available
-/// HARTs for a specific device. Each variant must convert to a `u16` of its HART ID number.
+/// HARTs for a specific device. Each variant must convert to a `usize` of its HART ID number.
 ///
 /// # Safety
 ///
@@ -120,14 +117,13 @@ pub unsafe trait PriorityNumber: Copy {
 /// * `MAX_HART_ID_NUMBER` must coincide with the highest allowed HART ID number.
 pub unsafe trait HartIdNumber: Copy {
     /// Highest number assigned to a context.
-    const MAX_HART_ID_NUMBER: u16;
+    const MAX_HART_ID_NUMBER: usize;
 
     /// Converts a HART ID to its corresponding number.
-    fn number(self) -> u16;
+    fn number(self) -> usize;
 
     /// Tries to convert a number to a valid HART ID.
-    /// If the conversion fails, it returns an error with the number back.
-    fn from_number(value: u16) -> Result<Self>;
+    fn from_number(value: usize) -> Result<Self>;
 }
 
 #[cfg(test)]
@@ -201,40 +197,40 @@ mod test {
     }
 
     unsafe impl PriorityNumber for Priority {
-        const MAX_PRIORITY_NUMBER: u8 = Self::P3 as u8;
+        const MAX_PRIORITY_NUMBER: usize = Self::P3 as usize;
 
         #[inline]
-        fn number(self) -> u8 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u8) -> Result<Self> {
+        fn from_number(number: usize) -> Result<Self> {
             match number {
                 0 => Ok(Priority::P0),
                 1 => Ok(Priority::P1),
                 2 => Ok(Priority::P2),
                 3 => Ok(Priority::P3),
-                _ => Err(Error::InvalidVariant(number as _)),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }
 
     unsafe impl HartIdNumber for HartId {
-        const MAX_HART_ID_NUMBER: u16 = Self::H2 as u16;
+        const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
 
         #[inline]
-        fn number(self) -> u16 {
+        fn number(self) -> usize {
             self as _
         }
 
         #[inline]
-        fn from_number(number: u16) -> Result<Self> {
+        fn from_number(number: usize) -> Result<Self> {
             match number {
                 0 => Ok(HartId::H0),
                 1 => Ok(HartId::H1),
                 2 => Ok(HartId::H2),
-                _ => Err(Error::InvalidVariant(number as _)),
+                _ => Err(Error::InvalidVariant(number)),
             }
         }
     }

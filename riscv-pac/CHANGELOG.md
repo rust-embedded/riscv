@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed 
 
-- `InterruptNumber` trait now expects `usize`
+- All traits now work with `usize` data type.
 
 ## [v0.1.1] - 2024-02-15
 

@@ -37,14 +37,14 @@
 ///
 /// // Implement `HartIdNumber` for `HartId`
 /// unsafe impl riscv_peripheral::aclint::HartIdNumber for HartId {
-///   const MAX_HART_ID_NUMBER: u16 = 2;
-///   fn number(self) -> u16 { self as _ }
-///   fn from_number(number: u16) -> Result<Self> {
+///   const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
+///   fn number(self) -> usize { self as _ }
+///   fn from_number(number: usize) -> Result<Self> {
 ///     match number {
 ///      0 => Ok(HartId::H0),
 ///      1 => Ok(HartId::H1),
 ///      2 => Ok(HartId::H2),
-///      _ => Err(Error::InvalidVariant(number as _)),
+///      _ => Err(Error::InvalidVariant(number)),
 ///     }
 ///   }
 /// }

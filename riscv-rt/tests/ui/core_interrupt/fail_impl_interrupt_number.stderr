@@ -1,0 +1,18 @@
+error[E0277]: the trait bound `riscv::interrupt::Exception: CoreInterruptNumber` is not satisfied
+ --> tests/ui/core_interrupt/fail_impl_interrupt_number.rs:1:28
+  |
+1 | #[riscv_rt::core_interrupt(riscv::interrupt::Exception::LoadMisaligned)]
+  | ---------------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--
+  | |                          |
+  | |                          the trait `CoreInterruptNumber` is not implemented for `riscv::interrupt::Exception`
+  | required by a bound introduced by this call
+  |
+  = help: the following other types implement trait `CoreInterruptNumber`:
+            riscv::interrupt::Interrupt
+            riscv::interrupt::supervisor::Interrupt
+note: required by a bound in `assert_impl`
+ --> tests/ui/core_interrupt/fail_impl_interrupt_number.rs:1:1
+  |
+1 | #[riscv_rt::core_interrupt(riscv::interrupt::Exception::LoadMisaligned)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl`
+  = note: this error originates in the attribute macro `riscv_rt::core_interrupt` (in Nightly builds, run with -Z macro-backtrace for more info)

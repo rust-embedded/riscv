@@ -474,10 +474,10 @@
 mod asm;
 
 #[cfg(not(feature = "no-exceptions"))]
-mod exceptions;
+pub mod exceptions;
 
 #[cfg(not(feature = "no-interrupts"))]
-mod interrupts;
+pub mod interrupts;
 
 #[cfg(feature = "s-mode")]
 use riscv::register::scause as xcause;
@@ -493,6 +493,8 @@ pub use riscv_pac::*;
 pub use riscv_rt_macros::core_interrupt_riscv32 as core_interrupt;
 #[cfg(riscv64)]
 pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt;
+#[cfg(not(riscv))]
+pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt; // just for docs, tests, etc.
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
@@ -528,23 +530,49 @@ pub struct TrapFrame {
 /// Trap entry point rust (_start_trap_rust)
 ///
 /// `scause`/`mcause` is read to determine the cause of the trap. XLEN-1 bit indicates
-/// if it's an interrupt or an exception. The result is examined and ExceptionHandler
-/// or one of the core interrupt handlers is called.
+/// if it's an interrupt or an exception. The result is examined and one of the
+/// exception handlers or one of the core interrupt handlers is called.
+///
+/// # Note
+///
+/// Exception dispatching is performed by an extern `_dispatch_exception` function.
+/// Targets that comply with the RISC-V standard can use the implementation provided
+/// by this crate in the [`exceptions`] module. Targets with special exception sources
+/// may provide their custom implementation of the `_dispatch_exception` function. You may
+/// also need to enable the `no-exceptions` feature to op-out the default implementation.
+///
+/// In direct mode (i.e., `v-trap` feature disabled), interrupt dispatching is performed
+/// by an extern `_dispatch_core_interrupt` function. Targets that comply with the RISC-V
+/// standard can use the implementation provided by this crate in the [`interrupts`] module.
+/// Targets with special interrupt sources may provide their custom implementation of the
+/// `_dispatch_core_interrupt` function. You may also need to enable the `no-interrupts`
+/// feature to op-out the default implementation.
+///
+/// In vectored mode (i.e., `v-trap` feature enabled), interrupt dispatching is performed
+/// directly by hardware, and thus this function should **not** be triggered due to an
+/// interrupt. If this abnormal situation happens, this function will directly call the
+/// `DefaultHandler` function.
 ///
 /// # Safety
 ///
 /// This function must be called only from assembly `_start_trap` function.
 /// Do **NOT** call this function directly.
-#[link_section = ".trap.rust"]
+#[cfg_attr(riscv, link_section = ".trap.rust")]
 #[export_name = "_start_trap_rust"]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
+        #[cfg(not(feature = "v-trap"))]
         fn _dispatch_core_interrupt(code: usize);
+        #[cfg(feature = "v-trap")]
+        fn DefaultHandler();
         fn _dispatch_exception(trap_frame: &TrapFrame, code: usize);
     }
 
     match xcause::read().cause() {
+        #[cfg(not(feature = "v-trap"))]
         xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
+        #[cfg(feature = "v-trap")]
+        xcause::Trap::Interrupt(_) => DefaultHandler(),
         xcause::Trap::Exception(code) => _dispatch_exception(&*trap_frame, code),
     }
 }
