@@ -1,0 +1,9 @@
+[package]
+name = "tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+riscv = { path = "../riscv", version = "0.12.0" }
+riscv-rt = { path = "../riscv-rt", version = "0.13.0" }
+trybuild = "1.0"

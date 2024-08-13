@@ -1,5 +1,5 @@
 error: `#[external_interrupt]` attribute expects a path to a variant of an enum that implements the riscv_rt :: ExternalInterruptNumber trait.
- --> tests/ui/external_interrupt/fail_empty_macro.rs:1:1
+ --> tests/riscv-rt/external_interrupt/fail_empty_macro.rs:1:1
   |
 1 | #[riscv_rt::external_interrupt]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

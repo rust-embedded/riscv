@@ -1,5 +1,5 @@
 error[E0277]: the trait bound `riscv::interrupt::Interrupt: ExceptionNumber` is not satisfied
- --> tests/ui/exception/fail_impl_exception_number.rs:1:23
+ --> tests/riscv-rt/exception/fail_impl_exception_number.rs:1:23
   |
 1 | #[riscv_rt::exception(riscv::interrupt::Interrupt::SupervisorSoft)]
   | ----------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--
@@ -11,7 +11,7 @@ error[E0277]: the trait bound `riscv::interrupt::Interrupt: ExceptionNumber` is 
             riscv::interrupt::Exception
             riscv::interrupt::supervisor::Exception
 note: required by a bound in `assert_impl`
- --> tests/ui/exception/fail_impl_exception_number.rs:1:1
+ --> tests/riscv-rt/exception/fail_impl_exception_number.rs:1:1
   |
 1 | #[riscv_rt::exception(riscv::interrupt::Interrupt::SupervisorSoft)]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl`

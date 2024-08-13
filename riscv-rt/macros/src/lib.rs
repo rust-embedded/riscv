@@ -1,5 +1,11 @@
 #![deny(warnings)]
 
+extern crate core;
+extern crate proc_macro;
+extern crate proc_macro2;
+extern crate quote;
+extern crate syn;
+
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
