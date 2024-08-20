@@ -354,7 +354,7 @@ macro_rules! plic_codegen {
             /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
             /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
             #[inline]
-            pub fn ctx_mhartid(&self) -> $crate::plic::CTX<Self> {
+            pub fn ctx_mhartid() -> $crate::plic::CTX<Self> {
                 $crate::plic::PLIC::<PLIC>::ctx_mhartid()
             }
         }
