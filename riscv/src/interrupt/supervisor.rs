@@ -153,6 +153,7 @@ where
 }
 
 /// Execute closure `f` with interrupts enabled in the current hart (supervisor mode).
+///
 /// This method is assumed to be called within an interrupt handler, and allows
 /// nested interrupts to occur. After the closure `f` is executed, the [`sstatus`]
 /// and [`sepc`] registers are properly restored to their previous values.

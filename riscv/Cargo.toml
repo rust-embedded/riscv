@@ -29,7 +29,3 @@ critical-section = "1.1.2"
 embedded-hal = "1.0.0"
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 riscv-macros = { path = "macros", version = "0.1.0", optional = true }
-
-[dev-dependencies]
-trybuild = "1.0"
-riscv-rt = { path = "../riscv-rt", version = "0.13.0" }

@@ -1,5 +1,5 @@
 error: unexpected end of input, expected `unsafe`
- --> tests/ui/fail_empty_macro.rs:1:1
+ --> tests/riscv/fail_empty_macro.rs:1:1
   |
 1 | #[riscv::pac_enum]
   | ^^^^^^^^^^^^^^^^^^

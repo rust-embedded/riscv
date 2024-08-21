@@ -1,5 +1,5 @@
 error: Unknown trait name. Expected: 'ExceptionNumber', 'CoreInterruptNumber', 'ExternalInterruptNumber', 'PriorityNumber', or 'HartIdNumber'
- --> tests/ui/fail_unknown_trait.rs:1:26
+ --> tests/riscv/fail_unknown_trait.rs:1:26
   |
 1 | #[riscv::pac_enum(unsafe InterruptNumber)]
   |                          ^^^^^^^^^^^^^^^

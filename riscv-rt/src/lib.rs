@@ -270,34 +270,24 @@
 //! ### Core exception handlers
 //!
 //! This functions are called when corresponding exception occurs.
-//! You can define an exception handler with one of the following names:
-//! * `InstructionMisaligned`
-//! * `InstructionFault`
-//! * `IllegalInstruction`
-//! * `Breakpoint`
-//! * `LoadMisaligned`
-//! * `LoadFault`
-//! * `StoreMisaligned`
-//! * `StoreFault`
-//! * `UserEnvCall`
-//! * `SupervisorEnvCall`
-//! * `MachineEnvCall`
-//! * `InstructionPageFault`
-//! * `LoadPageFault`
-//! * `StorePageFault`
+//! You can define an exception handler with the [`exception`] attribute.
+//! The attribute expects the path to the exception source as an argument.
+//!
+//! The [`exception`] attribute ensures at compile time that there is a valid
+//! exception source for the given handler.
 //!
 //! For example:
 //! ``` no_run
-//! #[export_name = "MachineEnvCall"]
-//! fn custom_menv_call_handler(trap_frame: &riscv_rt::TrapFrame) {
-//!     // ...
+//! use riscv::interrupt::Exception; // or a target-specific exception enum
+//!
+//! #[riscv_rt::exception(Exception::MachineEnvCall)]
+//! fn custom_menv_call_handler(trap_frame: &mut riscv_rt::TrapFrame) {
+//!     todo!()
 //! }
-//! ```
-//! or
-//! ``` no_run
-//! #[no_mangle]
-//! fn MachineEnvCall(trap_frame: &riscv_rt::TrapFrame) -> ! {
-//!     // ...
+//!
+//! #[riscv_rt::exception(Exception::LoadFault)]
+//! fn custom_load_fault_handler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
@@ -320,51 +310,50 @@
 //! or
 //! ``` no_run
 //! #[no_mangle]
-//! fn ExceptionHandler(trap_frame: &riscv_rt::TrapFrame) -> ! {
+//! fn ExceptionHandler(trap_frame: &mut riscv_rt::TrapFrame) {
 //!     // ...
 //! }
 //! ```
 //!
 //! Default implementation of this function stucks in a busy-loop.
 //!
-//!
 //! ### Core interrupt handlers
 //!
 //! This functions are called when corresponding interrupt is occured.
-//! You can define an interrupt handler with one of the following names:
-//! * `SupervisorSoft`
-//! * `MachineSoft`
-//! * `SupervisorTimer`
-//! * `MachineTimer`
-//! * `SupervisorExternal`
-//! * `MachineExternal`
+//! You can define a core interrupt handler with the [`core_interrupt`] attribute.
+//! The attribute expects the path to the interrupt source as an argument.
+//!
+//! The [`core_interrupt`] attribute ensures at compile time that there is a valid
+//! core interrupt source for the given handler.
 //!
 //! For example:
 //! ``` no_run
-//! #[export_name = "MachineTimer"]
-//! fn custom_timer_handler() {
-//!     // ...
-//! }
-//! ```
-//! or
-//! ``` no_run
-//! #[no_mangle]
-//! fn MachineTimer() {
-//!     // ...
-//! }
-//! ```
+//! use riscv::interrupt::Interrupt; // or a target-specific core interrupt enum
 //!
-//! You can also use the `#[interrupt]` macro to define interrupt handlers:
+//! #[riscv_rt::core_interrupt(Interrupt::MachineSoft)]
+//! unsafe fn custom_machine_soft_handler() {
+//!     todo!()
+//! }
 //!
-//! ``` no_run
-//! #[riscv_rt::interrupt]
-//! fn MachineTimer() {
-//!    // ...
+//! #[riscv_rt::core_interrupt(Interrupt::MachineTimer)]
+//! fn custom_machine_timer_handler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
-//! In direct mode, this macro is equivalent to defining a function with the same name.
-//! However, in vectored mode, this macro will generate a proper trap handler for the interrupt.
+//! In vectored mode, this macro will also generate a proper trap handler for the interrupt.
+//!
+//! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
+//!
+//! ### External interrupt handlers
+//!
+//! This functions are called when corresponding interrupt is occured.
+//! You can define an external interrupt handler with the [`external_interrupt`] attribute.
+//! The attribute expects the path to the interrupt source as an argument.
+//!
+//! The [`external_interrupt`] attribute ensures at compile time that there is a valid
+//! external interrupt source for the given handler.
+//! Note that external interrupts are target-specific and may not be available on all platforms.
 //!
 //! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
 //!
@@ -372,20 +361,22 @@
 //!
 //! This function is called when interrupt without defined interrupt handler is occured.
 //! The interrupt reason can be decoded from the `mcause`/`scause` register.
+//! If it is an external interrupt, the interrupt reason can be decoded from a
+//! target-specific peripheral interrupt controller.
 //!
 //! This function can be redefined in the following way:
 //!
 //! ``` no_run
 //! #[export_name = "DefaultHandler"]
-//! fn custom_interrupt_handler() {
+//! unsafe fn custom_interrupt_handler() {
 //!     // ...
 //! }
 //! ```
 //! or
 //! ``` no_run
 //! #[no_mangle]
-//! fn DefaultHandler() {
-//!     // ...
+//! fn DefaultHandler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
@@ -436,22 +427,7 @@
 //! riscv-rt = {features=["v-trap"]}
 //! ```
 //! When the vectored trap feature is enabled, the trap vector is set to `_vector_table` in vectored mode.
-//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the interrupt.
-//!
-//! ### Defining interrupt handlers in vectored mode
-//!
-//! In vectored mode, each interrupt must also have a corresponding trap handler.
-//! Therefore, using `export_name` or `no_mangle` is not enough to define an interrupt handler.
-//! The [`interrupt`] macro will generate the trap handler for the interrupt:
-//!
-//! ``` no_run
-//! #[riscv_rt::interrupt]
-//! fn MachineTimer() {
-//!    // ...
-//! }
-//! ```
-//!
-//! This will generate a function named `_start_MachineTimer_trap` that calls the interrupt handler `MachineTimer`.
+//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the core interrupt.
 //!
 //! ## `u-boot`
 //!
