@@ -53,6 +53,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
     // check the function arguments
+    #[cfg(not(feature = "u-boot"))]
     if f.sig.inputs.len() > 3 {
         return parse::Error::new(
             f.sig.inputs.last().unwrap().span(),
@@ -61,10 +62,55 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_compile_error()
         .into();
     }
+    #[cfg(feature = "u-boot")]
+    if f.sig.inputs.len() != 2 {
+        return parse::Error::new(
+            f.sig.inputs.last().unwrap().span(),
+            "`#[entry]` function must have exactly two arguments",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    #[cfg(not(feature = "u-boot"))]
     for arg in &f.sig.inputs {
         match arg {
             FnArg::Receiver(_) => {
                 return parse::Error::new(arg.span(), "invalid argument")
+                    .to_compile_error()
+                    .into();
+            }
+            FnArg::Typed(t) => {
+                if !is_simple_type(&t.ty, "usize") {
+                    return parse::Error::new(t.ty.span(), "argument type must be usize")
+                        .to_compile_error()
+                        .into();
+                }
+            }
+        }
+    }
+    #[cfg(feature = "u-boot")]
+    {
+        // We have checked that there are two arguments above.
+        let (a1, a2) = (&f.sig.inputs[0], &f.sig.inputs[1]);
+
+        match a1 {
+            FnArg::Receiver(_) => {
+                return parse::Error::new(a1.span(), "invalid argument")
+                    .to_compile_error()
+                    .into();
+            }
+            FnArg::Typed(t) => {
+                if !is_simple_type(&t.ty, "c_int") {
+                    return parse::Error::new(t.ty.span(), "argument type must be c_int")
+                        .to_compile_error()
+                        .into();
+                }
+            }
+        }
+        match a2 {
+            FnArg::Receiver(_) => {
+                return parse::Error::new(a2.span(), "invalid argument")
                     .to_compile_error()
                     .into();
             }

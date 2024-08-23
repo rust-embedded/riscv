@@ -23,3 +23,4 @@ panic-halt = "0.2.0"
 s-mode = ["riscv-rt-macros/s-mode"]
 single-hart = []
 v-trap = ["riscv-rt-macros/v-trap"]
+u-boot = ["riscv-rt-macros/u-boot"]
