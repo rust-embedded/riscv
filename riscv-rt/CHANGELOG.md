@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `v-trap` feature to enable interrupt handling in vectored mode.
 - Add `interrupt` proc macro to help defining interrupt handlers.
 If `v-trap` feature is enabled, this macro also generates its corresponding trap.
+- Add `u-boot` feature, so that you can start your elf binary with u-boot and
+work with passed arguments.
 
 ### Changed
 
