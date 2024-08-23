@@ -12,7 +12,7 @@ use proc_macro2::Span;
 use syn::{
     parse::{self, Parse},
     spanned::Spanned,
-    FnArg, ItemFn, LitInt, LitStr, PathArguments, ReturnType, Type, Visibility,
+    FnArg, ItemFn, LitInt, LitStr, PatType, PathArguments, ReturnType, Type, Visibility,
 };
 
 use proc_macro::TokenStream;
@@ -67,54 +67,42 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         .into();
     }
 
+    fn check_simple_type(argument: &PatType, ty: &str) -> Option<TokenStream> {
+        let inv_type_message = format!("argument type must be {}", ty);
+
+        if !is_simple_type(&argument.ty, ty) {
+            let error = parse::Error::new(argument.ty.span(), inv_type_message);
+
+            Some(error.to_compile_error().into())
+        } else {
+            None
+        }
+    }
+    fn check_argument_type(argument: &FnArg, ty: &str) -> Option<TokenStream> {
+        let argument_error = parse::Error::new(argument.span(), "invalid argument");
+        let argument_error = argument_error.to_compile_error().into();
+
+        match argument {
+            FnArg::Typed(argument) => check_simple_type(argument, ty),
+            FnArg::Receiver(_) => Some(argument_error),
+        }
+    }
     #[cfg(not(feature = "u-boot"))]
-    for arg in &f.sig.inputs {
-        match arg {
-            FnArg::Receiver(_) => {
-                return parse::Error::new(arg.span(), "invalid argument")
-                    .to_compile_error()
-                    .into();
-            }
-            FnArg::Typed(t) => {
-                if !is_simple_type(&t.ty, "usize") {
-                    return parse::Error::new(t.ty.span(), "argument type must be usize")
-                        .to_compile_error()
-                        .into();
-                }
-            }
+    for argument in f.sig.inputs.iter() {
+        if let Some(message) = check_argument_type(argument, "usize") {
+            return message;
+        };
+    }
+    #[cfg(feature = "u-boot")]
+    if let Some(argument) = f.sig.inputs.get(0) {
+        if let Some(message) = check_argument_type(argument, "c_int") {
+            return message;
         }
     }
     #[cfg(feature = "u-boot")]
-    if let Some(a1) = f.sig.inputs.get(0) {
-        match a1 {
-            FnArg::Receiver(_) => {
-                return parse::Error::new(a1.span(), "invalid argument")
-                    .to_compile_error()
-                    .into();
-            }
-            FnArg::Typed(t) => {
-                if !is_simple_type(&t.ty, "c_int") {
-                    return parse::Error::new(t.ty.span(), "argument type must be c_int")
-                        .to_compile_error()
-                        .into();
-                }
-            }
-        }
-        if let Some(a2) = f.sig.inputs.get(1) {
-            match a2 {
-                FnArg::Receiver(_) => {
-                    return parse::Error::new(a2.span(), "invalid argument")
-                        .to_compile_error()
-                        .into();
-                }
-                FnArg::Typed(t) => {
-                    if !is_simple_type(&t.ty, "usize") {
-                        return parse::Error::new(t.ty.span(), "argument type must be usize")
-                            .to_compile_error()
-                            .into();
-                    }
-                }
-            }
+    if let Some(argument) = f.sig.inputs.get(1) {
+        if let Some(message) = check_argument_type(argument, "usize") {
+            return message;
         }
     }
 
