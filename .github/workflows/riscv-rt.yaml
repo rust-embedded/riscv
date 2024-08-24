@@ -42,7 +42,7 @@ jobs:
       - name : Build (v-trap)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=v-trap
       - name: Build (all features)
-        run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --all-features
+        run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=s-mode,signle-hart,v-trap
 
   # Job to check that all the builds succeeded
   build-check:
