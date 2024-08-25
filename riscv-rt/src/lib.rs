@@ -452,6 +452,20 @@
 //! ```
 //!
 //! This will generate a function named `_start_MachineTimer_trap` that calls the interrupt handler `MachineTimer`.
+//! 
+//! ## `u-boot`
+//! 
+//! The u-boot support feature (`u-boot`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
+//! 
+//! For example:
+//! ``` text
+//! [dependencies]
+//! riscv-rt = { features = ["u-boot"] }
+//! ```
+//! When the u-boot feature is enabled, some assembly code is disabled to leave stack untouched. This is required
+//! because when booting from elf, u-boot passes arguments as argc and argv through stack. Because the only way
+//! to get boot-hart is through fdt, this feature also implies `single-hart` so other harts initialization
+//! is up to you.
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
