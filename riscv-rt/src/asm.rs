@@ -125,7 +125,6 @@ cfg_global_asm!(
 );
 
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
-#[cfg(not(feature = "u-boot"))]
 cfg_global_asm!(
     #[cfg(riscv32)]
     "addi sp, sp, -4 * 3
@@ -214,12 +213,12 @@ riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
 // SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
 cfg_global_asm!(
     "call _setup_interrupts",
-    #[cfg(all(riscv32, not(feature = "u-boot")))]
+    #[cfg(riscv32)]
     "lw a0, 4 * 0(sp)
     lw a1, 4 * 1(sp)
     lw a2, 4 * 2(sp)
     addi sp, sp, 4 * 3",
-    #[cfg(all(riscv64, not(feature = "u-boot")))]
+    #[cfg(riscv64)]
     "ld a0, 8 * 0(sp)
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
