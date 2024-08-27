@@ -549,15 +549,21 @@ _continue_interrupt_trap:
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
+/// Attribute to declare an interrupt handler.
+///
+/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the
+/// interrupt trap handler in assembly for RISCV-32 targets.
 pub fn interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv32)
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
+/// Attribute to declare an interrupt handler.
+///
+/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the
+/// interrupt trap handler in assembly for RISCV-64 targets.
 pub fn interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv64)
 }
