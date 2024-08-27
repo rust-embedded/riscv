@@ -11,8 +11,9 @@ extern crate syn;
 use proc_macro2::Span;
 use syn::{
     parse::{self, Parse},
+    punctuated::Punctuated,
     spanned::Spanned,
-    FnArg, ItemFn, LitInt, LitStr, PathArguments, ReturnType, Type, Visibility,
+    FnArg, ItemFn, LitInt, LitStr, PatType, ReturnType, Type, Visibility,
 };
 
 use proc_macro::TokenStream;
@@ -52,8 +53,13 @@ use proc_macro::TokenStream;
 pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);
 
+    #[cfg(not(feature = "u-boot"))]
+    let arguments_limit = 3;
+    #[cfg(feature = "u-boot")]
+    let arguments_limit = 2;
+
     // check the function arguments
-    if f.sig.inputs.len() > 3 {
+    if f.sig.inputs.len() > arguments_limit {
         return parse::Error::new(
             f.sig.inputs.last().unwrap().span(),
             "`#[entry]` function has too many arguments",
@@ -61,20 +67,43 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         .to_compile_error()
         .into();
     }
-    for arg in &f.sig.inputs {
-        match arg {
-            FnArg::Receiver(_) => {
-                return parse::Error::new(arg.span(), "invalid argument")
-                    .to_compile_error()
-                    .into();
-            }
-            FnArg::Typed(t) => {
-                if !is_simple_type(&t.ty, "usize") {
-                    return parse::Error::new(t.ty.span(), "argument type must be usize")
-                        .to_compile_error()
-                        .into();
-                }
-            }
+
+    fn check_correct_type(argument: &PatType, ty: &str) -> Option<TokenStream> {
+        let inv_type_message = format!("argument type must be {}", ty);
+
+        if !is_correct_type(&argument.ty, ty) {
+            let error = parse::Error::new(argument.ty.span(), inv_type_message);
+
+            Some(error.to_compile_error().into())
+        } else {
+            None
+        }
+    }
+    fn check_argument_type(argument: &FnArg, ty: &str) -> Option<TokenStream> {
+        let argument_error = parse::Error::new(argument.span(), "invalid argument");
+        let argument_error = argument_error.to_compile_error().into();
+
+        match argument {
+            FnArg::Typed(argument) => check_correct_type(argument, ty),
+            FnArg::Receiver(_) => Some(argument_error),
+        }
+    }
+    #[cfg(not(feature = "u-boot"))]
+    for argument in f.sig.inputs.iter() {
+        if let Some(message) = check_argument_type(argument, "usize") {
+            return message;
+        };
+    }
+    #[cfg(feature = "u-boot")]
+    if let Some(argument) = f.sig.inputs.get(0) {
+        if let Some(message) = check_argument_type(argument, "c_int") {
+            return message;
+        }
+    }
+    #[cfg(feature = "u-boot")]
+    if let Some(argument) = f.sig.inputs.get(1) {
+        if let Some(message) = check_argument_type(argument, "*const *const c_char") {
+            return message;
         }
     }
 
@@ -123,17 +152,32 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[allow(unused)]
-fn is_simple_type(ty: &Type, name: &str) -> bool {
-    if let Type::Path(p) = ty {
-        if p.qself.is_none() && p.path.leading_colon.is_none() && p.path.segments.len() == 1 {
-            let segment = p.path.segments.first().unwrap();
-            if segment.ident == name && segment.arguments == PathArguments::None {
-                return true;
-            }
+fn strip_type_path(ty: &Type) -> Option<Type> {
+    match ty {
+        Type::Ptr(ty) => {
+            let mut ty = ty.clone();
+            ty.elem = Box::new(strip_type_path(&ty.elem)?);
+            Some(Type::Ptr(ty))
         }
+        Type::Path(ty) => {
+            let mut ty = ty.clone();
+            let last_segment = ty.path.segments.last().unwrap().clone();
+            ty.path.segments = Punctuated::new();
+            ty.path.segments.push_value(last_segment);
+            Some(Type::Path(ty))
+        }
+        _ => None,
     }
-    false
+}
+
+#[allow(unused)]
+fn is_correct_type(ty: &Type, name: &str) -> bool {
+    let correct: Type = syn::parse_str(name).unwrap();
+    if let Some(ty) = strip_type_path(ty) {
+        ty == correct
+    } else {
+        false
+    }
 }
 
 /// Attribute to mark which function will be called at the beginning of the reset handler.
@@ -505,15 +549,21 @@ _continue_interrupt_trap:
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
+/// Attribute to declare an interrupt handler.
+///
+/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the
+/// interrupt trap handler in assembly for RISCV-32 targets.
 pub fn interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv32)
 }
 
 #[proc_macro_attribute]
-/// Attribute to declare an interrupt handler. The function must have the signature `[unsafe] fn() [-> !]`.
-/// If the `v-trap` feature is enabled, this macro generates the interrupt trap handler in assembly for RISCV-32 targets.
+/// Attribute to declare an interrupt handler.
+///
+/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// If the `v-trap` feature is enabled, this macro generates the
+/// interrupt trap handler in assembly for RISCV-64 targets.
 pub fn interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
     interrupt(args, input, RiscvArch::Rv64)
 }
