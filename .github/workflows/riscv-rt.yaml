@@ -7,7 +7,7 @@ on:
 name: Build check (riscv-rt)
 
 jobs:
-  build:
+  build-riscv:
     strategy:
       matrix:
         # All generated code should be running on stable now, MRSV is 1.61.0
@@ -45,11 +45,27 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=s-mode,single-hart,v-trap
       - name : Build (u-boot)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example empty --features=u-boot
-
+  
+  build-others:
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build (no features)
+        run: cargo build --package riscv-rt
+      - name: Build (all features but u-boot)
+        run: cargo build --package riscv-rt --features=s-mode,single-hart,v-trap
+      - name: Build (u-boot)
+        run: cargo build --package riscv-rt --features=u-boot
+        
   # Job to check that all the builds succeeded
   build-check:
     needs:
-    - build
+    - build-riscv
+    - build-others
     runs-on: ubuntu-latest
     if: always()
     steps:

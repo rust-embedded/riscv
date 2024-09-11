@@ -2,8 +2,6 @@
 #![no_main]
 
 extern crate panic_halt;
-extern crate riscv;
-extern crate riscv_rt;
 
 use riscv::asm::wfi;
 use riscv::register::{mie, mip};

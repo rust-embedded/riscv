@@ -1,0 +1,28 @@
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  merge_group:
+
+name: Run macro tests (tests)
+
+jobs:
+  run-tests:
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest ] # windows shows weird linking errors 
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - name: Run tests
+        run: cargo test --package tests
+        
+  # Job to check that all the builds succeeded
+  tests-check:
+    needs:
+    - run-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'

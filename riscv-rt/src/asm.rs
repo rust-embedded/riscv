@@ -287,38 +287,6 @@ riscv_rt_macros::vectored_interrupt_trap_riscv32!();
 #[cfg(all(riscv64, feature = "v-trap"))]
 riscv_rt_macros::vectored_interrupt_trap_riscv64!();
 
-#[cfg(feature = "v-trap")]
-cfg_global_asm!(
-    // Set the vector mode to vectored.
-    r#".section .trap, "ax"
-    .weak _vector_table
-    .type _vector_table, @function
-    
-    .option push
-    .balign 0x4 // TODO check if this is the correct alignment
-    .option norelax
-    .option norvc
-    
-    _vector_table:
-        j _start_trap                     // Interrupt 0 is used for exceptions
-        j _start_SupervisorSoft_trap
-        j _start_DefaultHandler_trap      // Interrupt 2 is reserved
-        j _start_MachineSoft_trap
-        j _start_DefaultHandler_trap      // Interrupt 4 is reserved
-        j _start_SupervisorTimer_trap
-        j _start_DefaultHandler_trap      // Interrupt 6 is reserved
-        j _start_MachineTimer_trap
-        j _start_DefaultHandler_trap      // Interrupt 8 is reserved
-        j _start_SupervisorExternal_trap
-        j _start_DefaultHandler_trap      // Interrupt 10 is reserved
-        j _start_MachineExternal_trap
-
-        // default table does not include the remaining interrupts.
-        // Targets with extra interrupts should override this table.
-    
-    .option pop"#,
-);
-
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort

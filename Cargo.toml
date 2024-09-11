@@ -6,4 +6,5 @@ members = [
     "riscv-peripheral",
     "riscv-rt",
     "riscv-semihosting",
+    "tests",
 ]

@@ -35,7 +35,7 @@ impl MTIMER {
     #[inline]
     pub fn mtimecmp<H: HartIdNumber>(&self, hart_id: H) -> MTIMECMP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { MTIMECMP::new(self.mtimecmp0.get_ptr().offset(hart_id.number() as _) as _) }
+        unsafe { MTIMECMP::new(self.mtimecmp0.get_ptr().add(hart_id.number()) as _) }
     }
 
     /// Returns the `MTIMECMP` register for the current HART.

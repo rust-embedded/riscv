@@ -1,0 +1,7 @@
+error: `#[core_interrupt]` attribute expects a path to a variant of an enum that implements the riscv_rt :: CoreInterruptNumber trait.
+ --> tests/riscv-rt/core_interrupt/fail_empty_macro.rs:1:1
+  |
+1 | #[riscv_rt::core_interrupt]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `riscv_rt::core_interrupt` (in Nightly builds, run with -Z macro-backtrace for more info)

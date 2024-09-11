@@ -1,0 +1,18 @@
+error[E0277]: the trait bound `riscv::interrupt::Interrupt: ExceptionNumber` is not satisfied
+ --> tests/riscv-rt/exception/fail_impl_exception_number.rs:1:23
+  |
+1 | #[riscv_rt::exception(riscv::interrupt::Interrupt::SupervisorSoft)]
+  | ----------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^--
+  | |                     |
+  | |                     the trait `ExceptionNumber` is not implemented for `riscv::interrupt::Interrupt`
+  | required by a bound introduced by this call
+  |
+  = help: the following other types implement trait `ExceptionNumber`:
+            riscv::interrupt::Exception
+            riscv::interrupt::supervisor::Exception
+note: required by a bound in `assert_impl`
+ --> tests/riscv-rt/exception/fail_impl_exception_number.rs:1:1
+  |
+1 | #[riscv_rt::exception(riscv::interrupt::Interrupt::SupervisorSoft)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `assert_impl`
+  = note: this error originates in the attribute macro `riscv_rt::exception` (in Nightly builds, run with -Z macro-backtrace for more info)

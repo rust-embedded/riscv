@@ -1,0 +1,7 @@
+error: `#[external_interrupt]` attribute expects a path to a variant of an enum that implements the riscv_rt :: ExternalInterruptNumber trait.
+ --> tests/riscv-rt/external_interrupt/fail_empty_macro.rs:1:1
+  |
+1 | #[riscv_rt::external_interrupt]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `riscv_rt::external_interrupt` (in Nightly builds, run with -Z macro-backtrace for more info)

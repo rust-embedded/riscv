@@ -33,7 +33,7 @@ impl MSWI {
     #[inline]
     pub fn msip<H: HartIdNumber>(&self, hart_id: H) -> MSIP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { MSIP::new(self.msip0.get_ptr().offset(hart_id.number() as _) as _) }
+        unsafe { MSIP::new(self.msip0.get_ptr().add(hart_id.number()) as _) }
     }
 
     /// Returns the `MSIP` register for the current HART.
