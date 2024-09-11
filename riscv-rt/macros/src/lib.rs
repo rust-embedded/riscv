@@ -754,7 +754,13 @@ fn trap(
     let export_name = format!("{:#}", int_ident);
 
     let start_trap = match arch {
-        Some(arch) => start_interrupt_trap(int_ident, arch),
+        Some(arch) => {
+            let trap = start_interrupt_trap(int_ident, arch);
+            quote! {
+                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #trap
+            }
+        }
         None => proc_macro2::TokenStream::new(),
     };
 
@@ -767,7 +773,6 @@ fn trap(
             assert_impl(#int_path);
         };
 
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
         #start_trap
 
         #[export_name = #export_name]
