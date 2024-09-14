@@ -1,28 +1,30 @@
+use crate::result::Result;
+
 write_only_csr! {
-    "test CSR register type",
+    /// test CSR register type
     Mtest: 0x000,
     0b1111_1111_1111,
-    "setter test single-bit field",
+    /// setter test single-bit field
     set_single: 0,
 }
 
 write_only_csr_field! {
     Mtest,
-    "setter multiple single-bit field range",
+    /// setter multiple single-bit field range
     set_multi_range: 1..=3,
 }
 
 write_only_csr_field!(
     Mtest,
-    "setter multi-bit field",
+    /// setter multi-bit field
     set_multi_field: [4:7],
 );
 
 write_only_csr_field!(
     Mtest,
-    "setter multi-bit field",
+    /// setter multi-bit field
     set_field_enum,
-    "field enum type with valid field variants",
+    /// field enum type with valid field variants
     MtestFieldEnum {
         range: [7:11],
         default: Field1,
@@ -37,6 +39,11 @@ write_only_csr_field!(
 #[allow(unused)]
 pub fn _write_csr(csr: Mtest) {
     write(csr);
+}
+
+#[allow(unused)]
+pub fn _try_write_csr(csr: Mtest) -> Result<()> {
+    try_write(csr)
 }
 
 #[test]

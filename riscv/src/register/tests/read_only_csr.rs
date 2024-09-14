@@ -1,28 +1,30 @@
+use crate::result::Result;
+
 read_only_csr! {
-    "test CSR register type",
+    /// test CSR register type
     Mtest: 0x000,
     0b1111_1111_1111,
-    "test single-bit field",
+    /// test single-bit field
     single: 0,
 }
 
 read_only_csr_field! {
     Mtest,
-    "multiple single-bit field range",
+    /// multiple single-bit field range
     multi_range: 1..=3,
 }
 
 read_only_csr_field!(
     Mtest,
-    "multi-bit field",
+    /// multi-bit field
     multi_field: [4:7],
 );
 
 read_only_csr_field!(
     Mtest,
-    "multi-bit field",
+    /// multi-bit field
     field_enum,
-    "field enum type with valid field variants",
+    /// field enum type with valid field variants
     MtestFieldEnum {
         range: [7:11],
         default: Field1,
@@ -37,6 +39,11 @@ read_only_csr_field!(
 #[allow(unused)]
 pub fn _read_csr() -> Mtest {
     read()
+}
+
+#[allow(unused)]
+pub fn _try_read_csr() -> Result<Mtest> {
+    try_read()
 }
 
 #[test]

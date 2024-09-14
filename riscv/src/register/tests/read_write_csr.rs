@@ -1,36 +1,54 @@
+use crate::result::{Error, Result};
+
 read_write_csr! {
-    "test CSR register type",
+    /// test CSR register type
     Mtest: 0x000,
     0b1111_1111_1111,
-    "test single-bit field",
+    /// test single-bit field
     single: 0,
-    "setter test single-bit field",
+    /// try-get test single-bit field
+    try_single: 0,
+    /// setter test single-bit field
     set_single: 0,
+    /// try-setter test single-bit field
+    try_set_single: 0,
 }
 
 read_write_csr_field! {
     Mtest,
-    "multiple single-bit field range",
+    /// multiple single-bit field range
     multi_range: 1..=3,
-    "setter multiple single-bit field range",
+    /// try-get multiple single-bit field range
+    try_multi_range: 1..=3,
+    /// setter multiple single-bit field range
     set_multi_range: 1..=3,
+    /// try-setter multiple single-bit field range
+    try_set_multi_range: 1..=3,
 }
 
 read_write_csr_field!(
     Mtest,
-    "multi-bit field",
+    /// multi-bit field
     multi_field: [4:7],
-    "setter multi-bit field",
+    /// try-get multi-bit field
+    try_multi_field: [4:7],
+    /// setter multi-bit field
     set_multi_field: [4:7],
+    /// try-setter multi-bit field
+    try_set_multi_field: [4:7],
 );
 
 read_write_csr_field!(
     Mtest,
-    "multi-bit field",
+    /// multi-bit field
     field_enum,
-    "setter multi-bit field",
+    /// try-get multi-bit field
+    try_field_enum,
+    /// setter multi-bit field
     set_field_enum,
-    "field enum type with valid field variants",
+    /// try-setter multi-bit field
+    try_set_field_enum,
+    /// field enum type with valid field variants
     MtestFieldEnum {
         range: [7:11],
         default: Field1,
@@ -38,7 +56,7 @@ read_write_csr_field!(
         Field2 = 2,
         Field3 = 3,
         Field4 = 15,
-    },
+    }
 );
 
 // we don't test the `read` and `write` functions, we are only testing in-memory functions.
@@ -48,8 +66,18 @@ pub fn _read_csr() -> Mtest {
 }
 
 #[allow(unused)]
+pub fn _try_read_csr() -> Result<Mtest> {
+    try_read()
+}
+
+#[allow(unused)]
 pub fn _write_csr(csr: Mtest) {
     write(csr);
+}
+
+#[allow(unused)]
+pub fn _try_write_csr(csr: Mtest) {
+    try_write(csr);
 }
 
 #[test]
@@ -96,7 +124,13 @@ fn test_mtest_read_write() {
     mtest.set_multi_field(0x0);
     assert_eq!(mtest.multi_field(), 0x0);
 
-    assert_eq!(mtest.field_enum(), None);
+    assert_eq!(
+        mtest.try_field_enum(),
+        Err(Error::InvalidFieldVariant {
+            field: "field_enum",
+            value: 0,
+        })
+    );
 
     [
         MtestFieldEnum::Field1,
@@ -107,10 +141,17 @@ fn test_mtest_read_write() {
     .into_iter()
     .for_each(|variant| {
         mtest.set_field_enum(variant);
-        assert_eq!(mtest.field_enum(), Some(variant));
+        assert_eq!(mtest.field_enum(), variant);
+        assert_eq!(mtest.try_field_enum(), Ok(variant));
     });
 
     // check that setting an invalid variant returns `None`
     mtest = Mtest::from_bits(0xbad << 7);
-    assert_eq!(mtest.field_enum(), None);
+    assert_eq!(
+        mtest.try_field_enum(),
+        Err(Error::InvalidFieldVariant {
+            field: "field_enum",
+            value: 13,
+        })
+    );
 }
