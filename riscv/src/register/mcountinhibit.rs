@@ -8,29 +8,31 @@ read_write_csr! {
     Mcountinhibit: 0x320,
     0xffff_fffd,
     /// Gets the `cycle[h]` inhibit field value."
-    cy: 0,
+    cy,
     /// Attempts to get the `cycle[h]` inhibit field value."
-    try_cy: 0,
+    try_cy,
     /// Sets the `cycle[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_cy: 0,
+    set_cy,
     /// Attempts to set the `cycle[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_cy: 0,
+    try_set_cy,
+    bit: 0,
     /// Gets the `instret[h]` inhibit field value.
-    ir: 2,
+    ir,
     /// Attempts to get the `instret[h]` inhibit field value.
-    try_ir: 2,
+    try_ir,
     /// Sets the `instret[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_ir: 2,
+    set_ir,
     /// Attempts to set the `instret[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_ir: 2,
+    try_set_ir,
+    bit: 2,
 }
 
 read_write_csr_field! {
@@ -38,23 +40,24 @@ read_write_csr_field! {
     /// Gets the `mhpmcounterX[h]` inhibit field value.
     ///
     /// **WARN**: `index` must be in the range `[31:3]`.
-    hpm: 3..=31,
+    hpm,
     /// Attempts to get the `mhpmcounterX[h]` inhibit field value.
     ///
     /// **WARN**: `index` must be in the range `[31:3]`.
-    try_hpm: 3..=31,
+    try_hpm,
     /// Sets the `mhpmcounterX[h]` inhibit field value.
     ///
     /// **WARN**: `index` must be in the range `[31:3]`.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_hpm: 3..=31,
+    set_hpm,
     /// Sets the `mhpmcounterX[h]` inhibit field value.
     ///
     /// **WARN**: `index` must be in the range `[31:3]`.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_hpm: 3..=31,
+    try_set_hpm,
+    range: 3..=31,
 }
 
 set_clear_csr!(

@@ -5,37 +5,40 @@ read_write_csr! {
     Mtest: 0x000,
     0b1111_1111_1111,
     /// test single-bit field
-    single: 0,
+    single,
     /// try-get test single-bit field
-    try_single: 0,
+    try_single,
     /// setter test single-bit field
-    set_single: 0,
+    set_single,
     /// try-setter test single-bit field
-    try_set_single: 0,
+    try_set_single,
+    bit: 0,
 }
 
 read_write_csr_field! {
     Mtest,
     /// multiple single-bit field range
-    multi_range: 1..=3,
+    multi_range,
     /// try-get multiple single-bit field range
-    try_multi_range: 1..=3,
+    try_multi_range,
     /// setter multiple single-bit field range
-    set_multi_range: 1..=3,
+    set_multi_range,
     /// try-setter multiple single-bit field range
-    try_set_multi_range: 1..=3,
+    try_set_multi_range,
+    range: 1..=3,
 }
 
 read_write_csr_field!(
     Mtest,
     /// multi-bit field
-    multi_field: [4:7],
+    multi_field,
     /// try-get multi-bit field
-    try_multi_field: [4:7],
+    try_multi_field,
     /// setter multi-bit field
-    set_multi_field: [4:7],
+    set_multi_field,
     /// try-setter multi-bit field
-    try_set_multi_field: [4:7],
+    try_set_multi_field,
+    range: [4:7],
 );
 
 read_write_csr_field!(
