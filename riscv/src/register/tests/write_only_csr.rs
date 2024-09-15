@@ -5,28 +5,39 @@ write_only_csr! {
     Mtest: 0x000,
     0b1111_1111_1111,
     /// setter test single-bit field
-    set_single: 0,
+    set_single,
+    /// try-setter test single-bit field
+    try_set_single,
+    bit: 0,
 }
 
 write_only_csr_field! {
     Mtest,
     /// setter multiple single-bit field range
-    set_multi_range: 1..=3,
+    set_multi_range,
+    /// try-setter multiple single-bit field range
+    try_set_multi_range,
+    range: 1..=3,
 }
 
 write_only_csr_field!(
     Mtest,
     /// setter multi-bit field
-    set_multi_field: [4:7],
+    set_multi_field,
+    /// try-setter multi-bit field
+    try_set_multi_field,
+    range: [4:7],
 );
 
 write_only_csr_field!(
     Mtest,
     /// setter multi-bit field
     set_field_enum,
+    /// try-setter multi-bit field
+    try_set_field_enum,
     /// field enum type with valid field variants
     MtestFieldEnum {
-        range: [7:11],
+        range: [8:11],
         default: Field1,
         Field1 = 1,
         Field2 = 2,
@@ -85,7 +96,7 @@ fn test_mtest_write_only() {
 
     mtest = Mtest::from_bits(0);
 
-    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 7), None);
+    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), None);
 
     [
         MtestFieldEnum::Field1,
@@ -95,11 +106,16 @@ fn test_mtest_write_only() {
     ]
     .into_iter()
     .for_each(|variant| {
+        assert_eq!(
+            mtest.try_set_field_enum(variant),
+            Ok(()),
+            "field value: {variant:?}"
+        );
         mtest.set_field_enum(variant);
-        assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 7), Some(variant));
+        assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), Some(variant));
     });
 
     // check that setting an invalid variant returns `None`
-    mtest = Mtest::from_bits(0xbad << 7);
-    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 7), None);
+    mtest = Mtest::from_bits(0xbad << 8);
+    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), None);
 }
