@@ -115,17 +115,21 @@ fn test_mtest_read_write() {
 
     mtest.set_multi_field(0xf);
     assert_eq!(mtest.multi_field(), 0xf);
+    assert_eq!(mtest.try_multi_field(), Ok(0xf));
 
     mtest.set_multi_field(0x3);
     assert_eq!(mtest.multi_field(), 0x3);
+    assert_eq!(mtest.try_multi_field(), Ok(0x3));
 
     // check that only bits in the field are set.
     mtest.set_multi_field(0xff);
     assert_eq!(mtest.multi_field(), 0xf);
+    assert_eq!(mtest.try_multi_field(), Ok(0xf));
     assert_eq!(mtest.bits(), 0xf << 4);
 
     mtest.set_multi_field(0x0);
     assert_eq!(mtest.multi_field(), 0x0);
+    assert_eq!(mtest.try_multi_field(), Ok(0x0));
 
     assert_eq!(
         mtest.try_field_enum(),
