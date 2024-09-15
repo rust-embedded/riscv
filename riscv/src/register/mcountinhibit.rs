@@ -7,32 +7,36 @@ read_write_csr! {
     /// `mcountinhibit` register
     Mcountinhibit: 0x320,
     mask: 0xffff_fffd,
-    /// Gets the `cycle[h]` inhibit field value.
-    cy,
-    /// Attempts to get the `cycle[h]` inhibit field value.
-    try_cy,
-    /// Sets the `cycle[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_cy,
-    /// Attempts to set the `cycle[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_cy,
-    bit: 0,
-    /// Gets the `instret[h]` inhibit field value.
-    ir,
-    /// Attempts to get the `instret[h]` inhibit field value.
-    try_ir,
-    /// Sets the `instret[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_ir,
-    /// Attempts to set the `instret[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_ir,
-    bit: 2,
+    field: {
+        /// Gets the `cycle[h]` inhibit field value.
+        cy,
+        /// Attempts to get the `cycle[h]` inhibit field value.
+        try_cy,
+        /// Sets the `cycle[h]` inhibit field value.
+        ///
+        /// **NOTE**: only updates the in-memory value without touching the CSR.
+        set_cy,
+        /// Attempts to set the `cycle[h]` inhibit field value.
+        ///
+        /// **NOTE**: only updates the in-memory value without touching the CSR.
+        try_set_cy,
+        bit: 0,
+    },
+    field: {
+        /// Gets the `instret[h]` inhibit field value.
+        ir,
+        /// Attempts to get the `instret[h]` inhibit field value.
+        try_ir,
+        /// Sets the `instret[h]` inhibit field value.
+        ///
+        /// **NOTE**: only updates the in-memory value without touching the CSR.
+        set_ir,
+        /// Attempts to set the `instret[h]` inhibit field value.
+        ///
+        /// **NOTE**: only updates the in-memory value without touching the CSR.
+        try_set_ir,
+        bit: 2,
+    }
 }
 
 read_write_csr_field! {

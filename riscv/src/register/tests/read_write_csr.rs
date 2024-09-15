@@ -4,15 +4,17 @@ read_write_csr! {
     /// test CSR register type
     Mtest: 0x000,
     mask: 0b1111_1111_1111,
-    /// test single-bit field
-    single,
-    /// try-get test single-bit field
-    try_single,
-    /// setter test single-bit field
-    set_single,
-    /// try-setter test single-bit field
-    try_set_single,
-    bit: 0,
+    field: {
+        /// test single-bit field
+        single,
+        /// try-get test single-bit field
+        try_single,
+        /// setter test single-bit field
+        set_single,
+        /// try-setter test single-bit field
+        try_set_single,
+        bit: 0,
+    }
 }
 
 read_write_csr_field! {

@@ -4,11 +4,13 @@ read_only_csr! {
     /// test CSR register type
     Mtest: 0x000,
     mask: 0b1111_1111_1111,
-    /// test single-bit field
-    single,
-    /// try-getter test single-bit field
-    try_single,
-    bit: 0,
+    field: {
+        /// test single-bit field
+        single,
+        /// try-getter test single-bit field
+        try_single,
+        bit: 0,
+    }
 }
 
 read_only_csr_field! {

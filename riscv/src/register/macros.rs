@@ -704,15 +704,17 @@ macro_rules! read_write_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$set_field_doc:meta])+
-     $set_field:ident,
-     $(#[$try_set_field_doc:meta])+
-     $try_set_field:ident,
-     bit: $bit:literal$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$set_field_doc:meta])+
+         $set_field:ident,
+         $(#[$try_set_field_doc:meta])+
+         $try_set_field:ident,
+         bit: $bit:literal$(,)?
+     }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])+ $ty: $csr, $mask);
 
@@ -741,15 +743,17 @@ macro_rules! read_write_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$set_field_doc:meta])+
-     $set_field:ident,
-     $(#[$try_set_field_doc:meta])+
-     $try_set_field:ident,
-     range: $bit_start:literal ..= $bit_end:literal$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$set_field_doc:meta])+
+         $set_field:ident,
+         $(#[$try_set_field_doc:meta])+
+         $try_set_field:ident,
+         range: $bit_start:literal ..= $bit_end:literal$(,)?
+     }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])*, $ty: $csr, $mask);
 
@@ -778,15 +782,17 @@ macro_rules! read_write_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$set_field_doc:meta])+
-     $set_field:ident,
-     $(#[$try_set_field_doc:meta])+
-     $try_set_field:ident,
-     range: [$bit_start:literal : $bit_end:literal]$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$set_field_doc:meta])+
+         $set_field:ident,
+         $(#[$try_set_field_doc:meta])+
+         $try_set_field:ident,
+         range: [$bit_start:literal : $bit_end:literal]$(,)?
+     }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])+, $ty: $csr, $mask);
 
@@ -815,19 +821,21 @@ macro_rules! read_write_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$set_field_doc:meta])+
-     $set_field:ident,
-     $(#[$try_set_field_doc:meta])+
-     $try_set_field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$set_field_doc:meta])+
+         $set_field:ident,
+         $(#[$try_set_field_doc:meta])+
+         $try_set_field:ident,
+         $(#[$field_ty_doc:meta])+
+         $field_ty:ident {
+             range: [$field_start:literal : $field_end:literal],
+             default: $default_variant:ident,
+             $($variant:ident = $value:expr$(,)?)+
+         }$(,)?
      }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])+ $ty: $csr, $mask);
@@ -868,11 +876,13 @@ macro_rules! read_only_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     bit: $bit:literal$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         bit: $bit:literal$(,)?
+     }$(,)?
      )+
     ) => {
         $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
@@ -895,11 +905,13 @@ macro_rules! read_only_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     range: $bit:literal ..= $bit_end:literal$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         range: $bit:literal ..= $bit_end:literal$(,)?
+     }$(,)?
      )+) => {
         $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
 
@@ -921,11 +933,13 @@ macro_rules! read_only_csr {
      $ty:ident: $csr:literal,
      mask: $mask:literal,
      $(
-     $(#[field_doc:meta])+
-     $field:ident,
-     $(#[try_field_doc:meta])+
-     $try_field:ident,
-     range: [$bit:tt : $bit_end:tt]$(,)?
+     field: {
+         $(#[field_doc:meta])+
+         $field:ident,
+         $(#[try_field_doc:meta])+
+         $try_field:ident,
+         range: [$bit:tt : $bit_end:tt]$(,)?
+     }$(,)?
      )+) => {
         $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
 
@@ -947,15 +961,17 @@ macro_rules! read_only_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$field_ty_doc:meta])+
+         $field_ty:ident {
+             range: [$field_start:literal : $field_end:literal],
+             default: $default_variant:ident,
+             $($variant:ident = $value:expr$(,)?)+
+         }$(,)?
      }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])+ $ty: $csr, $mask);
@@ -989,11 +1005,13 @@ macro_rules! write_only_csr {
      $ty:ident: $csr:literal,
      mask: $mask:literal,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     bit: $bit:literal$(,)?
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         bit: $bit:literal$(,)?
+     }$(,)?
      )+) => {
         $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
 
@@ -1017,11 +1035,13 @@ macro_rules! write_only_csr {
      $ty:ident: $csr:literal,
      mask: $mask:literal,
      $(
-     $(#[field_doc:meta])+
-     $field:ident,
-     $(#[try_field_doc:meta])+
-     $try_field:ident,
-     range: $bit_start:literal ..= $bit_end:literal$(,)?
+     field: {
+         $(#[field_doc:meta])+
+         $field:ident,
+         $(#[try_field_doc:meta])+
+         $try_field:ident,
+         range: $bit_start:literal ..= $bit_end:literal$(,)?
+     }$(,)?
      )+) => {
         $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
 
@@ -1045,11 +1065,13 @@ macro_rules! write_only_csr {
      $ty:ident: $csr:literal,
      mask: $mask:literal,
      $(
-     $(#[field_doc:meta])+
-     $field:ident,
-     $(#[try_field_doc:meta])+
-     $try_field:ident,
-     range: [$bit_start:literal : $bit_end:literal]$(,)?
+     field: {
+         $(#[field_doc:meta])+
+         $field:ident,
+         $(#[try_field_doc:meta])+
+         $try_field:ident,
+         range: [$bit_start:literal : $bit_end:literal]$(,)?
+     }$(,)?
      )+) => {
         $crate::csr! { $(#[doc])+, $ty: $csr, $mask }
 
@@ -1073,15 +1095,17 @@ macro_rules! write_only_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt,
      $(
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
+     field: {
+         $(#[$field_doc:meta])+
+         $field:ident,
+         $(#[$try_field_doc:meta])+
+         $try_field:ident,
+         $(#[$field_ty_doc:meta])+
+         $field_ty:ident {
+             range: [$field_start:literal : $field_end:literal],
+             default: $default_variant:ident,
+             $($variant:ident = $value:expr$(,)?)+
+         }$(,)?
      }$(,)?
      )+) => {
         $crate::csr!($(#[$doc])+ $ty: $csr, $mask);
