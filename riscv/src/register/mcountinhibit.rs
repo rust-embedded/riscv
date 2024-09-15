@@ -6,10 +6,10 @@ use crate::result::{Error, Result};
 read_write_csr! {
     /// `mcountinhibit` register
     Mcountinhibit: 0x320,
-    0xffff_fffd,
-    /// Gets the `cycle[h]` inhibit field value."
+    mask: 0xffff_fffd,
+    /// Gets the `cycle[h]` inhibit field value.
     cy,
-    /// Attempts to get the `cycle[h]` inhibit field value."
+    /// Attempts to get the `cycle[h]` inhibit field value.
     try_cy,
     /// Sets the `cycle[h]` inhibit field value.
     ///

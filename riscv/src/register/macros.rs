@@ -702,7 +702,7 @@ macro_rules! csr_field_enum {
 macro_rules! read_write_csr {
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -739,7 +739,7 @@ macro_rules! read_write_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -776,7 +776,7 @@ macro_rules! read_write_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -813,7 +813,7 @@ macro_rules! read_write_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -866,7 +866,7 @@ macro_rules! read_write_csr {
 macro_rules! read_only_csr {
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -893,7 +893,7 @@ macro_rules! read_only_csr {
 
     ($(#[doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -919,7 +919,7 @@ macro_rules! read_only_csr {
 
     ($(#[doc:meta])+
      $ty:ident: $csr:literal,
-     $mask:literal,
+     mask: $mask:literal,
      $(
      $(#[field_doc:meta])+
      $field:ident,
@@ -945,7 +945,7 @@ macro_rules! read_only_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -987,7 +987,7 @@ macro_rules! read_only_csr {
 macro_rules! write_only_csr {
     ($(#[$doc:meta])+
      $ty:ident: $csr:literal,
-     $mask:literal,
+     mask: $mask:literal,
      $(
      $(#[$field_doc:meta])+
      $field:ident,
@@ -1015,7 +1015,7 @@ macro_rules! write_only_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:literal,
-     $mask:literal,
+     mask: $mask:literal,
      $(
      $(#[field_doc:meta])+
      $field:ident,
@@ -1043,7 +1043,7 @@ macro_rules! write_only_csr {
 
     ($(#[doc:meta])+
      $ty:ident: $csr:literal,
-     $mask:literal,
+     mask: $mask:literal,
      $(
      $(#[field_doc:meta])+
      $field:ident,
@@ -1071,7 +1071,7 @@ macro_rules! write_only_csr {
 
     ($(#[$doc:meta])+
      $ty:ident: $csr:tt,
-     $mask:tt,
+     mask: $mask:tt,
      $(
      $(#[$field_doc:meta])+
      $field:ident,

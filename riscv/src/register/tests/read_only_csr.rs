@@ -3,7 +3,7 @@ use crate::result::{Error, Result};
 read_only_csr! {
     /// test CSR register type
     Mtest: 0x000,
-    0b1111_1111_1111,
+    mask: 0b1111_1111_1111,
     /// test single-bit field
     single,
     /// try-getter test single-bit field
