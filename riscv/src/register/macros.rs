@@ -666,10 +666,10 @@ macro_rules! csr_field_enum {
              }
 
              /// Attempts to convert a [`usize`] into a valid variant.
-             pub const fn from_usize(val: usize) -> Option<Self> {
+             pub const fn from_usize(val: usize) -> $crate::result::Result<Self> {
                  match val {
-                     $($value => Some(Self::$variant),)+
-                     _ => None,
+                     $($value => Ok(Self::$variant),)+
+                     _ => Err($crate::result::Error::InvalidVariant(val)),
                  }
              }
 
@@ -1036,10 +1036,7 @@ macro_rules! read_only_csr_field {
                          $field_end - $field_start + 1,
                      );
 
-                     $field_ty::from_usize(value).ok_or($crate::result::Error::InvalidFieldVariant {
-                         field: stringify!($field),
-                         value,
-                     })
+                     $field_ty::from_usize(value)
                  } else {
                     Err($crate::result::Error::IndexOutOfBounds {
                         index: $field_start,

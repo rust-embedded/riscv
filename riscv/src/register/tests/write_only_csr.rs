@@ -1,4 +1,4 @@
-use crate::result::Result;
+use crate::result::{Error, Result};
 
 write_only_csr! {
     /// test CSR register type
@@ -100,7 +100,10 @@ fn test_mtest_write_only() {
 
     mtest = Mtest::from_bits(0);
 
-    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), None);
+    assert_eq!(
+        MtestFieldEnum::from_usize(mtest.bits() >> 8),
+        Err(Error::InvalidVariant(0))
+    );
 
     [
         MtestFieldEnum::Field1,
@@ -116,10 +119,13 @@ fn test_mtest_write_only() {
             "field value: {variant:?}"
         );
         mtest.set_field_enum(variant);
-        assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), Some(variant));
+        assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), Ok(variant));
     });
 
     // check that setting an invalid variant returns `None`
     mtest = Mtest::from_bits(0xbad << 8);
-    assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), None);
+    assert_eq!(
+        MtestFieldEnum::from_usize(mtest.bits() >> 8),
+        Err(Error::InvalidVariant(13))
+    );
 }
