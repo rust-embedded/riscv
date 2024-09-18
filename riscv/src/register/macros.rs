@@ -610,7 +610,7 @@ macro_rules! clear_pmp {
 #[macro_export]
 macro_rules! csr {
     ($(#[$doc:meta])*
-     $ty:ident: $csr:literal,
+     $ty:ident,
      $mask:literal) => {
         #[repr(C)]
         $(#[$doc])*
@@ -704,7 +704,7 @@ macro_rules! read_write_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt$(,)?
     ) => {
-        $crate::csr!($(#[$doc])+ $ty: $csr, $mask);
+        $crate::csr!($(#[$doc])+ $ty, $mask);
 
         $crate::read_csr_as!($ty, $csr);
         $crate::write_csr_as!($ty, $csr);
@@ -720,7 +720,7 @@ macro_rules! read_only_csr {
      $ty:ident: $csr:tt,
      mask: $mask:tt$(,)?
     ) => {
-        $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
+        $crate::csr! { $(#[$doc])+ $ty, $mask }
 
         $crate::read_csr_as!($ty, $csr);
     };
@@ -735,7 +735,7 @@ macro_rules! write_only_csr {
      $ty:ident: $csr:literal,
      mask: $mask:literal$(,)?
     ) => {
-        $crate::csr! { $(#[$doc])+ $ty: $csr, $mask }
+        $crate::csr! { $(#[$doc])+ $ty, $mask }
 
         $crate::write_csr_as!($ty, $csr);
     };
