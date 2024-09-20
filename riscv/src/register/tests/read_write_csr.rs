@@ -10,8 +10,6 @@ read_write_csr_field! {
     Mtest,
     /// test single-bit field
     single,
-    /// try-get test single-bit field
-    try_single,
     /// setter test single-bit field
     set_single,
     /// try-setter test single-bit field
@@ -36,8 +34,6 @@ read_write_csr_field!(
     Mtest,
     /// multi-bit field
     multi_field,
-    /// try-get multi-bit field
-    try_multi_field,
     /// setter multi-bit field
     set_multi_field,
     /// try-setter multi-bit field
@@ -119,21 +115,17 @@ fn test_mtest_read_write() {
 
     mtest.set_multi_field(0xf);
     assert_eq!(mtest.multi_field(), 0xf);
-    assert_eq!(mtest.try_multi_field(), Ok(0xf));
 
     mtest.set_multi_field(0x3);
     assert_eq!(mtest.multi_field(), 0x3);
-    assert_eq!(mtest.try_multi_field(), Ok(0x3));
 
     // check that only bits in the field are set.
     mtest.set_multi_field(0xff);
     assert_eq!(mtest.multi_field(), 0xf);
-    assert_eq!(mtest.try_multi_field(), Ok(0xf));
     assert_eq!(mtest.bits(), 0xf << 4);
 
     mtest.set_multi_field(0x0);
     assert_eq!(mtest.multi_field(), 0x0);
-    assert_eq!(mtest.try_multi_field(), Ok(0x0));
 
     assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(0)),);
 

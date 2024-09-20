@@ -9,10 +9,7 @@ read_only_csr! {
 read_only_csr_field! {
     Mtest,
     /// test single-bit field
-    single,
-    /// try-getter test single-bit field
-    try_single,
-    bit: 0,
+    single: 0,
 }
 
 read_only_csr_field! {
@@ -27,10 +24,7 @@ read_only_csr_field! {
 read_only_csr_field!(
     Mtest,
     /// multi-bit field
-    multi_field,
-    /// try-getter multi-bit field
-    try_multi_field,
-    range: [4:7],
+    multi_field: [4:7],
 );
 
 read_only_csr_field!(
@@ -41,7 +35,7 @@ read_only_csr_field!(
     try_field_enum,
     /// field enum type with valid field variants
     MtestFieldEnum {
-        range: [7:11],
+        range: [8:11],
         default: Field1,
         Field1 = 1,
         Field2 = 2,
@@ -70,11 +64,9 @@ fn test_mtest_read_only() {
 
     // check that single bit field getter/setters work.
     assert_eq!(mtest.single(), false);
-    assert_eq!(mtest.try_single(), Ok(false));
 
     mtest = Mtest::from_bits(1);
     assert_eq!(mtest.single(), true);
-    assert_eq!(mtest.try_single(), Ok(true));
 
     mtest = Mtest::from_bits(0);
 
@@ -94,25 +86,20 @@ fn test_mtest_read_only() {
 
     // check that multi-bit field getter/setters work.
     assert_eq!(mtest.multi_field(), 0);
-    assert_eq!(mtest.try_multi_field(), Ok(0));
 
     mtest = Mtest::from_bits(0xf << 4);
     assert_eq!(mtest.multi_field(), 0xf);
-    assert_eq!(mtest.try_multi_field(), Ok(0xf));
 
     mtest = Mtest::from_bits(0x3 << 4);
     assert_eq!(mtest.multi_field(), 0x3);
-    assert_eq!(mtest.try_multi_field(), Ok(0x3));
 
     // check that only bits in the field are set.
     mtest = Mtest::from_bits(0xff << 4);
     assert_eq!(mtest.multi_field(), 0xf);
-    assert_eq!(mtest.try_multi_field(), Ok(0xf));
     assert_eq!(mtest.bits(), 0xff << 4);
 
     mtest = Mtest::from_bits(0x0 << 4);
     assert_eq!(mtest.multi_field(), 0x0);
-    assert_eq!(mtest.try_multi_field(), Ok(0x0));
 
     assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(0)),);
 
@@ -124,12 +111,12 @@ fn test_mtest_read_only() {
     ]
     .into_iter()
     .for_each(|variant| {
-        mtest = Mtest::from_bits(variant.into_usize() << 7);
+        mtest = Mtest::from_bits(variant.into_usize() << 8);
         assert_eq!(mtest.field_enum(), variant);
         assert_eq!(mtest.try_field_enum(), Ok(variant));
     });
 
     // check that setting an invalid variant returns `None`
-    mtest = Mtest::from_bits(0xbad << 7);
+    mtest = Mtest::from_bits(0xbad << 8);
     assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(13)),);
 }
