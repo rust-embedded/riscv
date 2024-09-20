@@ -12,8 +12,6 @@ read_write_csr_field! {
     single,
     /// setter test single-bit field
     set_single,
-    /// try-setter test single-bit field
-    try_set_single,
     bit: 0,
 }
 
@@ -36,8 +34,6 @@ read_write_csr_field!(
     multi_field,
     /// setter multi-bit field
     set_multi_field,
-    /// try-setter multi-bit field
-    try_set_multi_field,
     range: [4:7],
 );
 
@@ -49,11 +45,9 @@ read_write_csr_field!(
     try_field_enum,
     /// setter multi-bit field
     set_field_enum,
-    /// try-setter multi-bit field
-    try_set_field_enum,
     /// field enum type with valid field variants
     MtestFieldEnum {
-        range: [7:11],
+        range: [8:11],
         default: Field1,
         Field1 = 1,
         Field2 = 2,
@@ -127,7 +121,7 @@ fn test_mtest_read_write() {
     mtest.set_multi_field(0x0);
     assert_eq!(mtest.multi_field(), 0x0);
 
-    assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(0)),);
+    assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(0)));
 
     [
         MtestFieldEnum::Field1,
@@ -143,6 +137,6 @@ fn test_mtest_read_write() {
     });
 
     // check that setting an invalid variant returns `None`
-    mtest = Mtest::from_bits(0xbad << 7);
-    assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(13)),);
+    mtest = Mtest::from_bits(0xbad << 8);
+    assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(13)));
 }

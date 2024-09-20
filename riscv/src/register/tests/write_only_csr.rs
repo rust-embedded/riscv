@@ -9,10 +9,7 @@ write_only_csr! {
 write_only_csr_field! {
     Mtest,
     /// setter test single-bit field
-    set_single,
-    /// try-setter test single-bit field
-    try_set_single,
-    bit: 0,
+    set_single: 0,
 }
 
 write_only_csr_field! {
@@ -27,18 +24,13 @@ write_only_csr_field! {
 write_only_csr_field!(
     Mtest,
     /// setter multi-bit field
-    set_multi_field,
-    /// try-setter multi-bit field
-    try_set_multi_field,
-    range: [4:7],
+    set_multi_field: [4:7],
 );
 
 write_only_csr_field!(
     Mtest,
     /// setter multi-bit field
     set_field_enum,
-    /// try-setter multi-bit field
-    try_set_field_enum,
     /// field enum type with valid field variants
     MtestFieldEnum {
         range: [8:11],
@@ -113,11 +105,6 @@ fn test_mtest_write_only() {
     ]
     .into_iter()
     .for_each(|variant| {
-        assert_eq!(
-            mtest.try_set_field_enum(variant),
-            Ok(()),
-            "field value: {variant:?}"
-        );
         mtest.set_field_enum(variant);
         assert_eq!(MtestFieldEnum::from_usize(mtest.bits() >> 8), Ok(variant));
     });
