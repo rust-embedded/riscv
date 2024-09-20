@@ -15,8 +15,6 @@ read_write_csr_field! {
     Mcountinhibit,
     /// Gets the `cycle[h]` inhibit field value.
     cy,
-    /// Attempts to get the `cycle[h]` inhibit field value.
-    try_cy,
     /// Sets the `cycle[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
@@ -32,8 +30,6 @@ read_write_csr_field! {
     Mcountinhibit,
     /// Gets the `instret[h]` inhibit field value.
     ir,
-    /// Attempts to get the `instret[h]` inhibit field value.
-    try_ir,
     /// Sets the `instret[h]` inhibit field value.
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.

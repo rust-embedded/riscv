@@ -747,8 +747,6 @@ macro_rules! read_write_csr_field {
     ($ty:ident,
      $(#[$field_doc:meta])+
      $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
      $(#[$set_field_doc:meta])+
      $set_field:ident,
      $(#[$try_set_field_doc:meta])+
@@ -758,10 +756,7 @@ macro_rules! read_write_csr_field {
          $crate::read_only_csr_field!(
              $ty,
              $(#[$field_doc])+
-             $field,
-             $(#[$try_field_doc])+
-             $try_field,
-             bit: $bit,
+             $field: $bit,
          );
 
          $crate::write_only_csr_field!(
@@ -807,8 +802,6 @@ macro_rules! read_write_csr_field {
     ($ty:ident,
      $(#[$field_doc:meta])+
      $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
      $(#[$set_field_doc:meta])+
      $set_field:ident,
      $(#[$try_set_field_doc:meta])+
@@ -818,10 +811,7 @@ macro_rules! read_write_csr_field {
         $crate::read_only_csr_field!(
             $ty,
             $(#[$field_doc])+
-            $field,
-            $(#[$try_field_doc])+
-            $try_field,
-            range: [$bit_start : $bit_end],
+            $field: [$bit_start : $bit_end],
         );
 
         $crate::write_only_csr_field!(
@@ -886,31 +876,14 @@ macro_rules! read_write_csr_field {
 macro_rules! read_only_csr_field {
     ($ty:ident,
      $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     bit: $bit:literal$(,)?) => {
+     $field:ident: $bit:literal$(,)?) => {
+        const _: () = assert!($bit < usize::BITS);
+
         impl $ty {
             $(#[$field_doc])+
             #[inline]
             pub fn $field(&self) -> bool {
-                self.$try_field().unwrap()
-            }
-
-            $(#[$try_field_doc])+
-            #[inline]
-            pub fn $try_field(&self) -> $crate::result::Result<bool> {
-                let max_width = core::mem::size_of_val(&self.bits) * 8;
-
-                if $bit < max_width {
-                    Ok($crate::bits::bf_extract(self.bits, $bit, 1) != 0)
-                } else {
-                    Err($crate::result::Error::IndexOutOfBounds {
-                        index: $bit,
-                        min: 0,
-                        max: max_width,
-                    })
-                }
+                $crate::bits::bf_extract(self.bits, $bit, 1) != 0
             }
         }
     };
@@ -921,6 +894,9 @@ macro_rules! read_only_csr_field {
      $(#[$try_field_doc:meta])+
      $try_field:ident,
      range: $bit_start:literal..=$bit_end:literal$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start <= $bit_end);
+
         impl $ty {
             $(#[$field_doc])+
             #[inline]
@@ -931,9 +907,7 @@ macro_rules! read_only_csr_field {
             $(#[$try_field_doc])+
             #[inline]
             pub fn $try_field(&self, index: usize) -> $crate::result::Result<bool> {
-                let max_width = core::mem::size_of_val(&self.bits) * 8;
-
-                if $bit_end < max_width && ($bit_start..=$bit_end).contains(&index) {
+                if ($bit_start..=$bit_end).contains(&index) {
                     Ok($crate::bits::bf_extract(self.bits, index, 1) != 0)
                 } else {
                     Err($crate::result::Error::IndexOutOfBounds {
@@ -948,31 +922,15 @@ macro_rules! read_only_csr_field {
 
     ($ty:ident,
      $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     range: [$bit_start:literal : $bit_end:literal]$(,)?) => {
+     $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start <= $bit_end);
+
         impl $ty {
             $(#[$field_doc])+
             #[inline]
             pub fn $field(&self) -> usize {
                 $crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1)
-            }
-
-            $(#[$try_field_doc])+
-            #[inline]
-            pub fn $try_field(&self) -> $crate::result::Result<usize> {
-                let max_width = core::mem::size_of_val(&self.bits) * 8;
-
-                if $bit_end < max_width && $bit_start <= $bit_end {
-                    Ok($crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1))
-                } else {
-                    Err($crate::result::Error::IndexOutOfBounds {
-                        index: $bit_start,
-                        min: $bit_start,
-                        max: $bit_end,
-                    })
-                }
             }
         }
     };
@@ -1017,35 +975,28 @@ macro_rules! read_only_csr_field {
      $field_ty:ident,
      range: [$field_start:literal : $field_end:literal]$(,)?
     ) => {
-         impl $ty {
-             $(#[$field_doc])+
-             #[inline]
-             pub fn $field(&self) -> $field_ty {
-                 self.$try_field().unwrap()
-             }
+        const _: () = assert!($field_end < usize::BITS);
+        const _: () = assert!($field_start <= $field_end);
 
-             $(#[$try_field_doc])+
-             #[inline]
-             pub fn $try_field(&self) -> $crate::result::Result<$field_ty> {
-                let max_width = core::mem::size_of_val(&self.bits) * 8;
+        impl $ty {
+            $(#[$field_doc])+
+            #[inline]
+            pub fn $field(&self) -> $field_ty {
+                self.$try_field().unwrap()
+            }
 
-                 if $field_end < max_width && $field_start < $field_end {
-                     let value = $crate::bits::bf_extract(
-                         self.bits,
-                         $field_start,
-                         $field_end - $field_start + 1,
-                     );
+            $(#[$try_field_doc])+
+            #[inline]
+            pub fn $try_field(&self) -> $crate::result::Result<$field_ty> {
+                let value = $crate::bits::bf_extract(
+                    self.bits,
+                    $field_start,
+                    $field_end - $field_start + 1,
+                );
 
-                     $field_ty::from_usize(value)
-                 } else {
-                    Err($crate::result::Error::IndexOutOfBounds {
-                        index: $field_start,
-                        min: $field_start,
-                        max: $field_end,
-                    })
-                 }
-             }
-         }
+                $field_ty::from_usize(value)
+            }
+        }
     };
 }
 
