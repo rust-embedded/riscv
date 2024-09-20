@@ -19,10 +19,6 @@ read_write_csr_field! {
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
     set_cy,
-    /// Attempts to set the `cycle[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_cy,
     bit: 0,
 }
 
@@ -34,10 +30,6 @@ read_write_csr_field! {
     ///
     /// **NOTE**: only updates the in-memory value without touching the CSR.
     set_ir,
-    /// Attempts to set the `instret[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_ir,
     bit: 2,
 }
 
