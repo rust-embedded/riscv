@@ -21,18 +21,13 @@ read_only_csr_field! {
     range: 1..=3,
 }
 
-read_only_csr_field!(
+read_only_csr_field! {
     Mtest,
     /// multi-bit field
     multi_field: [4:7],
-);
+}
 
-read_only_csr_field!(
-    Mtest,
-    /// multi-bit field
-    field_enum,
-    /// try-getter multi-bit field
-    try_field_enum,
+csr_field_enum! {
     /// field enum type with valid field variants
     MtestFieldEnum {
         range: [8:11],
@@ -41,8 +36,18 @@ read_only_csr_field!(
         Field2 = 2,
         Field3 = 3,
         Field4 = 15,
-    },
-);
+    }
+}
+
+read_only_csr_field! {
+    Mtest,
+    /// multi-bit field
+    field_enum,
+    /// try-getter multi-bit field
+    try_field_enum,
+    MtestFieldEnum,
+    range: [8:11],
+}
 
 // we don't test the `read` function, we are only testing in-memory functions.
 #[allow(unused)]
