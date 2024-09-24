@@ -690,6 +690,14 @@ macro_rules! csr_field_enum {
                  val.into_usize()
              }
          }
+
+         impl TryFrom<usize> for $field_ty {
+             type Error = $crate::result::Error;
+
+             fn try_from(val: usize) -> $crate::result::Result<Self> {
+                 Self::from_usize(val)
+             }
+         }
     };
 }
 
@@ -821,22 +829,9 @@ macro_rules! read_write_csr_field {
      $try_field:ident,
      $(#[$set_field_doc:meta])+
      $set_field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
-     }$(,)?
+     $field_ty:ident,
+     range: [$field_start:literal : $field_end:literal],
     ) => {
-        $crate::csr_field_enum!(
-            $(#[$field_ty_doc])+
-            $field_ty {
-                range: [$field_start : $field_end],
-                default: $default_variant,
-                $($variant = $value,)+
-            },
-         );
-
          $crate::read_only_csr_field!(
              $ty,
              $(#[$field_doc])+
@@ -919,38 +914,6 @@ macro_rules! read_only_csr_field {
                 $crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1)
             }
         }
-    };
-
-    ($ty:ident,
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$try_field_doc:meta])+
-     $try_field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
-     }$(,)?
-    ) => {
-        $crate::csr_field_enum!(
-            $(#[$field_ty_doc])+
-            $field_ty {
-                range: [$field_start : $field_end],
-                default: $default_variant,
-                $($variant = $value,)+
-            },
-        );
-
-        $crate::read_only_csr_field!(
-            $ty,
-            $(#[$field_doc])*
-            $field,
-            $(#[$try_field_doc])*
-            $try_field,
-            $field_ty,
-            range: [$field_start : $field_end],
-        );
     };
 
     ($ty:ident,
@@ -1054,34 +1017,6 @@ macro_rules! write_only_csr_field {
                 );
             }
         }
-    };
-
-    ($ty:ident,
-     $(#[$field_doc:meta])+
-     $field:ident,
-     $(#[$field_ty_doc:meta])+
-     $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
-         default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
-     }$(,)?
-    ) => {
-        $crate::csr_field_enum!(
-            $(#[$field_ty_doc])+
-            $field_ty {
-                range: [$field_start : $field_end],
-                default: $default_variant,
-                $($variant = $value,)+
-            },
-         );
-
-        $crate::write_only_csr_field!(
-            $ty,
-            $(#[$field_doc])+
-            $field,
-            $field_ty,
-            range: [$field_start : $field_end],
-        );
     };
 
     ($ty:ident,
