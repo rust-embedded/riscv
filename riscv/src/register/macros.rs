@@ -881,7 +881,7 @@ macro_rules! read_only_csr_field {
      $try_field:ident,
      range: $bit_start:literal..=$bit_end:literal$(,)?) => {
         const _: () = assert!($bit_end < usize::BITS);
-        const _: () = assert!($bit_start <= $bit_end);
+        const _: () = assert!($bit_start < $bit_end);
 
         impl $ty {
             $(#[$field_doc])+
@@ -910,7 +910,7 @@ macro_rules! read_only_csr_field {
      $(#[$field_doc:meta])+
      $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?) => {
         const _: () = assert!($bit_end < usize::BITS);
-        const _: () = assert!($bit_start <= $bit_end);
+        const _: () = assert!($bit_start < $bit_end);
 
         impl $ty {
             $(#[$field_doc])+
@@ -1010,7 +1010,7 @@ macro_rules! write_only_csr_field {
      $try_field:ident,
      range: $bit_start:literal..=$bit_end:literal$(,)?) => {
         const _: () = assert!($bit_end < usize::BITS);
-        const _: () = assert!($bit_start <= $bit_end);
+        const _: () = assert!($bit_start < $bit_end);
 
         impl $ty {
             $(#[$field_doc])+
@@ -1040,7 +1040,7 @@ macro_rules! write_only_csr_field {
      $(#[$field_doc:meta])+
      $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?) => {
         const _: () = assert!($bit_end < usize::BITS);
-        const _: () = assert!($bit_start <= $bit_end);
+        const _: () = assert!($bit_start < $bit_end);
 
         impl $ty {
             $(#[$field_doc])+
