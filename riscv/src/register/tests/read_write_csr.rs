@@ -9,32 +9,19 @@ read_write_csr! {
 read_write_csr_field! {
     Mtest,
     /// test single-bit field
-    single,
-    /// setter test single-bit field
-    set_single,
-    bit: 0,
+    single: 0,
 }
 
 read_write_csr_field! {
     Mtest,
     /// multiple single-bit field range
-    multi_range,
-    /// try-get multiple single-bit field range
-    try_multi_range,
-    /// setter multiple single-bit field range
-    set_multi_range,
-    /// try-setter multiple single-bit field range
-    try_set_multi_range,
-    range: 1..=3,
+    multi_range: 1..=3,
 }
 
 read_write_csr_field! {
     Mtest,
     /// multi-bit field
-    multi_field,
-    /// setter multi-bit field
-    set_multi_field,
-    range: [4:7],
+    multi_field: [4:7],
 }
 
 csr_field_enum! {
@@ -53,12 +40,7 @@ read_write_csr_field! {
     Mtest,
     /// multi-bit field
     field_enum,
-    /// try-get multi-bit field
-    try_field_enum,
-    /// setter multi-bit field
-    set_field_enum,
-    MtestFieldEnum,
-    range: [8:11],
+    MtestFieldEnum: [8:11],
 }
 
 // we don't test the `read` and `write` functions, we are only testing in-memory functions.
