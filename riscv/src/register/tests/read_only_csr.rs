@@ -62,24 +62,24 @@ fn test_mtest_read_only() {
     assert_eq!(mtest.bits(), 0);
 
     // check that single bit field getter/setters work.
-    assert_eq!(mtest.single(), false);
+    assert!(!mtest.single());
 
     mtest = Mtest::from_bits(1);
-    assert_eq!(mtest.single(), true);
+    assert!(mtest.single());
 
     mtest = Mtest::from_bits(0);
 
     // check that single bit range field getter/setters work.
     for i in 1..=3 {
-        assert_eq!(mtest.multi_range(i), false);
+        assert!(!mtest.multi_range(i));
         assert_eq!(mtest.try_multi_range(i), Ok(false));
 
         mtest = Mtest::from_bits(1 << i);
-        assert_eq!(mtest.multi_range(i), true);
+        assert!(mtest.multi_range(i));
         assert_eq!(mtest.try_multi_range(i), Ok(true));
 
         mtest = Mtest::from_bits(0 << i);
-        assert_eq!(mtest.multi_range(i), false);
+        assert!(!mtest.multi_range(i));
         assert_eq!(mtest.try_multi_range(i), Ok(false));
     }
 

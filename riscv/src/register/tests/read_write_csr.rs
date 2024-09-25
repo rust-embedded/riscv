@@ -72,23 +72,23 @@ fn test_mtest_read_write() {
     assert_eq!(mtest.bits(), 0);
 
     // check that single bit field getter/setters work.
-    assert_eq!(mtest.single(), false);
+    assert!(!mtest.single());
 
     mtest.set_single(true);
-    assert_eq!(mtest.single(), true);
+    assert!(mtest.single());
 
     mtest.set_single(false);
-    assert_eq!(mtest.single(), false);
+    assert!(!mtest.single());
 
     // check that single bit range field getter/setters work.
     for i in 1..=3 {
-        assert_eq!(mtest.multi_range(i), false);
+        assert!(!mtest.multi_range(i));
 
         mtest.set_multi_range(i, true);
-        assert_eq!(mtest.multi_range(i), true);
+        assert!(mtest.multi_range(i));
 
         mtest.set_multi_range(i, false);
-        assert_eq!(mtest.multi_range(i), false);
+        assert!(!mtest.multi_range(i));
     }
 
     // check that multi-bit field getter/setters work.
