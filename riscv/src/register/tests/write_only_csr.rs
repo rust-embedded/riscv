@@ -15,10 +15,7 @@ write_only_csr_field! {
 write_only_csr_field! {
     Mtest,
     /// setter multiple single-bit field range
-    set_multi_range,
-    /// try-setter multiple single-bit field range
-    try_set_multi_range,
-    range: 1..=3,
+    set_multi_range: 1..=3,
 }
 
 write_only_csr_field! {
@@ -43,8 +40,7 @@ write_only_csr_field! {
     Mtest,
     /// setter multi-bit field
     set_field_enum,
-    MtestFieldEnum,
-    range: [8:11],
+    MtestFieldEnum: [8:11],
 }
 
 // we don't test the `write` function, we are only testing in-memory functions.

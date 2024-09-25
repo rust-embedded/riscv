@@ -14,23 +14,13 @@ clear!(0x320);
 read_write_csr_field! {
     Mcountinhibit,
     /// Gets the `cycle[h]` inhibit field value.
-    cy,
-    /// Sets the `cycle[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_cy,
-    bit: 0,
+    cy: 0,
 }
 
 read_write_csr_field! {
     Mcountinhibit,
     /// Gets the `instret[h]` inhibit field value.
-    ir,
-    /// Sets the `instret[h]` inhibit field value.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_ir,
-    bit: 2,
+    ir: 2,
 }
 
 read_write_csr_field! {
@@ -38,24 +28,7 @@ read_write_csr_field! {
     /// Gets the `mhpmcounterX[h]` inhibit field value.
     ///
     /// **WARN**: `index` must be in the range `[31:3]`.
-    hpm,
-    /// Attempts to get the `mhpmcounterX[h]` inhibit field value.
-    ///
-    /// **WARN**: `index` must be in the range `[31:3]`.
-    try_hpm,
-    /// Sets the `mhpmcounterX[h]` inhibit field value.
-    ///
-    /// **WARN**: `index` must be in the range `[31:3]`.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    set_hpm,
-    /// Sets the `mhpmcounterX[h]` inhibit field value.
-    ///
-    /// **WARN**: `index` must be in the range `[31:3]`.
-    ///
-    /// **NOTE**: only updates the in-memory value without touching the CSR.
-    try_set_hpm,
-    range: 3..=31,
+    hpm: 3..=31,
 }
 
 set_clear_csr!(

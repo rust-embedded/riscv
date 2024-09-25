@@ -15,10 +15,7 @@ read_only_csr_field! {
 read_only_csr_field! {
     Mtest,
     /// multiple single-bit field range
-    multi_range,
-    /// try-getter multiple single-bit field range
-    try_multi_range,
-    range: 1..=3,
+    multi_range: 1..=3,
 }
 
 read_only_csr_field! {
@@ -43,10 +40,7 @@ read_only_csr_field! {
     Mtest,
     /// multi-bit field
     field_enum,
-    /// try-getter multi-bit field
-    try_field_enum,
-    MtestFieldEnum,
-    range: [8:11],
+    MtestFieldEnum: [8:11],
 }
 
 // we don't test the `read` function, we are only testing in-memory functions.
