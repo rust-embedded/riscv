@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `Mcounteren` in-memory update functions 
 - Add `Mstatus` vector extension support
 - Add fallible counterparts to all functions that `panic`
+- Add CSR-defining macros to create in-memory types
 
 ### Fixed
 
