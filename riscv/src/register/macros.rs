@@ -756,7 +756,7 @@ macro_rules! read_write_csr_field {
      $(#[$field_doc:meta])+
      $field:ident: $bit:literal$(,)?
      ) => {
-         paste::paste! {
+         $crate::paste! {
              $crate::read_only_csr_field!(
                  $ty,
                  $(#[$field_doc])+
@@ -775,7 +775,7 @@ macro_rules! read_write_csr_field {
      $(#[$field_doc:meta])+
      $field:ident: $bit_start:literal ..= $bit_end:literal$(,)?
     ) => {
-        paste::paste! {
+        $crate::paste! {
             $crate::read_only_csr_field!(
                 $ty,
                 $(#[$field_doc])+
@@ -794,7 +794,7 @@ macro_rules! read_write_csr_field {
      $(#[$field_doc:meta])+
      $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?
     ) => {
-        paste::paste! {
+        $crate::paste! {
             $crate::read_only_csr_field!(
                 $ty,
                 $(#[$field_doc])+
@@ -814,7 +814,7 @@ macro_rules! read_write_csr_field {
      $field:ident,
      $field_ty:ident: [$field_start:literal : $field_end:literal],
     ) => {
-        paste::paste! {
+        $crate::paste! {
             $crate::read_only_csr_field!(
                 $ty,
                 $(#[$field_doc])+
@@ -855,7 +855,7 @@ macro_rules! read_only_csr_field {
         const _: () = assert!($bit_end < usize::BITS);
         const _: () = assert!($bit_start < $bit_end);
 
-        paste::paste! {
+        $crate::paste! {
             impl $ty {
                 $(#[$field_doc])+
                 #[inline]
@@ -903,7 +903,7 @@ macro_rules! read_only_csr_field {
         const _: () = assert!($field_end < usize::BITS);
         const _: () = assert!($field_start <= $field_end);
 
-        paste::paste! {
+        $crate::paste! {
             impl $ty {
                 $(#[$field_doc])+
                 #[inline]
@@ -952,7 +952,7 @@ macro_rules! write_only_csr_field {
         const _: () = assert!($bit_end < usize::BITS);
         const _: () = assert!($bit_start < $bit_end);
 
-        paste::paste! {
+        $crate::paste! {
             impl $ty {
                 $(#[$field_doc])+
                 #[doc = ""]

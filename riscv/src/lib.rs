@@ -35,6 +35,8 @@
 #![no_std]
 #![allow(clippy::missing_safety_doc)]
 
+pub use paste::paste;
+
 pub mod asm;
 pub mod bits;
 pub mod delay;
