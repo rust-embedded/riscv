@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Apply clippy changes
 - Bump riscv dependency version
 - Made `cfg` variable selection more robust for custom targets
 - Fixed debug::exit() on riscv64 QEMU simulation
