@@ -11,6 +11,7 @@ license = "MIT OR Apache-2.0"
 name = "riscv-rt-macros"
 repository = "https://github.com/rust-embedded/riscv"
 version = "0.2.1"
+edition = "2021"
 
 [lib]
 proc-macro = true

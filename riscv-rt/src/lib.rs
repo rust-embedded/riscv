@@ -270,34 +270,24 @@
 //! ### Core exception handlers
 //!
 //! This functions are called when corresponding exception occurs.
-//! You can define an exception handler with one of the following names:
-//! * `InstructionMisaligned`
-//! * `InstructionFault`
-//! * `IllegalInstruction`
-//! * `Breakpoint`
-//! * `LoadMisaligned`
-//! * `LoadFault`
-//! * `StoreMisaligned`
-//! * `StoreFault`
-//! * `UserEnvCall`
-//! * `SupervisorEnvCall`
-//! * `MachineEnvCall`
-//! * `InstructionPageFault`
-//! * `LoadPageFault`
-//! * `StorePageFault`
+//! You can define an exception handler with the [`exception`] attribute.
+//! The attribute expects the path to the exception source as an argument.
+//!
+//! The [`exception`] attribute ensures at compile time that there is a valid
+//! exception source for the given handler.
 //!
 //! For example:
 //! ``` no_run
-//! #[export_name = "MachineEnvCall"]
-//! fn custom_menv_call_handler(trap_frame: &riscv_rt::TrapFrame) {
-//!     // ...
+//! use riscv::interrupt::Exception; // or a target-specific exception enum
+//!
+//! #[riscv_rt::exception(Exception::MachineEnvCall)]
+//! fn custom_menv_call_handler(trap_frame: &mut riscv_rt::TrapFrame) {
+//!     todo!()
 //! }
-//! ```
-//! or
-//! ``` no_run
-//! #[no_mangle]
-//! fn MachineEnvCall(trap_frame: &riscv_rt::TrapFrame) -> ! {
-//!     // ...
+//!
+//! #[riscv_rt::exception(Exception::LoadFault)]
+//! fn custom_load_fault_handler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
@@ -320,51 +310,50 @@
 //! or
 //! ``` no_run
 //! #[no_mangle]
-//! fn ExceptionHandler(trap_frame: &riscv_rt::TrapFrame) -> ! {
+//! fn ExceptionHandler(trap_frame: &mut riscv_rt::TrapFrame) {
 //!     // ...
 //! }
 //! ```
 //!
 //! Default implementation of this function stucks in a busy-loop.
 //!
-//!
 //! ### Core interrupt handlers
 //!
 //! This functions are called when corresponding interrupt is occured.
-//! You can define an interrupt handler with one of the following names:
-//! * `SupervisorSoft`
-//! * `MachineSoft`
-//! * `SupervisorTimer`
-//! * `MachineTimer`
-//! * `SupervisorExternal`
-//! * `MachineExternal`
+//! You can define a core interrupt handler with the [`core_interrupt`] attribute.
+//! The attribute expects the path to the interrupt source as an argument.
+//!
+//! The [`core_interrupt`] attribute ensures at compile time that there is a valid
+//! core interrupt source for the given handler.
 //!
 //! For example:
 //! ``` no_run
-//! #[export_name = "MachineTimer"]
-//! fn custom_timer_handler() {
-//!     // ...
-//! }
-//! ```
-//! or
-//! ``` no_run
-//! #[no_mangle]
-//! fn MachineTimer() {
-//!     // ...
-//! }
-//! ```
+//! use riscv::interrupt::Interrupt; // or a target-specific core interrupt enum
 //!
-//! You can also use the `#[interrupt]` macro to define interrupt handlers:
+//! #[riscv_rt::core_interrupt(Interrupt::MachineSoft)]
+//! unsafe fn custom_machine_soft_handler() {
+//!     todo!()
+//! }
 //!
-//! ``` no_run
-//! #[riscv_rt::interrupt]
-//! fn MachineTimer() {
-//!    // ...
+//! #[riscv_rt::core_interrupt(Interrupt::MachineTimer)]
+//! fn custom_machine_timer_handler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
-//! In direct mode, this macro is equivalent to defining a function with the same name.
-//! However, in vectored mode, this macro will generate a proper trap handler for the interrupt.
+//! In vectored mode, this macro will also generate a proper trap handler for the interrupt.
+//!
+//! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
+//!
+//! ### External interrupt handlers
+//!
+//! This functions are called when corresponding interrupt is occured.
+//! You can define an external interrupt handler with the [`external_interrupt`] attribute.
+//! The attribute expects the path to the interrupt source as an argument.
+//!
+//! The [`external_interrupt`] attribute ensures at compile time that there is a valid
+//! external interrupt source for the given handler.
+//! Note that external interrupts are target-specific and may not be available on all platforms.
 //!
 //! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
 //!
@@ -372,20 +361,22 @@
 //!
 //! This function is called when interrupt without defined interrupt handler is occured.
 //! The interrupt reason can be decoded from the `mcause`/`scause` register.
+//! If it is an external interrupt, the interrupt reason can be decoded from a
+//! target-specific peripheral interrupt controller.
 //!
 //! This function can be redefined in the following way:
 //!
 //! ``` no_run
 //! #[export_name = "DefaultHandler"]
-//! fn custom_interrupt_handler() {
+//! unsafe fn custom_interrupt_handler() {
 //!     // ...
 //! }
 //! ```
 //! or
 //! ``` no_run
 //! #[no_mangle]
-//! fn DefaultHandler() {
-//!     // ...
+//! fn DefaultHandler() -> ! {
+//!     loop {}
 //! }
 //! ```
 //!
@@ -436,22 +427,7 @@
 //! riscv-rt = {features=["v-trap"]}
 //! ```
 //! When the vectored trap feature is enabled, the trap vector is set to `_vector_table` in vectored mode.
-//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the interrupt.
-//!
-//! ### Defining interrupt handlers in vectored mode
-//!
-//! In vectored mode, each interrupt must also have a corresponding trap handler.
-//! Therefore, using `export_name` or `no_mangle` is not enough to define an interrupt handler.
-//! The [`interrupt`] macro will generate the trap handler for the interrupt:
-//!
-//! ``` no_run
-//! #[riscv_rt::interrupt]
-//! fn MachineTimer() {
-//!    // ...
-//! }
-//! ```
-//!
-//! This will generate a function named `_start_MachineTimer_trap` that calls the interrupt handler `MachineTimer`.
+//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the core interrupt.
 //!
 //! ## `u-boot`
 //!
@@ -473,19 +449,28 @@
 #[cfg(riscv)]
 mod asm;
 
+#[cfg(not(feature = "no-exceptions"))]
+pub mod exceptions;
+
+#[cfg(not(feature = "no-interrupts"))]
+pub mod interrupts;
+
 #[cfg(feature = "s-mode")]
 use riscv::register::scause as xcause;
 
 #[cfg(not(feature = "s-mode"))]
 use riscv::register::mcause as xcause;
 
-pub use riscv_rt_macros::{entry, pre_init};
+pub use riscv_rt_macros::{entry, exception, external_interrupt, pre_init};
+
+pub use riscv_pac::*;
 
 #[cfg(riscv32)]
-pub use riscv_rt_macros::interrupt_riscv32 as interrupt;
-
+pub use riscv_rt_macros::core_interrupt_riscv32 as core_interrupt;
 #[cfg(riscv64)]
-pub use riscv_rt_macros::interrupt_riscv64 as interrupt;
+pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt;
+#[cfg(not(riscv))]
+pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt; // just for docs, tests, etc.
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
@@ -521,119 +506,49 @@ pub struct TrapFrame {
 /// Trap entry point rust (_start_trap_rust)
 ///
 /// `scause`/`mcause` is read to determine the cause of the trap. XLEN-1 bit indicates
-/// if it's an interrupt or an exception. The result is examined and ExceptionHandler
-/// or one of the core interrupt handlers is called.
+/// if it's an interrupt or an exception. The result is examined and one of the
+/// exception handlers or one of the core interrupt handlers is called.
+///
+/// # Note
+///
+/// Exception dispatching is performed by an extern `_dispatch_exception` function.
+/// Targets that comply with the RISC-V standard can use the implementation provided
+/// by this crate in the [`exceptions`] module. Targets with special exception sources
+/// may provide their custom implementation of the `_dispatch_exception` function. You may
+/// also need to enable the `no-exceptions` feature to op-out the default implementation.
+///
+/// In direct mode (i.e., `v-trap` feature disabled), interrupt dispatching is performed
+/// by an extern `_dispatch_core_interrupt` function. Targets that comply with the RISC-V
+/// standard can use the implementation provided by this crate in the [`interrupts`] module.
+/// Targets with special interrupt sources may provide their custom implementation of the
+/// `_dispatch_core_interrupt` function. You may also need to enable the `no-interrupts`
+/// feature to op-out the default implementation.
+///
+/// In vectored mode (i.e., `v-trap` feature enabled), interrupt dispatching is performed
+/// directly by hardware, and thus this function should **not** be triggered due to an
+/// interrupt. If this abnormal situation happens, this function will directly call the
+/// `DefaultHandler` function.
 ///
 /// # Safety
 ///
 /// This function must be called only from assembly `_start_trap` function.
 /// Do **NOT** call this function directly.
-#[link_section = ".trap.rust"]
+#[cfg_attr(riscv, link_section = ".trap.rust")]
 #[export_name = "_start_trap_rust"]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
-        fn ExceptionHandler(trap_frame: &TrapFrame);
-        fn _dispatch_interrupt(code: usize);
-    }
-
-    let cause = xcause::read();
-    let code = cause.code();
-
-    if cause.is_exception() {
-        let trap_frame = &*trap_frame;
-        if code < __EXCEPTIONS.len() {
-            let h = &__EXCEPTIONS[code];
-            if let Some(handler) = h {
-                handler(trap_frame);
-            } else {
-                ExceptionHandler(trap_frame);
-            }
-        } else {
-            ExceptionHandler(trap_frame);
-        }
-    } else {
-        _dispatch_interrupt(code);
-    }
-}
-
-extern "C" {
-    fn InstructionMisaligned(trap_frame: &TrapFrame);
-    fn InstructionFault(trap_frame: &TrapFrame);
-    fn IllegalInstruction(trap_frame: &TrapFrame);
-    fn Breakpoint(trap_frame: &TrapFrame);
-    fn LoadMisaligned(trap_frame: &TrapFrame);
-    fn LoadFault(trap_frame: &TrapFrame);
-    fn StoreMisaligned(trap_frame: &TrapFrame);
-    fn StoreFault(trap_frame: &TrapFrame);
-    fn UserEnvCall(trap_frame: &TrapFrame);
-    fn SupervisorEnvCall(trap_frame: &TrapFrame);
-    fn MachineEnvCall(trap_frame: &TrapFrame);
-    fn InstructionPageFault(trap_frame: &TrapFrame);
-    fn LoadPageFault(trap_frame: &TrapFrame);
-    fn StorePageFault(trap_frame: &TrapFrame);
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
-    Some(InstructionMisaligned),
-    Some(InstructionFault),
-    Some(IllegalInstruction),
-    Some(Breakpoint),
-    Some(LoadMisaligned),
-    Some(LoadFault),
-    Some(StoreMisaligned),
-    Some(StoreFault),
-    Some(UserEnvCall),
-    Some(SupervisorEnvCall),
-    None,
-    Some(MachineEnvCall),
-    Some(InstructionPageFault),
-    Some(LoadPageFault),
-    None,
-    Some(StorePageFault),
-];
-
-#[export_name = "_dispatch_interrupt"]
-unsafe extern "C" fn dispatch_interrupt(code: usize) {
-    extern "C" {
+        #[cfg(not(feature = "v-trap"))]
+        fn _dispatch_core_interrupt(code: usize);
+        #[cfg(feature = "v-trap")]
         fn DefaultHandler();
+        fn _dispatch_exception(trap_frame: &TrapFrame, code: usize);
     }
 
-    if code < __INTERRUPTS.len() {
-        let h = &__INTERRUPTS[code];
-        if let Some(handler) = h {
-            handler();
-        } else {
-            DefaultHandler();
-        }
-    } else {
-        DefaultHandler();
+    match xcause::read().cause() {
+        #[cfg(not(feature = "v-trap"))]
+        xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
+        #[cfg(feature = "v-trap")]
+        xcause::Trap::Interrupt(_) => DefaultHandler(),
+        xcause::Trap::Exception(code) => _dispatch_exception(&*trap_frame, code),
     }
 }
-
-extern "C" {
-    fn SupervisorSoft();
-    fn MachineSoft();
-    fn SupervisorTimer();
-    fn MachineTimer();
-    fn SupervisorExternal();
-    fn MachineExternal();
-}
-
-#[doc(hidden)]
-#[no_mangle]
-pub static __INTERRUPTS: [Option<unsafe extern "C" fn()>; 12] = [
-    None,
-    Some(SupervisorSoft),
-    None,
-    Some(MachineSoft),
-    None,
-    Some(SupervisorTimer),
-    None,
-    Some(MachineTimer),
-    None,
-    Some(SupervisorExternal),
-    None,
-    Some(MachineExternal),
-];

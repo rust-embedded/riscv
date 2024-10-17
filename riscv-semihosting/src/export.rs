@@ -1,7 +1,9 @@
 //! IMPLEMENTATION DETAILS USED BY MACROS
-
 use crate::hio::{self, HostStream};
-use core::fmt::{self, Write};
+use core::{
+    fmt::{self, Write},
+    ptr::addr_of_mut,
+};
 
 static mut HSTDOUT: Option<HostStream> = None;
 static mut HSTDERR: Option<HostStream> = None;
@@ -11,42 +13,46 @@ mod machine {
     use super::*;
 
     pub fn hstdout_str(s: &str) {
-        let _result = critical_section::with(|_| unsafe {
-            if HSTDOUT.is_none() {
-                HSTDOUT = Some(hio::hstdout()?);
+        let _result = critical_section::with(|_| {
+            let hstdout = unsafe { &mut *addr_of_mut!(HSTDOUT) };
+            if hstdout.is_none() {
+                *hstdout = Some(hio::hstdout()?);
             }
 
-            HSTDOUT.as_mut().unwrap().write_str(s).map_err(drop)
+            hstdout.as_mut().unwrap().write_str(s).map_err(drop)
         });
     }
 
     pub fn hstdout_fmt(args: fmt::Arguments) {
-        let _result = critical_section::with(|_| unsafe {
-            if HSTDOUT.is_none() {
-                HSTDOUT = Some(hio::hstdout()?);
+        let _result = critical_section::with(|_| {
+            let hstdout = unsafe { &mut *addr_of_mut!(HSTDOUT) };
+            if hstdout.is_none() {
+                *hstdout = Some(hio::hstdout()?);
             }
 
-            HSTDOUT.as_mut().unwrap().write_fmt(args).map_err(drop)
+            hstdout.as_mut().unwrap().write_fmt(args).map_err(drop)
         });
     }
 
     pub fn hstderr_str(s: &str) {
-        let _result = critical_section::with(|_| unsafe {
-            if HSTDERR.is_none() {
-                HSTDERR = Some(hio::hstderr()?);
+        let _result = critical_section::with(|_| {
+            let hstderr = unsafe { &mut *addr_of_mut!(HSTDERR) };
+            if hstderr.is_none() {
+                *hstderr = Some(hio::hstderr()?);
             }
 
-            HSTDERR.as_mut().unwrap().write_str(s).map_err(drop)
+            hstderr.as_mut().unwrap().write_str(s).map_err(drop)
         });
     }
 
     pub fn hstderr_fmt(args: fmt::Arguments) {
-        let _result = critical_section::with(|_| unsafe {
-            if HSTDERR.is_none() {
-                HSTDERR = Some(hio::hstderr()?);
+        let _result = critical_section::with(|_| {
+            let hstderr = unsafe { &mut *addr_of_mut!(HSTDERR) };
+            if hstderr.is_none() {
+                *hstderr = Some(hio::hstderr()?);
             }
 
-            HSTDERR.as_mut().unwrap().write_fmt(args).map_err(drop)
+            hstderr.as_mut().unwrap().write_fmt(args).map_err(drop)
         });
     }
 }
@@ -59,41 +65,45 @@ mod user {
 
     pub fn hstdout_str(s: &str) {
         let _result = unsafe {
-            if HSTDOUT.is_none() {
-                HSTDOUT = Some(hio::hstdout().unwrap());
+            let hstdout = &mut *addr_of_mut!(HSTDOUT);
+            if hstdout.is_none() {
+                *hstdout = Some(hio::hstdout().unwrap());
             }
 
-            HSTDOUT.as_mut().unwrap().write_str(s).map_err(drop)
+            hstdout.as_mut().unwrap().write_str(s).map_err(drop)
         };
     }
 
     pub fn hstdout_fmt(args: fmt::Arguments) {
         let _result = unsafe {
-            if HSTDOUT.is_none() {
-                HSTDOUT = Some(hio::hstdout().unwrap());
+            let hstdout = &mut *addr_of_mut!(HSTDOUT);
+            if hstdout.is_none() {
+                *hstdout = Some(hio::hstdout().unwrap());
             }
 
-            HSTDOUT.as_mut().unwrap().write_fmt(args).map_err(drop)
+            hstdout.as_mut().unwrap().write_fmt(args).map_err(drop)
         };
     }
 
     pub fn hstderr_str(s: &str) {
         let _result = unsafe {
-            if HSTDERR.is_none() {
-                HSTDERR = Some(hio::hstderr().unwrap());
+            let hstderr = &mut *addr_of_mut!(HSTDERR);
+            if hstderr.is_none() {
+                *hstderr = Some(hio::hstderr().unwrap());
             }
 
-            HSTDERR.as_mut().unwrap().write_str(s).map_err(drop)
+            hstderr.as_mut().unwrap().write_str(s).map_err(drop)
         };
     }
 
     pub fn hstderr_fmt(args: fmt::Arguments) {
         let _result = unsafe {
-            if HSTDERR.is_none() {
-                HSTDERR = Some(hio::hstderr().unwrap());
+            let hstderr = &mut *addr_of_mut!(HSTDERR);
+            if hstderr.is_none() {
+                *hstderr = Some(hio::hstderr().unwrap());
             }
 
-            HSTDERR.as_mut().unwrap().write_fmt(args).map_err(drop)
+            hstderr.as_mut().unwrap().write_fmt(args).map_err(drop)
         };
     }
 }

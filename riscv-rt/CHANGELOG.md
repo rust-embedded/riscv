@@ -9,21 +9,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add integration tests to check that macros work as expected.
+- Add `no-exceptions` feature to opt-out the default implementation of `_dispatch_exception`
+- Add `no-interrupts` feature to opt-out the default implementation of `_dispatch_core_interrupt`
 - Add `pre_init_trap` to detect early errors during the boot process.
 - Add `v-trap` feature to enable interrupt handling in vectored mode.
-- Add `interrupt` proc macro to help defining interrupt handlers.
-If `v-trap` feature is enabled, this macro also generates its corresponding trap.
+- Add `core_interrupt` proc macro to help defining core interrupt handlers.
+  If `v-trap` feature is enabled, this macro also generates its corresponding trap.
+- Add `external_interrupt` proc macro to help defining external interrupt handlers.
+- Add `exception` proc macro to help defining exception handlers.
+  If `v-trap` feature is enabled, this macro also generates its corresponding trap.
 - Add `u-boot` feature, so that you can start your elf binary with u-boot and
 work with passed arguments.
 
 ### Changed
 
+- Use `cfg_attr` in `start_trap_rust` to allow compilation in non-riscv targets.
 - Moved all the assembly code to `asm.rs`
 - Use `weak` symbols for functions such as `_mp_hook` or `_start_trap`
 - `abort` is now `weak`, so it is possible to link third-party libraries including this symbol.
 - Made `cfg` variable selection more robust for custom targets
-- `_start_trap_rust` now only deals with exceptions. When an interrupt is detected, it now calls
-to `_dispatch_interrupt`.
+- `_start_trap_rust` now relies on `_dispatch_exception` and `_dispatch_core_interrupt`.
+  This change allows more flexibility for targets with non-standard exceptions and interrupts.
 - Upgrade rust-version to 1.61
 - Update `syn` to version 2.0
 

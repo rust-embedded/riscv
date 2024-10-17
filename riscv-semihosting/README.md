@@ -17,7 +17,7 @@ Given this, the
 generally sufficient for using this library.
 
 A major difference between this library and `cortex-m-semihosting` is that there
-are mandatory features to choose the privilege level at which the semihosting
+are features to choose the privilege level at which the semihosting
 calls are executed. The *machine-mode (M-mode)* feature will cause the macros in `export`
 to execute the semihosting operation in an interrupt-free context, while
 *user-mode (U-mode)* causes them to just execute the operation.

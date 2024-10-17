@@ -1,0 +1,17 @@
+error: `#[external_interrupt]` function must have signature `[unsafe] fn() [-> !]`
+  --> tests/riscv-rt/external_interrupt/fail_signatures.rs:31:1
+   |
+31 | fn my_interrupt() -> usize {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: `#[external_interrupt]` function must have signature `[unsafe] fn() [-> !]`
+  --> tests/riscv-rt/external_interrupt/fail_signatures.rs:34:1
+   |
+34 | fn my_other_interrupt(code: usize) -> usize {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: `#[external_interrupt]` function must have signature `[unsafe] fn() [-> !]`
+  --> tests/riscv-rt/external_interrupt/fail_signatures.rs:37:1
+   |
+37 | async fn my_async_interrupt(code: usize) -> usize {}
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
