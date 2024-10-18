@@ -600,3 +600,431 @@ macro_rules! clear_pmp {
         }
     };
 }
+
+/// Helper macro to define a CSR type.
+///
+/// This macro creates a type represents a CSR register, without defining any bitfields.
+///
+/// It is mainly used by [read_write_csr](crate::read_write_csr),
+/// [read_only_csr](crate::read_only_csr), and [write_only_csr](crate::write_only_csr) macros.
+#[macro_export]
+macro_rules! csr {
+    ($(#[$doc:meta])*
+     $ty:ident,
+     $mask:literal) => {
+        #[repr(C)]
+        $(#[$doc])*
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+        pub struct $ty {
+            bits: usize,
+        }
+
+        impl $ty {
+            /// Bitmask for legal bitfields of the CSR type.
+            pub const BITMASK: usize = $mask;
+
+            /// Creates a new CSR type from raw bits value.
+            ///
+            /// Only bits in the [BITMASK](Self::BITMASK) will be set.
+            pub const fn from_bits(bits: usize) -> Self {
+                Self { bits: bits & $mask }
+            }
+
+            /// Gets the raw bits value.
+            pub const fn bits(&self) -> usize {
+                self.bits & $mask
+            }
+
+            /// Gets the bitmask for the CSR type's bitfields.
+            pub const fn bitmask(&self) -> usize {
+                Self::BITMASK
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! csr_field_enum {
+    ($(#[$field_ty_doc:meta])*
+     $field_ty:ident {
+         range: [$field_start:literal : $field_end:literal],
+         default: $default_variant:ident,
+         $($variant:ident = $value:expr$(,)?)+
+     }$(,)?
+    ) => {
+         $(#[$field_ty_doc])*
+         #[repr(usize)]
+         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+         pub enum $field_ty {
+             $($variant = $value),+
+         }
+
+         impl $field_ty {
+             /// Creates a new field variant.
+             pub const fn new() -> Self {
+                 Self::$default_variant
+             }
+
+             /// Attempts to convert a [`usize`] into a valid variant.
+             pub const fn from_usize(val: usize) -> $crate::result::Result<Self> {
+                 match val {
+                     $($value => Ok(Self::$variant),)+
+                     _ => Err($crate::result::Error::InvalidVariant(val)),
+                 }
+             }
+
+             /// Converts the variant into a [`usize`].
+             pub const fn into_usize(self) -> usize {
+                 self as usize
+             }
+         }
+
+         impl Default for $field_ty {
+             fn default() -> Self {
+                 Self::new()
+             }
+         }
+
+         impl From<$field_ty> for usize {
+             fn from(val: $field_ty) -> Self {
+                 val.into_usize()
+             }
+         }
+
+         impl TryFrom<usize> for $field_ty {
+             type Error = $crate::result::Error;
+
+             fn try_from(val: usize) -> $crate::result::Result<Self> {
+                 Self::from_usize(val)
+             }
+         }
+    };
+}
+
+/// Helper macro to create a read-write CSR type.
+///
+/// The type allows to read the CSR value into memory, and update the field values in-memory.
+///
+/// The user can then write the entire bitfield value back into the CSR with a single write.
+#[macro_export]
+macro_rules! read_write_csr {
+    ($(#[$doc:meta])+
+     $ty:ident: $csr:tt,
+     mask: $mask:tt$(,)?
+    ) => {
+        $crate::csr!($(#[$doc])+ $ty, $mask);
+
+        $crate::read_csr_as!($ty, $csr);
+        $crate::write_csr_as!($ty, $csr);
+    };
+}
+
+/// Helper macro to create a read-only CSR type.
+///
+/// The type allows to read the CSR value into memory.
+#[macro_export]
+macro_rules! read_only_csr {
+    ($(#[$doc:meta])+
+     $ty:ident: $csr:tt,
+     mask: $mask:tt$(,)?
+    ) => {
+        $crate::csr! { $(#[$doc])+ $ty, $mask }
+
+        $crate::read_csr_as!($ty, $csr);
+    };
+}
+
+/// Helper macro to create a read-only CSR type.
+///
+/// The type allows to read the CSR value into memory.
+#[macro_export]
+macro_rules! write_only_csr {
+    ($(#[$doc:meta])+
+     $ty:ident: $csr:literal,
+     mask: $mask:literal$(,)?
+    ) => {
+        $crate::csr! { $(#[$doc])+ $ty, $mask }
+
+        $crate::write_csr_as!($ty, $csr);
+    };
+}
+
+/// Defines field accesor functions for a read-write CSR type.
+#[macro_export]
+macro_rules! read_write_csr_field {
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit:literal$(,)?
+     ) => {
+         $crate::paste! {
+             $crate::read_only_csr_field!(
+                 $ty,
+                 $(#[$field_doc])+
+                 $field: $bit,
+             );
+
+             $crate::write_only_csr_field!(
+                 $ty,
+                 $(#[$field_doc])+
+                 [<set_ $field>]: $bit,
+             );
+         }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit_start:literal ..= $bit_end:literal$(,)?
+    ) => {
+        $crate::paste! {
+            $crate::read_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                $field: $bit_start ..= $bit_end,
+            );
+
+            $crate::write_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                [<set_ $field>]: $bit_start ..= $bit_end,
+            );
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?
+    ) => {
+        $crate::paste! {
+            $crate::read_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                $field: [$bit_start : $bit_end],
+            );
+
+            $crate::write_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                [<set_ $field>]: [$bit_start : $bit_end],
+            );
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident,
+     $field_ty:ident: [$field_start:literal : $field_end:literal],
+    ) => {
+        $crate::paste! {
+            $crate::read_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                $field,
+                $field_ty: [$field_start : $field_end],
+            );
+
+            $crate::write_only_csr_field!(
+                $ty,
+                $(#[$field_doc])+
+                [<set_ $field>],
+                $field_ty: [$field_start : $field_end],
+            );
+        }
+    };
+}
+
+/// Defines field accesor functions for a read-only CSR type.
+#[macro_export]
+macro_rules! read_only_csr_field {
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit:literal$(,)?) => {
+        const _: () = assert!($bit < usize::BITS);
+
+        impl $ty {
+            $(#[$field_doc])+
+            #[inline]
+            pub fn $field(&self) -> bool {
+                $crate::bits::bf_extract(self.bits, $bit, 1) != 0
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit_start:literal..=$bit_end:literal$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start < $bit_end);
+
+        $crate::paste! {
+            impl $ty {
+                $(#[$field_doc])+
+                #[inline]
+                pub fn $field(&self, index: usize) -> bool {
+                    self.[<try_ $field>](index).unwrap()
+                }
+
+                $(#[$field_doc])+
+                #[inline]
+                pub fn [<try_ $field>](&self, index: usize) -> $crate::result::Result<bool> {
+                    if ($bit_start..=$bit_end).contains(&index) {
+                        Ok($crate::bits::bf_extract(self.bits, index, 1) != 0)
+                    } else {
+                        Err($crate::result::Error::IndexOutOfBounds {
+                            index,
+                            min: $bit_start,
+                            max: $bit_end,
+                        })
+                    }
+                }
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start < $bit_end);
+
+        impl $ty {
+            $(#[$field_doc])+
+            #[inline]
+            pub fn $field(&self) -> usize {
+                $crate::bits::bf_extract(self.bits, $bit_start, $bit_end - $bit_start + 1)
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident,
+     $field_ty:ident: [$field_start:literal : $field_end:literal]$(,)?
+    ) => {
+        const _: () = assert!($field_end < usize::BITS);
+        const _: () = assert!($field_start <= $field_end);
+
+        $crate::paste! {
+            impl $ty {
+                $(#[$field_doc])+
+                #[inline]
+                pub fn $field(&self) -> $field_ty {
+                    self.[<try_ $field>]().unwrap()
+                }
+
+                $(#[$field_doc])+
+                #[inline]
+                pub fn [<try_ $field>](&self) -> $crate::result::Result<$field_ty> {
+                    let value = $crate::bits::bf_extract(
+                        self.bits,
+                        $field_start,
+                        $field_end - $field_start + 1,
+                    );
+
+                    $field_ty::from_usize(value)
+                }
+            }
+        }
+    };
+}
+
+/// Defines field accesor functions for a write-only CSR type.
+#[macro_export]
+macro_rules! write_only_csr_field {
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit:literal$(,)?) => {
+        const _: () = assert!($bit < usize::BITS);
+
+        impl $ty {
+            $(#[$field_doc])+
+            #[doc = ""]
+            #[doc = "**NOTE**: only updates in-memory values, does not write to CSR."]
+            #[inline]
+            pub fn $field(&mut self, $field: bool) {
+                self.bits = $crate::bits::bf_insert(self.bits, $bit, 1, $field as usize);
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: $bit_start:literal..=$bit_end:literal$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start < $bit_end);
+
+        $crate::paste! {
+            impl $ty {
+                $(#[$field_doc])+
+                #[doc = ""]
+                #[doc = "**NOTE**: only updates in-memory values, does not write to CSR."]
+                #[inline]
+                pub fn $field(&mut self, index: usize, $field: bool) {
+                    self.[<try_ $field>](index, $field).unwrap();
+                }
+
+                $(#[$field_doc])+
+                #[doc = ""]
+                #[doc = "**NOTE**: only updates in-memory values, does not write to CSR."]
+                #[inline]
+                pub fn [<try_ $field>](&mut self, index: usize, $field: bool) -> $crate::result::Result<()> {
+                    if ($bit_start..=$bit_end).contains(&index) {
+                        self.bits = $crate::bits::bf_insert(self.bits, index, 1, $field as usize);
+                        Ok(())
+                    } else {
+                        Err($crate::result::Error::IndexOutOfBounds {
+                            index,
+                            min: $bit_start,
+                            max: $bit_end,
+                        })
+                    }
+                }
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident: [$bit_start:literal : $bit_end:literal]$(,)?) => {
+        const _: () = assert!($bit_end < usize::BITS);
+        const _: () = assert!($bit_start < $bit_end);
+
+        impl $ty {
+            $(#[$field_doc])+
+            #[doc = ""]
+            #[doc = "**NOTE**: only updates in-memory values, does not write to CSR."]
+            #[inline]
+            pub fn $field(&mut self, $field: usize) {
+                self.bits = $crate::bits::bf_insert(
+                    self.bits,
+                    $bit_start,
+                    $bit_end - $bit_start + 1,
+                    $field,
+                );
+            }
+        }
+    };
+
+    ($ty:ident,
+     $(#[$field_doc:meta])+
+     $field:ident,
+     $field_ty:ident: [$field_start:literal : $field_end:literal]$(,)?
+    ) => {
+        const _: () = assert!($field_end < usize::BITS);
+        const _: () = assert!($field_start <= $field_end);
+
+        impl $ty {
+            $(#[$field_doc])+
+            #[doc = ""]
+            #[doc = "**NOTE**: only updates in-memory values, does not write to CSR."]
+            #[inline]
+            pub fn $field(&mut self, $field: $field_ty) {
+                self.bits = $crate::bits::bf_insert(
+                    self.bits,
+                    $field_start,
+                    $field_end - $field_start + 1,
+                    $field.into(),
+                );
+            }
+        }
+    };
+}

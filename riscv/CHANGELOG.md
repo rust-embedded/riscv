@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `Mstatus` vector extension support
 - Add fallible counterparts to all functions that `panic`
 - Add `riscv-pac` as a dependency
+- Add CSR-defining macros to create in-memory types
 
 ### Fixed
 

@@ -1,99 +1,35 @@
 //! `mcountinhibit` register
 
-use crate::bits::{bf_extract, bf_insert};
 use crate::result::{Error, Result};
 
-/// `mcountinhibit` register
-#[derive(Clone, Copy, Debug)]
-pub struct Mcountinhibit {
-    bits: usize,
+read_write_csr! {
+    /// `mcountinhibit` register
+    Mcountinhibit: 0x320,
+    mask: 0xffff_fffd,
 }
 
-impl Mcountinhibit {
-    /// Machine "cycle\[h\]" Disable
-    #[inline]
-    pub fn cy(&self) -> bool {
-        bf_extract(self.bits, 0, 1) != 0
-    }
-
-    /// Sets whether to inhibit the "cycle\[h\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_cy(&mut self, cy: bool) {
-        self.bits = bf_insert(self.bits, 0, 1, cy as usize);
-    }
-
-    /// Machine "instret\[h\]" Disable
-    #[inline]
-    pub fn ir(&self) -> bool {
-        bf_extract(self.bits, 2, 1) != 0
-    }
-
-    /// Sets whether to inhibit the "instret\[h\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_ir(&mut self, ir: bool) {
-        self.bits = bf_insert(self.bits, 2, 1, ir as usize);
-    }
-
-    /// Machine "hpm\[x\]" Disable (bits 3-31)
-    #[inline]
-    pub fn hpm(&self, index: usize) -> bool {
-        assert!((3..32).contains(&index));
-        bf_extract(self.bits, index, 1) != 0
-    }
-
-    /// Machine "hpm\[x\]" Disable (bits 3-31)
-    ///
-    /// Attempts to read the "hpm\[x\]" value, and returns an error if the index is invalid.
-    #[inline]
-    pub fn try_hpm(&self, index: usize) -> Result<bool> {
-        if (3..32).contains(&index) {
-            Ok(bf_extract(self.bits, index, 1) != 0)
-        } else {
-            Err(Error::IndexOutOfBounds {
-                index,
-                min: 3,
-                max: 31,
-            })
-        }
-    }
-
-    /// Sets whether to inhibit the "hpm\[X\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_hpm(&mut self, index: usize, hpm: bool) {
-        assert!((3..32).contains(&index));
-        self.bits = bf_insert(self.bits, index, 1, hpm as usize);
-    }
-
-    /// Sets whether to inhibit the "hpm\[X\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    ///
-    /// Attempts to update the "hpm\[x\]" value, and returns an error if the index is invalid.
-    #[inline]
-    pub fn try_set_hpm(&mut self, index: usize, hpm: bool) -> Result<()> {
-        if (3..32).contains(&index) {
-            self.bits = bf_insert(self.bits, index, 1, hpm as usize);
-            Ok(())
-        } else {
-            Err(Error::IndexOutOfBounds {
-                index,
-                min: 3,
-                max: 31,
-            })
-        }
-    }
-}
-
-read_csr_as!(Mcountinhibit, 0x320);
-write_csr_as!(Mcountinhibit, 0x320);
 set!(0x320);
 clear!(0x320);
+
+read_write_csr_field! {
+    Mcountinhibit,
+    /// Gets the `cycle[h]` inhibit field value.
+    cy: 0,
+}
+
+read_write_csr_field! {
+    Mcountinhibit,
+    /// Gets the `instret[h]` inhibit field value.
+    ir: 2,
+}
+
+read_write_csr_field! {
+    Mcountinhibit,
+    /// Gets the `mhpmcounterX[h]` inhibit field value.
+    ///
+    /// **WARN**: `index` must be in the range `[31:3]`.
+    hpm: 3..=31,
+}
 
 set_clear_csr!(
 /// Machine cycle Disable
