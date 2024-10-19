@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.0] - 2024-10-19
+
 ### Added
 
 - use `riscv-pac` result types for trait implementations
