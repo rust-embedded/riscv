@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.12.0] - 2024-10-19
+
 ### Added
 
 - `riscv-macros` crate for `riscv-pac` enums.
