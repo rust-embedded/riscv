@@ -92,6 +92,27 @@ macro_rules! read_csr_as {
             })
         }
     };
+
+    ($register:ident, $csr_number:literal, $sentinel:tt) => {
+        $crate::read_csr!($csr_number);
+
+        /// Reads the CSR.
+        ///
+        /// **WARNING**: panics on targets not implementing this CSR.
+        #[inline]
+        pub fn read() -> $register {
+            try_read().unwrap()
+        }
+
+        /// Attempts to reads the CSR.
+        #[inline]
+        pub fn try_read() -> $crate::result::Result<$register> {
+            match unsafe { _try_read()? } {
+                $sentinel => Err($crate::result::Error::Unimplemented),
+                bits => Ok($register { bits }),
+            }
+        }
+    };
 }
 
 /// `RV32`: Convenience macro to read a CSR register value as a `register` type.
@@ -731,6 +752,16 @@ macro_rules! read_only_csr {
         $crate::csr! { $(#[$doc])+ $ty, $mask }
 
         $crate::read_csr_as!($ty, $csr);
+    };
+
+    ($(#[$doc:meta])+
+     $ty:ident: $csr:tt,
+     mask: $mask:tt,
+     sentinel: $sentinel:tt$(,)?,
+    ) => {
+        $crate::csr! { $(#[$doc])+ $ty, $mask }
+
+        $crate::read_csr_as!($ty, $csr, $sentinel);
     };
 }
 
