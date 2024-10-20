@@ -1028,3 +1028,20 @@ macro_rules! write_only_csr_field {
         }
     };
 }
+
+/// Convenience macro for checking if a CSR matches a sentinel value.
+///
+/// If the CSR value matches the sentinel, the CSR is not implemented.
+#[macro_export]
+macro_rules! csr_is_implemented {
+    ($csr:ident, $sentinel:expr) => {
+        $crate::paste! {
+            impl $csr {
+                #[doc = " When [" $csr "] is hardwired to `" $sentinel "` it means that the CSR isn't implemented."]
+                pub const fn is_implemented(&self) -> bool {
+                    self.bits != $sentinel
+                }
+            }
+        }
+    }
+}
