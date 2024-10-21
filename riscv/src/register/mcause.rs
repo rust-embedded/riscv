@@ -2,32 +2,41 @@
 
 pub use crate::interrupt::Trap;
 
-/// mcause register
-#[derive(Clone, Copy, Debug)]
-pub struct Mcause {
-    bits: usize,
+read_only_csr! {
+    /// `mcause` register
+    Mcause: 0x342,
+    mask: 0xffff_ffff,
 }
 
-impl From<usize> for Mcause {
-    #[inline]
-    fn from(bits: usize) -> Self {
-        Self { bits }
-    }
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mcause,
+    /// Returns the `code` field.
+    code: [0:30],
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mcause,
+    /// Returns the `code` field.
+    code: [0:62],
+}
+
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mcause,
+    /// Is the trap cause an interrupt.
+    is_interrupt: 31,
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mcause,
+    /// Is the trap cause an interrupt.
+    is_interrupt: 63,
 }
 
 impl Mcause {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
-    /// Returns the code field
-    #[inline]
-    pub fn code(&self) -> usize {
-        self.bits & !(1 << (usize::BITS as usize - 1))
-    }
-
     /// Returns the trap cause represented by this register.
     ///
     /// # Note
@@ -43,17 +52,9 @@ impl Mcause {
         }
     }
 
-    /// Is trap cause an interrupt.
-    #[inline]
-    pub fn is_interrupt(&self) -> bool {
-        self.bits & (1 << (usize::BITS as usize - 1)) != 0
-    }
-
     /// Is trap cause an exception.
     #[inline]
     pub fn is_exception(&self) -> bool {
         !self.is_interrupt()
     }
 }
-
-read_csr_as!(Mcause, 0x342);
