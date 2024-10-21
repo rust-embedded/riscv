@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Use CSR helper macros to define `mcause` register
+
 ## [v0.12.1] - 2024-10-20
 
 ### Changed
