@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- CSR helper macro to check for platform implementation
+
+### Changed
+
+- Use CSR helper macros to define `marchid` register
+
 ## [v0.12.1] - 2024-10-20
 
 ### Changed

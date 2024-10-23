@@ -1,28 +1,8 @@
 //! marchid register
 
-use core::num::NonZeroUsize;
-
-/// marchid register
-#[derive(Clone, Copy, Debug)]
-pub struct Marchid {
-    bits: NonZeroUsize,
-}
-
-impl Marchid {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits.get()
-    }
-}
-
-read_csr!(0xF12);
-
-/// Reads the CSR
-#[inline]
-pub fn read() -> Option<Marchid> {
-    let r = unsafe { _read() };
-    // When marchid is hardwired to zero it means that the marchid
-    // csr isn't implemented.
-    NonZeroUsize::new(r).map(|bits| Marchid { bits })
+read_only_csr! {
+    /// `marchid` register
+    Marchid: 0xF12,
+    mask: 0xffff_ffff,
+    sentinel: 0,
 }
