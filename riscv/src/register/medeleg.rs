@@ -126,3 +126,41 @@ set_clear_csr!(
 set_clear_csr!(
     /// Store/AMO Page Fault Delegate
     , set_store_page_fault, clear_store_page_fault, 1 << 15);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! test_field {
+        ($reg:ident, $field:ident) => {{
+            $crate::paste! {
+                assert!(!$reg.$field());
+
+                $reg.[<set_ $field>](true);
+                assert!($reg.$field());
+
+                $reg.[<set_ $field>](false);
+                assert!(!$reg.$field());
+            }
+        }};
+    }
+
+    #[test]
+    fn test_medeleg() {
+        let mut m = Medeleg::from_bits(0);
+
+        test_field!(m, instruction_misaligned);
+        test_field!(m, instruction_fault);
+        test_field!(m, illegal_instruction);
+        test_field!(m, breakpoint);
+        test_field!(m, load_misaligned);
+        test_field!(m, load_fault);
+        test_field!(m, store_misaligned);
+        test_field!(m, store_fault);
+        test_field!(m, user_env_call);
+        test_field!(m, supervisor_env_call);
+        test_field!(m, instruction_page_fault);
+        test_field!(m, load_page_fault);
+        test_field!(m, store_page_fault);
+    }
+}
