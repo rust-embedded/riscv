@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use CSR helper macros to define `marchid` register
 - Re-use `try_*` functions in `mcountinhibit`
 - Use CSR helper macros to define `mcause` register
+- Use CSR helper macros to define `medeleg` register
 
 ## [v0.12.1] - 2024-10-20
 
