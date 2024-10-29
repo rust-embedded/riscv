@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.13.1] - 2025-02-08
+
+### Changed
+
+- `link.x.in`: remove references to `eh_frame`
+
 ## [v0.13.0] - 2024-10-19
 
 ### Added
