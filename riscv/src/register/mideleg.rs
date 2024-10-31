@@ -36,3 +36,17 @@ set_clear_csr!(
 set_clear_csr!(
     /// Supervisor External Interrupt Delegate
     , set_sext, clear_sext, 1 << 9);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mideleg() {
+        let mut m = Mideleg::from_bits(0);
+
+        test_csr_field!(m, ssoft);
+        test_csr_field!(m, stimer);
+        test_csr_field!(m, sext);
+    }
+}
