@@ -1059,3 +1059,19 @@ macro_rules! write_only_csr_field {
         }
     };
 }
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_csr_field {
+    ($reg:ident, $field:ident) => {{
+        $crate::paste! {
+            assert!(!$reg.$field());
+
+            $reg.[<set_ $field>](true);
+            assert!($reg.$field());
+
+            $reg.[<set_ $field>](false);
+            assert!(!$reg.$field());
+        }
+    }};
+}

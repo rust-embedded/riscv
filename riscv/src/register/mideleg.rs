@@ -1,38 +1,29 @@
 //! mideleg register
 
-/// mideleg register
-#[derive(Clone, Copy, Debug)]
-pub struct Mideleg {
-    bits: usize,
+read_write_csr! {
+    /// `mideleg` register
+    Mideleg: 0x303,
+    mask: 0x222,
 }
 
-impl Mideleg {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
+read_write_csr_field! {
+    Mideleg,
     /// Supervisor Software Interrupt Delegate
-    #[inline]
-    pub fn ssoft(&self) -> bool {
-        self.bits & (1 << 1) != 0
-    }
-
-    /// Supervisor Timer Interrupt Delegate
-    #[inline]
-    pub fn stimer(&self) -> bool {
-        self.bits & (1 << 5) != 0
-    }
-
-    /// Supervisor External Interrupt Delegate
-    #[inline]
-    pub fn sext(&self) -> bool {
-        self.bits & (1 << 9) != 0
-    }
+    ssoft: 1,
 }
 
-read_csr_as!(Mideleg, 0x303);
+read_write_csr_field! {
+    Mideleg,
+    /// Supervisor Timer Interrupt Delegate
+    stimer: 5,
+}
+
+read_write_csr_field! {
+    Mideleg,
+    /// Supervisor External Interrupt Delegate
+    sext: 9,
+}
+
 set!(0x303);
 clear!(0x303);
 
@@ -45,3 +36,17 @@ set_clear_csr!(
 set_clear_csr!(
     /// Supervisor External Interrupt Delegate
     , set_sext, clear_sext, 1 << 9);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mideleg() {
+        let mut m = Mideleg::from_bits(0);
+
+        test_csr_field!(m, ssoft);
+        test_csr_field!(m, stimer);
+        test_csr_field!(m, sext);
+    }
+}
