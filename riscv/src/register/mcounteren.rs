@@ -117,18 +117,7 @@ mod tests {
         test_csr_field!(m, tm);
         test_csr_field!(m, ir);
 
-        (3..32).for_each(|i| {
-            assert!(!m.hpm(i));
-            assert_eq!(m.try_hpm(i), Ok(false));
-
-            m.set_hpm(i, true);
-            assert!(m.hpm(i));
-
-            assert_eq!(m.try_set_hpm(i, false), Ok(()));
-            assert_eq!(m.try_hpm(i), Ok(false));
-
-            assert!(!m.hpm(i));
-        });
+        (3..32).for_each(|i| test_csr_field!(m, hpm, i));
 
         (0..3).chain(32..64).for_each(|index| {
             assert_eq!(
