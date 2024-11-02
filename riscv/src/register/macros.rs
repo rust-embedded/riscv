@@ -1076,7 +1076,7 @@ macro_rules! test_csr_field {
         }
     }};
 
-    // test a range bit field
+    // test a range bit field (valid)
     ($reg:ident, $field:ident, $index:expr) => {{
         $crate::paste! {
             assert!(!$reg.$field($index));
@@ -1089,6 +1089,14 @@ macro_rules! test_csr_field {
             assert_eq!($reg.[<try_ $field>]($index), Ok(false));
 
             assert!(!$reg.$field($index));
+        }
+    }};
+
+    // test a range bit field (invalid)
+    ($reg:ident, $field:ident, $index:expr, $err:expr) => {{
+        $crate::paste! {
+            assert_eq!($reg.[<try_ $field>]($index), Err($err));
+            assert_eq!($reg.[<try_set_ $field>]($index, false), Err($err));
         }
     }};
 }
