@@ -120,22 +120,16 @@ mod tests {
         (3..32).for_each(|i| test_csr_field!(m, hpm, i));
 
         (0..3).chain(32..64).for_each(|index| {
-            assert_eq!(
-                m.try_hpm(index),
-                Err(Error::IndexOutOfBounds {
+            test_csr_field!(
+                m,
+                hpm,
+                index,
+                Error::IndexOutOfBounds {
                     index,
                     min: 3,
                     max: 31
-                })
-            );
-            assert_eq!(
-                m.try_set_hpm(index, false),
-                Err(Error::IndexOutOfBounds {
-                    index,
-                    min: 3,
-                    max: 31
-                })
-            );
-        })
+                }
+            )
+        });
     }
 }
