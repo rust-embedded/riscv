@@ -113,29 +113,9 @@ mod tests {
     fn test_mcounteren() {
         let mut m = Mcounteren { bits: 0 };
 
-        assert!(!m.cy());
-
-        m.set_cy(true);
-        assert!(m.cy());
-
-        m.set_cy(false);
-        assert!(!m.cy());
-
-        assert!(!m.tm());
-
-        m.set_tm(true);
-        assert!(m.tm());
-
-        m.set_tm(false);
-        assert!(!m.tm());
-
-        assert!(!m.ir());
-
-        m.set_ir(true);
-        assert!(m.ir());
-
-        m.set_ir(false);
-        assert!(!m.ir());
+        test_csr_field!(m, cy);
+        test_csr_field!(m, tm);
+        test_csr_field!(m, ir);
 
         (3..32).for_each(|i| {
             assert!(!m.hpm(i));
