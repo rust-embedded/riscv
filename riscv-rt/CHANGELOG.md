@@ -9,7 +9,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- `link.x.in`: remove references to `eh_frame`
+- `link.x.in`: remove references to `eh_frame`.
+- Rename start/end section symbols to align with `cortex-m-rt`:
+    - `_stext`: it remains, as linker files can modify it.
+    - `__stext`: it coincides with `_stext`.
+    - `__etext`: new symbol. It points to the end of the text section.
+    - `__srodata`: new symbol. It points to the start of the read-only data section.
+    - `__erodata`: new symbol. It points to the end of the read-only data section.
+    - `__sdata`: substitutes `_sdata`. It points to the start of the on-flash data section.
+    - `__edata`: substitutes `_edata`. It points to the end of the on-flash data section.
+    - `__idata`: substitutes `_idata`. It points to the start of the on-RAM data section.
+    - `__sbss`: substitutes `_sbss`. It points to the start of the BSS section.
+    - `__ebss`: substitutes `_ebss`. It points to the end of the BSS section.
+    - `__sheap`: substitutes `_sheap`. It points to the start of the heap section.
+    - `__eheap`: substitutes `_eheap`. It points to the end of the heap section.
+    - `__estack`: substitutes `_estack`. It points to the end of the stack section.
+    - `__sstack`: substitutes `_sstack`. It points to the start of the stack section.
+- `__edata` and `__ebss` are now defined outside of their respective sections.
+  In this way, users can inject custom sections and benefit from the copying and
+  zeroing routines, respectively.
+- As `__sheap` is now private, `riscv-rt` now provides a `heap_start` function to
+  allow users get the initial address of the heap when initializing an allocator.
+- Update documentation.
+- Removed `.init.rust` section, as it is no longer required.
 
 ## [v0.13.0] - 2024-10-19
 

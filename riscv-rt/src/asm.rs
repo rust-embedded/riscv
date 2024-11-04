@@ -152,9 +152,9 @@ cfg_global_asm!(
 cfg_global_asm!(
     "call __pre_init
     // Copy .data from flash to RAM
-    la t0, _sdata
-    la t2, _edata
-    la t1, _sidata
+    la t0, __sdata
+    la t2, __edata
+    la t1, __sidata
     bgeu t0, t2, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
@@ -171,8 +171,8 @@ cfg_global_asm!(
     bltu t0, t2, 1b",
     "
 2:  // Zero out .bss
-    la t0, _sbss
-    la t2, _ebss
+    la t0, __sbss
+    la t2, __ebss
     bgeu  t0, t2, 4f
 3:  ",
     #[cfg(target_arch = "riscv32")]
