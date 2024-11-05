@@ -63,3 +63,20 @@ set_clear_csr!(
 set_clear_csr!(
     /// Machine External Interrupt Enable
     , set_mext, clear_mext, 1 << 11);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mie() {
+        let mut m = Mie::from_bits(0);
+
+        test_csr_field!(m, ssoft);
+        test_csr_field!(m, msoft);
+        test_csr_field!(m, stimer);
+        test_csr_field!(m, mtimer);
+        test_csr_field!(m, sext);
+        test_csr_field!(m, mext);
+    }
+}
