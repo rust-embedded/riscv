@@ -1,56 +1,47 @@
 //! mip register
 
-/// mip register
-#[derive(Clone, Copy, Debug)]
-pub struct Mip {
-    bits: usize,
+read_write_csr! {
+    /// `mip` register
+    Mip: 0x344,
+    mask: 0xaaa,
 }
 
-impl Mip {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
+read_write_csr_field! {
+    Mip,
     /// Supervisor Software Interrupt Pending
-    #[inline]
-    pub fn ssoft(&self) -> bool {
-        self.bits & (1 << 1) != 0
-    }
-
-    /// Machine Software Interrupt Pending
-    #[inline]
-    pub fn msoft(&self) -> bool {
-        self.bits & (1 << 3) != 0
-    }
-
-    /// Supervisor Timer Interrupt Pending
-    #[inline]
-    pub fn stimer(&self) -> bool {
-        self.bits & (1 << 5) != 0
-    }
-
-    /// Machine Timer Interrupt Pending
-    #[inline]
-    pub fn mtimer(&self) -> bool {
-        self.bits & (1 << 7) != 0
-    }
-
-    /// Supervisor External Interrupt Pending
-    #[inline]
-    pub fn sext(&self) -> bool {
-        self.bits & (1 << 9) != 0
-    }
-
-    /// Machine External Interrupt Pending
-    #[inline]
-    pub fn mext(&self) -> bool {
-        self.bits & (1 << 11) != 0
-    }
+    ssoft: 1,
 }
 
-read_csr_as!(Mip, 0x344);
+read_only_csr_field! {
+    Mip,
+    /// Machine Software Interrupt Pending
+    msoft: 3,
+}
+
+read_write_csr_field! {
+    Mip,
+    /// Supervisor Timer Interrupt Pending
+    stimer: 5,
+}
+
+read_only_csr_field! {
+    Mip,
+    /// Machine Timer Interrupt Pending
+    mtimer: 7,
+}
+
+read_write_csr_field! {
+    Mip,
+    /// Supervisor External Interrupt Pending
+    sext: 9,
+}
+
+read_only_csr_field! {
+    Mip,
+    /// Machine External Interrupt Pending
+    mext: 11,
+}
+
 set!(0x344);
 clear!(0x344);
 
