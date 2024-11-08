@@ -1,28 +1,8 @@
 //! mimpid register
 
-use core::num::NonZeroUsize;
-
-/// mimpid register
-#[derive(Clone, Copy, Debug)]
-pub struct Mimpid {
-    bits: NonZeroUsize,
-}
-
-impl Mimpid {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits.get()
-    }
-}
-
-read_csr!(0xF13);
-
-/// Reads the CSR
-#[inline]
-pub fn read() -> Option<Mimpid> {
-    let r = unsafe { _read() };
-    // When mimpid is hardwired to zero it means that the mimpid
-    // csr isn't implemented.
-    NonZeroUsize::new(r).map(|bits| Mimpid { bits })
+read_only_csr! {
+    /// `mimpid` register
+    Mimpid: 0xF13,
+    mask: 0xffff_ffff,
+    sentinel: 0,
 }
