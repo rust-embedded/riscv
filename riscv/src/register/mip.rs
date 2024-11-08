@@ -54,3 +54,25 @@ set_clear_csr!(
 set_clear_csr!(
     /// Supervisor External Interrupt Pending
     , set_sext, clear_sext, 1 << 9);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mip() {
+        let mut m = Mip::from_bits(0);
+
+        test_csr_field!(m, ssoft);
+        test_csr_field!(m, stimer);
+        test_csr_field!(m, sext);
+
+        assert!(!m.msoft());
+        assert!(!m.mtimer());
+        assert!(!m.mext());
+
+        assert!(Mip::from_bits(1 << 3).msoft());
+        assert!(Mip::from_bits(1 << 7).mtimer());
+        assert!(Mip::from_bits(1 << 11).mext());
+    }
+}
