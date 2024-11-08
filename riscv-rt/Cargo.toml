@@ -25,7 +25,7 @@ riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 riscv-rt-macros = { path = "macros", version = "0.2.2" }
 
 [dev-dependencies]
-panic-halt = "0.2.0"
+panic-halt = "1.0.0"
 
 [features]
 s-mode = ["riscv-rt-macros/s-mode"]
