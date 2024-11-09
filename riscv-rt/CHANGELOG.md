@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Add documentation to trap frame fields.
+- Avoid using `t3`+ in startup assembly to ensure compatibility with RVE32.
 - `link.x.in`: remove references to `eh_frame`.
 - Rename start/end section symbols to align with `cortex-m-rt`:
     - `_stext`: it remains, as linker files can modify it.

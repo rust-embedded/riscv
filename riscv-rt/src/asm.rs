@@ -107,13 +107,12 @@ cfg_global_asm!(
     #[cfg(riscvm)]
     "mul t0, t2, t0",
     #[cfg(not(riscvm))]
-    "beqz t2, 2f  // Jump if single-hart
-    mv t1, t2
-    mv t3, t0
+    "beqz t2, 2f  // skip if hart ID is 0
+    mv t1, t0
 1:
-    add t0, t0, t3
-    addi t1, t1, -1
-    bnez t1, 1b
+    add t0, t0, t1
+    addi t2, t2, -1
+    bnez t2, 1b
 2:  ",
 );
 cfg_global_asm!(
@@ -153,22 +152,22 @@ cfg_global_asm!(
     "call __pre_init
     // Copy .data from flash to RAM
     la t0, __sdata
-    la t2, __edata
+    la a0, __edata
     la t1, __sidata
-    bgeu t0, t2, 2f
+    bgeu t0, a0, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
-    "lw t3, 0(t1)
+    "lw t2, 0(t1)
     addi t1, t1, 4
-    sw t3, 0(t0)
+    sw t2, 0(t0)
     addi t0, t0, 4
-    bltu t0, t2, 1b",
+    bltu t0, a0, 1b",
     #[cfg(target_arch = "riscv64")]
-    "ld t3, 0(t1)
+    "ld t2, 0(t1)
     addi t1, t1, 8
-    sd t3, 0(t0)
+    sd t2, 0(t0)
     addi t0, t0, 8
-    bltu t0, t2, 1b",
+    bltu t0, a0, 1b",
     "
 2:  // Zero out .bss
     la t0, __sbss
