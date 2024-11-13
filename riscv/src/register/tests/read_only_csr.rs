@@ -27,7 +27,6 @@ read_only_csr_field! {
 csr_field_enum! {
     /// field enum type with valid field variants
     MtestFieldEnum {
-        range: [8:11],
         default: Field1,
         Field1 = 1,
         Field2 = 2,
