@@ -86,7 +86,7 @@ impl Sstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from((self.bits >> 32) as u8 & 0x3),
+            () => XLEN::try_from((self.bits >> 32) & 0x3).unwrap_or_default(),
         }
     }
 

@@ -406,7 +406,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from(bf_extract(self.bits, 32, 2) as u8),
+            () => XLEN::try_from(bf_extract(self.bits, 32, 2)).unwrap_or_default(),
         }
     }
 
@@ -431,7 +431,7 @@ impl Mstatus {
             #[cfg(riscv32)]
             () => XLEN::XLEN32,
             #[cfg(not(riscv32))]
-            () => XLEN::from(bf_extract(self.bits, 34, 2) as u8),
+            () => XLEN::try_from(bf_extract(self.bits, 34, 2)).unwrap_or_default(),
         }
     }
 
