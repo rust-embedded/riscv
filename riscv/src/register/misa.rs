@@ -65,3 +65,35 @@ impl Misa {
 const fn ext_char_to_bit(extension: char) -> u8 {
     (extension as u8).saturating_sub(b'A')
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::result::Error;
+
+    #[test]
+    fn test_misa() {
+        (1..=3)
+            .zip([XLEN::XLEN32, XLEN::XLEN64, XLEN::XLEN128])
+            .for_each(|(raw, exp_xlen)| {
+                assert_eq!(XLEN::try_from(raw), Ok(exp_xlen));
+                assert_eq!(usize::from(exp_xlen), raw);
+
+                let misa = Misa::from_bits(raw << (usize::BITS - 2));
+                assert_eq!(misa.try_mxl(), Ok(exp_xlen));
+                assert_eq!(misa.mxl(), exp_xlen);
+            });
+
+        (0..62).map(|b| 1 << b).for_each(|invalid_mxl| {
+            assert_eq!(
+                Misa::from_bits(invalid_mxl).try_mxl(),
+                Err(Error::InvalidVariant(0))
+            );
+        });
+
+        ('A'..='Z').for_each(|ext| {
+            assert!(!Misa::from_bits(0).has_extension(ext));
+            assert!(Misa::from_bits(1 << ext_char_to_bit(ext)).has_extension(ext));
+        });
+    }
+}
