@@ -31,11 +31,11 @@ macro_rules! cfg_global_asm {
 // - https://github.com/llvm/llvm-project/issues/61991
 cfg_global_asm!(
     "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
-    #[cfg(all(riscv32, riscvm))]
+    #[cfg(all(target_arch = "riscv32", riscvm))]
     ".attribute arch, \"rv32im\"",
-    #[cfg(all(riscv64, riscvm, not(riscvg)))]
+    #[cfg(all(target_arch = "riscv64", riscvm, not(riscvg)))]
     ".attribute arch, \"rv64im\"",
-    #[cfg(all(riscv64, riscvg))]
+    #[cfg(all(target_arch = "riscv64", riscvg))]
     ".attribute arch, \"rv64g\"",
 );
 
@@ -47,10 +47,10 @@ cfg_global_asm!(
     .global _start
 
 _start:",
-    #[cfg(riscv32)]
+    #[cfg(target_arch = "riscv32")]
     "lui ra, %hi(_abs_start)
      jr %lo(_abs_start)(ra)",
-    #[cfg(riscv64)]
+    #[cfg(target_arch = "riscv64")]
     ".option push
     .option norelax // to prevent an unsupported R_RISCV_ALIGN relocation from being generated
 1:
@@ -84,7 +84,9 @@ _abs_start:
 // ZERO OUT GENERAL-PURPOSE REGISTERS
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
 // a0..a2 (x10..x12) skipped
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 32);
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 16);
+#[cfg(not(riscve))]
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 16, 32);
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
 cfg_global_asm!(
@@ -125,12 +127,12 @@ cfg_global_asm!(
 
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
 cfg_global_asm!(
-    #[cfg(riscv32)]
+    #[cfg(target_arch = "riscv32")]
     "addi sp, sp, -4 * 3
     sw a0, 4 * 0(sp)
     sw a1, 4 * 1(sp)
     sw a2, 4 * 2(sp)",
-    #[cfg(riscv64)]
+    #[cfg(target_arch = "riscv64")]
     "addi sp, sp, -8 * 3
     sd a0, 8 * 0(sp)
     sd a1, 8 * 1(sp)
@@ -202,9 +204,9 @@ cfg_global_asm!(
     "fscsr x0",
 );
 // ZERO OUT FLOATING POINT REGISTERS
-#[cfg(all(riscv32, riscvd))]
+#[cfg(all(target_arch = "riscv32", riscvd))]
 riscv_rt_macros::loop_global_asm!("    fcvt.d.w f{}, x0", 32);
-#[cfg(all(riscv64, riscvd))]
+#[cfg(all(target_arch = "riscv64", riscvd))]
 riscv_rt_macros::loop_global_asm!("    fmv.d.x f{}, x0", 32);
 #[cfg(all(riscvf, not(riscvd)))]
 riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
@@ -212,12 +214,12 @@ riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
 // SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
 cfg_global_asm!(
     "call _setup_interrupts",
-    #[cfg(riscv32)]
+    #[cfg(target_arch = "riscv32")]
     "lw a0, 4 * 0(sp)
     lw a1, 4 * 1(sp)
     lw a2, 4 * 2(sp)
     addi sp, sp, 4 * 3",
-    #[cfg(riscv64)]
+    #[cfg(target_arch = "riscv64")]
     "ld a0, 8 * 0(sp)
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
@@ -276,14 +278,14 @@ _pre_init_trap:
     j _pre_init_trap",
 );
 
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 riscv_rt_macros::weak_start_trap_riscv32!();
-#[cfg(riscv64)]
+#[cfg(target_arch = "riscv64")]
 riscv_rt_macros::weak_start_trap_riscv64!();
 
-#[cfg(all(riscv32, feature = "v-trap"))]
+#[cfg(all(target_arch = "riscv32", feature = "v-trap"))]
 riscv_rt_macros::vectored_interrupt_trap_riscv32!();
-#[cfg(all(riscv64, feature = "v-trap"))]
+#[cfg(all(target_arch = "riscv64", feature = "v-trap"))]
 riscv_rt_macros::vectored_interrupt_trap_riscv64!();
 
 #[rustfmt::skip]

@@ -1,0 +1,37 @@
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  merge_group:
+
+name: Run tests (riscv-target-parser)
+
+jobs:
+  run-tests:
+    strategy:
+      matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ] # windows shows weird linking errors 
+        toolchain: [ stable, nightly, 1.61.0 ]
+        include:
+          # Nightly is only for reference and allowed to fail
+          - rust: nightly
+            experimental: true
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Rust toolchain
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Build
+        run: cargo build --package riscv-target-parser
+      - name: Run tests
+        run: cargo test --package riscv-target-parser
+        
+  # Job to check that all the builds succeeded
+  tests-check:
+    needs:
+    - run-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'

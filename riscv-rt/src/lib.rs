@@ -532,7 +532,7 @@
 #![no_std]
 #![deny(missing_docs)]
 
-#[cfg(riscv)]
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 mod asm;
 
 #[cfg(not(feature = "no-exceptions"))]
@@ -551,11 +551,11 @@ pub use riscv_rt_macros::{entry, exception, external_interrupt, pre_init};
 
 pub use riscv_pac::*;
 
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub use riscv_rt_macros::core_interrupt_riscv32 as core_interrupt;
-#[cfg(riscv64)]
+#[cfg(target_arch = "riscv64")]
 pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt;
-#[cfg(not(riscv))]
+#[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
 pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt; // just for docs, tests, etc.
 
 /// We export this static with an informative name so that if an application attempts to link
@@ -579,12 +579,16 @@ pub struct TrapFrame {
     /// `x7`: temporary register `t2`, used for intermediate values.
     pub t2: usize,
     /// `x28`: temporary register `t3`, used for intermediate values.
+    #[cfg(not(riscve))]
     pub t3: usize,
     /// `x29`: temporary register `t4`, used for intermediate values.
+    #[cfg(not(riscve))]
     pub t4: usize,
     /// `x30`: temporary register `t5`, used for intermediate values.
+    #[cfg(not(riscve))]
     pub t5: usize,
     /// `x31`: temporary register `t6`, used for intermediate values.
+    #[cfg(not(riscve))]
     pub t6: usize,
     /// `x10`: argument register `a0`. Used to pass the first argument to a function.
     pub a0: usize,
@@ -598,10 +602,16 @@ pub struct TrapFrame {
     pub a4: usize,
     /// `x15`: argument register `a5`. Used to pass the sixth argument to a function.
     pub a5: usize,
+    #[cfg(not(riscve))]
     /// `x16`: argument register `a6`. Used to pass the seventh argument to a function.
     pub a6: usize,
+    #[cfg(not(riscve))]
     /// `x17`: argument register `a7`. Used to pass the eighth argument to a function.
     pub a7: usize,
+    #[cfg(riscve)]
+    _reserved0: usize,
+    #[cfg(riscve)]
+    _reserved1: usize,
 }
 
 /// Trap entry point rust (_start_trap_rust)
@@ -634,7 +644,10 @@ pub struct TrapFrame {
 ///
 /// This function must be called only from assembly `_start_trap` function.
 /// Do **NOT** call this function directly.
-#[cfg_attr(riscv, link_section = ".trap.rust")]
+#[cfg_attr(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    link_section = ".trap.rust"
+)]
 #[export_name = "_start_trap_rust"]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
