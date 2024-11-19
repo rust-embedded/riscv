@@ -28,18 +28,11 @@ fn main() {
     let cargo_flags = env::var("CARGO_ENCODED_RUSTFLAGS").unwrap();
 
     if let Ok(target) = RiscvTarget::build(&target, &cargo_flags) {
-        let width = target.width();
-        if matches!(width, riscv_target_parser::Width::W128) {
-            panic!("Unsupported RISC-V target: {width}");
-        }
-        if target.base_extension().is_none() {
-            panic!("Unsupported RISC-V target: no base extension");
-        }
         for flag in target.rustc_flags() {
             // Required until target_feature risc-v is stable and in-use
             println!("cargo:rustc-check-cfg=cfg({flag})");
             println!("cargo:rustc-cfg={flag}");
         }
-        add_linker_script(width.into()).unwrap();
+        add_linker_script(target.width().into()).unwrap();
     }
 }

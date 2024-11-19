@@ -278,15 +278,23 @@ _pre_init_trap:
     j _pre_init_trap",
 );
 
-#[cfg(target_arch = "riscv32")]
-riscv_rt_macros::weak_start_trap_riscv32!();
-#[cfg(target_arch = "riscv64")]
-riscv_rt_macros::weak_start_trap_riscv64!();
+#[cfg(all(target_arch = "riscv32", riscvi))]
+riscv_rt_macros::weak_start_trap!(rv32i);
+#[cfg(all(target_arch = "riscv32", riscve))]
+riscv_rt_macros::weak_start_trap!(rv32e);
+#[cfg(all(target_arch = "riscv64", riscvi))]
+riscv_rt_macros::weak_start_trap!(rv64i);
+#[cfg(all(target_arch = "riscv64", riscve))]
+riscv_rt_macros::weak_start_trap!(rv64e);
 
-#[cfg(all(target_arch = "riscv32", feature = "v-trap"))]
-riscv_rt_macros::vectored_interrupt_trap_riscv32!();
-#[cfg(all(target_arch = "riscv64", feature = "v-trap"))]
-riscv_rt_macros::vectored_interrupt_trap_riscv64!();
+#[cfg(all(target_arch = "riscv32", riscvi, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap!(rv32i);
+#[cfg(all(target_arch = "riscv32", riscve, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap!(rv32e);
+#[cfg(all(target_arch = "riscv64", riscvi, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap!(rv64i);
+#[cfg(all(target_arch = "riscv64", riscve, feature = "v-trap"))]
+riscv_rt_macros::vectored_interrupt_trap!(rv64e);
 
 #[rustfmt::skip]
 global_asm!(
