@@ -668,7 +668,6 @@ macro_rules! csr {
 macro_rules! csr_field_enum {
     ($(#[$field_ty_doc:meta])*
      $field_ty:ident {
-         range: [$field_start:literal : $field_end:literal],
          default: $default_variant:ident,
          $($variant:ident = $value:expr$(,)?)+
      }$(,)?
