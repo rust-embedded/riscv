@@ -162,16 +162,48 @@ impl RiscvTarget {
     /// }
     ///
     pub fn rustc_flags(&self) -> Vec<String> {
-        let mut res = self
-            .extensions
+        self.extensions
             .extensions()
             .iter()
             .map(|e| format!("riscv{e}"))
-            .collect::<Vec<_>>();
-        if self.extensions.is_g() {
-            res.push("riscvg".to_string());
+            .collect::<Vec<_>>()
+    }
+
+    /// Returns the LLVM base ISA for the given RISC-V target.
+    pub fn llvm_base_isa(&self) -> String {
+        match (self.width, self.extensions.base_extension()) {
+            (Width::W32, Some(Extension::I)) => String::from("rv32i"),
+            (Width::W32, Some(Extension::E)) => String::from("rv32e"),
+            (Width::W64, Some(Extension::I)) => String::from("rv64i"),
+            (Width::W64, Some(Extension::E)) => String::from("rv64e"),
+            (_, None) => panic!("RISC-V target must have a base extension"),
+            _ => panic!("LLVM does not support this base ISA"),
         }
-        res
+    }
+
+    /// Returns the arch code to patch LLVM spurious errors.
+    ///
+    /// # Note
+    ///
+    /// This is a provisional patch and is limited to work for the riscv-rt crate only.
+    ///
+    /// # Related issues
+    ///
+    /// - https://github.com/rust-embedded/riscv/issues/175
+    /// - https://github.com/rust-lang/rust/issues/80608
+    /// - https://github.com/llvm/llvm-project/issues/61991
+    pub fn llvm_arch_patch(&self) -> String {
+        let mut patch = self.llvm_base_isa();
+        if self.extensions.contains(&Extension::M) {
+            patch.push('m');
+        }
+        if self.extensions.contains(&Extension::F) {
+            patch.push('f');
+        }
+        if self.extensions.contains(&Extension::D) {
+            patch.push('d');
+        }
+        patch
     }
 
     /// Returns the width of the RISC-V architecture.

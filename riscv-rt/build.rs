@@ -1,7 +1,10 @@
 // NOTE: Adapted from cortex-m/build.rs
 
-use riscv_target_parser::{Extension, RiscvTarget, Width};
+use riscv_target_parser::RiscvTarget;
 use std::{env, fs, io, path::PathBuf};
+
+// List of all possible RISC-V configurations to check for in risv-rt
+const RISCV_CFG: [&str; 5] = ["riscvi", "riscve", "riscvm", "riscvf", "riscvd"];
 
 fn add_linker_script(arch_width: u32) -> io::Result<()> {
     // Read the file to a string and replace all occurrences of ${ARCH_WIDTH} with the arch width
@@ -20,8 +23,8 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
 
 fn main() {
     // Required until target_feature risc-v is stable and in-use (rust 1.75)
-    for ext in ['i', 'e', 'm', 'a', 'f', 'd', 'g', 'c'] {
-        println!("cargo:rustc-check-cfg=cfg(riscv{})", ext);
+    for ext in RISCV_CFG.iter() {
+        println!("cargo:rustc-check-cfg=cfg({ext})");
     }
 
     let target = env::var("TARGET").unwrap();
@@ -29,23 +32,27 @@ fn main() {
 
     if let Ok(target) = RiscvTarget::build(&target, &cargo_flags) {
         let width = target.width();
-        let base = target.base_extension().expect("No base extension found");
 
-        // set environmet variable RISCV_RT_BASE_ISA to the width of the target
-        // this is used in riscv_rt_macros to determine the base ISA
-        let env_var = match (width, base) {
-            (Width::W32, Extension::I) => "rv32i",
-            (Width::W32, Extension::E) => "rv32e",
-            (Width::W64, Extension::I) => "rv64i",
-            (Width::W64, Extension::E) => "rv64e",
-            _ => panic!("Unsupported target"),
-        };
-        println!("cargo:rustc-env=RISCV_RT_BASE_ISA={env_var}");
+        // set environmet variable RISCV_RT_BASE_ISA to the base ISA of the target.
+        println!(
+            "cargo:rustc-env=RISCV_RT_BASE_ISA={}",
+            target.llvm_base_isa()
+        );
+        // set environment variable RISCV_RT_LLVM_ARCH_PATCH to patch LLVM bug.
+        // (this env variable is temporary and will be removed after LLVM being fixed)
+        println!(
+            "cargo:rustc-env=RISCV_RT_LLVM_ARCH_PATCH={}",
+            target.llvm_arch_patch()
+        );
+        // make sure that these env variables are not changed without notice.
+        println!("cargo:rerun-if-env-changed=RISCV_RT_BASE_ISA");
+        println!("cargo:rerun-if-env-changed=RISCV_RT_LLVM_ARCH_PATCH");
 
         for flag in target.rustc_flags() {
             // Required until target_feature risc-v is stable and in-use
-            println!("cargo:rustc-check-cfg=cfg({flag})");
-            println!("cargo:rustc-cfg={flag}");
+            if RISCV_CFG.contains(&flag.as_str()) {
+                println!("cargo:rustc-cfg={flag}");
+            }
         }
         add_linker_script(width.into()).unwrap();
     }

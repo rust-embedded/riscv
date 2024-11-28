@@ -452,6 +452,18 @@ fn load_trap(arch: RiscvArch) -> String {
         .join("\n    ")
 }
 
+/// Temporary patch macro to deal with LLVM bug
+#[proc_macro]
+pub fn llvm_arch_patch(_input: TokenStream) -> TokenStream {
+    let q = if let Ok(arch) = std::env::var("RISCV_RT_LLVM_ARCH_PATCH") {
+        let patch = format!(".attribute arch,\"{arch}\"");
+        quote! { core::arch::global_asm!{#patch} }
+    } else {
+        quote!(compile_error!("RISCV_RT_LLVM_ARCH_PATCH is not set"))
+    };
+    q.into()
+}
+
 /// Generates weak `_start_trap` function in assembly.
 ///
 /// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.

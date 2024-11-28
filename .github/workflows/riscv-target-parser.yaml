@@ -10,7 +10,7 @@ jobs:
   run-tests:
     strategy:
       matrix:
-        os: [ macos-latest, ubuntu-latest, windows-latest ] # windows shows weird linking errors 
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
         toolchain: [ stable, nightly, 1.61.0 ]
         include:
           # Nightly is only for reference and allowed to fail

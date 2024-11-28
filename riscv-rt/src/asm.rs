@@ -29,15 +29,7 @@ macro_rules! cfg_global_asm {
 // - https://github.com/rust-embedded/riscv/issues/175
 // - https://github.com/rust-lang/rust/issues/80608
 // - https://github.com/llvm/llvm-project/issues/61991
-cfg_global_asm!(
-    "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
-    #[cfg(all(target_arch = "riscv32", riscvm))]
-    ".attribute arch, \"rv32im\"",
-    #[cfg(all(target_arch = "riscv64", riscvm, not(riscvg)))]
-    ".attribute arch, \"rv64im\"",
-    #[cfg(all(target_arch = "riscv64", riscvg))]
-    ".attribute arch, \"rv64g\"",
-);
+riscv_rt_macros::llvm_arch_patch!();
 
 // Entry point of all programs (_start). It initializes DWARF call frame information,
 // the stack pointer, the frame pointer (needed for closures to work in start_rust)
