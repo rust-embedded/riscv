@@ -571,16 +571,16 @@ pub struct TrapFrame {
     /// `x7`: temporary register `t2`, used for intermediate values.
     pub t2: usize,
     /// `x28`: temporary register `t3`, used for intermediate values.
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     pub t3: usize,
     /// `x29`: temporary register `t4`, used for intermediate values.
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     pub t4: usize,
     /// `x30`: temporary register `t5`, used for intermediate values.
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     pub t5: usize,
     /// `x31`: temporary register `t6`, used for intermediate values.
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     pub t6: usize,
     /// `x10`: argument register `a0`. Used to pass the first argument to a function.
     pub a0: usize,
@@ -594,15 +594,15 @@ pub struct TrapFrame {
     pub a4: usize,
     /// `x15`: argument register `a5`. Used to pass the sixth argument to a function.
     pub a5: usize,
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     /// `x16`: argument register `a6`. Used to pass the seventh argument to a function.
     pub a6: usize,
-    #[cfg(not(riscve))]
+    #[cfg(riscvi)]
     /// `x17`: argument register `a7`. Used to pass the eighth argument to a function.
     pub a7: usize,
-    #[cfg(all(target_arch = "riscv32", riscve))]
+    #[cfg(all(target_arch = "riscv32", not(riscvi), riscve))]
     _reserved0: usize,
-    #[cfg(all(target_arch = "riscv32", riscve))]
+    #[cfg(all(target_arch = "riscv32", not(riscvi), riscve))]
     _reserved1: usize,
 }
 

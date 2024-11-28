@@ -77,7 +77,7 @@ _abs_start:
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
 // a0..a2 (x10..x12) skipped
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 16);
-#[cfg(not(riscve))]
+#[cfg(riscvi)]
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 16, 32);
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
