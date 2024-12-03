@@ -669,14 +669,20 @@ macro_rules! csr_field_enum {
     ($(#[$field_ty_doc:meta])*
      $field_ty:ident {
          default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
+         $(
+             $(#[$field_doc:meta])*
+             $variant:ident = $value:expr$(,)?
+          )+
      }$(,)?
     ) => {
          $(#[$field_ty_doc])*
          #[repr(usize)]
          #[derive(Clone, Copy, Debug, Eq, PartialEq)]
          pub enum $field_ty {
-             $($variant = $value),+
+             $(
+                 $(#[$field_doc])*
+                 $variant = $value
+             ),+
          }
 
          impl $field_ty {
