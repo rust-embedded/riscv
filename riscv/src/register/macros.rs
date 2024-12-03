@@ -1104,4 +1104,13 @@ macro_rules! test_csr_field {
             assert_eq!($reg.[<try_set_ $field>]($index, false), Err($err));
         }
     }};
+
+    // test an enum bit field
+    ($reg:ident, $field:ident: $var:expr) => {{
+        $crate::paste! {
+            $reg.[<set_ $field>]($var);
+            assert_eq!($reg.$field(), $var);
+            assert_eq!($reg.[<try_ $field>](), Ok($var));
+        }
+    }};
 }
