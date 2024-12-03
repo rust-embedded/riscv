@@ -531,13 +531,42 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_mpp() {
+    fn test_mstatus() {
         let mut mstatus = Mstatus { bits: 0 };
-        mstatus.set_mpp(MPP::User);
-        assert_eq!(mstatus.mpp(), MPP::User);
-        mstatus.set_mpp(MPP::Machine);
-        assert_eq!(mstatus.mpp(), MPP::Machine);
-        mstatus.set_mpp(MPP::Supervisor);
-        assert_eq!(mstatus.mpp(), MPP::Supervisor);
+
+        test_csr_field!(mstatus, mpp: MPP::User);
+        test_csr_field!(mstatus, mpp: MPP::Machine);
+        test_csr_field!(mstatus, mpp: MPP::Supervisor);
+
+        test_csr_field!(mstatus, spp: SPP::User);
+        test_csr_field!(mstatus, spp: SPP::Supervisor);
+
+        test_csr_field!(mstatus, fs: FS::Off);
+        test_csr_field!(mstatus, fs: FS::Initial);
+        test_csr_field!(mstatus, fs: FS::Clean);
+        test_csr_field!(mstatus, fs: FS::Dirty);
+
+        test_csr_field!(mstatus, vs: VS::Off);
+        test_csr_field!(mstatus, vs: VS::Initial);
+        test_csr_field!(mstatus, vs: VS::Clean);
+        test_csr_field!(mstatus, vs: VS::Dirty);
+
+        test_csr_field!(mstatus, xs: XS::AllOff);
+        test_csr_field!(mstatus, xs: XS::NoneDirtyOrClean);
+        test_csr_field!(mstatus, xs: XS::NoneDirtySomeClean);
+        test_csr_field!(mstatus, xs: XS::SomeDirty);
+
+        test_csr_field!(mstatus, sie);
+        test_csr_field!(mstatus, mie);
+        test_csr_field!(mstatus, spie);
+        test_csr_field!(mstatus, ube);
+        test_csr_field!(mstatus, mpie);
+        test_csr_field!(mstatus, mprv);
+        test_csr_field!(mstatus, sum);
+        test_csr_field!(mstatus, mxr);
+        test_csr_field!(mstatus, tvm);
+        test_csr_field!(mstatus, tw);
+        test_csr_field!(mstatus, tsr);
+        test_csr_field!(mstatus, sd);
     }
 }
