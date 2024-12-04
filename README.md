@@ -7,6 +7,7 @@ This repository contains various crates useful for writing Rust programs on RISC
 * [`riscv-peripheral`]: Interfaces for standard RISC-V peripherals
 * [`riscv-rt`]: Startup code and interrupt handling
 * [`riscv-semihosting`]: Semihosting for RISC-V processors
+* [`riscv-target-parser`]: Utility crate for parsing RISC-V targets in build scripts
 
 This project is developed and maintained by the [RISC-V team][team].
 
@@ -27,5 +28,6 @@ to intervene to uphold that code of conduct.
 [`riscv-peripheral`]: https://crates.io/crates/riscv-peripheral
 [`riscv-rt`]: https://crates.io/crates/riscv-rt
 [`riscv-semihosting`]: https://crates.io/crates/riscv-semihosting
+[`riscv-target-parser`]: https://crates.io/crates/riscv-target-parser
 [team]: https://github.com/rust-embedded/wg#the-risc-v-team
 [CoC]: CODE_OF_CONDUCT.md

@@ -14,8 +14,10 @@ jobs:
         toolchain: [ stable, nightly, 1.61.0 ]
         target:
           - riscv32i-unknown-none-elf
+          - riscv32im-unknown-none-elf
           - riscv32imc-unknown-none-elf
           - riscv32imac-unknown-none-elf
+          - riscv32imafc-unknown-none-elf
           - riscv64imac-unknown-none-elf
           - riscv64gc-unknown-none-elf
         example:
@@ -25,6 +27,11 @@ jobs:
           # Nightly is only for reference and allowed to fail
           - toolchain: nightly
             experimental: true
+        exclude:
+          - toolchain: 1.61.0
+            target: riscv32im-unknown-none-elf
+          - toolchain: 1.61.0
+            target: riscv32imafc-unknown-none-elf
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:

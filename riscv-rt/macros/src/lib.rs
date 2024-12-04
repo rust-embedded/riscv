@@ -1,11 +1,6 @@
 #![deny(warnings)]
 
-extern crate core;
-extern crate proc_macro;
-extern crate proc_macro2;
-extern crate quote;
-extern crate syn;
-
+use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
@@ -15,8 +10,6 @@ use syn::{
     spanned::Spanned,
     FnArg, ItemFn, LitInt, LitStr, PatType, Path, ReturnType, Token, Type, Visibility,
 };
-
-use proc_macro::TokenStream;
 
 /// Attribute to declare the entry point of the program
 ///
@@ -359,56 +352,82 @@ pub fn loop_global_asm(input: TokenStream) -> TokenStream {
 
 #[derive(Clone, Copy, Debug)]
 enum RiscvArch {
-    Rv32,
-    Rv64,
+    Rv32I,
+    Rv32E,
+    Rv64I,
+    Rv64E,
 }
 
-impl RiscvArch {
-    fn width(&self) -> usize {
-        match self {
-            Self::Rv32 => 4,
-            Self::Rv64 => 8,
-        }
-    }
-
-    fn store(&self) -> &str {
-        match self {
-            Self::Rv32 => "sw",
-            Self::Rv64 => "sd",
-        }
-    }
-
-    fn load(&self) -> &str {
-        match self {
-            Self::Rv32 => "lw",
-            Self::Rv64 => "ld",
+impl Parse for RiscvArch {
+    fn parse(input: parse::ParseStream) -> syn::Result<Self> {
+        let ident: syn::Ident = input.parse()?;
+        match ident.to_string().as_str() {
+            "rv32i" => Ok(Self::Rv32I),
+            "rv32e" => Ok(Self::Rv32E),
+            "rv64i" => Ok(Self::Rv64I),
+            "rv64e" => Ok(Self::Rv64E),
+            _ => Err(syn::Error::new(ident.span(), "Invalid RISC-V architecture")),
         }
     }
 }
 
-/// Size of the trap frame (in number of registers)
-const TRAP_SIZE: usize = 16;
+impl RiscvArch {
+    fn try_from_env() -> Option<Self> {
+        let arch = std::env::var("RISCV_RT_BASE_ISA").ok()?;
+        match arch.as_str() {
+            "rv32i" => Some(Self::Rv32I),
+            "rv32e" => Some(Self::Rv32E),
+            "rv64i" => Some(Self::Rv64I),
+            "rv64e" => Some(Self::Rv64E),
+            _ => None,
+        }
+    }
 
-#[rustfmt::skip]
-/// List of the register names to be stored in the trap frame
-const TRAP_FRAME: [&str; TRAP_SIZE] = [
-    "ra",
-    "t0",
-    "t1",
-    "t2",
-    "t3",
-    "t4",
-    "t5",
-    "t6",
-    "a0",
-    "a1",
-    "a2",
-    "a3",
-    "a4",
-    "a5",
-    "a6",
-    "a7",
-];
+    const fn width(&self) -> usize {
+        match self {
+            Self::Rv32I | Self::Rv32E => 4,
+            Self::Rv64I | Self::Rv64E => 8,
+        }
+    }
+
+    const fn store(&self) -> &str {
+        match self {
+            Self::Rv32I | Self::Rv32E => "sw",
+            Self::Rv64I | Self::Rv64E => "sd",
+        }
+    }
+
+    const fn load(&self) -> &str {
+        match self {
+            Self::Rv32I | Self::Rv32E => "lw",
+            Self::Rv64I | Self::Rv64E => "ld",
+        }
+    }
+
+    fn trap_frame(&self) -> Vec<&str> {
+        match self {
+            Self::Rv32I | Self::Rv64I => vec![
+                "ra", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "a0", "a1", "a2", "a3", "a4", "a5",
+                "a6", "a7",
+            ],
+            Self::Rv32E | Self::Rv64E => {
+                vec!["ra", "t0", "t1", "t2", "a0", "a1", "a2", "a3", "a4", "a5"]
+            }
+        }
+    }
+
+    /// Standard RISC-V ABI requires the stack to be 16-byte aligned.
+    /// However, in LLVM, for RV32E and RV64E, the stack must be 4-byte aligned
+    /// to be compatible with the implementation of ilp32e in GCC
+    ///
+    /// Related: https://llvm.org/docs/RISCVUsage.html
+    const fn byte_alignment(&self) -> usize {
+        match self {
+            Self::Rv32E | Self::Rv64E => 4,
+            _ => 16,
+        }
+    }
+}
 
 /// Generate the assembly instructions to store the trap frame.
 ///
@@ -421,13 +440,13 @@ const TRAP_FRAME: [&str; TRAP_SIZE] = [
 fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String {
     let width = arch.width();
     let store = arch.store();
-    TRAP_FRAME
+    arch.trap_frame()
         .iter()
         .enumerate()
-        .filter(|(_, &reg)| filter(reg))
+        .filter(|(_, &reg)| !reg.starts_with('_') && filter(reg))
         .map(|(i, reg)| format!("{store} {reg}, {i}*{width}(sp)"))
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n    ")
 }
 
 /// Generate the assembly instructions to load the trap frame.
@@ -435,43 +454,40 @@ fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String 
 fn load_trap(arch: RiscvArch) -> String {
     let width = arch.width();
     let load = arch.load();
-    TRAP_FRAME
+    arch.trap_frame()
         .iter()
         .enumerate()
+        .filter(|(_, &reg)| !reg.starts_with('_'))
         .map(|(i, reg)| format!("{load} {reg}, {i}*{width}(sp)"))
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n    ")
 }
 
-/// Generates weak `_start_trap` function in assembly for RISCV-32 targets.
-///
-/// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
-/// The trap frame is allocated on the stack and deallocated after the call.
+/// Temporary patch macro to deal with LLVM bug
 #[proc_macro]
-pub fn weak_start_trap_riscv32(_input: TokenStream) -> TokenStream {
-    weak_start_trap(RiscvArch::Rv32)
-}
-
-/// Generates weak `_start_trap` function in assembly for RISCV-64 targets.
-///
-/// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
-/// The trap frame is allocated on the stack and deallocated after the call.
-#[proc_macro]
-pub fn weak_start_trap_riscv64(_input: TokenStream) -> TokenStream {
-    weak_start_trap(RiscvArch::Rv64)
+pub fn llvm_arch_patch(_input: TokenStream) -> TokenStream {
+    let q = if let Ok(arch) = std::env::var("RISCV_RT_LLVM_ARCH_PATCH") {
+        let patch = format!(".attribute arch,\"{arch}\"");
+        quote! { core::arch::global_asm!{#patch} }
+    } else {
+        quote!(compile_error!("RISCV_RT_LLVM_ARCH_PATCH is not set"))
+    };
+    q.into()
 }
 
 /// Generates weak `_start_trap` function in assembly.
 ///
 /// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
 /// The trap frame is allocated on the stack and deallocated after the call.
-///
-/// The `arch` parameter is used to determine the width of the registers.
-/// The macro also ensures that the trap frame size is 16-byte aligned.
-fn weak_start_trap(arch: RiscvArch) -> TokenStream {
+#[proc_macro]
+pub fn weak_start_trap(_input: TokenStream) -> TokenStream {
+    let arch = RiscvArch::try_from_env().unwrap();
+
     let width = arch.width();
+    let trap_size = arch.trap_frame().len();
+    let byte_alignment = arch.byte_alignment();
     // ensure we do not break that sp is 16-byte aligned
-    if (TRAP_SIZE * width) % 16 != 0 {
+    if (trap_size * width) % byte_alignment != 0 {
         return parse::Error::new(Span::call_site(), "Trap frame size must be 16-byte aligned")
             .to_compile_error()
             .into();
@@ -491,12 +507,12 @@ core::arch::global_asm!(
 .align {width}
 .weak _start_trap
 _start_trap:
-    addi sp, sp, - {TRAP_SIZE} * {width}
+    addi sp, sp, - {trap_size} * {width}
     {store}
     add a0, sp, zero
     jal ra, _start_trap_rust
     {load}
-    addi sp, sp, {TRAP_SIZE} * {width}
+    addi sp, sp, {trap_size} * {width}
     {ret}
 ");"#
     )
@@ -504,27 +520,16 @@ _start_trap:
     .unwrap()
 }
 
-/// Generates vectored interrupt trap functions in assembly for RISCV-32 targets.
 #[cfg(feature = "v-trap")]
 #[proc_macro]
-pub fn vectored_interrupt_trap_riscv32(_input: TokenStream) -> TokenStream {
-    vectored_interrupt_trap(RiscvArch::Rv32)
-}
-
-/// Generates vectored interrupt trap functions in assembly for RISCV-64 targets.
-#[cfg(feature = "v-trap")]
-#[proc_macro]
-pub fn vectored_interrupt_trap_riscv64(_input: TokenStream) -> TokenStream {
-    vectored_interrupt_trap(RiscvArch::Rv64)
-}
-
-#[cfg(feature = "v-trap")]
 /// Generates global '_start_DefaultHandler_trap' and '_continue_interrupt_trap' functions in assembly.
 /// The '_start_DefaultHandler_trap' function stores the trap frame partially (only register a0) and
 /// jumps to the interrupt handler. The '_continue_interrupt_trap' function stores the trap frame
 /// partially (all registers except a0), jumps to the interrupt handler, and restores the trap frame.
-fn vectored_interrupt_trap(arch: RiscvArch) -> TokenStream {
+pub fn vectored_interrupt_trap(_input: TokenStream) -> TokenStream {
+    let arch = RiscvArch::try_from_env().unwrap();
     let width = arch.width();
+    let trap_size = arch.trap_frame().len();
     let store_start = store_trap(arch, |reg| reg == "a0");
     let store_continue = store_trap(arch, |reg| reg != "a0");
     let load = load_trap(arch);
@@ -542,7 +547,7 @@ core::arch::global_asm!(
 .align 4
 .global _start_DefaultHandler_trap
 _start_DefaultHandler_trap:
-    addi sp, sp, -{TRAP_SIZE} * {width} // allocate space for trap frame
+    addi sp, sp, -{trap_size} * {width} // allocate space for trap frame
     {store_start}                       // store trap partially (only register a0)
     la a0, DefaultHandler               // load interrupt handler address into a0
 
@@ -552,7 +557,7 @@ _continue_interrupt_trap:
     {store_continue}                   // store trap partially (all registers except a0)
     jalr ra, a0, 0                     // jump to corresponding interrupt handler (address stored in a0)
     {load}                             // restore trap frame
-    addi sp, sp, {TRAP_SIZE} * {width} // deallocate space for trap frame
+    addi sp, sp, {trap_size} * {width} // deallocate space for trap frame
     {ret}                              // return from interrupt
 ");"#
     );
@@ -664,39 +669,11 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 ///     loop{};
 /// }
 /// ```
-pub fn core_interrupt_riscv32(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv32),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
-    };
-    trap(args, input, RiscvPacItem::CoreInterrupt, arch)
-}
-
-#[proc_macro_attribute]
-/// Attribute to declare a core interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-///
-/// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
-///
-/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
-///
-/// # Example
-///
-/// ``` ignore,no_run
-/// #[riscv_rt::core_interrupt(riscv::interrupt::Interrupt::SupervisorSoft)]
-/// fn supervisor_soft() -> ! {
-///     loop{};
-/// }
-/// ```
-pub fn core_interrupt_riscv64(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv64),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
+pub fn core_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
+    let arch = if cfg!(feature = "v-trap") {
+        RiscvArch::try_from_env()
+    } else {
+        None
     };
     trap(args, input, RiscvPacItem::CoreInterrupt, arch)
 }
@@ -757,7 +734,6 @@ fn trap(
         Some(arch) => {
             let trap = start_interrupt_trap(int_ident, arch);
             quote! {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
                 #trap
             }
         }
@@ -784,6 +760,7 @@ fn trap(
 fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::TokenStream {
     let interrupt = ident.to_string();
     let width = arch.width();
+    let trap_size = arch.trap_frame().len();
     let store = store_trap(arch, |r| r == "a0");
 
     let instructions = format!(
@@ -793,7 +770,7 @@ core::arch::global_asm!(
     .align 2
     .global _start_{interrupt}_trap
     _start_{interrupt}_trap:
-        addi sp, sp, -{TRAP_SIZE} * {width} // allocate space for trap frame
+        addi sp, sp, -{trap_size} * {width} // allocate space for trap frame
         {store}                             // store trap partially (only register a0)
         la a0, {interrupt}                  // load interrupt handler address into a0
         j _continue_interrupt_trap          // jump to common part of interrupt trap

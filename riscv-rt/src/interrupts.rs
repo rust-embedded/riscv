@@ -71,7 +71,10 @@ pub unsafe extern "C" fn _dispatch_core_interrupt(code: usize) {
 }
 
 // In vectored mode, we also must provide a vector table
-#[cfg(all(riscv, feature = "v-trap"))]
+#[cfg(all(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    feature = "v-trap"
+))]
 core::arch::global_asm!(
     r#" .section .trap, "ax"
         .weak _vector_table
