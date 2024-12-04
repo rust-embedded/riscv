@@ -383,21 +383,21 @@ impl RiscvArch {
         }
     }
 
-    fn width(&self) -> usize {
+    const fn width(&self) -> usize {
         match self {
             Self::Rv32I | Self::Rv32E => 4,
             Self::Rv64I | Self::Rv64E => 8,
         }
     }
 
-    fn store(&self) -> &str {
+    const fn store(&self) -> &str {
         match self {
             Self::Rv32I | Self::Rv32E => "sw",
             Self::Rv64I | Self::Rv64E => "sd",
         }
     }
 
-    fn load(&self) -> &str {
+    const fn load(&self) -> &str {
         match self {
             Self::Rv32I | Self::Rv32E => "lw",
             Self::Rv64I | Self::Rv64E => "ld",
@@ -410,10 +410,21 @@ impl RiscvArch {
                 "ra", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "a0", "a1", "a2", "a3", "a4", "a5",
                 "a6", "a7",
             ],
-            Self::Rv32E => vec![
-                "ra", "t0", "t1", "t2", "a0", "a1", "a2", "a3", "a4", "a5", "_r0", "_r1",
-            ],
-            Self::Rv64E => vec!["ra", "t0", "t1", "t2", "a0", "a1", "a2", "a3", "a4", "a5"],
+            Self::Rv32E | Self::Rv64E => {
+                vec!["ra", "t0", "t1", "t2", "a0", "a1", "a2", "a3", "a4", "a5"]
+            }
+        }
+    }
+
+    /// Standard RISC-V ABI requires the stack to be 16-byte aligned.
+    /// However, in LLVM, for RV32E and RV64E, the stack must be 4-byte aligned
+    /// to be compatible with the implementation of ilp32e in GCC
+    ///
+    /// Related: https://llvm.org/docs/RISCVUsage.html
+    const fn byte_alignment(&self) -> usize {
+        match self {
+            Self::Rv32E | Self::Rv64E => 4,
+            _ => 16,
         }
     }
 }
@@ -474,8 +485,9 @@ pub fn weak_start_trap(_input: TokenStream) -> TokenStream {
 
     let width = arch.width();
     let trap_size = arch.trap_frame().len();
+    let byte_alignment = arch.byte_alignment();
     // ensure we do not break that sp is 16-byte aligned
-    if (trap_size * width) % 16 != 0 {
+    if (trap_size * width) % byte_alignment != 0 {
         return parse::Error::new(Span::call_site(), "Trap frame size must be 16-byte aligned")
             .to_compile_error()
             .into();

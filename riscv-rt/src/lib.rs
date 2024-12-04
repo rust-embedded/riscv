@@ -600,10 +600,6 @@ pub struct TrapFrame {
     #[cfg(riscvi)]
     /// `x17`: argument register `a7`. Used to pass the eighth argument to a function.
     pub a7: usize,
-    #[cfg(all(target_arch = "riscv32", not(riscvi), riscve))]
-    _reserved0: usize,
-    #[cfg(all(target_arch = "riscv32", not(riscvi), riscve))]
-    _reserved1: usize,
 }
 
 /// Trap entry point rust (_start_trap_rust)

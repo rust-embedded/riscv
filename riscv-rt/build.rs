@@ -4,7 +4,7 @@ use riscv_target_parser::RiscvTarget;
 use std::{env, fs, io, path::PathBuf};
 
 // List of all possible RISC-V configurations to check for in risv-rt
-const RISCV_CFG: [&str; 5] = ["riscvi", "riscve", "riscvm", "riscvf", "riscvd"];
+const RISCV_CFG: [&str; 4] = ["riscvi", "riscvm", "riscvf", "riscvd"];
 
 fn add_linker_script(arch_width: u32) -> io::Result<()> {
     // Read the file to a string and replace all occurrences of ${ARCH_WIDTH} with the arch width

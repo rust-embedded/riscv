@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Limit rustc cfg flags to `riscvi`, `riscve`, `riscvm`, `riscvf`, and `riscvd`.
+- Limit rustc cfg flags to `riscvi`, `riscvm`, `riscvf`, and `riscvd`.
 - Temporary use of `RISCV_RT_LLVM_ARCH_PATCH` environment variable to include the
   temporary patch required for avoid LLVM spurious errors.
 - `riscv-rt` now use the `RISCV_RT_BASE_ISA` environment variable to configure the behavior
