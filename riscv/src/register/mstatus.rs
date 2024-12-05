@@ -1,6 +1,7 @@
 //! mstatus register
 
 pub use super::misa::XLEN;
+#[cfg(not(target_arch = "riscv32"))]
 use crate::bits::{bf_extract, bf_insert};
 #[cfg(target_arch = "riscv32")]
 use crate::result::Error;
@@ -335,8 +336,6 @@ impl Mstatus {
     /// Note this updates a previously read [`Mstatus`] value, but does not
     /// affect the mstatus CSR itself. See [`set_sbe`] to directly update the
     /// CSR.
-    ///
-    /// **NOTE**: panics on RISCV-32 platforms.
     #[inline]
     pub fn set_sbe(&mut self, endianness: Endianness) {
         self.try_set_sbe(endianness).unwrap();
@@ -357,7 +356,12 @@ impl Mstatus {
                 Ok(())
             }
             #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
+            () => {
+                // SAFETY: `mstatush` is available on RISCV-32, and the value is safe to write.
+                // TODO: convert to `Mstatush` with `mbe` set
+                unsafe { super::mstatush::set_sbe(endianness) };
+                Ok(())
+            }
         }
     }
 
@@ -378,8 +382,6 @@ impl Mstatus {
     /// Note this updates a previously read [`Mstatus`] value, but does not
     /// affect the mstatus CSR itself. See [`set_mbe`] to directly update the
     /// CSR.
-    ///
-    /// **NOTE**: panics on RISCV-32 platforms.
     #[inline]
     pub fn set_mbe(&mut self, endianness: Endianness) {
         self.try_set_mbe(endianness).unwrap();
@@ -400,7 +402,12 @@ impl Mstatus {
                 Ok(())
             }
             #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
+            () => {
+                // SAFETY: `mstatush` is available on RISCV-32, and the value is safe to write.
+                // TODO: convert to `Mstatush` with `mbe` set
+                unsafe { super::mstatush::set_mbe(endianness) };
+                Ok(())
+            }
         }
     }
 }
