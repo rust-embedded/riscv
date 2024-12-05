@@ -669,14 +669,20 @@ macro_rules! csr_field_enum {
     ($(#[$field_ty_doc:meta])*
      $field_ty:ident {
          default: $default_variant:ident,
-         $($variant:ident = $value:expr$(,)?)+
+         $(
+             $(#[$field_doc:meta])*
+             $variant:ident = $value:expr$(,)?
+          )+
      }$(,)?
     ) => {
          $(#[$field_ty_doc])*
          #[repr(usize)]
          #[derive(Clone, Copy, Debug, Eq, PartialEq)]
          pub enum $field_ty {
-             $($variant = $value),+
+             $(
+                 $(#[$field_doc])*
+                 $variant = $value
+             ),+
          }
 
          impl $field_ty {
@@ -1096,6 +1102,15 @@ macro_rules! test_csr_field {
         $crate::paste! {
             assert_eq!($reg.[<try_ $field>]($index), Err($err));
             assert_eq!($reg.[<try_set_ $field>]($index, false), Err($err));
+        }
+    }};
+
+    // test an enum bit field
+    ($reg:ident, $field:ident: $var:expr) => {{
+        $crate::paste! {
+            $reg.[<set_ $field>]($var);
+            assert_eq!($reg.$field(), $var);
+            assert_eq!($reg.[<try_ $field>](), Ok($var));
         }
     }};
 }
