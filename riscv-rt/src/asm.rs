@@ -120,12 +120,12 @@ cfg_global_asm!(
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
 cfg_global_asm!(
     #[cfg(target_arch = "riscv32")]
-    "addi sp, sp, -4 * 3
+    "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
     sw a0, 4 * 0(sp)
     sw a1, 4 * 1(sp)
     sw a2, 4 * 2(sp)",
     #[cfg(target_arch = "riscv64")]
-    "addi sp, sp, -8 * 3
+    "addi sp, sp, -8 * 4 // we must keep stack aligned to 16-bytes
     sd a0, 8 * 0(sp)
     sd a1, 8 * 1(sp)
     sd a2, 8 * 2(sp)",
@@ -210,12 +210,12 @@ cfg_global_asm!(
     "lw a0, 4 * 0(sp)
     lw a1, 4 * 1(sp)
     lw a2, 4 * 2(sp)
-    addi sp, sp, 4 * 3",
+    addi sp, sp, 4 * 4",
     #[cfg(target_arch = "riscv64")]
     "ld a0, 8 * 0(sp)
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
-    addi sp, sp, 8 * 3",
+    addi sp, sp, 8 * 4",
     "jal zero, main
     .cfi_endproc",
 );
