@@ -29,15 +29,7 @@ macro_rules! cfg_global_asm {
 // - https://github.com/rust-embedded/riscv/issues/175
 // - https://github.com/rust-lang/rust/issues/80608
 // - https://github.com/llvm/llvm-project/issues/61991
-cfg_global_asm!(
-    "// Provisional patch to avoid LLVM spurious errors when compiling in release mode.",
-    #[cfg(all(riscv32, riscvm))]
-    ".attribute arch, \"rv32im\"",
-    #[cfg(all(riscv64, riscvm, not(riscvg)))]
-    ".attribute arch, \"rv64im\"",
-    #[cfg(all(riscv64, riscvg))]
-    ".attribute arch, \"rv64g\"",
-);
+riscv_rt_macros::llvm_arch_patch!();
 
 // Entry point of all programs (_start). It initializes DWARF call frame information,
 // the stack pointer, the frame pointer (needed for closures to work in start_rust)
@@ -47,10 +39,10 @@ cfg_global_asm!(
     .global _start
 
 _start:",
-    #[cfg(riscv32)]
+    #[cfg(target_arch = "riscv32")]
     "lui ra, %hi(_abs_start)
      jr %lo(_abs_start)(ra)",
-    #[cfg(riscv64)]
+    #[cfg(target_arch = "riscv64")]
     ".option push
     .option norelax // to prevent an unsupported R_RISCV_ALIGN relocation from being generated
 1:
@@ -84,7 +76,9 @@ _abs_start:
 // ZERO OUT GENERAL-PURPOSE REGISTERS
 riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
 // a0..a2 (x10..x12) skipped
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 32);
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 16);
+#[cfg(riscvi)]
+riscv_rt_macros::loop_global_asm!("    li x{}, 0", 16, 32);
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
 cfg_global_asm!(
@@ -107,13 +101,12 @@ cfg_global_asm!(
     #[cfg(riscvm)]
     "mul t0, t2, t0",
     #[cfg(not(riscvm))]
-    "beqz t2, 2f  // Jump if single-hart
-    mv t1, t2
-    mv t3, t0
+    "beqz t2, 2f  // skip if hart ID is 0
+    mv t1, t0
 1:
-    add t0, t0, t3
-    addi t1, t1, -1
-    bnez t1, 1b
+    add t0, t0, t1
+    addi t2, t2, -1
+    bnez t2, 1b
 2:  ",
 );
 cfg_global_asm!(
@@ -126,13 +119,13 @@ cfg_global_asm!(
 
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
 cfg_global_asm!(
-    #[cfg(riscv32)]
-    "addi sp, sp, -4 * 3
+    #[cfg(target_arch = "riscv32")]
+    "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
     sw a0, 4 * 0(sp)
     sw a1, 4 * 1(sp)
     sw a2, 4 * 2(sp)",
-    #[cfg(riscv64)]
-    "addi sp, sp, -8 * 3
+    #[cfg(target_arch = "riscv64")]
+    "addi sp, sp, -8 * 4 // we must keep stack aligned to 16-bytes
     sd a0, 8 * 0(sp)
     sd a1, 8 * 1(sp)
     sd a2, 8 * 2(sp)",
@@ -153,22 +146,22 @@ cfg_global_asm!(
     "call __pre_init
     // Copy .data from flash to RAM
     la t0, __sdata
-    la t2, __edata
+    la a0, __edata
     la t1, __sidata
-    bgeu t0, t2, 2f
+    bgeu t0, a0, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
-    "lw t3, 0(t1)
+    "lw t2, 0(t1)
     addi t1, t1, 4
-    sw t3, 0(t0)
+    sw t2, 0(t0)
     addi t0, t0, 4
-    bltu t0, t2, 1b",
+    bltu t0, a0, 1b",
     #[cfg(target_arch = "riscv64")]
-    "ld t3, 0(t1)
+    "ld t2, 0(t1)
     addi t1, t1, 8
-    sd t3, 0(t0)
+    sd t2, 0(t0)
     addi t0, t0, 8
-    bltu t0, t2, 1b",
+    bltu t0, a0, 1b",
     "
 2:  // Zero out .bss
     la t0, __sbss
@@ -203,9 +196,9 @@ cfg_global_asm!(
     "fscsr x0",
 );
 // ZERO OUT FLOATING POINT REGISTERS
-#[cfg(all(riscv32, riscvd))]
+#[cfg(all(target_arch = "riscv32", riscvd))]
 riscv_rt_macros::loop_global_asm!("    fcvt.d.w f{}, x0", 32);
-#[cfg(all(riscv64, riscvd))]
+#[cfg(all(target_arch = "riscv64", riscvd))]
 riscv_rt_macros::loop_global_asm!("    fmv.d.x f{}, x0", 32);
 #[cfg(all(riscvf, not(riscvd)))]
 riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
@@ -213,16 +206,16 @@ riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
 // SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
 cfg_global_asm!(
     "call _setup_interrupts",
-    #[cfg(riscv32)]
+    #[cfg(target_arch = "riscv32")]
     "lw a0, 4 * 0(sp)
     lw a1, 4 * 1(sp)
     lw a2, 4 * 2(sp)
-    addi sp, sp, 4 * 3",
-    #[cfg(riscv64)]
+    addi sp, sp, 4 * 4",
+    #[cfg(target_arch = "riscv64")]
     "ld a0, 8 * 0(sp)
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
-    addi sp, sp, 8 * 3",
+    addi sp, sp, 8 * 4",
     "jal zero, main
     .cfi_endproc",
 );
@@ -277,15 +270,10 @@ _pre_init_trap:
     j _pre_init_trap",
 );
 
-#[cfg(riscv32)]
-riscv_rt_macros::weak_start_trap_riscv32!();
-#[cfg(riscv64)]
-riscv_rt_macros::weak_start_trap_riscv64!();
+riscv_rt_macros::weak_start_trap!();
 
-#[cfg(all(riscv32, feature = "v-trap"))]
-riscv_rt_macros::vectored_interrupt_trap_riscv32!();
-#[cfg(all(riscv64, feature = "v-trap"))]
-riscv_rt_macros::vectored_interrupt_trap_riscv64!();
+#[cfg(feature = "v-trap")]
+riscv_rt_macros::vectored_interrupt_trap!();
 
 #[rustfmt::skip]
 global_asm!(

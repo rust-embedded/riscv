@@ -532,7 +532,7 @@
 #![no_std]
 #![deny(missing_docs)]
 
-#[cfg(riscv)]
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 mod asm;
 
 #[cfg(not(feature = "no-exceptions"))]
@@ -547,16 +547,8 @@ use riscv::register::scause as xcause;
 #[cfg(not(feature = "s-mode"))]
 use riscv::register::mcause as xcause;
 
-pub use riscv_rt_macros::{entry, exception, external_interrupt, pre_init};
-
 pub use riscv_pac::*;
-
-#[cfg(riscv32)]
-pub use riscv_rt_macros::core_interrupt_riscv32 as core_interrupt;
-#[cfg(riscv64)]
-pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt;
-#[cfg(not(riscv))]
-pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt; // just for docs, tests, etc.
+pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt, pre_init};
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
@@ -567,25 +559,46 @@ pub use riscv_rt_macros::core_interrupt_riscv64 as core_interrupt; // just for d
 pub static __ONCE__: () = ();
 
 /// Registers saved in trap handler
-#[allow(missing_docs)]
 #[repr(C)]
 #[derive(Debug)]
 pub struct TrapFrame {
+    /// `x1`: return address, stores the address to return to after a function call or interrupt.
     pub ra: usize,
+    /// `x5`: temporary register `t0`, used for intermediate values.
     pub t0: usize,
+    /// `x6`: temporary register `t1`, used for intermediate values.
     pub t1: usize,
+    /// `x7`: temporary register `t2`, used for intermediate values.
     pub t2: usize,
+    /// `x28`: temporary register `t3`, used for intermediate values.
+    #[cfg(riscvi)]
     pub t3: usize,
+    /// `x29`: temporary register `t4`, used for intermediate values.
+    #[cfg(riscvi)]
     pub t4: usize,
+    /// `x30`: temporary register `t5`, used for intermediate values.
+    #[cfg(riscvi)]
     pub t5: usize,
+    /// `x31`: temporary register `t6`, used for intermediate values.
+    #[cfg(riscvi)]
     pub t6: usize,
+    /// `x10`: argument register `a0`. Used to pass the first argument to a function.
     pub a0: usize,
+    /// `x11`: argument register `a1`. Used to pass the second argument to a function.
     pub a1: usize,
+    /// `x12`: argument register `a2`. Used to pass the third argument to a function.
     pub a2: usize,
+    /// `x13`: argument register `a3`. Used to pass the fourth argument to a function.
     pub a3: usize,
+    /// `x14`: argument register `a4`. Used to pass the fifth argument to a function.
     pub a4: usize,
+    /// `x15`: argument register `a5`. Used to pass the sixth argument to a function.
     pub a5: usize,
+    #[cfg(riscvi)]
+    /// `x16`: argument register `a6`. Used to pass the seventh argument to a function.
     pub a6: usize,
+    #[cfg(riscvi)]
+    /// `x17`: argument register `a7`. Used to pass the eighth argument to a function.
     pub a7: usize,
 }
 
@@ -619,7 +632,10 @@ pub struct TrapFrame {
 ///
 /// This function must be called only from assembly `_start_trap` function.
 /// Do **NOT** call this function directly.
-#[cfg_attr(riscv, link_section = ".trap.rust")]
+#[cfg_attr(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    link_section = ".trap.rust"
+)]
 #[export_name = "_start_trap_rust"]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
     extern "C" {
