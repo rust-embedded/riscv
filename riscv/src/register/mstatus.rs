@@ -1,6 +1,7 @@
 //! mstatus register
 
 pub use super::misa::XLEN;
+#[cfg(not(target_arch = "riscv32"))]
 use crate::bits::{bf_extract, bf_insert};
 #[cfg(target_arch = "riscv32")]
 use crate::result::Error;
@@ -336,29 +337,15 @@ impl Mstatus {
     /// affect the mstatus CSR itself. See [`set_sbe`] to directly update the
     /// CSR.
     ///
-    /// **NOTE**: panics on RISCV-32 platforms.
-    #[inline]
-    pub fn set_sbe(&mut self, endianness: Endianness) {
-        self.try_set_sbe(endianness).unwrap();
-    }
-
-    /// Update S-mode non-instruction-fetch memory endianness
+    /// # Note
     ///
-    /// Note this updates a previously read [`Mstatus`] value, but does not
-    /// affect the mstatus CSR itself. See [`set_sbe`] to directly update the
-    /// CSR.
+    /// On RISCV-32 platforms, this function does not exist on the [`Mstatus`] instance.
+    ///
+    /// Instead, RISCV-32 users should use the [`Mstatush`](crate::register::mstatush::Mstatush) register.
     #[inline]
-    #[cfg_attr(not(target_arch = "riscv64"), allow(unused_variables))]
-    pub fn try_set_sbe(&mut self, endianness: Endianness) -> Result<()> {
-        match () {
-            #[cfg(not(target_arch = "riscv32"))]
-            () => {
-                self.bits = bf_insert(self.bits, 36, 1, endianness as usize);
-                Ok(())
-            }
-            #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
-        }
+    #[cfg(not(target_arch = "riscv32"))]
+    pub fn set_sbe(&mut self, endianness: Endianness) {
+        self.bits = bf_insert(self.bits, 36, 1, endianness as usize);
     }
 
     /// M-mode non-instruction-fetch memory endianness
@@ -379,29 +366,15 @@ impl Mstatus {
     /// affect the mstatus CSR itself. See [`set_mbe`] to directly update the
     /// CSR.
     ///
-    /// **NOTE**: panics on RISCV-32 platforms.
-    #[inline]
-    pub fn set_mbe(&mut self, endianness: Endianness) {
-        self.try_set_mbe(endianness).unwrap();
-    }
-
-    /// Update M-mode non-instruction-fetch memory endianness
+    /// # Note
     ///
-    /// Note this updates a previously read [`Mstatus`] value, but does not
-    /// affect the mstatus CSR itself. See [`set_mbe`] to directly update the
-    /// CSR.
+    /// On RISCV-32 platforms, this function does not exist on the [`Mstatus`] instance.
+    ///
+    /// Instead, RISCV-32 users should use the [`Mstatush`](crate::register::mstatush::Mstatush) register.
     #[inline]
-    #[cfg_attr(not(target_arch = "riscv64"), allow(unused_variables))]
-    pub fn try_set_mbe(&mut self, endianness: Endianness) -> Result<()> {
-        match () {
-            #[cfg(not(target_arch = "riscv32"))]
-            () => {
-                self.bits = bf_insert(self.bits, 37, 1, endianness as usize);
-                Ok(())
-            }
-            #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
-        }
+    #[cfg(not(target_arch = "riscv32"))]
+    pub fn set_mbe(&mut self, endianness: Endianness) {
+        self.bits = bf_insert(self.bits, 37, 1, endianness as usize);
     }
 }
 
