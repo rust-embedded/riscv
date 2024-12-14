@@ -3,9 +3,6 @@
 pub use super::misa::XLEN;
 #[cfg(not(target_arch = "riscv32"))]
 use crate::bits::{bf_extract, bf_insert};
-#[cfg(target_arch = "riscv32")]
-use crate::result::Error;
-use crate::result::Result;
 
 #[cfg(not(target_arch = "riscv32"))]
 read_write_csr! {
@@ -253,28 +250,13 @@ impl Mstatus {
     /// Note this updates a previously read [`Mstatus`] value, but does not
     /// affect the mstatus CSR itself.
     ///
-    /// **NOTE**: panics on RISCV-32 platforms.
-    #[inline]
-    pub fn set_uxl(&mut self, uxl: XLEN) {
-        self.try_set_uxl(uxl).unwrap();
-    }
-
-    /// Attempts to update Effective xlen in U-mode (i.e., `UXLEN`).
+    /// # Note
     ///
-    /// Note this updates a previously read [`Mstatus`] value, but does not
-    /// affect the mstatus CSR itself.
+    /// In RISCV-32, `UXL` does not exist, and `UXLEN` is always [`XLEN::XLEN32`].
     #[inline]
-    #[cfg_attr(not(target_arch = "riscv64"), allow(unused_variables))]
-    pub fn try_set_uxl(&mut self, uxl: XLEN) -> Result<()> {
-        match () {
-            #[cfg(not(target_arch = "riscv32"))]
-            () => {
-                self.bits = bf_insert(self.bits, 32, 2, uxl as usize);
-                Ok(())
-            }
-            #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
-        }
+    #[cfg(not(target_arch = "riscv32"))]
+    pub fn set_uxl(&mut self, uxl: XLEN) {
+        self.bits = bf_insert(self.bits, 32, 2, uxl as usize);
     }
 
     /// Effective xlen in S-mode (i.e., `SXLEN`).
@@ -295,28 +277,13 @@ impl Mstatus {
     /// Note this updates a previously read [`Mstatus`] value, but does not
     /// affect the mstatus CSR itself.
     ///
-    /// **NOTE**: panics on RISCV-32 platforms.
-    #[inline]
-    pub fn set_sxl(&mut self, sxl: XLEN) {
-        self.try_set_sxl(sxl).unwrap();
-    }
-
-    /// Attempts to update Effective xlen in S-mode (i.e., `SXLEN`).
+    /// # Note
     ///
-    /// Note this updates a previously read [`Mstatus`] value, but does not
-    /// affect the mstatus CSR itself.
+    /// In RISCV-32, `SXL` does not exist, and `SXLEN` is always [`XLEN::XLEN32`].
     #[inline]
-    #[cfg_attr(not(target_arch = "riscv64"), allow(unused_variables))]
-    pub fn try_set_sxl(&mut self, sxl: XLEN) -> Result<()> {
-        match () {
-            #[cfg(not(target_arch = "riscv32"))]
-            () => {
-                self.bits = bf_insert(self.bits, 34, 2, sxl as usize);
-                Ok(())
-            }
-            #[cfg(target_arch = "riscv32")]
-            () => Err(Error::Unimplemented),
-        }
+    #[cfg(not(target_arch = "riscv32"))]
+    pub fn set_sxl(&mut self, sxl: XLEN) {
+        self.bits = bf_insert(self.bits, 34, 2, sxl as usize);
     }
 
     /// S-mode non-instruction-fetch memory endianness.
