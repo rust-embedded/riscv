@@ -34,6 +34,7 @@
 
 #![no_std]
 #![allow(clippy::missing_safety_doc)]
+#![allow(clippy::eq_op)]
 
 pub use paste::paste;
 
