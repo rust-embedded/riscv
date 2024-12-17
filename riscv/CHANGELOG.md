@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Align assembly functions with `cortex-m`
 - Use CSR helper macros to define `marchid` register
 - Re-use `try_*` functions in `mcountinhibit`
 - Use CSR helper macros to define `mcause` register
