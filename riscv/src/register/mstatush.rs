@@ -42,3 +42,20 @@ pub unsafe fn set_mbe(endianness: Endianness) {
         Endianness::LittleEndian => _clear(1 << 5),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mstatush() {
+        let mut m = Mstatush::from_bits(0);
+
+        [Endianness::LittleEndian, Endianness::BigEndian]
+            .into_iter()
+            .for_each(|endianness| {
+                test_csr_field!(m, sbe: endianness);
+                test_csr_field!(m, mbe: endianness);
+            });
+    }
+}
