@@ -12,13 +12,13 @@ macro_rules! read_csr {
         /// Reads the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
+        #[inline(always)]
         unsafe fn _read() -> usize {
             _try_read().unwrap()
         }
 
         /// Attempts to read the CSR.
-        #[inline]
+        #[inline(always)]
         unsafe fn _try_read() -> $crate::result::Result<usize> {
             match () {
                 #[cfg($($cfg),*)]
@@ -155,13 +155,13 @@ macro_rules! write_csr {
         /// Writes the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
+        #[inline(always)]
         unsafe fn _write(bits: usize) {
             _try_write(bits).unwrap();
         }
 
         /// Attempts to write the CSR.
-        #[inline]
+        #[inline(always)]
         #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_write(bits: usize) -> $crate::result::Result<()> {
             match () {
@@ -195,7 +195,27 @@ macro_rules! write_csr_as {
     ($csr_type:ty, $csr_number:literal) => {
         $crate::write_csr_as!($csr_type, $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
     };
+    (safe $csr_type:ty, $csr_number:literal) => {
+        $crate::write_csr_as!(safe $csr_type, $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
     ($csr_type:ty, $csr_number:literal, $($cfg:meta),*) => {
+        $crate::write_csr!($csr_number, $($cfg),*);
+
+        /// Writes the CSR.
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub unsafe fn write(value: $csr_type) {
+            _write(value.bits);
+        }
+
+        /// Attempts to write the CSR.
+        #[inline]
+        pub unsafe fn try_write(value: $csr_type) -> $crate::result::Result<()> {
+            _try_write(value.bits)
+        }
+    };
+    (safe $csr_type:ty, $csr_number:literal, $($cfg:meta),*) => {
         $crate::write_csr!($csr_number, $($cfg),*);
 
         /// Writes the CSR.
@@ -220,6 +240,9 @@ macro_rules! write_csr_as_rv32 {
     ($csr_type:ty, $csr_number:literal) => {
         $crate::write_csr_as!($csr_type, $csr_number, target_arch = "riscv32");
     };
+    (safe $csr_type:ty, $csr_number:literal) => {
+        $crate::write_csr_as!(safe $csr_type, $csr_number, target_arch = "riscv32");
+    };
 }
 
 /// Convenience macro to write a [`usize`] value to a CSR register.
@@ -228,7 +251,27 @@ macro_rules! write_csr_as_usize {
     ($csr_number:literal) => {
         $crate::write_csr_as_usize!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
     };
+    (safe $csr_number:literal) => {
+        $crate::write_csr_as_usize!(safe $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
     ($csr_number:literal, $($cfg:meta),*) => {
+        $crate::write_csr!($csr_number, $($cfg),*);
+
+        /// Writes the CSR.
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub unsafe fn write(bits: usize) {
+            _write(bits);
+        }
+
+        /// Attempts to write the CSR.
+        #[inline]
+        pub unsafe fn try_write(bits: usize) -> $crate::result::Result<()> {
+            _try_write(bits)
+        }
+    };
+    (safe $csr_number:literal, $($cfg:meta),*) => {
         $crate::write_csr!($csr_number, $($cfg),*);
 
         /// Writes the CSR.
@@ -253,6 +296,9 @@ macro_rules! write_csr_as_usize_rv32 {
     ($csr_number:literal) => {
         $crate::write_csr_as_usize!($csr_number, target_arch = "riscv32");
     };
+    (safe $csr_number:literal) => {
+        $crate::write_csr_as_usize!(safe $csr_number, target_arch = "riscv32");
+    };
 }
 
 /// Convenience macro around the `csrrs` assembly instruction to set the CSR register.
@@ -267,13 +313,13 @@ macro_rules! set {
         /// Set the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
+        #[inline(always)]
         unsafe fn _set(bits: usize) {
             _try_set(bits).unwrap();
         }
 
         /// Attempts to set the CSR.
-        #[inline]
+        #[inline(always)]
         #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_set(bits: usize) -> $crate::result::Result<()> {
             match () {
@@ -311,13 +357,13 @@ macro_rules! clear {
         /// Clear the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
+        #[inline(always)]
         unsafe fn _clear(bits: usize) {
             _try_clear(bits).unwrap();
         }
 
         /// Attempts to clear the CSR.
-        #[inline]
+        #[inline(always)]
         #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_clear(bits: usize) -> $crate::result::Result<()> {
             match () {
