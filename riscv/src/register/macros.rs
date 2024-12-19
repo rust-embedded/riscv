@@ -6,6 +6,9 @@
 #[macro_export]
 macro_rules! read_csr {
     ($csr_number:literal) => {
+        $crate::read_csr!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
         /// Reads the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
@@ -18,14 +21,13 @@ macro_rules! read_csr {
         #[inline]
         unsafe fn _try_read() -> $crate::result::Result<usize> {
             match () {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #[cfg($($cfg),*)]
                 () => {
                     let r: usize;
                     core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
                     Ok(r)
                 }
-
-                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+                #[cfg(not($($cfg),*))]
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
@@ -40,29 +42,7 @@ macro_rules! read_csr {
 #[macro_export]
 macro_rules! read_csr_rv32 {
     ($csr_number:literal) => {
-        /// Reads the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        unsafe fn _read() -> usize {
-            _try_read().unwrap()
-        }
-
-        /// Attempts to read the CSR.
-        #[inline]
-        unsafe fn _try_read() -> $crate::result::Result<usize> {
-            match () {
-                #[cfg(target_arch = "riscv32")]
-                () => {
-                    let r: usize;
-                    core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
-                    Ok(r)
-                }
-
-                #[cfg(not(target_arch = "riscv32"))]
-                () => Err($crate::result::Error::Unimplemented),
-            }
-        }
+        $crate::read_csr!($csr_number, target_arch = "riscv32");
     };
 }
 
@@ -72,7 +52,14 @@ macro_rules! read_csr_rv32 {
 #[macro_export]
 macro_rules! read_csr_as {
     ($register:ident, $csr_number:literal) => {
-        $crate::read_csr!($csr_number);
+        $crate::read_csr_as!($register, $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($register:ident, $csr_number:literal, $sentinel:tt) => {
+        $crate::read_csr_as!($register, $csr_number, $sentinel, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+
+    (base $register:ident, $csr_number:literal, $($cfg:meta),*) => {
+        $crate::read_csr!($csr_number, $($cfg),*);
 
         /// Reads the CSR.
         ///
@@ -83,6 +70,10 @@ macro_rules! read_csr_as {
                 bits: unsafe { _read() },
             }
         }
+    };
+
+    ($register:ident, $csr_number:literal, $($cfg:meta),*) => {
+        $crate::read_csr_as!(base $register, $csr_number, $($cfg),*);
 
         /// Attempts to reads the CSR.
         #[inline]
@@ -93,16 +84,8 @@ macro_rules! read_csr_as {
         }
     };
 
-    ($register:ident, $csr_number:literal, $sentinel:tt) => {
-        $crate::read_csr!($csr_number);
-
-        /// Reads the CSR.
-        ///
-        /// **WARNING**: panics on targets not implementing this CSR.
-        #[inline]
-        pub fn read() -> $register {
-            try_read().unwrap()
-        }
+    ($register:ident, $csr_number:literal, $sentinel:tt, $($cfg:meta),*) => {
+        $crate::read_csr_as!(base $register, $csr_number, $($cfg),*);
 
         /// Attempts to reads the CSR.
         #[inline]
@@ -121,25 +104,7 @@ macro_rules! read_csr_as {
 #[macro_export]
 macro_rules! read_csr_as_rv32 {
     ($register:ident, $csr_number:literal) => {
-        $crate::read_csr_rv32!($csr_number);
-
-        /// Reads the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        pub fn read() -> $register {
-            $register {
-                bits: unsafe { _read() },
-            }
-        }
-
-        /// Attempts to reads the CSR.
-        #[inline]
-        pub fn try_read() -> $crate::result::Result<$register> {
-            Ok($register {
-                bits: unsafe { _try_read()? },
-            })
-        }
+        $crate::read_csr_as!($register, $csr_number, target_arch = "riscv32");
     };
 }
 
@@ -147,7 +112,10 @@ macro_rules! read_csr_as_rv32 {
 #[macro_export]
 macro_rules! read_csr_as_usize {
     ($csr_number:literal) => {
-        $crate::read_csr!($csr_number);
+        $crate::read_csr_as_usize!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
+        $crate::read_csr!($csr_number, $($cfg),*);
 
         /// Reads the CSR.
         ///
@@ -169,21 +137,7 @@ macro_rules! read_csr_as_usize {
 #[macro_export]
 macro_rules! read_csr_as_usize_rv32 {
     ($csr_number:literal) => {
-        $crate::read_csr_rv32!($csr_number);
-
-        /// Reads the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        pub fn read() -> usize {
-            unsafe { _read() }
-        }
-
-        /// Attempts to reads the CSR.
-        #[inline]
-        pub fn try_read() -> $crate::result::Result<usize> {
-            unsafe { _try_read() }
-        }
+        $crate::read_csr_as_usize!($csr_number, target_arch = "riscv32");
     };
 }
 
@@ -195,27 +149,28 @@ macro_rules! read_csr_as_usize_rv32 {
 #[macro_export]
 macro_rules! write_csr {
     ($csr_number:literal) => {
+        $crate::write_csr!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
         /// Writes the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
-        #[allow(unused_variables)]
         unsafe fn _write(bits: usize) {
             _try_write(bits).unwrap();
         }
 
         /// Attempts to write the CSR.
         #[inline]
-        #[allow(unused_variables)]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_write(bits: usize) -> $crate::result::Result<()> {
             match () {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #[cfg($($cfg),*)]
                 () => {
                     core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
                     Ok(())
                 }
-
-                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+                #[cfg(not($($cfg),*))]
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
@@ -230,30 +185,7 @@ macro_rules! write_csr {
 #[macro_export]
 macro_rules! write_csr_rv32 {
     ($csr_number:literal) => {
-        /// Writes the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _write(bits: usize) {
-            _try_write(bits).unwrap();
-        }
-
-        /// Attempts to write the CSR.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _try_write(bits: usize) -> $crate::result::Result<()> {
-            match () {
-                #[cfg(target_arch = "riscv32")]
-                () => {
-                    core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
-                    Ok(())
-                }
-
-                #[cfg(not(target_arch = "riscv32"))]
-                () => Err($crate::result::Error::Unimplemented),
-            }
-        }
+        $crate::write_csr!($csr_number, target_arch = "riscv32");
     };
 }
 
@@ -261,7 +193,10 @@ macro_rules! write_csr_rv32 {
 #[macro_export]
 macro_rules! write_csr_as {
     ($csr_type:ty, $csr_number:literal) => {
-        $crate::write_csr!($csr_number);
+        $crate::write_csr_as!($csr_type, $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_type:ty, $csr_number:literal, $($cfg:meta),*) => {
+        $crate::write_csr!($csr_number, $($cfg),*);
 
         /// Writes the CSR.
         ///
@@ -283,21 +218,7 @@ macro_rules! write_csr_as {
 #[macro_export]
 macro_rules! write_csr_as_rv32 {
     ($csr_type:ty, $csr_number:literal) => {
-        $crate::write_csr_rv32!($csr_number);
-
-        /// Writes the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        pub fn write(value: $csr_type) {
-            unsafe { _write(value.bits) }
-        }
-
-        /// Attempts to write the CSR.
-        #[inline]
-        pub fn try_write(value: $csr_type) -> $crate::result::Result<()> {
-            unsafe { _try_write(value.bits) }
-        }
+        $crate::write_csr_as!($csr_type, $csr_number, target_arch = "riscv32");
     };
 }
 
@@ -305,7 +226,10 @@ macro_rules! write_csr_as_rv32 {
 #[macro_export]
 macro_rules! write_csr_as_usize {
     ($csr_number:literal) => {
-        $crate::write_csr!($csr_number);
+        $crate::write_csr_as_usize!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
+        $crate::write_csr!($csr_number, $($cfg),*);
 
         /// Writes the CSR.
         ///
@@ -327,21 +251,7 @@ macro_rules! write_csr_as_usize {
 #[macro_export]
 macro_rules! write_csr_as_usize_rv32 {
     ($csr_number:literal) => {
-        $crate::write_csr_rv32!($csr_number);
-
-        /// Writes the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        pub fn write(bits: usize) {
-            unsafe { _write(bits) }
-        }
-
-        /// Attempts to write the CSR.
-        #[inline]
-        pub fn try_write(bits: usize) -> $crate::result::Result<()> {
-            unsafe { _try_write(bits) }
-        }
+        $crate::write_csr_as_usize!($csr_number, target_arch = "riscv32");
     };
 }
 
@@ -351,27 +261,28 @@ macro_rules! write_csr_as_usize_rv32 {
 #[macro_export]
 macro_rules! set {
     ($csr_number:literal) => {
+        $crate::set!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
         /// Set the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
-        #[allow(unused_variables)]
         unsafe fn _set(bits: usize) {
             _try_set(bits).unwrap();
         }
 
         /// Attempts to set the CSR.
         #[inline]
-        #[allow(unused_variables)]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_set(bits: usize) -> $crate::result::Result<()> {
             match () {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #[cfg($($cfg),*)]
                 () => {
                     core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
                     Ok(())
                 }
-
-                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+                #[cfg(not($($cfg),*))]
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
@@ -384,30 +295,7 @@ macro_rules! set {
 #[macro_export]
 macro_rules! set_rv32 {
     ($csr_number:literal) => {
-        /// Set the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _set(bits: usize) {
-            _try_set(bits).unwrap();
-        }
-
-        /// Attempts to set the CSR.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _try_set(bits: usize) -> $crate::result::Result<()> {
-            match () {
-                #[cfg(target_arch = "riscv32")]
-                () => {
-                    core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
-                    Ok(())
-                }
-
-                #[cfg(not(target_arch = "riscv32"))]
-                () => Err($crate::result::Error::Unimplemented),
-            }
-        }
+        $crate::set!($csr_number, target_arch = "riscv32");
     };
 }
 
@@ -417,27 +305,28 @@ macro_rules! set_rv32 {
 #[macro_export]
 macro_rules! clear {
     ($csr_number:literal) => {
+        $crate::clear!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
         /// Clear the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
-        #[allow(unused_variables)]
         unsafe fn _clear(bits: usize) {
             _try_clear(bits).unwrap();
         }
 
         /// Attempts to clear the CSR.
         #[inline]
-        #[allow(unused_variables)]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
         unsafe fn _try_clear(bits: usize) -> $crate::result::Result<()> {
             match () {
-                #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+                #[cfg($($cfg),*)]
                 () => {
                     core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
                     Ok(())
                 }
-
-                #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+                #[cfg(not($($cfg),*))]
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
@@ -450,30 +339,7 @@ macro_rules! clear {
 #[macro_export]
 macro_rules! clear_rv32 {
     ($csr_number:literal) => {
-        /// Clear the CSR.
-        ///
-        /// **WARNING**: panics on non-`riscv` targets.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _clear(bits: usize) {
-            _try_clear(bits).unwrap();
-        }
-
-        /// Attempts to clear the CSR.
-        #[inline]
-        #[allow(unused_variables)]
-        unsafe fn _try_clear(bits: usize) -> $crate::result::Result<()> {
-            match () {
-                #[cfg(target_arch = "riscv32")]
-                () => {
-                    core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
-                    Ok(())
-                }
-
-                #[cfg(not(target_arch = "riscv32"))]
-                () => Err($crate::result::Error::Unimplemented),
-            }
-        }
+        $crate::clear!($csr_number, target_arch = "riscv32");
     };
 }
 
