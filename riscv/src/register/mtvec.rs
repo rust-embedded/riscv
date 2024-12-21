@@ -63,3 +63,41 @@ impl Mtvec {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mtvec() {
+        let mut m = Mtvec::from_bits(0);
+
+        (1..=usize::BITS)
+            .map(|r| (((1u128 << r) - 1) as usize) & !TRAP_MASK)
+            .for_each(|address| {
+                m.set_address(address);
+                assert_eq!(m.address(), address);
+
+                assert_eq!(m.try_set_address(address), Ok(()));
+                assert_eq!(m.address(), address);
+            });
+
+        (1..=usize::BITS)
+            .filter_map(|r| match ((1u128 << r) - 1) as usize {
+                addr if (addr & TRAP_MASK) != 0 => Some(addr),
+                _ => None,
+            })
+            .for_each(|address| {
+                assert_eq!(
+                    m.try_set_address(address),
+                    Err(Error::InvalidFieldVariant {
+                        field: "mtvec::address",
+                        value: address,
+                    })
+                );
+            });
+
+        test_csr_field!(m, trap_mode: TrapMode::Direct);
+        test_csr_field!(m, trap_mode: TrapMode::Vectored);
+    }
+}
