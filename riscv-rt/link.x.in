@@ -168,7 +168,7 @@ SECTIONS
   __ebss = .;
 
   /* fictitious region that represents the memory available for the heap */
-  .heap (NOLOAD) :
+  .heap (NOLOAD) : ALIGN(4)
   {
     __sheap = .;
     . += _heap_size;
