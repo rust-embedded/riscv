@@ -58,7 +58,7 @@ impl Satp {
     #[inline]
     #[cfg(target_pointer_width = "64")]
     pub fn asid(&self) -> usize {
-        self.bits >> 44 & 0xFFFF // bits 44-59
+        (self.bits >> 44) & 0xFFFF // bits 44-59
     }
 
     /// Physical page number
@@ -203,7 +203,7 @@ pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
             bitmask: 0xFFF_FFFF_FFFF,
         })
     } else {
-        let bits = (mode as usize) << 60 | (asid << 44) | ppn;
+        let bits = ((mode as usize) << 60) | (asid << 44) | ppn;
         _try_write(bits)
     }
 }

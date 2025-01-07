@@ -498,7 +498,7 @@ macro_rules! clear_pmp {
 macro_rules! csr {
     ($(#[$doc:meta])*
      $ty:ident,
-     $mask:literal) => {
+     $mask:expr) => {
         #[repr(C)]
         $(#[$doc])*
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
