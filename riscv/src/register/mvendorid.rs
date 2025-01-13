@@ -1,34 +1,24 @@
 //! mvendorid register
 
-use core::num::NonZeroUsize;
-
-/// mvendorid register
-#[derive(Clone, Copy, Debug)]
-pub struct Mvendorid {
-    bits: NonZeroUsize,
+read_only_csr! {
+    /// `mvendorid` register
+    Mvendorid: 0xF11,
+    mask: 0xffff_ffff,
+    sentinel: 0,
 }
 
-impl Mvendorid {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits.get()
-    }
-
-    /// Returns the JEDEC manufacturer ID
-    #[inline]
-    pub fn jedec_manufacturer(&self) -> usize {
-        self.bits() >> 7
-    }
+read_only_csr_field! {
+    Mvendorid,
+    /// Represents the number of continuation bytes (`0x7f`) in the JEDEC manufacturer ID.
+    bank: [7:31],
 }
 
-read_csr!(0xF11);
-
-/// Reads the CSR
-#[inline]
-pub fn read() -> Option<Mvendorid> {
-    let r = unsafe { _read() };
-    // When mvendorid is hardwired to zero it means that the mvendorid
-    // csr isn't implemented.
-    NonZeroUsize::new(r).map(|bits| Mvendorid { bits })
+read_only_csr_field! {
+    Mvendorid,
+    /// Represents the final offset field in the JEDEC manufacturer ID.
+    ///
+    /// # Note
+    ///
+    /// The encoded value returned by `offset` does not include the odd parity bit (`0x80`).
+    offset: [0:6],
 }
