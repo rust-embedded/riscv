@@ -22,3 +22,37 @@ read_only_csr_field! {
     /// The encoded value returned by `offset` does not include the odd parity bit (`0x80`).
     offset: [0:6],
 }
+
+impl Mvendorid {
+    /// Represents the JEDEC manufacture continuation byte.
+    pub const CONTINUATION: u8 = 0x7f;
+
+    /// Gets the decoded JEDEC manufacturer ID from the `mvendorid` value.
+    ///
+    /// # Note
+    ///
+    /// This function returns an iterator over the decoded bytes.
+    ///
+    /// An iterator is needed because the encoding can theoretically return a max count (`0x1ff_ffff`) of continuation bytes (`0x7f`).
+    ///
+    /// The final byte in the iterator is the `offset`, including the odd parity bit (set only if even).
+    pub fn jedec_manufacturer(&self) -> impl Iterator<Item = u8> {
+        const DONE: usize = usize::MAX;
+
+        let mut bank = self.bank();
+        let offset = self.offset();
+
+        core::iter::from_fn(move || match bank {
+            DONE => None,
+            0 => {
+                bank = DONE;
+                let parity = ((1 - (offset.count_ones() % 2)) << 7) as usize;
+                Some((parity | offset) as u8)
+            }
+            _ => {
+                bank -= 1;
+                Some(Self::CONTINUATION)
+            }
+        })
+    }
+}
