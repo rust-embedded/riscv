@@ -56,3 +56,45 @@ impl Mvendorid {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mvendorid() {
+        (0..u32::BITS)
+            .map(|r| ((1u64 << r) - 1) as usize)
+            .for_each(|raw| {
+                let exp_bank = raw >> 7;
+                let exp_offset = raw & (Mvendorid::CONTINUATION as usize);
+                let exp_parity = ((1 - (exp_offset.count_ones() % 2)) << 7) as u8;
+                let exp_mvendorid = Mvendorid::from_bits(raw);
+
+                assert_eq!(exp_mvendorid.bank(), exp_bank);
+                assert_eq!(exp_mvendorid.offset(), exp_offset);
+
+                let mut jedec_iter = exp_mvendorid.jedec_manufacturer();
+                (0..exp_bank)
+                    .for_each(|_| assert_eq!(jedec_iter.next(), Some(Mvendorid::CONTINUATION)));
+                assert_eq!(jedec_iter.next(), Some(exp_parity | (exp_offset as u8)));
+                assert_eq!(jedec_iter.next(), None);
+            });
+
+        // ISA example used as a concrete test vector.
+
+        let exp_bank = 0xc;
+        let exp_offset = 0x0a;
+        let exp_decoded_offset = 0x8a;
+        let raw_mvendorid = 0x60a;
+        let exp_mvendorid = Mvendorid::from_bits(raw_mvendorid);
+
+        assert_eq!(exp_mvendorid.bank(), exp_bank);
+        assert_eq!(exp_mvendorid.offset(), exp_offset);
+
+        let mut jedec_iter = exp_mvendorid.jedec_manufacturer();
+        (0..exp_bank).for_each(|_| assert_eq!(jedec_iter.next(), Some(Mvendorid::CONTINUATION)));
+        assert_eq!(jedec_iter.next(), Some(exp_decoded_offset));
+        assert_eq!(jedec_iter.next(), None);
+    }
+}
