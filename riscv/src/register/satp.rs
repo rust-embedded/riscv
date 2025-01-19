@@ -149,3 +149,77 @@ pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
         _try_write(bits)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg(target_pointer_width = "32")]
+    const ASID_START: usize = 22;
+    #[cfg(target_pointer_width = "64")]
+    const ASID_START: usize = 44;
+    #[cfg(target_pointer_width = "32")]
+    const MODE_START: usize = 31;
+    #[cfg(target_pointer_width = "64")]
+    const MODE_START: usize = 60;
+
+    #[cfg(target_pointer_width = "32")]
+    const MODES: [Mode; 2] = [Mode::Bare, Mode::Sv32];
+    #[cfg(target_pointer_width = "64")]
+    const MODES: [Mode; 5] = [Mode::Bare, Mode::Sv39, Mode::Sv48, Mode::Sv57, Mode::Sv64];
+
+    #[test]
+    fn test_satp() {
+        let new_mode = Mode::new();
+
+        (1..=usize::BITS)
+            .map(|r| ((1u128 << r) - 1) as usize)
+            .for_each(|raw| {
+                let mut satp = Satp::from_bits(raw);
+
+                let exp_ppn = raw & ((1usize << ASID_START) - 1);
+                let exp_asid = (raw & ((1usize << MODE_START) - 1)) >> ASID_START;
+
+                assert_eq!(satp.ppn(), exp_ppn);
+
+                satp.set_ppn(0);
+                assert_eq!(satp.ppn(), 0);
+
+                satp.set_ppn(exp_ppn);
+                assert_eq!(satp.ppn(), exp_ppn);
+
+                assert_eq!(satp.asid(), exp_asid);
+
+                satp.set_asid(0);
+                assert_eq!(satp.asid(), 0);
+
+                satp.set_asid(exp_asid);
+                assert_eq!(satp.asid(), exp_asid);
+
+                match Mode::from_usize(raw >> 60) {
+                    Ok(exp_mode) => {
+                        assert_eq!(satp.try_mode(), Ok(exp_mode));
+                        assert_eq!(satp.mode(), exp_mode);
+
+                        satp.set_mode(new_mode);
+
+                        assert_eq!(satp.try_mode(), Ok(new_mode));
+                        assert_eq!(satp.mode(), new_mode);
+
+                        satp.set_mode(exp_mode);
+
+                        assert_eq!(satp.try_mode(), Ok(exp_mode));
+                        assert_eq!(satp.mode(), exp_mode);
+                    }
+                    Err(exp_err) => {
+                        assert_eq!(satp.try_mode(), Err(exp_err));
+                    }
+                }
+            });
+
+        let mut satp = Satp::from_bits(0);
+        MODES
+            .into_iter()
+            .for_each(|mode| test_csr_field!(satp, mode: mode));
+    }
+}
