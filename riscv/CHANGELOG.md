@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Use `RISCV_MTVEC_ALIGN` to control the alignment constraint of the vector table
 - Simplify register macros with `cfg` field
 - Align assembly functions with `cortex-m`
 - Use CSR helper macros to define `marchid` register
