@@ -2,65 +2,45 @@
 
 use crate::result::{Error, Result};
 
-/// Permission enum contains all possible permission modes for pmp registers
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Permission {
-    NONE = 0b000,
-    R = 0b001,
-    W = 0b010,
-    RW = 0b011,
-    X = 0b100,
-    RX = 0b101,
-    WX = 0b110,
-    RWX = 0b111,
+csr_field_enum! {
+    /// Permission enum contains all possible permission modes for pmp registers
+    Permission {
+        default: NONE,
+        NONE = 0b000,
+        R = 0b001,
+        W = 0b010,
+        RW = 0b011,
+        X = 0b100,
+        RX = 0b101,
+        WX = 0b110,
+        RWX = 0b111,
+    }
 }
 
 impl TryFrom<u8> for Permission {
     type Error = Error;
 
     fn try_from(val: u8) -> Result<Self> {
-        match val {
-            0b000 => Ok(Self::NONE),
-            0b001 => Ok(Self::R),
-            0b010 => Ok(Self::W),
-            0b011 => Ok(Self::RW),
-            0b100 => Ok(Self::X),
-            0b101 => Ok(Self::RX),
-            0b110 => Ok(Self::WX),
-            0b111 => Ok(Self::RWX),
-            _ => Err(Error::InvalidFieldValue {
-                field: "permission",
-                value: val as usize,
-                bitmask: 0b111,
-            }),
-        }
+        Self::from_usize(val as usize)
     }
 }
 
-/// Range enum contains all possible addressing modes for pmp registers
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Range {
-    OFF = 0b00,
-    TOR = 0b01,
-    NA4 = 0b10,
-    NAPOT = 0b11,
+csr_field_enum! {
+    /// Range enum contains all possible addressing modes for pmp registers
+    Range {
+        default: OFF,
+        OFF = 0b00,
+        TOR = 0b01,
+        NA4 = 0b10,
+        NAPOT = 0b11,
+    }
 }
 
 impl TryFrom<u8> for Range {
     type Error = Error;
 
     fn try_from(val: u8) -> Result<Self> {
-        match val {
-            0b00 => Ok(Self::OFF),
-            0b01 => Ok(Self::TOR),
-            0b10 => Ok(Self::NA4),
-            0b11 => Ok(Self::NAPOT),
-            _ => Err(Error::InvalidFieldValue {
-                field: "range",
-                value: val as usize,
-                bitmask: 0b11,
-            }),
-        }
+        Self::from_usize(val as usize)
     }
 }
 
