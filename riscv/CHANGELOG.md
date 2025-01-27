@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Make all CSR writes `unsafe` by default (#209)
+- Use `RISCV_MTVEC_ALIGN` to control the alignment constraint of the vector table
 - Simplify register macros with `cfg` field
 - Align assembly functions with `cortex-m`
 - Use CSR helper macros to define `marchid` register
@@ -27,6 +28,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use CSR helper macros to define `misa` register
 - Use CSR helper macros to define `mip` register
 - Use CSR helper macros to define `mstatus` register
+- Use CSR helper macros to define `mstatush` register
+- Use CSR helper macros to define `mtvec` register
+- Use CSR helper macros to define `mtvendorid` register
+- Use CSR helper macros to define `satp` register
 
 ## [v0.12.1] - 2024-10-20
 
