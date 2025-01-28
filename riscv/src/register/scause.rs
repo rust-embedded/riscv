@@ -83,3 +83,58 @@ pub unsafe fn set<I: CoreInterruptNumber, E: ExceptionNumber>(cause: Trap<I, E>)
     };
     _write(bits);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scause() {
+        let new_code = 0;
+        (1usize..=usize::BITS as usize)
+            .map(|r| ((1u128 << r) - 1) as usize)
+            .for_each(|raw| {
+                let exp_interrupt = (raw >> (usize::BITS - 1)) != 0;
+                let exp_code = raw & ((1usize << (usize::BITS - 1)) - 1);
+                let exp_cause = if exp_interrupt {
+                    Trap::Interrupt(exp_code)
+                } else {
+                    Trap::Exception(exp_code)
+                };
+
+                let mut scause = Scause::from_bits(raw);
+
+                assert_eq!(scause.interrupt(), exp_interrupt);
+                assert_eq!(scause.is_interrupt(), exp_interrupt);
+                assert_eq!(scause.is_exception(), !exp_interrupt);
+
+                assert_eq!(scause.code(), exp_code);
+                assert_eq!(scause.cause(), exp_cause);
+
+                scause.set_interrupt(!exp_interrupt);
+
+                assert_eq!(scause.is_interrupt(), !exp_interrupt);
+                assert_eq!(scause.is_exception(), exp_interrupt);
+
+                scause.set_code(new_code);
+                let new_cause = if scause.interrupt() {
+                    Trap::Interrupt(new_code)
+                } else {
+                    Trap::Exception(new_code)
+                };
+
+                assert_eq!(scause.code(), new_code);
+                assert_eq!(scause.cause(), new_cause);
+
+                scause.set_code(exp_code);
+                let exp_cause = if scause.interrupt() {
+                    Trap::Interrupt(exp_code)
+                } else {
+                    Trap::Exception(exp_code)
+                };
+
+                assert_eq!(scause.code(), exp_code);
+                assert_eq!(scause.cause(), exp_cause);
+            });
+    }
+}
