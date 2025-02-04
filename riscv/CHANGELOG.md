@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use CSR helper macros to define `pmpcfgx` field types
 - Use CSR helper macros to define `scause` field types
 - Use CSR helper macros to define `sie` register
+- Use CSR helper macros to define `scounteren` field types
 
 ## [v0.12.1] - 2024-10-20
 
