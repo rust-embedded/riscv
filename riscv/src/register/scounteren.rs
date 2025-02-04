@@ -94,3 +94,35 @@ pub unsafe fn try_clear_hpm(index: usize) -> Result<()> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scounteren() {
+        const HPM_MIN: usize = 3;
+        const HPM_MAX: usize = 31;
+
+        let mut scounteren = Scounteren::from_bits(0);
+
+        test_csr_field!(scounteren, cy);
+        test_csr_field!(scounteren, tm);
+        test_csr_field!(scounteren, ir);
+
+        (HPM_MIN..=HPM_MAX).for_each(|index| {
+            test_csr_field!(scounteren, hpm, index);
+        });
+
+        (0..usize::BITS as usize)
+            .filter(|&i| !(HPM_MIN..=HPM_MAX).any(|idx| idx == i))
+            .for_each(|index| {
+                let err = Error::IndexOutOfBounds {
+                    index,
+                    min: 3,
+                    max: 31,
+                };
+                test_csr_field!(scounteren, hpm, index, err)
+            });
+    }
+}
