@@ -36,3 +36,17 @@ set_clear_csr!(
 set_clear_csr!(
     /// Supervisor External Interrupt Enable
     , set_sext, clear_sext, 1 << 9);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sie() {
+        let mut sie = Sie::from_bits(0);
+
+        test_csr_field!(sie, ssoft);
+        test_csr_field!(sie, stimer);
+        test_csr_field!(sie, sext);
+    }
+}
