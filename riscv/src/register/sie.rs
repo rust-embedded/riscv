@@ -1,38 +1,29 @@
 //! sie register
 
+read_write_csr! {
 /// sie register
-#[derive(Clone, Copy, Debug)]
-pub struct Sie {
-    bits: usize,
+    Sie: 0x104,
+    mask: 0x222,
 }
 
-impl Sie {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
+read_write_csr_field! {
+    Sie,
     /// Supervisor Software Interrupt Enable
-    #[inline]
-    pub fn ssoft(&self) -> bool {
-        self.bits & (1 << 1) != 0
-    }
-
-    /// Supervisor Timer Interrupt Enable
-    #[inline]
-    pub fn stimer(&self) -> bool {
-        self.bits & (1 << 5) != 0
-    }
-
-    /// Supervisor External Interrupt Enable
-    #[inline]
-    pub fn sext(&self) -> bool {
-        self.bits & (1 << 9) != 0
-    }
+    ssoft: 1,
 }
 
-read_csr_as!(Sie, 0x104);
+read_write_csr_field! {
+    Sie,
+    /// Supervisor Timer Interrupt Enable
+    stimer: 5,
+}
+
+read_write_csr_field! {
+    Sie,
+    /// Supervisor Timer Interrupt Enable
+    sext: 9,
+}
+
 set!(0x104);
 clear!(0x104);
 
