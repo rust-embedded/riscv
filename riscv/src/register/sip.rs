@@ -30,3 +30,20 @@ clear!(0x144);
 set_clear_csr!(
     /// Supervisor Software Interrupt Pending
     , set_ssoft, clear_ssoft, 1 << 1);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sip() {
+        let mut sip = Sip::from_bits(0);
+
+        test_csr_field!(sip, ssoft);
+        assert!(!sip.stimer());
+        assert!(!sip.sext());
+
+        assert!(Sip::from_bits(1 << 5).stimer());
+        assert!(Sip::from_bits(1 << 9).sext());
+    }
+}
