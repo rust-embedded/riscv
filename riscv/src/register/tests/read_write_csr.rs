@@ -55,12 +55,12 @@ pub fn _try_read_csr() -> Result<Mtest> {
 
 #[allow(unused)]
 pub fn _write_csr(csr: Mtest) {
-    write(csr);
+    unsafe { write(csr) };
 }
 
 #[allow(unused)]
 pub fn _try_write_csr(csr: Mtest) {
-    try_write(csr);
+    unsafe { try_write(csr) };
 }
 
 #[test]
