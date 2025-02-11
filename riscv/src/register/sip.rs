@@ -1,38 +1,29 @@
 //! sip register
 
-/// sip register
-#[derive(Clone, Copy, Debug)]
-pub struct Sip {
-    bits: usize,
+read_write_csr! {
+    /// sip register
+    Sip: 0x144,
+    mask: 0x222,
 }
 
-impl Sip {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
+read_write_csr_field! {
+    Sip,
     /// Supervisor Software Interrupt Pending
-    #[inline]
-    pub fn ssoft(&self) -> bool {
-        self.bits & (1 << 1) != 0
-    }
-
-    /// Supervisor Timer Interrupt Pending
-    #[inline]
-    pub fn stimer(&self) -> bool {
-        self.bits & (1 << 5) != 0
-    }
-
-    /// Supervisor External Interrupt Pending
-    #[inline]
-    pub fn sext(&self) -> bool {
-        self.bits & (1 << 9) != 0
-    }
+    ssoft: 1,
 }
 
-read_csr_as!(Sip, 0x144);
+read_only_csr_field! {
+    Sip,
+    /// Supervisor Timer Interrupt Pending
+    stimer: 5,
+}
+
+read_only_csr_field! {
+    Sip,
+    /// Supervisor External Interrupt Pending
+    sext: 9,
+}
+
 set!(0x144);
 clear!(0x144);
 
