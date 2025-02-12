@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use CSR helper macros to define `scounteren` field types
 - Use CSR helper macros to define `sip` register
 - Use CSR helper macros to define `sstatus` field types
+- Use CSR helper macros to define `stvec` field types
 
 ## [v0.12.1] - 2024-10-20
 
