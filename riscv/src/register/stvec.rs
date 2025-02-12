@@ -54,3 +54,44 @@ impl Stvec {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_stvec() {
+        let mut stvec = Stvec::from_bits(0);
+
+        [TrapMode::Direct, TrapMode::Vectored]
+            .into_iter()
+            .for_each(|trap_mode| {
+                test_csr_field!(stvec, trap_mode: trap_mode);
+            });
+
+        (1..=usize::BITS)
+            .map(|r| (((1u128 << r) - 1) as usize) & !TRAP_MASK)
+            .for_each(|address| {
+                stvec.set_address(address);
+                assert_eq!(stvec.address(), address);
+
+                assert_eq!(stvec.try_set_address(address), Ok(()));
+                assert_eq!(stvec.address(), address);
+            });
+
+        (1..=usize::BITS)
+            .filter_map(|r| match ((1u128 << r) - 1) as usize {
+                addr if (addr & TRAP_MASK) != 0 => Some(addr),
+                _ => None,
+            })
+            .for_each(|address| {
+                assert_eq!(
+                    stvec.try_set_address(address),
+                    Err(Error::InvalidFieldVariant {
+                        field: "stvec::address",
+                        value: address,
+                    })
+                );
+            });
+    }
+}
