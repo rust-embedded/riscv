@@ -145,3 +145,50 @@ pub unsafe fn set_fs(fs: FS) {
     value |= (fs as usize) << 13;
     _write(value);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sstatus() {
+        let mut sstatus = Sstatus::from_bits(0);
+
+        test_csr_field!(sstatus, sie);
+        test_csr_field!(sstatus, spie);
+
+        [SPP::User, SPP::Supervisor].into_iter().for_each(|spp| {
+            test_csr_field!(sstatus, spp: spp);
+        });
+
+        [FS::Off, FS::Initial, FS::Clean, FS::Dirty]
+            .into_iter()
+            .for_each(|fs| {
+                test_csr_field!(sstatus, fs: fs);
+            });
+
+        [
+            XS::AllOff,
+            XS::NoneDirtyOrClean,
+            XS::NoneDirtySomeClean,
+            XS::SomeDirty,
+        ]
+        .into_iter()
+        .for_each(|xs| {
+            let sstatus = Sstatus::from_bits(xs.into_usize() << 15);
+            assert_eq!(sstatus.xs(), xs);
+            assert_eq!(sstatus.try_xs(), Ok(xs));
+        });
+
+        test_csr_field!(sstatus, sum);
+        test_csr_field!(sstatus, mxr);
+
+        [XLEN::XLEN32, XLEN::XLEN64, XLEN::XLEN128]
+            .into_iter()
+            .for_each(|xlen| {
+                test_csr_field!(sstatus, uxl: xlen);
+            });
+
+        test_csr_field!(sstatus, sd);
+    }
+}
