@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.3] - 2025-02-18
+
+### Changed
+
+- Update riscv to 0.13.0
+
 ## [v0.1.2] - 2024-10-20
 
 ### Changed

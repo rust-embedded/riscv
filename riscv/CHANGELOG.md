@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.13.0] - 2025-02-18
+
 ### Added
 
 - CSR helper macro to check for platform implementation
