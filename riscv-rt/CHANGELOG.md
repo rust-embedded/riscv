@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.14.0] - 2025-02-18
+
 ### Changed
 
 - Use `RISCV_MTVEC_ALIGN` to control the alignment constraint of the vector table.
