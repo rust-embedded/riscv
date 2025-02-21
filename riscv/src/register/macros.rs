@@ -449,6 +449,30 @@ macro_rules! read_composite_csr {
     };
 }
 
+/// Convenience macro to write a composite value to a CSR register.
+///
+/// - `RV32`: writes 32-bits into `hi` and 32-bits into `lo` to create a 64-bit value
+/// - `RV64`: writes a 64-bit value into `lo`
+#[macro_export]
+macro_rules! write_composite_csr {
+    ($hi:expr, $lo:expr) => {
+        /// Writes the CSR as a 64-bit value
+        #[inline]
+        pub unsafe fn write64(bits: u64) {
+            match () {
+                #[cfg(target_arch = "riscv32")]
+                () => {
+                    $hi((bits >> 32) as usize);
+                    $lo(bits as usize);
+                }
+
+                #[cfg(not(target_arch = "riscv32"))]
+                () => $lo(bits as usize),
+            }
+        }
+    };
+}
+
 macro_rules! set_pmp {
     () => {
         /// Set the pmp configuration corresponding to the index.
