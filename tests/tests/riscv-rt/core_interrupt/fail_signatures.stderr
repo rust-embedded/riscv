@@ -2,16 +2,16 @@ error: `#[core_interrupt]` function must have signature `[unsafe] fn() [-> !]`
  --> tests/riscv-rt/core_interrupt/fail_signatures.rs:2:1
   |
 2 | fn my_interrupt(code: usize) {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^
 
 error: `#[core_interrupt]` function must have signature `[unsafe] fn() [-> !]`
  --> tests/riscv-rt/core_interrupt/fail_signatures.rs:5:1
   |
 5 | fn my_other_interrupt() -> usize {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^
 
 error: `#[core_interrupt]` function must have signature `[unsafe] fn() [-> !]`
  --> tests/riscv-rt/core_interrupt/fail_signatures.rs:8:1
   |
 8 | async fn my_async_interrupt() {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^^^^
