@@ -36,6 +36,7 @@ riscv_rt_macros::llvm_arch_patch!();
 // and the global pointer. Then it calls _start_rust.
 cfg_global_asm!(
     ".section .init, \"ax\"
+    .lto_discard DefaultHandler
     .global _start
 
 _start:",
