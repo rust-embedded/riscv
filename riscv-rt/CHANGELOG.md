@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New `device` feature to include `device.x` in `link.x`. This feature is based
+  on the current implementation of `cortex-m-rt`.
+
 ### Changed
 
 - Linker file now refers to standard exceptions and interrupts only when the
