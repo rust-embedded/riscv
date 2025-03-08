@@ -2,16 +2,16 @@ error: `#[exception]` function must have signature `[unsafe] fn([&[mut] riscv_rt
  --> tests/riscv-rt/exception/fail_signatures.rs:2:1
   |
 2 | fn my_exception(code: usize) {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^
 
 error: `#[exception]` function must have signature `[unsafe] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`
  --> tests/riscv-rt/exception/fail_signatures.rs:5:1
   |
 5 | fn my_other_exception(trap_frame: &riscv_rt::TrapFrame, code: usize) {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^
 
 error: `#[exception]` function must have signature `[unsafe] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`
  --> tests/riscv-rt/exception/fail_signatures.rs:8:1
   |
 8 | async fn my_async_exception(trap_frame: &riscv_rt::TrapFrame, code: usize) {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | ^^^^^
