@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - New `device` feature to include `device.x` in `link.x`. This feature is based
   on the current implementation of `cortex-m-rt`.
+- New `memory` feature to include `memory.x` in `link.x`. This feature is based
+  on the current implementation of `cortex-m-rt`. However, in contrast with 
+  `cortex-m-rt`, including `memory.x` in the linker file is feature gated.
+  The benefits of leaving this optional are backwards compatibility and
+  allowing users to define less typical linker scripts that do not rely on a
+  `device.x` or `memory.x` file.
 
 ### Changed
 
