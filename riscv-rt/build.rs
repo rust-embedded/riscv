@@ -24,6 +24,11 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
         let interrupts_content = fs::read_to_string("interrupts.x")?;
         include_content.push_str(&(interrupts_content + "\n"));
     }
+    // If device is enabled, include the device.x file (usually, provided by PACs)
+    if env::var_os("CARGO_FEATURE_DEVICE").is_some() {
+        include_content.push_str("/* Device-specific exception and interrupt handlers */\n");
+        include_content.push_str("INCLUDE device.x\n");
+    }
 
     content = content.replace("${INCLUDE_LINKER_FILES}", &include_content);
 
