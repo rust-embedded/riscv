@@ -29,6 +29,11 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
         include_content.push_str("/* Device-specific exception and interrupt handlers */\n");
         include_content.push_str("INCLUDE device.x\n");
     }
+    // If memory is enabled, include the memory.x file (usually, provided by BSPs)
+    if env::var_os("CARGO_FEATURE_MEMORY").is_some() {
+        include_content.push_str("/* Device-specific memory layout */\n");
+        include_content.push_str("INCLUDE memory.x\n");
+    }
 
     content = content.replace("${INCLUDE_LINKER_FILES}", &include_content);
 
