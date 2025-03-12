@@ -7,5 +7,6 @@ members = [
     "riscv-rt",
     "riscv-semihosting",
     "riscv-target-parser",
-    "tests",
+    "tests-build",
+    "tests-trybuild",
 ]
