@@ -82,11 +82,11 @@ impl<'a> TryFrom<&'a str> for Extension {
             "v" => Ok(Extension::V),
             "h" => Ok(Extension::H),
             _ => {
-                if value.starts_with('Z') {
+                if value.starts_with('z') {
                     Ok(Extension::Z(value.to_string()))
-                } else if value.starts_with('S') {
+                } else if value.starts_with('s') {
                     Ok(Extension::S(value.to_string()))
-                } else if value.starts_with('X') {
+                } else if value.starts_with('x') {
                     Ok(Extension::X(value.to_string()))
                 } else {
                     Err(Self::Error::UnknownExtension(value))
