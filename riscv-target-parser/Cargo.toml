@@ -1,6 +1,6 @@
 [package]
 name = "riscv-target-parser"
-version = "0.1.0"
+version = "0.1.1"
 rust-version = "1.61"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]

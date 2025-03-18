@@ -163,7 +163,7 @@ impl<'a> TryFrom<&'a str> for Extensions {
 
         while !value.is_empty() {
             let extension =
-                if value.starts_with("Z") || value.starts_with("S") || value.starts_with("X") {
+                if value.starts_with("z") || value.starts_with("s") || value.starts_with("x") {
                     match value.find('_') {
                         Some(pos) => {
                             let (ext, _) = value.split_at(pos);
@@ -239,16 +239,16 @@ mod test {
         assert_eq!(Extension::try_from("v"), Ok(Extension::V));
         assert_eq!(Extension::try_from("h"), Ok(Extension::H));
         assert_eq!(
-            Extension::try_from("Zicsr"),
-            Ok(Extension::Z("Zicsr".to_string()))
+            Extension::try_from("zicsr"),
+            Ok(Extension::Z("zicsr".to_string()))
         );
         assert_eq!(
-            Extension::try_from("Ssccfg"),
-            Ok(Extension::S("Ssccfg".to_string()))
+            Extension::try_from("ssccfg"),
+            Ok(Extension::S("ssccfg".to_string()))
         );
         assert_eq!(
-            Extension::try_from("XSifivecdiscarddlone"),
-            Ok(Extension::X("XSifivecdiscarddlone".to_string()))
+            Extension::try_from("xsifivecdiscarddlone"),
+            Ok(Extension::X("xsifivecdiscarddlone".to_string()))
         );
         assert_eq!(
             Extension::try_from("unknown"),
@@ -270,11 +270,11 @@ mod test {
         assert_eq!(Extension::P.to_string(), "p");
         assert_eq!(Extension::V.to_string(), "v");
         assert_eq!(Extension::H.to_string(), "h");
-        assert_eq!(Extension::Z("Zicsr".to_string()).to_string(), "Zicsr");
-        assert_eq!(Extension::S("Ssccfg".to_string()).to_string(), "Ssccfg");
+        assert_eq!(Extension::Z("zicsr".to_string()).to_string(), "zicsr");
+        assert_eq!(Extension::S("ssccfg".to_string()).to_string(), "ssccfg");
         assert_eq!(
-            Extension::X("XSifivecdiscarddlone".to_string()).to_string(),
-            "XSifivecdiscarddlone"
+            Extension::X("xsifivecdiscarddlone".to_string()).to_string(),
+            "xsifivecdiscarddlone"
         );
     }
 
@@ -292,9 +292,9 @@ mod test {
             Extension::P,
             Extension::V,
             Extension::H,
-            Extension::Z("Zicsr".to_string()),
-            Extension::S("Ssccfg".to_string()),
-            Extension::X("XSifivecdiscarddlone".to_string()),
+            Extension::Z("zicsr".to_string()),
+            Extension::S("ssccfg".to_string()),
+            Extension::X("xsifivecdiscarddlone".to_string()),
         ];
         extensions.reverse();
         extensions.sort();
@@ -312,9 +312,9 @@ mod test {
                 Extension::P,
                 Extension::V,
                 Extension::H,
-                Extension::Z("Zicsr".to_string()),
-                Extension::S("Ssccfg".to_string()),
-                Extension::X("XSifivecdiscarddlone".to_string()),
+                Extension::Z("zicsr".to_string()),
+                Extension::S("ssccfg".to_string()),
+                Extension::X("xsifivecdiscarddlone".to_string()),
             ]
         );
     }
@@ -328,11 +328,11 @@ mod test {
         assert!(extensions.base_extension().is_none());
 
         try_extensions =
-            Extensions::try_from("giemafdqcbpvhXSifivecdiscarddlone_Ssccfg_Zicsr_Zaamo_u");
+            Extensions::try_from("giemafdqcbpvhxsifivecdiscarddlone_ssccfg_zicsr_zaamo_u");
         assert!(try_extensions.is_err());
         assert_eq!(try_extensions, Err(Error::UnknownExtension("u")));
 
-        try_extensions = Extensions::try_from("geqcbpvhXSifivecdiscarddlone_Ssccfg_Zicsr_Zaamo_");
+        try_extensions = Extensions::try_from("geqcbpvhxsifivecdiscarddlone_ssccfg_zicsr_zaamo_");
         assert!(try_extensions.is_ok());
         extensions = try_extensions.unwrap();
         assert_eq!(
@@ -350,16 +350,16 @@ mod test {
                 Extension::P,
                 Extension::V,
                 Extension::H,
-                Extension::Z("Zaamo".to_string()),
-                Extension::Z("Zicsr".to_string()),
-                Extension::S("Ssccfg".to_string()),
-                Extension::X("XSifivecdiscarddlone".to_string()),
+                Extension::Z("zaamo".to_string()),
+                Extension::Z("zicsr".to_string()),
+                Extension::S("ssccfg".to_string()),
+                Extension::X("xsifivecdiscarddlone".to_string()),
             ]
         );
         assert_eq!(extensions.base_extension(), Some(Extension::I));
 
         try_extensions =
-            Extensions::try_from("iemafdqcbpvhXSifivecdiscarddlone_Ssccfg_Zicsr_Zaamo_");
+            Extensions::try_from("iemafdqcbpvhxsifivecdiscarddlone_ssccfg_zicsr_zaamo_");
         assert!(try_extensions.is_ok());
         extensions = try_extensions.unwrap();
         assert_eq!(
@@ -377,16 +377,16 @@ mod test {
                 Extension::P,
                 Extension::V,
                 Extension::H,
-                Extension::Z("Zaamo".to_string()),
-                Extension::Z("Zicsr".to_string()),
-                Extension::S("Ssccfg".to_string()),
-                Extension::X("XSifivecdiscarddlone".to_string()),
+                Extension::Z("zaamo".to_string()),
+                Extension::Z("zicsr".to_string()),
+                Extension::S("ssccfg".to_string()),
+                Extension::X("xsifivecdiscarddlone".to_string()),
             ]
         );
         assert_eq!(extensions.base_extension(), Some(Extension::I));
 
         try_extensions =
-            Extensions::try_from("emafdqcbpvhXSifivecdiscarddlone_Ssccfg_Zicsr_Zaamo_");
+            Extensions::try_from("emafdqcbpvhxsifivecdiscarddlone_ssccfg_zicsr_zaamo_");
         assert!(try_extensions.is_ok());
         extensions = try_extensions.unwrap();
         assert_eq!(
@@ -403,10 +403,10 @@ mod test {
                 Extension::P,
                 Extension::V,
                 Extension::H,
-                Extension::Z("Zaamo".to_string()),
-                Extension::Z("Zicsr".to_string()),
-                Extension::S("Ssccfg".to_string()),
-                Extension::X("XSifivecdiscarddlone".to_string()),
+                Extension::Z("zaamo".to_string()),
+                Extension::Z("zicsr".to_string()),
+                Extension::S("ssccfg".to_string()),
+                Extension::X("xsifivecdiscarddlone".to_string()),
             ]
         );
         assert_eq!(extensions.base_extension(), Some(Extension::E));
@@ -452,43 +452,43 @@ mod test {
         let mut extensions = Extensions::try_from("imafdc").unwrap();
         assert_eq!(extensions.to_string(), "gc");
 
-        extensions.insert(Extension::try_from("Ssccfg").unwrap());
-        assert_eq!(extensions.to_string(), "gcSsccfg");
+        extensions.insert(Extension::try_from("ssccfg").unwrap());
+        assert_eq!(extensions.to_string(), "gcssccfg");
 
-        extensions.insert(Extension::try_from("Zicsr").unwrap());
-        assert_eq!(extensions.to_string(), "gcZicsr_Ssccfg");
+        extensions.insert(Extension::try_from("zicsr").unwrap());
+        assert_eq!(extensions.to_string(), "gczicsr_ssccfg");
 
-        extensions.insert(Extension::try_from("Zaamo").unwrap());
-        assert_eq!(extensions.to_string(), "gcZaamo_Zicsr_Ssccfg");
+        extensions.insert(Extension::try_from("zaamo").unwrap());
+        assert_eq!(extensions.to_string(), "gczaamo_zicsr_ssccfg");
 
-        extensions.insert(Extension::try_from("XSifivecdiscarddlone").unwrap());
+        extensions.insert(Extension::try_from("xsifivecdiscarddlone").unwrap());
         assert_eq!(
             extensions.to_string(),
-            "gcZaamo_Zicsr_Ssccfg_XSifivecdiscarddlone"
+            "gczaamo_zicsr_ssccfg_xsifivecdiscarddlone"
         );
 
         extensions.insert(Extension::try_from("e").unwrap());
         assert_eq!(
             extensions.to_string(),
-            "gecZaamo_Zicsr_Ssccfg_XSifivecdiscarddlone"
+            "geczaamo_zicsr_ssccfg_xsifivecdiscarddlone"
         );
 
         extensions.remove(&Extension::I);
         assert_eq!(
             extensions.to_string(),
-            "emafdcZaamo_Zicsr_Ssccfg_XSifivecdiscarddlone"
+            "emafdczaamo_zicsr_ssccfg_xsifivecdiscarddlone"
         );
 
         extensions.remove(&Extension::E);
         assert_eq!(
             extensions.to_string(),
-            "mafdcZaamo_Zicsr_Ssccfg_XSifivecdiscarddlone"
+            "mafdczaamo_zicsr_ssccfg_xsifivecdiscarddlone"
         );
 
         extensions.insert(Extension::I);
         assert_eq!(
             extensions.to_string(),
-            "gcZaamo_Zicsr_Ssccfg_XSifivecdiscarddlone"
+            "gczaamo_zicsr_ssccfg_xsifivecdiscarddlone"
         );
     }
 }
