@@ -265,7 +265,20 @@ impl PacEnumItem {
     }
 
     fn vector_table(&self) -> TokenStream2 {
-        let mut asm = String::from(
+        let align = match std::env::var("RISCV_MTVEC_ALIGN") {
+            Ok(x) => x.parse::<u32>().ok(),
+            Err(std::env::VarError::NotPresent) => Some(4),
+            Err(std::env::VarError::NotUnicode(_)) => None,
+        };
+        let align = match align {
+            Some(x) if x.is_power_of_two() && 4 <= x => x,
+            _ => {
+                return quote!(compile_error!(
+                    "RISCV_MTVEC_ALIGN is not a power of 2 (minimum 4)"
+                ))
+            }
+        };
+        let mut asm = format!(
             r#"
 #[cfg(all(feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
 core::arch::global_asm!("
@@ -274,7 +287,7 @@ core::arch::global_asm!("
     .type _vector_table, @function
     
     .option push
-    .balign 0x4 // TODO check if this is the correct alignment
+    .balign {align}
     .option norelax
     .option norvc
     
@@ -315,6 +328,8 @@ core::arch::global_asm!("
         let max_discriminant = self.max_number;
         let valid_matches = self.valid_matches();
 
+        let is_core_interrupt = matches!(attr, PacTrait::Interrupt(InterruptType::Core));
+
         // Push the trait implementation
         res.push(quote! {
             unsafe impl riscv::#trait_name for #name {
@@ -350,19 +365,26 @@ core::arch::global_asm!("
 
             let handlers = self.handlers(&trap_config);
             let interrupt_array = self.handlers_array();
+            let cfg_v_trap = match is_core_interrupt {
+                true => Some(quote!(#[cfg(not(feature = "v-trap"))])),
+                false => None,
+            };
 
             // Push the interrupt handler functions and the interrupt array
             res.push(quote! {
+                #cfg_v_trap
                 extern "C" {
                     #(#handlers;)*
                 }
 
+                #cfg_v_trap
                 #[doc(hidden)]
                 #[no_mangle]
                 pub static #vector_table: [Option<unsafe extern "C" fn(#(#array_signature),*)>; #max_discriminant + 1] = [
                     #(#interrupt_array),*
                 ];
 
+                #cfg_v_trap
                 #[inline]
                 #[no_mangle]
                 unsafe extern "C" fn #dispatch_fn_name(#(#dispatch_fn_args),*) {
@@ -378,7 +400,7 @@ core::arch::global_asm!("
             });
         }
 
-        if let PacTrait::Interrupt(InterruptType::Core) = attr {
+        if is_core_interrupt {
             res.push(self.vector_table());
         }
 

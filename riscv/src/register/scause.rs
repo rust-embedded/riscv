@@ -3,25 +3,47 @@
 pub use crate::interrupt::Trap;
 pub use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber}; // re-export useful riscv-pac traits
 
-/// scause register
-#[derive(Clone, Copy)]
-pub struct Scause {
-    bits: usize,
+read_write_csr! {
+    /// scause register
+    Scause: 0x142,
+    mask: usize::MAX,
+}
+
+#[cfg(target_arch = "riscv32")]
+read_write_csr_field! {
+    Scause,
+    /// Returns the type of the trap:
+    ///
+    /// - `true`: an interrupt caused the trap
+    /// - `false`: an exception caused the trap
+    interrupt: 31,
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_write_csr_field! {
+    Scause,
+    /// Returns the type of the trap:
+    ///
+    /// - `true`: an interrupt caused the trap
+    /// - `false`: an exception caused the trap
+    interrupt: 63,
+}
+
+#[cfg(target_arch = "riscv32")]
+read_write_csr_field! {
+    Scause,
+    /// Returns the code field
+    code: [0:30],
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_write_csr_field! {
+    Scause,
+    /// Returns the code field
+    code: [0:62],
 }
 
 impl Scause {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
-    /// Returns the code field
-    #[inline]
-    pub fn code(&self) -> usize {
-        self.bits & !(1 << (usize::BITS as usize - 1))
-    }
-
     /// Returns the trap cause represented by this register.
     ///
     /// # Note
@@ -40,23 +62,14 @@ impl Scause {
     /// Is trap cause an interrupt.
     #[inline]
     pub fn is_interrupt(&self) -> bool {
-        self.bits & (1 << (usize::BITS as usize - 1)) != 0
+        self.interrupt()
     }
 
     /// Is trap cause an exception.
     #[inline]
     pub fn is_exception(&self) -> bool {
-        !self.is_interrupt()
+        !self.interrupt()
     }
-}
-
-read_csr_as!(Scause, 0x142);
-write_csr!(0x142);
-
-/// Writes the CSR
-#[inline]
-pub unsafe fn write(bits: usize) {
-    _write(bits)
 }
 
 /// Set supervisor cause register to corresponding cause.
@@ -69,4 +82,59 @@ pub unsafe fn set<I: CoreInterruptNumber, E: ExceptionNumber>(cause: Trap<I, E>)
         Trap::Exception(e) => e.number(),
     };
     _write(bits);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scause() {
+        let new_code = 0;
+        (1usize..=usize::BITS as usize)
+            .map(|r| ((1u128 << r) - 1) as usize)
+            .for_each(|raw| {
+                let exp_interrupt = (raw >> (usize::BITS - 1)) != 0;
+                let exp_code = raw & ((1usize << (usize::BITS - 1)) - 1);
+                let exp_cause = if exp_interrupt {
+                    Trap::Interrupt(exp_code)
+                } else {
+                    Trap::Exception(exp_code)
+                };
+
+                let mut scause = Scause::from_bits(raw);
+
+                assert_eq!(scause.interrupt(), exp_interrupt);
+                assert_eq!(scause.is_interrupt(), exp_interrupt);
+                assert_eq!(scause.is_exception(), !exp_interrupt);
+
+                assert_eq!(scause.code(), exp_code);
+                assert_eq!(scause.cause(), exp_cause);
+
+                scause.set_interrupt(!exp_interrupt);
+
+                assert_eq!(scause.is_interrupt(), !exp_interrupt);
+                assert_eq!(scause.is_exception(), exp_interrupt);
+
+                scause.set_code(new_code);
+                let new_cause = if scause.interrupt() {
+                    Trap::Interrupt(new_code)
+                } else {
+                    Trap::Exception(new_code)
+                };
+
+                assert_eq!(scause.code(), new_code);
+                assert_eq!(scause.cause(), new_cause);
+
+                scause.set_code(exp_code);
+                let exp_cause = if scause.interrupt() {
+                    Trap::Interrupt(exp_code)
+                } else {
+                    Trap::Exception(exp_code)
+                };
+
+                assert_eq!(scause.code(), exp_code);
+                assert_eq!(scause.cause(), exp_cause);
+            });
+    }
 }

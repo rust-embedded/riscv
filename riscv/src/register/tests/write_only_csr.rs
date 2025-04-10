@@ -45,12 +45,12 @@ write_only_csr_field! {
 // we don't test the `write` function, we are only testing in-memory functions.
 #[allow(unused)]
 pub fn _write_csr(csr: Mtest) {
-    write(csr);
+    unsafe { write(csr) };
 }
 
 #[allow(unused)]
 pub fn _try_write_csr(csr: Mtest) -> Result<()> {
-    try_write(csr)
+    unsafe { try_write(csr) }
 }
 
 #[test]

@@ -4,24 +4,74 @@ on:
   pull_request:
   merge_group:
 
-name: Run macro tests (tests)
+name: Run tests (build and trybuild)
 
 jobs:
-  run-tests:
+  run-trybuild:
     strategy:
       matrix:
         os: [ macos-latest, ubuntu-latest ] # windows shows weird linking errors 
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/rust-toolchain@stable
       - name: Run tests
-        run: cargo test --package tests
+        run: cargo test --package tests-trybuild
+  run-build:
+    strategy:
+      matrix:
+        # All generated code should be running on stable now, MRSV is 1.61.0
+        toolchain: [ stable, nightly, 1.61.0 ]
+        target:
+          - riscv32i-unknown-none-elf
+          - riscv32im-unknown-none-elf
+          - riscv32imc-unknown-none-elf
+          - riscv32imac-unknown-none-elf
+          - riscv32imafc-unknown-none-elf
+          - riscv64imac-unknown-none-elf
+          - riscv64gc-unknown-none-elf
+        example:
+          - empty
+        include:
+          # Nightly is only for reference and allowed to fail
+          - toolchain: nightly
+            experimental: true
+        exclude:
+          - toolchain: 1.61.0
+            target: riscv32im-unknown-none-elf
+          - toolchain: 1.61.0
+            target: riscv32imafc-unknown-none-elf
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          targets: ${{ matrix.target }}
+      - name: Build (no features)
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }}
+      - name: Build (include device.x)
+        run: RUSTFLAGS="-C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features device
+      - name: Build (include memory.x)
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features memory
+      - name: Build (include device.x and memory.x)
+        run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features device,memory
+      
+      - name: Build (custom interrupts and exceptions)
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions
+      - name: Build (custom interrupts and exceptions, include device.x)
+        run: RUSTFLAGS="-C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,device
+      - name: Build (custom interrupts and exceptions, include memory.x)
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,memory
+      - name: Build (custom interrupts and exceptions, include device.x and memory.x)
+        run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,device,memory
         
   # Job to check that all the builds succeeded
   tests-check:
     needs:
-    - run-tests
+    - run-trybuild
+    - run-build
     runs-on: ubuntu-latest
     if: always()
     steps:

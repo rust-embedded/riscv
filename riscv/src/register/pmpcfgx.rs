@@ -2,65 +2,45 @@
 
 use crate::result::{Error, Result};
 
-/// Permission enum contains all possible permission modes for pmp registers
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Permission {
-    NONE = 0b000,
-    R = 0b001,
-    W = 0b010,
-    RW = 0b011,
-    X = 0b100,
-    RX = 0b101,
-    WX = 0b110,
-    RWX = 0b111,
+csr_field_enum! {
+    /// Permission enum contains all possible permission modes for pmp registers
+    Permission {
+        default: NONE,
+        NONE = 0b000,
+        R = 0b001,
+        W = 0b010,
+        RW = 0b011,
+        X = 0b100,
+        RX = 0b101,
+        WX = 0b110,
+        RWX = 0b111,
+    }
 }
 
 impl TryFrom<u8> for Permission {
     type Error = Error;
 
     fn try_from(val: u8) -> Result<Self> {
-        match val {
-            0b000 => Ok(Self::NONE),
-            0b001 => Ok(Self::R),
-            0b010 => Ok(Self::W),
-            0b011 => Ok(Self::RW),
-            0b100 => Ok(Self::X),
-            0b101 => Ok(Self::RX),
-            0b110 => Ok(Self::WX),
-            0b111 => Ok(Self::RWX),
-            _ => Err(Error::InvalidFieldValue {
-                field: "permission",
-                value: val as usize,
-                bitmask: 0b111,
-            }),
-        }
+        Self::from_usize(val as usize)
     }
 }
 
-/// Range enum contains all possible addressing modes for pmp registers
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Range {
-    OFF = 0b00,
-    TOR = 0b01,
-    NA4 = 0b10,
-    NAPOT = 0b11,
+csr_field_enum! {
+    /// Range enum contains all possible addressing modes for pmp registers
+    Range {
+        default: OFF,
+        OFF = 0b00,
+        TOR = 0b01,
+        NA4 = 0b10,
+        NAPOT = 0b11,
+    }
 }
 
 impl TryFrom<u8> for Range {
     type Error = Error;
 
     fn try_from(val: u8) -> Result<Self> {
-        match val {
-            0b00 => Ok(Self::OFF),
-            0b01 => Ok(Self::TOR),
-            0b10 => Ok(Self::NA4),
-            0b11 => Ok(Self::NAPOT),
-            _ => Err(Error::InvalidFieldValue {
-                field: "range",
-                value: val as usize,
-                bitmask: 0b11,
-            }),
-        }
+        Self::from_usize(val as usize)
     }
 }
 
@@ -173,6 +153,156 @@ pub mod pmpcfg3 {
 
     read_csr_as!(Pmpcsr, 0x3A3);
     write_csr_as_usize_rv32!(0x3A3);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg4 struct contains pmp16cfg - pmp19cfg for RV32, or pmp16cfg - pmp23cfg for RV64
+pub mod pmpcfg4 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A4);
+    write_csr_as_usize!(0x3A4);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg5 struct contains pmp20cfg - pmp23cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg5 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A5);
+    write_csr_as_usize_rv32!(0x3A5);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg6 struct contains pmp24cfg - pmp27cfg for RV32, or pmp24cfg - pmp31cfg for RV64
+pub mod pmpcfg6 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A6);
+    write_csr_as_usize!(0x3A6);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg7 struct contains pmp28cfg - pmp31cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg7 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A7);
+    write_csr_as_usize_rv32!(0x3A7);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg8 struct contains pmp32cfg - pmp35cfg for RV32, or pmp32cfg - pmp39cfg for RV64
+pub mod pmpcfg8 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A8);
+    write_csr_as_usize!(0x3A8);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg9 struct contains pmp36cfg - pmp39cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg9 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3A9);
+    write_csr_as_usize_rv32!(0x3A9);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg10 struct contains pmp40cfg - pmp43cfg for RV32, or pmp40cfg - pmp47cfg for RV64
+pub mod pmpcfg10 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AA);
+    write_csr_as_usize!(0x3AA);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg11 struct contains pmp44cfg - pmp47cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg11 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AB);
+    write_csr_as_usize_rv32!(0x3AB);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg12 struct contains pmp48cfg - pmp51cfg for RV32, or pmp48cfg - pmp55cfg for RV64
+pub mod pmpcfg12 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AC);
+    write_csr_as_usize!(0x3AC);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg13 struct contains pmp52cfg - pmp55cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg13 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AD);
+    write_csr_as_usize_rv32!(0x3AD);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg14 struct contains pmp56cfg - pmp59cfg for RV32, or pmp56cfg - pmp63cfg for RV64
+pub mod pmpcfg14 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AE);
+    write_csr_as_usize!(0x3AE);
+
+    set_pmp!();
+    clear_pmp!();
+}
+
+/// Physical memory protection configuration
+/// pmpcfg15 struct contains pmp60cfg - pmp63cfg for RV32 only
+#[cfg(riscv32)]
+pub mod pmpcfg15 {
+    use super::{Permission, Pmpcsr, Range};
+
+    read_csr_as!(Pmpcsr, 0x3AF);
+    write_csr_as_usize_rv32!(0x3AF);
 
     set_pmp!();
     clear_pmp!();

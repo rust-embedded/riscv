@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.1] - 2025-02-18
+
+### Changed
+
+- Update `riscv` dependency to 0.13.0
+
 ## [v0.2.0] - 2024-10-19
 
 ### Added

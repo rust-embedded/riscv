@@ -601,7 +601,7 @@ impl RiscvPacItem {
                             parse_quote!(&riscv_rt::TrapFrame),
                             parse_quote!(&mut riscv_rt::TrapFrame),
                         ];
-                        expected_types.iter().any(|t| first_param_type == *t)
+                        expected_types.contains(&first_param_type)
                     }
                     Some(_) => false,
                     None => true,

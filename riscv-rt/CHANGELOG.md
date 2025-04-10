@@ -7,9 +7,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New `device` feature to include `device.x` in `link.x`. This feature is based
+  on the current implementation of `cortex-m-rt`.
+- New `memory` feature to include `memory.x` in `link.x`. This feature is based
+  on the current implementation of `cortex-m-rt`. However, in contrast with 
+  `cortex-m-rt`, including `memory.x` in the linker file is feature gated.
+  The benefits of leaving this optional are backwards compatibility and
+  allowing users to define less typical linker scripts that do not rely on a
+  `device.x` or `memory.x` file.
+
 ### Changed
 
-- Ensure the `.heap` section is 4-byte aligned
+- Linker file now refers to standard exceptions and interrupts only when the
+  `no-exceptions` and `no-interrupts` features are disabled, respectively.
+  This is achieved by substituting `${INCLUDE_LINKER_FILES}` with the contents
+  of `exceptions.x` and/or `interrupts.x`.
+
+## [v0.14.0] - 2025-02-18
+
+### Changed
+
+- Use `RISCV_MTVEC_ALIGN` to control the alignment constraint of the vector table.
+- Ensure the `.heap` section is 4-byte aligned.
 - Limit rustc cfg flags to `riscvi`, `riscvm`, `riscvf`, and `riscvd`.
 - Temporary use of `RISCV_RT_LLVM_ARCH_PATCH` environment variable to include the
   temporary patch required for avoid LLVM spurious errors.

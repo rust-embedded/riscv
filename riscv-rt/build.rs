@@ -11,9 +11,34 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
     let mut content = fs::read_to_string("link.x.in")?;
     content = content.replace("${ARCH_WIDTH}", &arch_width.to_string());
 
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    // Get target-dependent linker configuration and replace ${INCLUDE_LINKER_FILES} with it
+    let mut include_content = String::new();
+
+    // If no-exceptions is disabled, include the exceptions.x files
+    if env::var_os("CARGO_FEATURE_NO_EXCEPTIONS").is_none() {
+        let exceptions_content = fs::read_to_string("exceptions.x")?;
+        include_content.push_str(&(exceptions_content + "\n"));
+    }
+    // If no-interrupts is disabled, include the interrupts.x files
+    if env::var_os("CARGO_FEATURE_NO_INTERRUPTS").is_none() {
+        let interrupts_content = fs::read_to_string("interrupts.x")?;
+        include_content.push_str(&(interrupts_content + "\n"));
+    }
+    // If device is enabled, include the device.x file (usually, provided by PACs)
+    if env::var_os("CARGO_FEATURE_DEVICE").is_some() {
+        include_content.push_str("/* Device-specific exception and interrupt handlers */\n");
+        include_content.push_str("INCLUDE device.x\n");
+    }
+    // If memory is enabled, include the memory.x file (usually, provided by BSPs)
+    if env::var_os("CARGO_FEATURE_MEMORY").is_some() {
+        include_content.push_str("/* Device-specific memory layout */\n");
+        include_content.push_str("INCLUDE memory.x\n");
+    }
+
+    content = content.replace("${INCLUDE_LINKER_FILES}", &include_content);
 
     // Put the linker script somewhere the linker can find it
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     fs::write(out_dir.join("link.x"), content)?;
     println!("cargo:rustc-link-search={}", out_dir.display());
     println!("cargo:rerun-if-changed=link.x");
@@ -47,6 +72,13 @@ fn main() {
         // make sure that these env variables are not changed without notice.
         println!("cargo:rerun-if-env-changed=RISCV_RT_BASE_ISA");
         println!("cargo:rerun-if-env-changed=RISCV_RT_LLVM_ARCH_PATCH");
+        if env::var_os("CARGO_FEATURE_V_TRAP").is_some()
+            && env::var_os("CARGO_FEATURE_NO_INTERRUPTS").is_none()
+        {
+            // This environment variable is used by the `#[riscv::pac_enum()]` call in
+            // `src/interrupts.rs` (when `v-trap` is enabled and `no-interrupts` disabled).
+            println!("cargo:rerun-if-env-changed=RISCV_MTVEC_ALIGN");
+        }
 
         for flag in target.rustc_flags() {
             // Required until target_feature risc-v is stable and in-use

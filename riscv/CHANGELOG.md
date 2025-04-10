@@ -9,10 +9,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- CSR helper macro `write_composite_csr` for writing 64-bit CSRs on 32-bit targets.
+- Write utilities for `mcycle`, `minstret`
+
+## [v0.13.0] - 2025-02-18
+
+### Added
+
 - CSR helper macro to check for platform implementation
 
 ### Changed
 
+- Make all CSR writes `unsafe` by default (#209)
+- Use `RISCV_MTVEC_ALIGN` to control the alignment constraint of the vector table
 - Simplify register macros with `cfg` field
 - Align assembly functions with `cortex-m`
 - Use CSR helper macros to define `marchid` register
@@ -28,6 +37,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use CSR helper macros to define `mstatus` register
 - Use CSR helper macros to define `mstatush` register
 - Use CSR helper macros to define `mtvec` register
+- Use CSR helper macros to define `mtvendorid` register
+- Use CSR helper macros to define `satp` register
+- Use CSR helper macros to define `pmpcfgx` field types
+- Use CSR helper macros to define `scause` field types
+- Use CSR helper macros to define `sie` register
+- Use CSR helper macros to define `scounteren` field types
+- Use CSR helper macros to define `sip` register
+- Use CSR helper macros to define `sstatus` field types
+- Use CSR helper macros to define `stvec` field types
+- Add remaining `pmpcfg` CSRs from RISC-V privileged spec
 
 ## [v0.12.1] - 2024-10-20
 
