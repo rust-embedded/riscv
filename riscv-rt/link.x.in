@@ -23,8 +23,8 @@
 */
 
 /* Default abort entry point. If no abort symbol is provided, then abort maps to _abort. */
-EXTERN(_abort);
-PROVIDE(abort = _abort);
+EXTERN(_default_abort);
+PROVIDE(abort = _default_abort);
 
 /* Default trap entry point. The riscv-rt crate provides a weak alias of this function,
    which saves caller saved registers, calls _start_trap_rust, restores caller saved registers

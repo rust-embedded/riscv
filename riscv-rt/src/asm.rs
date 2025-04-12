@@ -268,7 +268,7 @@ riscv_rt_macros::vectored_interrupt_trap!();
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-.global _abort
-_abort:  // make sure there is an abort symbol when linking
-    j _abort"
+.global _default_abort
+_default_abort:  // make sure there is an abort symbol when linking
+    j _default_abort"
 );
