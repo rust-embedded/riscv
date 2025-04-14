@@ -62,6 +62,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   allow users get the initial address of the heap when initializing an allocator.
 - Update documentation.
 - Removed `.init.rust` section, as it is no longer required.
+- Add global `_abort` symbol, `PROVIDE(abort = _abort)`, and replace `DefaultHandler` and
+  `ExceptionHandler` with `PROVIDE(... = abort)`.
 
 ## [v0.13.0] - 2024-10-19
 

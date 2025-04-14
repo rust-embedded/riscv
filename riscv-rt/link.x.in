@@ -22,18 +22,22 @@
   means that you won't see "Address (..) is out of bounds" in the disassembly produced by `objdump`.
 */
 
+/* Default abort entry point. If no abort symbol is provided, then abort maps to _abort. */
+EXTERN(_default_abort);
+PROVIDE(abort = _default_abort);
+
 /* Default trap entry point. The riscv-rt crate provides a weak alias of this function,
    which saves caller saved registers, calls _start_trap_rust, restores caller saved registers
    and then returns. Users can override this alias by defining the symbol themselves */
 EXTERN(_start_trap);
 
-/* Default exception handler. The riscv-rt crate provides a weak alias of this function,
-   which is a busy loop. Users can override this alias by defining the symbol themselves */
-EXTERN(ExceptionHandler);
+/* Default exception handler. By default, the exception handler is abort.
+   Users can override this alias by defining the symbol themselves */
+PROVIDE(ExceptionHandler = abort);
 
-/* Default interrupt handler. The riscv-rt crate provides a weak alias of this function,
-   which is a busy loop. Users can override this alias by defining the symbol themselves */
-EXTERN(DefaultHandler);
+/* Default interrupt handler. By default, the interrupt handler is abort.
+   Users can override this alias by defining the symbol themselves */
+PROVIDE(DefaultHandler = abort);
 
 /* Default interrupt trap entry point. When vectored trap mode is enabled,
    the riscv-rt crate provides an implementation of this function, which saves caller saved

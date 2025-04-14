@@ -251,16 +251,6 @@ _setup_interrupts:",
     #[cfg(not(feature = "s-mode"))]
     "csrw mtvec, t0",
     "ret",
-    // Default implementation of `ExceptionHandler` is an infinite loop.
-    // Users can override this function by defining their own `ExceptionHandler`
-    ".weak ExceptionHandler
-ExceptionHandler:
-    j ExceptionHandler",
-    // Default implementation of `DefaultHandler` is an infinite loop.
-    // Users can override this function by defining their own `DefaultHandler`
-    ".weak DefaultHandler
-DefaultHandler:
-    j DefaultHandler",
     // Default implementation of `_pre_init_trap` is an infinite loop.
     // Users can override this function by defining their own `_pre_init_trap`
     // If the execution reaches this point, it means that there is a bug in the boot code.
@@ -278,7 +268,7 @@ riscv_rt_macros::vectored_interrupt_trap!();
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-.weak abort
-abort:  // make sure there is an abort symbol when linking
-    j abort"
+.global _default_abort
+_default_abort:  // make sure there is an abort symbol when linking
+    j _default_abort"
 );
