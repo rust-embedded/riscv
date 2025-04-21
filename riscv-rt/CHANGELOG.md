@@ -24,6 +24,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `no-exceptions` and `no-interrupts` features are disabled, respectively.
   This is achieved by substituting `${INCLUDE_LINKER_FILES}` with the contents
   of `exceptions.x` and/or `interrupts.x`.
+- Add global `_default_abort` symbol, `PROVIDE(abort = _default_abort)` to avoid
+  using weak symbols ([#247](https://github.com/rust-embedded/riscv/issues/247))
+- Replace weak definitions of `DefaultHandler` and `ExceptionHandler`
+  with `PROVIDE(... = abort)`.
+- Replace weak definition of `_pre_init_trap` with `PROVIDE(_pre_init_trap =  _default_abort)`.
+- Now, `_default_abort` is 4-byte aligned (required by `_pre_init_trap`)
+- Removed `.init.trap` section, as it is no longer required.
 
 ## [v0.14.0] - 2025-02-18
 
@@ -62,8 +69,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   allow users get the initial address of the heap when initializing an allocator.
 - Update documentation.
 - Removed `.init.rust` section, as it is no longer required.
-- Add global `_abort` symbol, `PROVIDE(abort = _abort)`, and replace `DefaultHandler` and
-  `ExceptionHandler` with `PROVIDE(... = abort)`.
 
 ## [v0.13.0] - 2024-10-19
 
