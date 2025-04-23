@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace weak definition of `_pre_init_trap` with `PROVIDE(_pre_init_trap =  _default_abort)`.
 - Now, `_default_abort` is 4-byte aligned (required by `_pre_init_trap`)
 - Removed `.init.trap` section, as it is no longer required.
+- Replace weak definition of `_start_trap` with `PROVIDE(_start_trap = _default_start_trap)`.
+- Replace weak definition of `_setup_interrupts` with `PROVIDE(_setup_interrupts = _default_setup_interrupts)`.
+- Now, `_default_start_trap` is 4-byte aligned instead of target width-aligned.
 
 ## [v0.14.0] - 2025-02-18
 

@@ -31,10 +31,18 @@ PROVIDE(abort = _default_abort);
   _pre_init_trap defaults to _default_abort. Note that _pre_init_trap must be 4-byte aligned */
 PROVIDE(_pre_init_trap = _default_abort);
 
-/* Default trap entry point. The riscv-rt crate provides a weak alias of this function,
-   which saves caller saved registers, calls _start_trap_rust, restores caller saved registers
-   and then returns. Users can override this alias by defining the symbol themselves */
-EXTERN(_start_trap);
+/* Default trap entry point. If not _start_trap symbol is provided, then _start_trap maps to
+   _default_start_trap, which saves caller saved registers, calls _start_trap_rust, restores
+   caller saved registers and then returns. Note that _start_trap must be 4-byte aligned */
+EXTERN(_default_start_trap);
+PROVIDE(_start_trap = _default_start_trap);
+
+/* Default interrupt setup entry point. If not _setup_interrupts symbol is provided, then
+   _setup_interrupts maps to _default_setup_interrupts, which in direct mode sets the value
+   of the xtvec register to _start_trap and, in vectored mode, sets its value to
+   _vector_table and enables vectored mode. */
+EXTERN(_default_setup_interrupts);
+PROVIDE(_setup_interrupts = _default_setup_interrupts);
 
 /* Default exception handler. By default, the exception handler is abort.
    Users can override this alias by defining the symbol themselves */
@@ -194,6 +202,9 @@ BUG(riscv-rt): start of .heap is not 4-byte aligned");
 
 ASSERT(_pre_init_trap % 4 == 0, "
 BUG(riscv-rt): _pre_init_trap is not 4-byte aligned");
+
+ASSERT(_start_trap % 4 == 0, "
+BUG(riscv-rt): _start_trap is not 4-byte aligned");
 
 ASSERT(_stext + SIZEOF(.text) < ORIGIN(REGION_TEXT) + LENGTH(REGION_TEXT), "
 ERROR(riscv-rt): The .text section must be placed inside the REGION_TEXT region.
