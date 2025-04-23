@@ -189,9 +189,9 @@ impl RiscvTarget {
     ///
     /// # Related issues
     ///
-    /// - https://github.com/rust-embedded/riscv/issues/175
-    /// - https://github.com/rust-lang/rust/issues/80608
-    /// - https://github.com/llvm/llvm-project/issues/61991
+    /// - <https://github.com/rust-embedded/riscv/issues/175>
+    /// - <https://github.com/rust-lang/rust/issues/80608>
+    /// - <https://github.com/llvm/llvm-project/issues/61991>
     pub fn llvm_arch_patch(&self) -> String {
         let mut patch = self.llvm_base_isa();
         if self.extensions.contains(&Extension::M) {

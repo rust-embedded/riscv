@@ -289,11 +289,31 @@
 //! These functions are weakly defined in the `riscv-rt` crate, but they can be redefined
 //! in the user code. Next, we will describe these symbols and how to redefine them.
 //!
+//! ## `abort`
+//!
+//! This function is called when an unrecoverable error occurs. For example, if the
+//! current hart id is greater than `_max_hart_id`, the `abort` function is called.
+//! This function is also called when an exception or an interrupt occurs and there is no
+//! handler for it.
+//!
+//! If this function is not defined, the linker will use the `_default_abort` function
+//! defined in the `riscv-rt` crate. This function is a busy-loop that will never return.
+//!
+//! ### Note
+//!
+//! Recall that the `abort` function is called when an unrecoverable error occurs.
+//! This function should not be used to handle recoverable errors. Additionally, it may
+//! be triggered before the `.bss` and `.data` sections are initialized, so it is not safe
+//! to use any global variable in this function.
+//!
 //! ## `_pre_init_trap`
 //!
 //! This function is set as a provisional trap handler for the early trap handling.
 //! If either an exception or an interrupt occurs during the boot process, this
-//! function is triggered. The default implementation of this function is a busy-loop.
+//! function is triggered.
+//!
+//! If this function is not defined, the linker will use the `_default_abort` function
+//! defined in the `riscv-rt` crate. This function is a busy-loop that will never return.
 //!
 //! ### Note
 //!
@@ -301,6 +321,9 @@
 //! intended to be a temporary trap handler to detect bugs in the early boot process.
 //! Recall that this trap is triggered before the `.bss` and `.data` sections are
 //! initialized, so it is not safe to use any global variables in this function.
+//!
+//! Furthermore, as this function is expected to behave like a trap handler, it is
+//! necessary to make it be 4-byte aligned.
 //!
 //! ## `_mp_hook`
 //!
@@ -362,11 +385,10 @@
 //!
 //! If exception handler is not explicitly defined, `ExceptionHandler` is called.
 //!
-//! ### `ExceptionHandler`
+//! ## `ExceptionHandler`
 //!
 //! This function is called when exception without defined exception handler is occured.
-//! The exception reason can be decoded from the
-//! `mcause`/`scause` register.
+//! The exception reason can be decoded from the `mcause`/`scause` register.
 //!
 //! This function can be redefined in the following way:
 //!
@@ -384,7 +406,7 @@
 //! }
 //! ```
 //!
-//! Default implementation of this function stucks in a busy-loop.
+//! If `ExceptionHandler` is not defined, the linker will use the `abort` function instead.
 //!
 //! ## Core interrupt handlers
 //!
@@ -427,7 +449,7 @@
 //!
 //! If interrupt handler is not explicitly defined, `DefaultHandler` is called.
 //!
-//! ### `DefaultHandler`
+//! ## `DefaultHandler`
 //!
 //! This function is called when interrupt without defined interrupt handler is occured.
 //! The interrupt reason can be decoded from the `mcause`/`scause` register.
@@ -450,7 +472,7 @@
 //! }
 //! ```
 //!
-//! Default implementation of this function stucks in a busy-loop.
+//! If `DefaultHandler` is not defined, the linker will use the `abort` function instead.
 //!
 //! # Cargo Features
 //!

@@ -251,13 +251,6 @@ _setup_interrupts:",
     #[cfg(not(feature = "s-mode"))]
     "csrw mtvec, t0",
     "ret",
-    // Default implementation of `_pre_init_trap` is an infinite loop.
-    // Users can override this function by defining their own `_pre_init_trap`
-    // If the execution reaches this point, it means that there is a bug in the boot code.
-    ".section .init.trap, \"ax\"
-    .weak _pre_init_trap
-_pre_init_trap:
-    j _pre_init_trap",
 );
 
 riscv_rt_macros::weak_start_trap!();
@@ -268,6 +261,7 @@ riscv_rt_macros::vectored_interrupt_trap!();
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort
+.align 4
 .global _default_abort
 _default_abort:  // make sure there is an abort symbol when linking
     j _default_abort"
