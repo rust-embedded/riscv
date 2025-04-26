@@ -66,7 +66,7 @@ mod test {
     #[test]
     fn check_mtimer() {
         // slice to emulate the mtimecmp registers
-        let raw_mtimecmp = [0u64; HartId::MAX_HART_ID_NUMBER as usize + 1];
+        let raw_mtimecmp = [0u64; HartId::MAX_HART_ID_NUMBER + 1];
         let raw_mtime = 0u64;
         // SAFETY: valid memory addresses
         let mtimer =

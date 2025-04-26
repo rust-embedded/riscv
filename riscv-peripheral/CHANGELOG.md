@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `clippy` fixes
+
 ## [v0.2.1] - 2025-02-18
 
 ### Changed
