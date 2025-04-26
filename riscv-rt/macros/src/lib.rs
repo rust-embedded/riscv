@@ -62,7 +62,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     fn check_correct_type(argument: &PatType, ty: &str) -> Option<TokenStream> {
-        let inv_type_message = format!("argument type must be {}", ty);
+        let inv_type_message = format!("argument type must be {ty}");
 
         if !is_correct_type(&argument.ty, ty) {
             let error = parse::Error::new(argument.ty.span(), inv_type_message);
@@ -305,7 +305,7 @@ pub fn loop_asm(input: TokenStream) -> TokenStream {
         .map(|i| {
             let i = i.to_string();
             let asm = args.asm_template.replace("{}", &i);
-            format!("core::arch::asm!(\"{}\");", asm)
+            format!("core::arch::asm!(\"{asm}\");")
         })
         .collect::<Vec<String>>()
         .join("\n");
@@ -346,7 +346,7 @@ pub fn loop_global_asm(input: TokenStream) -> TokenStream {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let res = format!("core::arch::global_asm!(\n\"{}\"\n);", instructions);
+    let res = format!("core::arch::global_asm!(\n\"{instructions}\"\n);");
     res.parse().unwrap()
 }
 
@@ -728,7 +728,7 @@ fn trap(
 
     let int_path = parse_macro_input!(args as Path);
     let int_ident = &int_path.segments.last().unwrap().ident;
-    let export_name = format!("{:#}", int_ident);
+    let export_name = format!("{int_ident:#}");
 
     let start_trap = match arch {
         Some(arch) => {

@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Now, `_default_abort` is 4-byte aligned (required by `_pre_init_trap`)
 - Removed `.init.trap` section, as it is no longer required.
 
+### Fixed
+
+- `clippy` fixes
+
 ## [v0.14.0] - 2025-02-18
 
 ### Changed
