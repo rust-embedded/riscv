@@ -211,10 +211,10 @@ impl std::fmt::Display for Extensions {
             prev_zsx = matches!(ext, Extension::Z(_) | Extension::S(_) | Extension::X(_));
         }
         match extensions.strip_prefix("imafd") {
-            Some(extensions) => write!(f, "g{}", extensions),
+            Some(extensions) => write!(f, "g{extensions}"),
             None => match extensions.strip_prefix("iemafd") {
-                Some(extensions) => write!(f, "ge{}", extensions),
-                None => write!(f, "{}", extensions),
+                Some(extensions) => write!(f, "ge{extensions}"),
+                None => write!(f, "{extensions}"),
             },
         }
     }
