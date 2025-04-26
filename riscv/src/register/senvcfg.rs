@@ -86,3 +86,35 @@ read_write_csr_field! {
     pmm,
     Pmm: [32:33],
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_senvcfg() {
+        let mut senvcfg = Senvcfg::from_bits(0);
+
+        test_csr_field!(senvcfg, fiom);
+        test_csr_field!(senvcfg, lpe);
+
+        #[cfg(not(target_arch = "riscv32"))]
+        test_csr_field!(senvcfg, sse);
+
+        [Cbie::IllegalInstruction, Cbie::Flush, Cbie::Invalidate]
+            .into_iter()
+            .for_each(|cbie| {
+                test_csr_field!(senvcfg, cbie: cbie);
+            });
+
+        test_csr_field!(senvcfg, cbcfe);
+        test_csr_field!(senvcfg, cbze);
+
+        #[cfg(not(target_arch = "riscv32"))]
+        [Pmm::Disabled, Pmm::Mask7bit, Pmm::Mask16bit]
+            .into_iter()
+            .for_each(|pmm| {
+                test_csr_field!(senvcfg, pmm: pmm);
+            });
+    }
+}
