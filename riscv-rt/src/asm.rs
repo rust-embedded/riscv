@@ -237,15 +237,16 @@ _mp_hook:
     j 1b
 2:  li a0, 1
     ret",
-    // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap`.
+    // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap` in direct mode.
+    // In vectored mode, it sets the trap vector to `_vector_table`.
     // Users can override this function by defining their own `_setup_interrupts`
-    ".weak _setup_interrupts
-_setup_interrupts:",
+    ".global _default_setup_interrupts
+_default_setup_interrupts:",
     #[cfg(not(feature = "v-trap"))]
-    "la t0, _start_trap", // _start_trap is 16-byte aligned, so it corresponds to the Direct trap mode
+    "la t0, _start_trap", // _start_trap is 4-byte aligned, so it corresponds to the Direct trap mode
     #[cfg(feature = "v-trap")]
     "la t0, _vector_table
-    ori t0, t0, 0x1", // _vector_table is 16-byte aligned, so we must set the bit 0 to activate the Vectored trap mode
+    ori t0, t0, 0x1", // _vector_table is at least 4-byte aligned, so we must set the bit 0 to activate the Vectored trap mode
     #[cfg(feature = "s-mode")]
     "csrw stvec, t0",
     #[cfg(not(feature = "s-mode"))]
@@ -253,7 +254,7 @@ _setup_interrupts:",
     "ret",
 );
 
-riscv_rt_macros::weak_start_trap!();
+riscv_rt_macros::default_start_trap!();
 
 #[cfg(feature = "v-trap")]
 riscv_rt_macros::vectored_interrupt_trap!();

@@ -475,12 +475,13 @@ pub fn llvm_arch_patch(_input: TokenStream) -> TokenStream {
     q.into()
 }
 
-/// Generates weak `_start_trap` function in assembly.
+/// Generates `_default_start_trap` function in assembly.
+/// If no `_start_trap` function is defined, the linker will use this function as the default.
 ///
 /// This implementation stores all registers in the trap frame and calls `_start_trap_rust`.
 /// The trap frame is allocated on the stack and deallocated after the call.
 #[proc_macro]
-pub fn weak_start_trap(_input: TokenStream) -> TokenStream {
+pub fn default_start_trap(_input: TokenStream) -> TokenStream {
     let arch = RiscvArch::try_from_env().unwrap();
 
     let width = arch.width();
@@ -504,9 +505,9 @@ pub fn weak_start_trap(_input: TokenStream) -> TokenStream {
         r#"
 core::arch::global_asm!(
 ".section .trap, \"ax\"
-.align {width}
-.weak _start_trap
-_start_trap:
+.align 4 /* Alignment required for xtvec */
+.global _default_start_trap
+_default_start_trap:
     addi sp, sp, - {trap_size} * {width}
     {store}
     add a0, sp, zero
