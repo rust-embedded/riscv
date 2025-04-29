@@ -14,6 +14,7 @@ links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 
 [package.metadata.docs.rs]
 default-target = "riscv64imac-unknown-none-elf"
+features = ["pre-init"]
 targets = [
     "riscv32i-unknown-none-elf", "riscv32imc-unknown-none-elf", "riscv32imac-unknown-none-elf",
     "riscv64imac-unknown-none-elf", "riscv64gc-unknown-none-elf",
@@ -31,6 +32,7 @@ riscv-rt-macros = { path = "macros", version = "0.4.0" }
 panic-halt = "1.0.0"
 
 [features]
+pre-init = []
 s-mode = ["riscv-rt-macros/s-mode"]
 single-hart = []
 v-trap = ["riscv-rt-macros/v-trap"]

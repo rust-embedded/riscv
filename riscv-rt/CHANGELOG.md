@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   The benefits of leaving this optional are backwards compatibility and
   allowing users to define less typical linker scripts that do not rely on a
   `device.x` or `memory.x` file.
+- New `pre-init` feature to run a `__pre_init` function before RAM initialization.
 
 ### Changed
 
@@ -34,10 +35,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Replace weak definition of `_start_trap` with `PROVIDE(_start_trap = _default_start_trap)`.
 - Replace weak definition of `_setup_interrupts` with `PROVIDE(_setup_interrupts = _default_setup_interrupts)`.
 - Now, `_default_start_trap` is 4-byte aligned instead of target width-aligned.
+- Remove `__pre_init` function from default `riscv_rt`. Now, if users want a `__pre_init` function,
+  they must enable the `pre-init` feature.
+- Deprecate `riscv_rt::pre_init` attribute macro. It is not sound to run Rust code before initializing the RAM.
+  Instead, we recommend defining the `__pre_init` function with `core::arch::global_asm!`.
 
 ### Fixed
 
-- New `clippy` fixes
+- `clippy` fixes
 
 ## [v0.14.0] - 2025-02-18
 

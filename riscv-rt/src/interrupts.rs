@@ -1,7 +1,7 @@
 //! Interrupt handling for targets that comply with the RISC-V interrupt handling standard.
 //!
 //! In direct mode (i.e., `v-trap` feature disabled), interrupt dispatching is performed by the
-//! [`_dispatch_core_interrupt`] function. This function is called by the [crate::start_trap_rust]
+//! `_dispatch_core_interrupt` function. This function is called by the [crate::start_trap_rust]
 //! whenever an interrupt is triggered. This approach relies on the [`__CORE_INTERRUPTS`] array,
 //! which sorts all the interrupt handlers depending on their corresponding interrupt source code.
 //!

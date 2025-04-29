@@ -41,3 +41,7 @@ pub enum Exception {
     LoadPageFault = 13,
     StorePageFault = 15,
 }
+
+#[cfg(feature = "pre-init")]
+#[cfg_attr(feature = "pre-init", riscv_rt::pre_init)]
+unsafe fn pre_init() {}

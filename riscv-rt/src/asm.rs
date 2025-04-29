@@ -141,10 +141,11 @@ cfg_global_asm!(
 
     beqz a0, 4f",
 );
-// IF CURRENT HART IS THE BOOT HART CALL __pre_init AND INITIALIZE RAM
+// IF CURRENT HART IS THE BOOT HART CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
 cfg_global_asm!(
-    "call __pre_init
-    // Copy .data from flash to RAM
+    #[cfg(feature = "pre-init")]
+    "call __pre_init",
+    "// Copy .data from flash to RAM
     la t0, __sdata
     la a0, __edata
     la t1, __sidata
@@ -221,11 +222,6 @@ cfg_global_asm!(
 );
 
 cfg_global_asm!(
-    // Default implementation of `__pre_init` does nothing.
-    // Users can override this function with the [`#[pre_init]`] macro.
-    ".weak __pre_init
-__pre_init:
-    ret",
     #[cfg(not(feature = "single-hart"))]
     // Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
     // Users can override this function by defining their own `_mp_hook`.
