@@ -57,7 +57,6 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
 ///
 /// This function must be called only from the [`crate::start_trap_rust`] function.
 /// Do **NOT** call this function directly.
-#[inline]
 #[no_mangle]
 pub unsafe extern "C" fn _dispatch_exception(trap_frame: &TrapFrame, code: usize) {
     extern "C" {

@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- `clippy` fixes
+- New `clippy` fixes
 
 ## [v0.14.0] - 2025-02-18
 
