@@ -44,7 +44,7 @@ impl std::fmt::Display for TargetTriple<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}-{}-{}", self.arch, self.vendor, self.os)?;
         if let Some(bin) = self.bin {
-            write!(f, "-{}", bin)?;
+            write!(f, "-{bin}")?;
         }
         Ok(())
     }

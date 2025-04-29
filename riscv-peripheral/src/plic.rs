@@ -292,7 +292,6 @@ pub(crate) mod test {
 
         for i in 0..=Context::MAX_HART_ID_NUMBER {
             let context = Context::from_number(i).unwrap();
-            let i = i as usize;
 
             let ctx = PLIC::ctx(context);
 

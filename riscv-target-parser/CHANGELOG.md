@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fix links to URLs in docs
+- `clippy` fixes
 
 ## [v0.1.1] - 2025-03-18
 
