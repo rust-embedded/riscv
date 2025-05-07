@@ -10,3 +10,11 @@ members = [
     "tests-build",
     "tests-trybuild",
 ]
+
+default-members = [
+    "riscv",
+    "riscv-pac",
+    "riscv-peripheral",
+    "riscv-rt",
+    "riscv-semihosting",
+]

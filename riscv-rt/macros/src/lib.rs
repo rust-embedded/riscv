@@ -174,8 +174,15 @@ fn is_correct_type(ty: &Type, name: &str) -> bool {
 }
 
 /// Attribute to mark which function will be called at the beginning of the reset handler.
+/// You must enable the `pre_init` feature in the `riscv-rt` crate to use this macro.
 ///
-/// **IMPORTANT**: This attribute can appear at most *once* in the dependency graph. Also, if you
+/// # IMPORTANT
+///
+/// This attribute is **deprecated**, as it is not safe to run Rust code **before** the static
+/// variables are initialized. The recommended way to run code before the static variables
+/// are initialized is to use the `global_asm!` macro to define the `__pre_init` function.
+///
+/// This attribute can appear at most *once* in the dependency graph. Also, if you
 /// are using Rust 1.30 the attribute must be used on a reachable item (i.e. there must be no
 /// private modules between the item and the root of the crate); if the item is in the root of the
 /// crate you'll be fine. This reachability restriction doesn't apply to Rust 1.31 and newer
@@ -197,6 +204,7 @@ fn is_correct_type(ty: &Type, name: &str) -> bool {
 ///
 /// # fn main() {}
 /// ```
+#[deprecated(note = "Use global_asm! to define the __pre_init function instead")]
 #[proc_macro_attribute]
 pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
     let f = parse_macro_input!(input as ItemFn);

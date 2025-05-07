@@ -9,6 +9,7 @@ riscv = { path = "../riscv", version = "0.13.0" }
 riscv-rt = { path = "../riscv-rt", version = "0.14.0" }
 
 [features]
+pre-init = ["riscv-rt/pre-init"]
 single-hart = ["riscv-rt/single-hart"]
 v-trap = ["riscv-rt/v-trap"]
 device = ["riscv-rt/device"]

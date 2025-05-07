@@ -23,7 +23,6 @@
 //! - Before main initialization of the `.bss` and `.data` sections.
 //!
 //! - [`#[entry]`][attr-entry] to declare the entry point of the program
-//! - [`#[pre_init]`][attr-pre-init]to run code *before* `static` variables are initialized
 //! - [`#[exception]`][attr-exception] to override an exception handler.
 //! - [`#[core_interrupt]`][attr-core-interrupt] to override a core interrupt handler.
 //! - [`#[external_interrupt]`][attr-external-interrupt] to override an external interrupt handler.
@@ -476,6 +475,20 @@
 //!
 //! # Cargo Features
 //!
+//! ## `pre-init`
+//!
+//! The pre-init feature (`pre-init`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
+//! When enabled, the runtime will execute the `__pre_init` function to be run **before RAM is initialized**.
+//! If the feature is enabled, the `__pre_init` function must be defined in the user code (i.e., no default implementation is
+//! provided by this crate). If the feature is disabled, the `__pre_init` function is not required.
+//!
+//! As `__pre_init` runs before RAM is initialised, it is not sound to use a Rust function for `__pre_init`, and
+//! instead it should typically be written in assembly using `global_asm` or an external assembly file.
+//!
+//! Alternatively, you can use the [`#[pre_init]`][attr-pre-init] attribute to define a pre-init function with Rust.
+//! Note that using this macro is discouraged, as it may lead to undefined behavior.
+//! We left this option for backwards compatibility, but it is subject to removal in the future.
+//!
 //! ## `single-hart`
 //!
 //! The single hart feature (`single-hart) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
@@ -570,7 +583,10 @@ use riscv::register::scause as xcause;
 use riscv::register::mcause as xcause;
 
 pub use riscv_pac::*;
-pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt, pre_init};
+pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt};
+
+#[cfg(feature = "pre-init")]
+pub use riscv_rt_macros::pre_init;
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
