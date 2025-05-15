@@ -2,69 +2,74 @@
 
 pub use super::HartIdNumber;
 use crate::common::unsafe_peripheral;
+use riscv::register::{sie, sip};
+
+/// Trait for a Supervisor-level Software Interrupt device.
+///
+/// # Safety
+///
+/// * This trait must only be implemented on a PAC of a target with an SSWI device.
+/// * The SSWI device base address `BASE` must be valid for the target.
+pub unsafe trait Sswi: Copy {
+    /// Base address of the SSWI peripheral.
+    const BASE: usize;
+}
 
 /// SSWI peripheral.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(transparent)]
-pub struct SSWI {
-    /// `SETSSIP` register for HART ID 0.  In multi-HART architectures,
-    /// use [`SSWI::setssip`] for accessing the `SETSSIP` of other HARTs.
-    pub setssip0: SETSSIP,
+pub struct SSWI<M> {
+    _marker: core::marker::PhantomData<M>,
 }
 
-impl SSWI {
-    /// Creates a new `SSWI` peripheral from a base address.
-    ///
-    /// # Safety
-    ///
-    /// The base address must point to a valid `SSWI` peripheral.
+impl<S: Sswi> SSWI<S> {
+    /// Creates a new `SSWI` device.
     #[inline]
-    pub const unsafe fn new(address: usize) -> Self {
+    pub const fn new() -> Self {
         Self {
-            setssip0: SETSSIP::new(address),
+            _marker: core::marker::PhantomData,
         }
+    }
+
+    /// Returns the base address of the `SSWI` device.
+    #[inline]
+    const fn as_ptr(&self) -> *const u32 {
+        S::BASE as *const u32
     }
 
     /// Returns `true` if a supervisor software interrupt is pending.
     #[inline]
     pub fn is_interrupting() -> bool {
-        riscv::register::sip::read().ssoft()
+        sip::read().ssoft()
     }
 
-    /// Returns `true` if Supervisor Software Interrupts are enabled.
+    /// Returns `true` if supervisor software interrupts are enabled.
     #[inline]
     pub fn is_enabled() -> bool {
-        riscv::register::mie::read().ssoft()
+        sie::read().ssoft()
     }
 
-    /// Sets the Supervisor Software Interrupt bit of the `mie` CSR.
-    /// This bit must be set for the `SSWI` to trigger supervisor software interrupts.
+    /// Enables supervisor software interrupts in the current HART.
     ///
     /// # Safety
     ///
-    /// Enabling the `SSWI` may break mask-based critical sections.
+    /// Enabling interrupts may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable() {
-        riscv::register::mie::set_ssoft();
+        sie::set_ssoft();
     }
 
-    /// Clears the Supervisor Software Interrupt bit of the `mie` CSR.
-    /// When cleared, the `SSWI` cannot trigger supervisor software interrupts.
+    /// Disables supervisor software interrupts in the current HART.
     #[inline]
     pub fn disable() {
         // SAFETY: it is safe to disable interrupts
-        unsafe { riscv::register::mie::clear_ssoft() };
+        unsafe { sie::clear_ssoft() };
     }
 
     /// Returns the `SETSSIP` register for the HART which ID is `hart_id`.
-    ///
-    /// # Note
-    ///
-    /// For HART ID 0, you can simply use [`SSWI::setssip0`].
     #[inline]
     pub fn setssip<H: HartIdNumber>(&self, hart_id: H) -> SETSSIP {
         // SAFETY: `hart_id` is valid for the target
-        unsafe { SETSSIP::new(self.setssip0.get_ptr().add(hart_id.number()) as _) }
+        unsafe { SETSSIP::new(self.as_ptr().add(hart_id.number()) as _) }
     }
 }
 
@@ -92,29 +97,22 @@ impl SETSSIP {
 
 #[cfg(test)]
 mod test {
-    use super::super::test::HartId;
     use super::*;
 
     #[test]
     fn test_sswi() {
-        // slice to emulate the interrupt pendings register
-        let raw_reg = [0u32; HartId::MAX_HART_ID_NUMBER + 1];
+        // Variable to emulate the interrupt pending register
+        let mut raw_reg = 0u32;
         // SAFETY: valid memory address
-        let mswi = unsafe { SSWI::new(raw_reg.as_ptr() as _) };
+        let setssip = unsafe { SETSSIP::new(&mut raw_reg as *mut u32 as usize) };
 
-        for (i, hart_id) in (0..raw_reg.len())
-            .map(|i| HartId::from_number(i).unwrap())
-            .enumerate()
-        {
-            let setssip = mswi.setssip(hart_id);
-            assert!(!setssip.is_pending());
-            assert_eq!(raw_reg[i], 0);
-            setssip.pend();
-            assert!(setssip.is_pending());
-            assert_ne!(raw_reg[i], 0);
-            setssip.unpend();
-            assert!(!setssip.is_pending());
-            assert_eq!(raw_reg[i], 0);
-        }
+        assert!(!setssip.is_pending());
+        assert_eq!(raw_reg, 0);
+        setssip.pend();
+        assert!(setssip.is_pending());
+        assert_ne!(raw_reg, 0);
+        setssip.unpend();
+        assert!(!setssip.is_pending());
+        assert_eq!(raw_reg, 0);
     }
 }

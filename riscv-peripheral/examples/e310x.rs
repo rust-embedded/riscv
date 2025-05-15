@@ -139,68 +139,15 @@ unsafe impl PriorityNumber for Priority {
     }
 }
 
-#[cfg(feature = "aclint-hal-async")]
 riscv_peripheral::clint_codegen!(
     base 0x0200_0000,
-    freq 32_768,
-    async_delay,
-    mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
-    msips [msip0=(HartId::H0,"`H0`")],
-);
-
-#[cfg(not(feature = "aclint-hal-async"))]
-riscv_peripheral::clint_codegen!(
-    base 0x0200_0000,
-    freq 32_768,
-    mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
-    msips [msip0=(HartId::H0,"`H0`")],
+    mtime_freq 32_768,
+    harts [HartId::H0 => 0],
 );
 
 riscv_peripheral::plic_codegen!(
     base 0x0C00_0000,
     ctxs [ctx0=(HartId::H0,"`H0`")],
 );
-
-#[cfg(feature = "aclint-hal-async")]
-/// extern functions needed by the `riscv-peripheral` crate for the `async` feature.
-///
-/// # Note
-///
-/// The functionality in this module is just to illustrate how to enable the `async` feature
-/// The timer queue used here, while functional, is unsound and should not be used in production.
-/// In this case, you should protect the timer queue with a mutex or critical section.
-/// For a more robust implementation, use proper timer queues such as the ones provided by `embassy-time`
-mod async_no_mangle {
-    use super::CLINT;
-    use heapless::binary_heap::{BinaryHeap, Min};
-    use riscv_peripheral::{aclint::mtimer::MTIMER, hal_async::aclint::Timer};
-
-    const N_TIMERS: usize = 16;
-    static mut TIMER_QUEUE: BinaryHeap<Timer, Min, N_TIMERS> = BinaryHeap::new();
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_mtimer() -> MTIMER {
-        CLINT::mtimer()
-    }
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer> {
-        unsafe { TIMER_QUEUE.push(t) }
-    }
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_wake_timers(current_tick: u64) -> Option<u64> {
-        let mut next_expires = None;
-        while let Some(t) = unsafe { TIMER_QUEUE.peek() } {
-            if t.expires() > current_tick {
-                next_expires = Some(t.expires());
-                break;
-            }
-            let t = unsafe { TIMER_QUEUE.pop() }.unwrap();
-            t.waker().wake_by_ref();
-        }
-        next_expires
-    }
-}
 
 fn main() {}
