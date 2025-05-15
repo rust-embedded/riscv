@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Rework of CLINT peripheral to use methods instead of associated functions.
+  This change follows the `svd2rust` pattern, making the ecosystem more consistent.
+- Simplify `clint!` macro using the `Deref` trait.
+
+### Removed
+
+- Removed support for `embedded-hal-async`, as it was not flexible enough to be
+  used in different targets (single HART, multi HART...). Instead, each chip must
+  have its own `chip-hal-async` crate that properly adapts to its specific needs.
+
 ### Fixed
 
 - `clippy` fixes
