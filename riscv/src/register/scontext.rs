@@ -27,3 +27,26 @@ read_write_csr_field! {
     /// Represents the `data` context number of the `scontext` CSR.
     data: [0:31],
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scontext() {
+        #[cfg(target_arch = "riscv32")]
+        const DATA_BITS: usize = 16;
+        #[cfg(not(target_arch = "riscv32"))]
+        const DATA_BITS: usize = 32;
+
+        let mut scontext = Scontext::from_bits(0);
+
+        (1..=DATA_BITS)
+            .map(|b| ((1u64 << b) - 1) as usize)
+            .for_each(|data| {
+                scontext.set_data(data);
+                assert_eq!(scontext.data(), data);
+                assert_eq!(scontext.bits(), data);
+            });
+    }
+}
