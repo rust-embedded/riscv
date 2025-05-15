@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CSR helper macro `write_composite_csr` for writing 64-bit CSRs on 32-bit targets.
 - Write utilities for `mcycle`, `minstret`
 - Add `senvcfg` CSR
+- Add `scontext` CSR
 
 ### Changed
 
