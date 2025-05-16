@@ -57,6 +57,7 @@ pub mod stvec;
 
 // Supervisor Trap Handling
 pub mod scause;
+pub mod scontext;
 pub mod senvcfg;
 pub mod sepc;
 pub mod sip;
