@@ -186,84 +186,15 @@ impl<P: Plic> CTX<P> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use riscv_pac::{result::Error, HartIdNumber, InterruptNumber, PriorityNumber};
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[riscv::pac_enum(unsafe ExternalInterruptNumber)]
-    pub(crate) enum Interrupt {
-        I1 = 1,
-        I2 = 2,
-        I3 = 3,
-        I4 = 4,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[riscv::pac_enum(unsafe PriorityNumber)]
-    pub(crate) enum Priority {
-        P0 = 0,
-        P1 = 1,
-        P2 = 2,
-        P3 = 3,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[riscv::pac_enum(unsafe HartIdNumber)]
-    pub(crate) enum Context {
-        C0 = 0,
-        C1 = 1,
-        C2 = 2,
-    }
-
-    #[test]
-    fn check_interrupt_enum() {
-        assert_eq!(Interrupt::I1.number(), 1);
-        assert_eq!(Interrupt::I2.number(), 2);
-        assert_eq!(Interrupt::I3.number(), 3);
-        assert_eq!(Interrupt::I4.number(), 4);
-
-        assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
-        assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-        assert_eq!(Interrupt::from_number(3), Ok(Interrupt::I3));
-        assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-
-        assert_eq!(Interrupt::from_number(0), Err(Error::InvalidVariant(0)),);
-        assert_eq!(Interrupt::from_number(5), Err(Error::InvalidVariant(5)),);
-    }
-
-    #[test]
-    fn check_priority_enum() {
-        assert_eq!(Priority::P0.number(), 0);
-        assert_eq!(Priority::P1.number(), 1);
-        assert_eq!(Priority::P2.number(), 2);
-        assert_eq!(Priority::P3.number(), 3);
-
-        assert_eq!(Priority::from_number(0), Ok(Priority::P0));
-        assert_eq!(Priority::from_number(1), Ok(Priority::P1));
-        assert_eq!(Priority::from_number(2), Ok(Priority::P2));
-        assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-
-        assert_eq!(Priority::from_number(4), Err(Error::InvalidVariant(4)),);
-    }
-
-    #[test]
-    fn check_context_enum() {
-        assert_eq!(Context::C0.number(), 0);
-        assert_eq!(Context::C1.number(), 1);
-        assert_eq!(Context::C2.number(), 2);
-
-        assert_eq!(Context::from_number(0), Ok(Context::C0));
-        assert_eq!(Context::from_number(1), Ok(Context::C1));
-        assert_eq!(Context::from_number(2), Ok(Context::C2));
-
-        assert_eq!(Context::from_number(3), Err(Error::InvalidVariant(3)),);
-    }
+    use crate::test::HartId;
+    use riscv_pac::HartIdNumber;
 
     #[allow(dead_code)]
     #[test]
     fn check_plic() {
         crate::plic_codegen!(
             base 0x0C00_0000,
-            harts [Context::C0 => 0, Context::C1 => 1, Context::C2 => 2],
+            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2],
         );
 
         let plic = PLIC::new();
@@ -273,10 +204,10 @@ pub(crate) mod test {
         assert_eq!(priorities.address(), 0x0C00_0000);
         assert_eq!(pendings.address(), 0x0C00_1000);
 
-        for i in 0..=Context::MAX_HART_ID_NUMBER {
-            let context = Context::from_number(i).unwrap();
+        for i in 0..=HartId::MAX_HART_ID_NUMBER {
+            let hart_id = HartId::from_number(i).unwrap();
 
-            let ctx = plic.ctx(context);
+            let ctx = plic.ctx(hart_id);
 
             assert_eq!(ctx.enables().address(), 0x0C00_0000 + 0x2000 + i * 0x80);
             assert_eq!(
@@ -289,8 +220,8 @@ pub(crate) mod test {
             );
         }
 
-        assert_eq!(plic.ctx0(), plic.ctx(Context::C0));
-        assert_eq!(plic.ctx1(), plic.ctx(Context::C1));
-        assert_eq!(plic.ctx2(), plic.ctx(Context::C2));
+        assert_eq!(plic.ctx0(), plic.ctx(HartId::H0));
+        assert_eq!(plic.ctx1(), plic.ctx(HartId::H1));
+        assert_eq!(plic.ctx2(), plic.ctx(HartId::H2));
     }
 }

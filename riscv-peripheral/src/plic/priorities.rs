@@ -69,8 +69,8 @@ impl PRIORITIES {
 
 #[cfg(test)]
 mod test {
-    use super::super::test::{Interrupt, Priority};
     use super::*;
+    use crate::test::{Interrupt, Priority};
     use riscv_pac::InterruptNumber;
 
     #[test]

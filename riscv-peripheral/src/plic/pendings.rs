@@ -40,8 +40,8 @@ impl PENDINGS {
 
 #[cfg(test)]
 mod test {
-    use super::super::test::Interrupt;
     use super::*;
+    use crate::test::Interrupt;
 
     #[test]
     fn test_pendings() {

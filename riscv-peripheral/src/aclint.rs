@@ -92,28 +92,7 @@ impl<C: Clint> CLINT<C> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use riscv_pac::{result::Error, HartIdNumber};
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[riscv::pac_enum(unsafe HartIdNumber)]
-    pub(super) enum HartId {
-        H0 = 0,
-        H1 = 1,
-        H2 = 2,
-    }
-
-    #[test]
-    fn check_hart_id_enum() {
-        assert_eq!(HartId::H0.number(), 0);
-        assert_eq!(HartId::H1.number(), 1);
-        assert_eq!(HartId::H2.number(), 2);
-
-        assert_eq!(HartId::from_number(0), Ok(HartId::H0));
-        assert_eq!(HartId::from_number(1), Ok(HartId::H1));
-        assert_eq!(HartId::from_number(2), Ok(HartId::H2));
-
-        assert_eq!(HartId::from_number(3), Err(Error::InvalidVariant(3)));
-    }
+    use crate::test::HartId;
 
     #[allow(dead_code)]
     #[test]
