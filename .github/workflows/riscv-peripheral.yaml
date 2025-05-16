@@ -31,10 +31,8 @@ jobs:
       with:
         toolchain: ${{ matrix.toolchain }}
         targets: ${{ matrix.target }}
-    - name: Build (no features)
+    - name: Build
       run: cargo build --package riscv-peripheral --target ${{ matrix.target }}
-    - name: Build (all features)
-      run: cargo build --package riscv-peripheral --target ${{ matrix.target }} --all-features
 
   # On MacOS, Ubuntu, and Windows, we run the tests.
   build-others:
@@ -48,10 +46,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build (no features)
+      - name: Test
         run: cargo test --package riscv-peripheral
-      - name: Build (all features)
-        run: cargo test --package riscv-peripheral --all-features
 
   # Job to check that all the builds succeeded
   build-check:
