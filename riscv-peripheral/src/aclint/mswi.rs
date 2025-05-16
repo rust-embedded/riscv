@@ -25,7 +25,7 @@ unsafe impl<C: Clint> Mswi for C {
 }
 
 /// MSWI peripheral.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct MSWI<M> {
     _marker: core::marker::PhantomData<M>,
 }
