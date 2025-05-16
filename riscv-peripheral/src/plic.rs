@@ -55,13 +55,13 @@ impl<P: Plic> PLIC<P> {
 
     /// Returns `true` if a machine external interrupt is pending.
     #[inline]
-    pub fn is_interrupting(&self) -> bool {
+    pub fn is_interrupting(self) -> bool {
         mip::read().mext()
     }
 
     /// Returns true if machine external interrupts are enabled.
     #[inline]
-    pub fn is_enabled(&self) -> bool {
+    pub fn is_enabled(self) -> bool {
         mie::read().mext()
     }
 
@@ -71,13 +71,13 @@ impl<P: Plic> PLIC<P> {
     ///
     /// Enabling the `PLIC` may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable(&self) {
+    pub unsafe fn enable(self) {
         mie::set_mext();
     }
 
     /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
     #[inline]
-    pub fn disable(&self) {
+    pub fn disable(self) {
         // SAFETY: it is safe to disable interrupts
         unsafe { mie::clear_mext() };
     }
@@ -87,7 +87,7 @@ impl<P: Plic> PLIC<P> {
     /// This register allows to set the priority level of each interrupt source.
     /// The priority level of each interrupt source is shared among all the contexts.
     #[inline]
-    pub const fn priorities(&self) -> priorities::PRIORITIES {
+    pub const fn priorities(self) -> priorities::PRIORITIES {
         // SAFETY: valid address
         unsafe { priorities::PRIORITIES::new(P::BASE + Self::PRIORITIES_OFFSET) }
     }
@@ -96,14 +96,14 @@ impl<P: Plic> PLIC<P> {
     ///
     /// This register allows to check if a particular interrupt source is pending.
     #[inline]
-    pub const fn pendings(&self) -> pendings::PENDINGS {
+    pub const fn pendings(self) -> pendings::PENDINGS {
         // SAFETY: valid address
         unsafe { pendings::PENDINGS::new(P::BASE + Self::PENDINGS_OFFSET) }
     }
 
     /// Returns a proxy to access to all the PLIC registers of a given HART context.
     #[inline]
-    pub fn ctx<H: HartIdNumber>(&self, hart_id: H) -> CTX<P> {
+    pub fn ctx<H: HartIdNumber>(self, hart_id: H) -> CTX<P> {
         // SAFETY: valid context number
         unsafe { CTX::new(hart_id.number() as _) }
     }
@@ -115,7 +115,7 @@ impl<P: Plic> PLIC<P> {
     /// This function determines the current HART ID by reading the [`mhartid`] CSR.
     /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
     #[inline]
-    pub fn ctx_mhartid(&self) -> CTX<P> {
+    pub fn ctx_mhartid(self) -> CTX<P> {
         let hart_id = mhartid::read();
         // SAFETY: `hart_id` is valid for the target and is the current hart
         unsafe { CTX::new(hart_id as _) }

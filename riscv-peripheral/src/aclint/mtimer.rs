@@ -52,19 +52,19 @@ impl<M: Mtimer> MTIMER<M> {
 
     /// Returns the base address of the `MTIMECMP` registers.
     #[inline]
-    const fn mtimecmp_as_ptr(&self) -> *const u64 {
+    const fn mtimecmp_as_ptr(self) -> *const u64 {
         M::MTIMECMP_BASE as *const u64
     }
 
     /// Returns `true` if a machine timer interrupt is pending.
     #[inline]
-    pub fn is_interrupting(&self) -> bool {
+    pub fn is_interrupting(self) -> bool {
         mip::read().mtimer()
     }
 
     /// Returns `true` if machine timer interrupts are enabled.
     #[inline]
-    pub fn is_enabled(&self) -> bool {
+    pub fn is_enabled(self) -> bool {
         mie::read().mtimer()
     }
 
@@ -74,27 +74,27 @@ impl<M: Mtimer> MTIMER<M> {
     ///
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable(&self) {
+    pub unsafe fn enable(self) {
         mie::set_mtimer();
     }
 
     /// Disables machine timer interrupts in the current HART.
     #[inline]
-    pub fn disable(&self) {
+    pub fn disable(self) {
         // SAFETY: it is safe to disable interrupts
         unsafe { mie::clear_mtimer() };
     }
 
     /// Returns the `MTIME` register.
     #[inline]
-    pub const fn mtime(&self) -> MTIME {
+    pub const fn mtime(self) -> MTIME {
         // SAFETY: valid base address
         unsafe { MTIME::new(M::MTIME_BASE) }
     }
 
     /// Returns the `MTIMECMP` register for the HART which ID is `hart_id`.
     #[inline]
-    pub fn mtimecmp<H: HartIdNumber>(&self, hart_id: H) -> MTIMECMP {
+    pub fn mtimecmp<H: HartIdNumber>(self, hart_id: H) -> MTIMECMP {
         // SAFETY: `hart_id` is valid for the target
         unsafe { MTIMECMP::new(self.mtimecmp_as_ptr().add(hart_id.number()) as _) }
     }
@@ -106,7 +106,7 @@ impl<M: Mtimer> MTIMER<M> {
     /// This function determines the current HART ID by reading the [`mhartid`] CSR.
     /// Thus, it can only be used in M-mode. For S-mode, use [`MTIMER::mtimecmp`] instead.
     #[inline]
-    pub fn mtimecmp_mhartid(&self) -> MTIMECMP {
+    pub fn mtimecmp_mhartid(self) -> MTIMECMP {
         let hart_id = mhartid::read();
         // SAFETY: `hart_id` is valid for the target and is the current hart
         unsafe { MTIMECMP::new(self.mtimecmp_as_ptr().add(hart_id) as _) }

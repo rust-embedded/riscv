@@ -41,19 +41,19 @@ impl<M: Mswi> MSWI<M> {
 
     /// Returns the base address of the `MSWI` device.
     #[inline]
-    const fn as_ptr(&self) -> *const u32 {
+    const fn as_ptr(self) -> *const u32 {
         M::BASE as *const u32
     }
 
     /// Returns `true` if a machine software interrupt is pending.
     #[inline]
-    pub fn is_interrupting(&self) -> bool {
+    pub fn is_interrupting(self) -> bool {
         mip::read().msoft()
     }
 
     /// Returns `true` if machine software interrupts are enabled.
     #[inline]
-    pub fn is_enabled(&self) -> bool {
+    pub fn is_enabled(self) -> bool {
         mie::read().msoft()
     }
 
@@ -63,20 +63,20 @@ impl<M: Mswi> MSWI<M> {
     ///
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable(&self) {
+    pub unsafe fn enable(self) {
         mie::set_msoft();
     }
 
     /// Disables machine software interrupts in the current HART.
     #[inline]
-    pub fn disable(&self) {
+    pub fn disable(self) {
         // SAFETY: it is safe to disable interrupts
         unsafe { mie::clear_msoft() };
     }
 
     /// Returns the `MSIP` register for the HART which ID is `hart_id`.
     #[inline]
-    pub fn msip<H: HartIdNumber>(&self, hart_id: H) -> MSIP {
+    pub fn msip<H: HartIdNumber>(self, hart_id: H) -> MSIP {
         // SAFETY: `hart_id` is valid for the target
         unsafe { MSIP::new(self.as_ptr().add(hart_id.number()) as _) }
     }
@@ -88,7 +88,7 @@ impl<M: Mswi> MSWI<M> {
     /// This function determines the current HART ID by reading the `mhartid` CSR.
     /// Thus, it can only be used in M-mode. For S-mode, use [`MSWI::msip`] instead.
     #[inline]
-    pub fn msip_mhartid(&self) -> MSIP {
+    pub fn msip_mhartid(self) -> MSIP {
         let hart_id = mhartid::read();
         // SAFETY: `hart_id` is valid for the target and is the current hart
         unsafe { MSIP::new(self.as_ptr().add(hart_id) as _) }

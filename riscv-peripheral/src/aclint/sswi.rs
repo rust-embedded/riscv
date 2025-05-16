@@ -32,19 +32,19 @@ impl<S: Sswi> SSWI<S> {
 
     /// Returns the base address of the `SSWI` device.
     #[inline]
-    const fn as_ptr(&self) -> *const u32 {
+    const fn as_ptr(self) -> *const u32 {
         S::BASE as *const u32
     }
 
     /// Returns `true` if a supervisor software interrupt is pending.
     #[inline]
-    pub fn is_interrupting() -> bool {
+    pub fn is_interrupting(self) -> bool {
         sip::read().ssoft()
     }
 
     /// Returns `true` if supervisor software interrupts are enabled.
     #[inline]
-    pub fn is_enabled() -> bool {
+    pub fn is_enabled(self) -> bool {
         sie::read().ssoft()
     }
 
@@ -54,20 +54,20 @@ impl<S: Sswi> SSWI<S> {
     ///
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable() {
+    pub unsafe fn enable(self) {
         sie::set_ssoft();
     }
 
     /// Disables supervisor software interrupts in the current HART.
     #[inline]
-    pub fn disable() {
+    pub fn disable(self) {
         // SAFETY: it is safe to disable interrupts
         unsafe { sie::clear_ssoft() };
     }
 
     /// Returns the `SETSSIP` register for the HART which ID is `hart_id`.
     #[inline]
-    pub fn setssip<H: HartIdNumber>(&self, hart_id: H) -> SETSSIP {
+    pub fn setssip<H: HartIdNumber>(self, hart_id: H) -> SETSSIP {
         // SAFETY: `hart_id` is valid for the target
         unsafe { SETSSIP::new(self.as_ptr().add(hart_id.number()) as _) }
     }
