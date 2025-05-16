@@ -1,6 +1,6 @@
 [package]
 name = "riscv-peripheral"
-version = "0.2.1"
+version = "0.3.0-rc.1"
 edition = "2021"
 rust-version = "1.75"
 repository = "https://github.com/rust-embedded/riscv"
@@ -15,15 +15,9 @@ license = "ISC"
 
 [dependencies]
 embedded-hal = "1.0.0"
-embedded-hal-async = { version = "1.0.0", optional =  true }
+paste = "1.0"
 riscv = { path = "../riscv", version = "0.13.0" }
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
-
-[dev-dependencies]
-heapless = "0.8.0"
-
-[features]
-aclint-hal-async = ["embedded-hal-async"]
 
 [package.metadata.docs.rs]
 all-features = true
