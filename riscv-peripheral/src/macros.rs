@@ -32,21 +32,8 @@ pub use paste::paste;
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+/// #[riscv::pac_enum(unsafe HartIdNumber)]
 /// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
-///
-/// // Implement `HartIdNumber` for `HartId`
-/// unsafe impl riscv_peripheral::aclint::HartIdNumber for HartId {
-///   const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
-///   fn number(self) -> usize { self as _ }
-///   fn from_number(number: usize) -> Result<Self> {
-///     match number {
-///      0 => Ok(HartId::H0),
-///      1 => Ok(HartId::H1),
-///      2 => Ok(HartId::H2),
-///      _ => Err(Error::InvalidVariant(number)),
-///     }
-///   }
-/// }
 ///
 /// riscv_peripheral::clint_codegen!(
 ///     base 0x0200_0000,
@@ -158,7 +145,6 @@ macro_rules! clint_codegen {
 /// let pendings = plic.pendings();     // Pendings registers
 /// ```
 ///
-///
 /// ## Base address and per-HART context proxies
 ///
 /// ```
@@ -166,21 +152,8 @@ macro_rules! clint_codegen {
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+/// #[riscv::pac_enum(unsafe HartIdNumber)]
 /// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
-///
-/// // Implement `HartIdNumber` for `HartId`
-/// unsafe impl riscv_peripheral::aclint::HartIdNumber for HartId {
-///   const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
-///   fn number(self) -> usize { self as _ }
-///   fn from_number(number: usize) -> Result<Self> {
-///     match number {
-///      0 => Ok(HartId::H0),
-///      1 => Ok(HartId::H1),
-///      2 => Ok(HartId::H2),
-///      _ => Err(Error::InvalidVariant(number)),
-///     }
-///   }
-/// }
 ///
 /// riscv_peripheral::plic_codegen!(
 ///     base 0x0C00_0000,
@@ -242,7 +215,7 @@ macro_rules! plic_codegen {
         $crate::macros::paste! {
             impl PLIC {
                 $(
-                    #[doc = "Returns a PLIC context proxy for context of HART "]
+                    #[doc = "Returns a PLIC context proxy for context of HART [`"]
                     #[doc = stringify!($hart)]
                     #[doc = "`]."]
                     #[inline]
