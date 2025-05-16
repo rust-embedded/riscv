@@ -92,34 +92,14 @@ impl<C: Clint> CLINT<C> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use super::HartIdNumber;
-    use riscv_pac::result::{Error, Result};
+    use riscv_pac::{result::Error, HartIdNumber};
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    #[repr(usize)]
-    pub(crate) enum HartId {
+    #[riscv::pac_enum(unsafe HartIdNumber)]
+    pub(super) enum HartId {
         H0 = 0,
         H1 = 1,
         H2 = 2,
-    }
-
-    unsafe impl HartIdNumber for HartId {
-        const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
-
-        #[inline]
-        fn number(self) -> usize {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: usize) -> Result<Self> {
-            if number > Self::MAX_HART_ID_NUMBER {
-                Err(Error::InvalidVariant(number))
-            } else {
-                // SAFETY: valid context number
-                Ok(unsafe { core::mem::transmute::<usize, HartId>(number) })
-            }
-        }
     }
 
     #[test]

@@ -1,36 +1,16 @@
 //! Peripheral definitions for the E310x chip.
+//!
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
-use riscv_pac::{
-    result::{Error, Result},
-    ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber,
-};
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[riscv::pac_enum(unsafe HartIdNumber)]
 pub enum HartId {
     H0 = 0,
 }
 
-unsafe impl HartIdNumber for HartId {
-    const MAX_HART_ID_NUMBER: usize = Self::H0 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        match number {
-            0 => Ok(Self::H0),
-            _ => Err(Error::InvalidVariant(number)),
-        }
-    }
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(usize)]
+#[riscv::pac_enum(unsafe ExternalInterruptNumber)]
 pub enum Interrupt {
     WATCHDOG = 1,
     RTC = 2,
@@ -86,29 +66,8 @@ pub enum Interrupt {
     I2C0 = 52,
 }
 
-unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: usize = Self::I2C0 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
-            Err(Error::InvalidVariant(number))
-        } else {
-            // SAFETY: valid interrupt number
-            Ok(unsafe { core::mem::transmute::<usize, Interrupt>(number) })
-        }
-    }
-}
-
-unsafe impl ExternalInterruptNumber for Interrupt {}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(usize)]
+#[riscv::pac_enum(unsafe PriorityNumber)]
 pub enum Priority {
     P0 = 0,
     P1 = 1,
@@ -118,25 +77,6 @@ pub enum Priority {
     P5 = 5,
     P6 = 6,
     P7 = 7,
-}
-
-unsafe impl PriorityNumber for Priority {
-    const MAX_PRIORITY_NUMBER: usize = Self::P7 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        if number > Self::MAX_PRIORITY_NUMBER {
-            Err(Error::InvalidVariant(number))
-        } else {
-            // SAFETY: valid priority number
-            Ok(unsafe { core::mem::transmute::<usize, Priority>(number) })
-        }
-    }
 }
 
 riscv_peripheral::clint_codegen!(
