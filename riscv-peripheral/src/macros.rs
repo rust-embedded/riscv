@@ -140,7 +140,7 @@ macro_rules! clint_codegen {
 /// This macro expects 2 different argument types:
 ///
 /// - Base address (**MANDATORY**): base address of the PLIC peripheral of the target.
-/// - Per-HART contexts (**OPTIONAL**): a list of `ctx` contexts for easing access to per-HART PLIC contexts.
+/// - HART map (**OPTIONAL**): a list of HART IDs and their corresponding numbers.
 ///
 /// Check the examples below for more details about the usage and syntax of this macro.
 ///
@@ -153,8 +153,48 @@ macro_rules! clint_codegen {
 ///
 /// riscv_peripheral::plic_codegen!(base 0x0C00_0000,); // do not forget the ending comma!
 ///
-/// let priorities = PLIC::priorities(); // Priorities registers
-/// let pendings = PLIC::pendings();     // Pendings registers
+/// let plic = PLIC::new(); // Create a new PLIC peripheral
+/// let priorities = plic.priorities(); // Priorities registers
+/// let pendings = plic.pendings();     // Pendings registers
+/// ```
+///
+///
+/// ## Base address and per-HART context proxies
+///
+/// ```
+/// use riscv_pac::result::{Error, Result};
+///
+/// /// HART IDs for the target CLINT peripheral
+/// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+/// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
+///
+/// // Implement `HartIdNumber` for `HartId`
+/// unsafe impl riscv_peripheral::aclint::HartIdNumber for HartId {
+///   const MAX_HART_ID_NUMBER: usize = Self::H2 as usize;
+///   fn number(self) -> usize { self as _ }
+///   fn from_number(number: usize) -> Result<Self> {
+///     match number {
+///      0 => Ok(HartId::H0),
+///      1 => Ok(HartId::H1),
+///      2 => Ok(HartId::H2),
+///      _ => Err(Error::InvalidVariant(number)),
+///     }
+///   }
+/// }
+///
+/// riscv_peripheral::plic_codegen!(
+///     base 0x0C00_0000,
+///     harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2], // do not forget the ending comma!
+/// );
+///
+/// let plic = PLIC::new(); // Create a new PLIC peripheral
+/// let ctx0 = plic.ctx0(); // Context proxy for HART 0
+/// let ctx1 = plic.ctx1(); // Context proxy for HART 1
+/// let ctx2 = plic.ctx2(); // Context proxy for HART 2
+///
+/// assert_eq!(ctx0, plic.ctx(HartId::H0));
+/// assert_eq!(ctx1, plic.ctx(HartId::H1));
+/// assert_eq!(ctx2, plic.ctx(HartId::H2));
 /// ```
 #[macro_export]
 macro_rules! plic_codegen {
@@ -166,84 +206,51 @@ macro_rules! plic_codegen {
         /// PLIC peripheral
         #[allow(clippy::upper_case_acronyms)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-        pub struct PLIC;
+        pub struct PLIC($crate::plic::PLIC<Self>);
+
+        impl PLIC {
+            /// Creates a new `CLINT` peripheral.
+            #[inline]
+            pub const fn new() -> Self {
+                Self($crate::plic::PLIC::new())
+            }
+        }
 
         unsafe impl $crate::plic::Plic for PLIC {
             const BASE: usize = $addr;
         }
 
-        impl PLIC {
-            /// Returns `true` if a machine external interrupt is pending.
-            #[inline]
-            pub fn is_interrupting() -> bool {
-                $crate::riscv::register::mip::read().mext()
-            }
+        impl core::ops::Deref for PLIC {
+            type Target = $crate::plic::PLIC<Self>;
 
-            /// Returns true if Machine External Interrupts are enabled.
             #[inline]
-            pub fn is_enabled() -> bool {
-                $crate::riscv::register::mie::read().mext()
-            }
-
-            /// Enables machine external interrupts to allow the PLIC to trigger interrupts.
-            ///
-            /// # Safety
-            ///
-            /// Enabling the `PLIC` may break mask-based critical sections.
-            #[inline]
-            pub unsafe fn enable() {
-                $crate::riscv::register::mie::set_mext();
-            }
-
-            /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
-            #[inline]
-            pub fn disable() {
-                // SAFETY: it is safe to disable interrupts
-                unsafe { $crate::riscv::register::mie::clear_mext() };
-            }
-
-            /// Returns the priorities register of the PLIC.
-            #[inline]
-            pub fn priorities() -> $crate::plic::priorities::PRIORITIES {
-                $crate::plic::PLIC::<PLIC>::priorities()
-            }
-
-            /// Returns the pendings register of the PLIC.
-            #[inline]
-            pub fn pendings() -> $crate::plic::pendings::PENDINGS {
-                $crate::plic::PLIC::<PLIC>::pendings()
-            }
-
-            /// Returns the context proxy of a given PLIC HART context.
-            #[inline]
-            pub fn ctx<H: $crate::plic::HartIdNumber>(hart_id: H) -> $crate::plic::CTX<Self> {
-                $crate::plic::PLIC::<PLIC>::ctx(hart_id)
-            }
-
-            /// Returns the PLIC HART context for the current HART.
-            ///
-            /// # Note
-            ///
-            /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
-            /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
-            #[inline]
-            pub fn ctx_mhartid() -> $crate::plic::CTX<Self> {
-                $crate::plic::PLIC::<PLIC>::ctx_mhartid()
+            fn deref(&self) -> &Self::Target {
+                &self.0
             }
         }
+
+        impl core::ops::DerefMut for PLIC {
+            #[inline]
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                &mut self.0
+            }
+        }
+
         $crate::plic_codegen!($($tail)*);
     };
-    (ctxs [$($fn:ident = ($ctx:expr , $sctx:expr)),+], $($tail:tt)*) => {
-        impl PLIC {
-            $(
-                #[doc = "Returns a PLIC context proxy for context of HART "]
-                #[doc = $sctx]
-                #[doc = "."]
-                #[inline]
-                pub fn $fn() -> $crate::plic::CTX<Self> {
-                    Self::ctx($ctx)
-                }
-            )*
+    (harts [$($hart:expr => $num:literal),+], $($tail:tt)*) => {
+        $crate::macros::paste! {
+            impl PLIC {
+                $(
+                    #[doc = "Returns a PLIC context proxy for context of HART "]
+                    #[doc = stringify!($hart)]
+                    #[doc = "`]."]
+                    #[inline]
+                    pub fn [<ctx $num>](&self) -> $crate::plic::CTX<Self> {
+                        self.ctx($hart)
+                    }
+                )*
+            }
         }
         $crate::plic_codegen!($($tail)*);
     };

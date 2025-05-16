@@ -11,6 +11,8 @@ pub mod threshold;
 // re-export useful riscv-pac traits
 pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
+use riscv::register::{mhartid, mie, mip};
+
 /// Trait for a PLIC peripheral.
 ///
 /// # Safety
@@ -43,26 +45,65 @@ impl<P: Plic> PLIC<P> {
 
     const PENDINGS_OFFSET: usize = 0x1000;
 
-    /// Returns the priorities register of the PLIC.
+    /// Creates a new `PLIC` peripheral.
+    #[inline]
+    pub const fn new() -> Self {
+        Self {
+            _marker: core::marker::PhantomData,
+        }
+    }
+
+    /// Returns `true` if a machine external interrupt is pending.
+    #[inline]
+    pub fn is_interrupting(&self) -> bool {
+        mip::read().mext()
+    }
+
+    /// Returns true if machine external interrupts are enabled.
+    #[inline]
+    pub fn is_enabled(&self) -> bool {
+        mie::read().mext()
+    }
+
+    /// Enables machine external interrupts to allow the PLIC to trigger interrupts.
+    ///
+    /// # Safety
+    ///
+    /// Enabling the `PLIC` may break mask-based critical sections.
+    #[inline]
+    pub unsafe fn enable(&self) {
+        mie::set_mext();
+    }
+
+    /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
+    #[inline]
+    pub fn disable(&self) {
+        // SAFETY: it is safe to disable interrupts
+        unsafe { mie::clear_mext() };
+    }
+
+    /// Returns the [`PRIORITIES`](priorities::PRIORITIES) register of the PLIC.
+    ///
     /// This register allows to set the priority level of each interrupt source.
     /// The priority level of each interrupt source is shared among all the contexts.
     #[inline]
-    pub fn priorities() -> priorities::PRIORITIES {
+    pub const fn priorities(&self) -> priorities::PRIORITIES {
         // SAFETY: valid address
         unsafe { priorities::PRIORITIES::new(P::BASE + Self::PRIORITIES_OFFSET) }
     }
 
-    /// Returns the pendings register of the PLIC.
+    /// Returns the [`PENDINGS`](pendings::PENDINGS) register of the PLIC.
+    ///
     /// This register allows to check if a particular interrupt source is pending.
     #[inline]
-    pub fn pendings() -> pendings::PENDINGS {
+    pub const fn pendings(&self) -> pendings::PENDINGS {
         // SAFETY: valid address
         unsafe { pendings::PENDINGS::new(P::BASE + Self::PENDINGS_OFFSET) }
     }
 
     /// Returns a proxy to access to all the PLIC registers of a given HART context.
     #[inline]
-    pub fn ctx<H: HartIdNumber>(hart_id: H) -> CTX<P> {
+    pub fn ctx<H: HartIdNumber>(&self, hart_id: H) -> CTX<P> {
         // SAFETY: valid context number
         unsafe { CTX::new(hart_id.number() as _) }
     }
@@ -71,11 +112,11 @@ impl<P: Plic> PLIC<P> {
     ///
     /// # Note
     ///
-    /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+    /// This function determines the current HART ID by reading the [`mhartid`] CSR.
     /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
     #[inline]
-    pub fn ctx_mhartid() -> CTX<P> {
-        let hart_id = riscv::register::mhartid::read();
+    pub fn ctx_mhartid(&self) -> CTX<P> {
+        let hart_id = mhartid::read();
         // SAFETY: `hart_id` is valid for the target and is the current hart
         unsafe { CTX::new(hart_id as _) }
     }
@@ -281,11 +322,12 @@ pub(crate) mod test {
     fn check_plic() {
         crate::plic_codegen!(
             base 0x0C00_0000,
-            ctxs [ctx0 = (Context::C0, "`C0`"), ctx1 = (Context::C1, "`C1`"), ctx2 = (Context::C2, "`C2`")],
+            harts [Context::C0 => 0, Context::C1 => 1, Context::C2 => 2],
         );
 
-        let priorities = PLIC::priorities();
-        let pendings = PLIC::pendings();
+        let plic = PLIC::new();
+        let priorities = plic.priorities();
+        let pendings = plic.pendings();
 
         assert_eq!(priorities.address(), 0x0C00_0000);
         assert_eq!(pendings.address(), 0x0C00_1000);
@@ -293,7 +335,7 @@ pub(crate) mod test {
         for i in 0..=Context::MAX_HART_ID_NUMBER {
             let context = Context::from_number(i).unwrap();
 
-            let ctx = PLIC::ctx(context);
+            let ctx = plic.ctx(context);
 
             assert_eq!(ctx.enables().address(), 0x0C00_0000 + 0x2000 + i * 0x80);
             assert_eq!(
@@ -306,8 +348,8 @@ pub(crate) mod test {
             );
         }
 
-        assert_eq!(PLIC::ctx0(), PLIC::ctx(Context::C0));
-        assert_eq!(PLIC::ctx1(), PLIC::ctx(Context::C1));
-        assert_eq!(PLIC::ctx2(), PLIC::ctx(Context::C2));
+        assert_eq!(plic.ctx0(), plic.ctx(Context::C0));
+        assert_eq!(plic.ctx1(), plic.ctx(Context::C1));
+        assert_eq!(plic.ctx2(), plic.ctx(Context::C2));
     }
 }

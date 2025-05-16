@@ -147,7 +147,7 @@ riscv_peripheral::clint_codegen!(
 
 riscv_peripheral::plic_codegen!(
     base 0x0C00_0000,
-    ctxs [ctx0=(HartId::H0,"`H0`")],
+    harts [HartId::H0 => 0],
 );
 
 fn main() {}
