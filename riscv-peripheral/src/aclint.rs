@@ -33,7 +33,7 @@ pub unsafe trait Clint: Copy {
 /// Each HART has an assigned index starting from 0 to up to 4_094.
 /// In this way, each HART's timer and software interrupts can be independently configured.
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct CLINT<C> {
     _marker: core::marker::PhantomData<C>,
 }

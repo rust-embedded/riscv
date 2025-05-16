@@ -16,7 +16,7 @@ pub unsafe trait Sswi: Copy {
 }
 
 /// SSWI peripheral.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct SSWI<M> {
     _marker: core::marker::PhantomData<M>,
 }

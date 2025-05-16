@@ -36,7 +36,7 @@ unsafe impl<C: Clint> Mtimer for C {
 ///
 /// It has a single fixed-frequency monotonic time counter ([`MTIME`])
 /// register and a time compare register ([`MTIMECMP`]) for each HART.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct MTIMER<M> {
     _marker: core::marker::PhantomData<M>,
 }
