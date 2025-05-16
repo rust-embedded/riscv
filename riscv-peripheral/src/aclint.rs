@@ -49,25 +49,25 @@ impl<C: Clint> CLINT<C> {
 
     /// Returns the [`MSWI`](mswi::MSWI) device.
     #[inline]
-    pub const fn mswi(&self) -> mswi::MSWI<C> {
+    pub const fn mswi(self) -> mswi::MSWI<C> {
         mswi::MSWI::new()
     }
 
     /// Returns the [`MTIMER`](mtimer::MTIMER) device.
     #[inline]
-    pub const fn mtimer(&self) -> mtimer::MTIMER<C> {
+    pub const fn mtimer(self) -> mtimer::MTIMER<C> {
         mtimer::MTIMER::new()
     }
 
     /// Returns `true` if a machine timer **OR** software interrupt is pending.
     #[inline]
-    pub fn is_interrupting(&self) -> bool {
+    pub fn is_interrupting(self) -> bool {
         self.mswi().is_interrupting() || self.mtimer().is_interrupting()
     }
 
     /// Returns `true` if machine timer **OR** software interrupts are enabled.
     #[inline]
-    pub fn is_enabled(&self) -> bool {
+    pub fn is_enabled(self) -> bool {
         self.mswi().is_enabled() || self.mtimer().is_enabled()
     }
 
@@ -77,14 +77,14 @@ impl<C: Clint> CLINT<C> {
     ///
     /// Enabling the `CLINT` may break mask-based critical sections.
     #[inline]
-    pub unsafe fn enable(&self) {
+    pub unsafe fn enable(self) {
         self.mswi().enable();
         self.mtimer().enable();
     }
 
     /// Disables machine timer **AND** software interrupts to prevent the CLINT from triggering interrupts.
     #[inline]
-    pub fn disable(&self) {
+    pub fn disable(self) {
         self.mswi().disable();
         self.mtimer().disable();
     }
