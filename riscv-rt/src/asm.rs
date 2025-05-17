@@ -226,8 +226,8 @@ cfg_global_asm!(
     // Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
     // Users can override this function by defining their own `_mp_hook`.
     // This function is only used when the `single-hart` feature is not enabled.
-    ".weak _mp_hook
-_mp_hook:
+    ".global _default_mp_hook
+_default_mp_hook:
     beqz a0, 2f // if hartid is 0, return true
 1:  wfi // Otherwise, wait for interrupt in a loop
     j 1b

@@ -31,6 +31,14 @@ PROVIDE(abort = _default_abort);
   _pre_init_trap defaults to _default_abort. Note that _pre_init_trap must be 4-byte aligned */
 PROVIDE(_pre_init_trap = _default_abort);
 
+/* Multi-processor hook function (for multi-core targets only). If no _mp_hook symbol
+   is provided, then _mp_hook maps to _default_mp_hook, which leaves HART 0 running while
+   the other HARTS stuck in a busy loop. Note that _default_mp_hook cannot be overwritten.
+   We use PROVIDE to avoid compilation errors in single hart targets, not to allow users
+   to overwrite the symbol. */
+PROVIDE(_default_mp_hook = abort);
+PROVIDE(_mp_hook = _default_mp_hook);
+
 /* Default trap entry point. If not _start_trap symbol is provided, then _start_trap maps to
    _default_start_trap, which saves caller saved registers, calls _start_trap_rust, restores
    caller saved registers and then returns. Note that _start_trap must be 4-byte aligned */
