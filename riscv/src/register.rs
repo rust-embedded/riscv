@@ -109,6 +109,9 @@ pub mod minstreth;
 mod mhpmeventx;
 pub use self::mhpmeventx::*;
 
+// Machine configuration
+pub mod mconfigptr;
+
 #[cfg(test)]
 mod tests;
 
