@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   they must enable the `pre-init` feature.
 - Deprecate `riscv_rt::pre_init` attribute macro. It is not sound to run Rust code before initializing the RAM.
   Instead, we recommend defining the `__pre_init` function with `core::arch::global_asm!`.
+- Replace weak definition of `_mp_hook` with `PROVIDE(_mp_hook = _default_mp_hook)`.
 
 ### Fixed
 
