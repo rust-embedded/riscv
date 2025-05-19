@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Write utilities for `mcycle`, `minstret`
 - Add `senvcfg` CSR
 - Add `scontext` CSR
+- Add `mconfigptr` CSR
+- Bump MSRV to 1.67.0 for `log` to `ilog` name change
 
 ### Changed
 
