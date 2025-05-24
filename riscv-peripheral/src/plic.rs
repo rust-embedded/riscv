@@ -193,8 +193,9 @@ pub(crate) mod test {
     #[test]
     fn check_plic() {
         crate::plic_codegen!(
+            PLIC,
             base 0x0C00_0000,
-            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2],
+            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
         );
 
         let plic = PLIC::new();

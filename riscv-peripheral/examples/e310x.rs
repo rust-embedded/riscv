@@ -79,15 +79,30 @@ pub enum Priority {
     P7 = 7,
 }
 
+// We can define CLINT::new() as a public, safe function
 riscv_peripheral::clint_codegen!(
+    pub CLINT,
     base 0x0200_0000,
     mtime_freq 32_768,
-    harts [HartId::H0 => 0],
+    harts [HartId::H0 => 0]
 );
 
+// We can define PLIC::new() as a private, safe function...
 riscv_peripheral::plic_codegen!(
+    PLIC,
     base 0x0C00_0000,
-    harts [HartId::H0 => 0],
+    harts [HartId::H0 => 0]
 );
 
-fn main() {}
+// ... and then implement a public, unsafe function to steal the PLIC instance
+// Usually, this function is implemented by svd2rust, but we do it manually here
+impl PLIC {
+    pub unsafe fn steal() -> Self {
+        PLIC::new()
+    }
+}
+
+fn main() {
+    let _clint = CLINT::new();
+    let _plic = unsafe { PLIC::steal() };
+}

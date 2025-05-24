@@ -99,9 +99,10 @@ pub(crate) mod test {
     fn check_clint() {
         // Call CLINT macro with a base address and a list of mtimecmps for easing access to per-HART mtimecmp regs.
         crate::clint_codegen!(
+            CLINT,
             base 0x0200_0000,
             mtime_freq 32_768,
-            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2],
+            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
         );
 
         let clint = CLINT::new();

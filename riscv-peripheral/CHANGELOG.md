@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rework of PLIC peripherals to use methods instead of associated functions.
   This change follows the `svd2rust` pattern, making the ecosystem more consistent.
 - Simplify `plic_codegen!` macro using the `Deref` trait.
+- Macros allow now to customize the struct name for CLINT and PLIC.
+- Macros allow now to customize the visibility of the `new` function for CLINT and PLIC.
 
 ### Removed
 

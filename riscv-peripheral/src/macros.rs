@@ -3,10 +3,13 @@
 pub use paste::paste;
 
 /// Macro to create interfaces to CLINT peripherals in PACs.
-/// The resulting struct will be named `CLINT`, and will provide safe access to the CLINT registers.
+/// The resulting struct will provide safe access to the CLINT registers.
 ///
-/// This macro expects 3 different argument types:
+/// This macro expects 5 different argument types:
 ///
+/// - Visibility (**MANDATORY**): visibility of the `fn new()` function for creating a new CLINT.
+///   It can be ``, `pub`, `pub(crate)`, or `pub(super)`. If empty, the function will be private.
+/// - Peripheral name (**MANDATORY**): name of the resulting CLINT peripheral.
 /// - Base address (**MANDATORY**): base address of the CLINT peripheral of the target.
 /// - MTIME Frequency (**MANDATORY**): clock frequency (in Hz) of the `MTIME` register.
 /// - HART map (**OPTIONAL**): a list of HART IDs and their corresponding numbers.
@@ -15,17 +18,17 @@ pub use paste::paste;
 ///
 /// # Example
 ///
-/// ## Mandatory fields only
+/// ## Mandatory fields only, public `fn new()` function
 ///
 /// ```
-/// riscv_peripheral::clint_codegen!(base 0x0200_0000, mtime_freq 32_768,); // do not forget the ending comma!
+/// riscv_peripheral::clint_codegen!(pub CLINT, base 0x0200_0000, mtime_freq 32_768);
 ///
-/// let clint = CLINT::new(); // Create a new CLINT peripheral
+/// let clint = CLINT::new(); // Create a new CLINT peripheral (new is public)
 /// let mswi = clint.mswi();     // MSWI peripheral
 /// let mtimer = clint.mtimer(); // MTIMER peripheral
 /// ```
 ///
-/// ## Base address and per-HART mtimecmp registers
+/// ## Base address and per-HART mtimecmp registers, private `fn new()` function
 ///
 /// ```
 /// use riscv_pac::result::{Error, Result};
@@ -36,12 +39,13 @@ pub use paste::paste;
 /// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
 ///
 /// riscv_peripheral::clint_codegen!(
+///     Clint,
 ///     base 0x0200_0000,
 ///     mtime_freq 32_768,
-///     harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2], // do not forget the ending comma!
+///     harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
 /// );
 ///
-/// let clint = CLINT::new(); // Create a new CLINT peripheral
+/// let clint = Clint::new(); // Create a new CLINT peripheral (new is private)
 /// let mswi = clint.mswi(); // MSWI peripheral
 /// let mtimer = clint.mtimer(); // MTIMER peripheral
 ///
@@ -55,30 +59,26 @@ pub use paste::paste;
 /// ```
 #[macro_export]
 macro_rules! clint_codegen {
-    () => {
-        #[allow(unused_imports)]
-        use CLINT as _; // assert that the CLINT struct is defined
-    };
-    (base $addr:literal, mtime_freq $freq:literal, $($tail:tt)*) => {
+    ($vis:vis $name:ident, base $addr:literal, mtime_freq $freq:literal) => {
         /// CLINT peripheral
         #[allow(clippy::upper_case_acronyms)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-        pub struct CLINT($crate::aclint::CLINT<Self>);
+        pub struct $name($crate::aclint::CLINT<Self>);
 
-        impl CLINT {
+        impl $name {
             /// Creates a new `CLINT` peripheral.
             #[inline]
-            pub const fn new() -> Self {
+            $vis const fn new() -> Self {
                 Self($crate::aclint::CLINT::new())
             }
         }
 
-        unsafe impl $crate::aclint::Clint for CLINT {
+        unsafe impl $crate::aclint::Clint for $name {
             const BASE: usize = $addr;
             const MTIME_FREQ: usize = $freq;
         }
 
-        impl core::ops::Deref for CLINT {
+        impl core::ops::Deref for $name {
             type Target = $crate::aclint::CLINT<Self>;
 
             #[inline]
@@ -86,30 +86,22 @@ macro_rules! clint_codegen {
                 &self.0
             }
         }
-
-        impl core::ops::DerefMut for CLINT {
-            #[inline]
-            fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.0
-            }
-        }
-
-        $crate::clint_codegen!($($tail)*);
     };
-    (harts [$($hart:expr => $num:literal),+], $($tail:tt)*) => {
+    ($vis:vis $name:ident, base $addr:literal, mtime_freq $freq:literal, harts [$($hart:expr => $num:literal),+]) => {
+        $crate::clint_codegen!($vis $name, base $addr, mtime_freq $freq);
         $crate::macros::paste! {
-            impl CLINT {
+            impl $name {
                 $(
-                    #[doc = "Returns the `msip` register for HART [`"]
-                    #[doc = stringify!($hart)]
-                    #[doc = "`]."]
+                    #[doc = "Returns the `msip` register for HART "]
+                    #[doc = stringify!($num)]
+                    #[doc = "."]
                     #[inline]
                     pub fn [<msip $num>](&self) -> $crate::aclint::mswi::MSIP {
                         self.mswi().msip($hart)
                     }
-                    #[doc = "Returns the `mtimecmp` register for HART [`"]
-                    #[doc = stringify!($hart)]
-                    #[doc = "`]."]
+                    #[doc = "Returns the `mtimecmp` register for HART "]
+                    #[doc = stringify!($num)]
+                    #[doc = "."]
                     #[inline]
                     pub fn [<mtimecmp $num>](&self) -> $crate::aclint::mtimer::MTIMECMP {
                         self.mtimer().mtimecmp($hart)
@@ -117,15 +109,17 @@ macro_rules! clint_codegen {
                 )*
             }
         }
-        $crate::clint_codegen!($($tail)*);
     };
 }
 
 /// Macro to create interfaces to PLIC peripherals in PACs.
 /// The resulting struct will be named `PLIC`, and will provide safe access to the PLIC registers.
 ///
-/// This macro expects 2 different argument types:
+/// This macro expects 4 different argument types:
 ///
+/// - Visibility (**MANDATORY**): visibility of the `fn new()` function for creating a new PLIC.
+///   It can be ``, `pub`, `pub(crate)`, or `pub(super)`. If empty, the function will be private.
+/// - Peripheral name (**MANDATORY**): name of the resulting PLIC peripheral.
 /// - Base address (**MANDATORY**): base address of the PLIC peripheral of the target.
 /// - HART map (**OPTIONAL**): a list of HART IDs and their corresponding numbers.
 ///
@@ -133,19 +127,19 @@ macro_rules! clint_codegen {
 ///
 /// # Example
 ///
-/// ## Base address only
+/// ## Base address only, public `fn new()` function
 ///
 /// ```
 /// use riscv_peripheral::clint_codegen;
 ///
-/// riscv_peripheral::plic_codegen!(base 0x0C00_0000,); // do not forget the ending comma!
+/// riscv_peripheral::plic_codegen!(pub PLIC, base 0x0C00_0000);
 ///
-/// let plic = PLIC::new(); // Create a new PLIC peripheral
+/// let plic = PLIC::new(); // Create a new PLIC peripheral (new is public)
 /// let priorities = plic.priorities(); // Priorities registers
 /// let pendings = plic.pendings();     // Pendings registers
 /// ```
 ///
-/// ## Base address and per-HART context proxies
+/// ## Base address and per-HART context proxies, private `fn new()` function
 ///
 /// ```
 /// use riscv_pac::result::{Error, Result};
@@ -156,11 +150,12 @@ macro_rules! clint_codegen {
 /// pub enum HartId { H0 = 0, H1 = 1, H2 = 2 }
 ///
 /// riscv_peripheral::plic_codegen!(
+///     Plic,
 ///     base 0x0C00_0000,
-///     harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2], // do not forget the ending comma!
+///     harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
 /// );
 ///
-/// let plic = PLIC::new(); // Create a new PLIC peripheral
+/// let plic = Plic::new(); // Create a new PLIC peripheral (new is private)
 /// let ctx0 = plic.ctx0(); // Context proxy for HART 0
 /// let ctx1 = plic.ctx1(); // Context proxy for HART 1
 /// let ctx2 = plic.ctx2(); // Context proxy for HART 2
@@ -171,29 +166,25 @@ macro_rules! clint_codegen {
 /// ```
 #[macro_export]
 macro_rules! plic_codegen {
-    () => {
-        #[allow(unused_imports)]
-        use PLIC as _; // assert that the PLIC struct is defined
-    };
-    (base $addr:literal, $($tail:tt)*) => {
+    ($vis:vis $name:ident, base $addr:literal) => {
         /// PLIC peripheral
         #[allow(clippy::upper_case_acronyms)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-        pub struct PLIC($crate::plic::PLIC<Self>);
+        pub struct $name($crate::plic::PLIC<Self>);
 
-        impl PLIC {
-            /// Creates a new `CLINT` peripheral.
+        impl $name {
+            /// Creates a new `PLIC` peripheral.
             #[inline]
-            pub const fn new() -> Self {
+            $vis const fn new() -> Self {
                 Self($crate::plic::PLIC::new())
             }
         }
 
-        unsafe impl $crate::plic::Plic for PLIC {
+        unsafe impl $crate::plic::Plic for $name {
             const BASE: usize = $addr;
         }
 
-        impl core::ops::Deref for PLIC {
+        impl core::ops::Deref for $name {
             type Target = $crate::plic::PLIC<Self>;
 
             #[inline]
@@ -201,23 +192,15 @@ macro_rules! plic_codegen {
                 &self.0
             }
         }
-
-        impl core::ops::DerefMut for PLIC {
-            #[inline]
-            fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.0
-            }
-        }
-
-        $crate::plic_codegen!($($tail)*);
     };
-    (harts [$($hart:expr => $num:literal),+], $($tail:tt)*) => {
+    ($vis:vis $name:ident, base $addr:literal, harts [$($hart:expr => $num:literal),+]) => {
+        $crate::plic_codegen!($vis $name, base $addr);
         $crate::macros::paste! {
-            impl PLIC {
+            impl $name {
                 $(
-                    #[doc = "Returns a PLIC context proxy for context of HART [`"]
-                    #[doc = stringify!($hart)]
-                    #[doc = "`]."]
+                    #[doc = "Returns a PLIC context proxy for context of HART "]
+                    #[doc = stringify!($num)]
+                    #[doc = "."]
                     #[inline]
                     pub fn [<ctx $num>](&self) -> $crate::plic::CTX<Self> {
                         self.ctx($hart)
@@ -225,6 +208,5 @@ macro_rules! plic_codegen {
                 )*
             }
         }
-        $crate::plic_codegen!($($tail)*);
     };
 }
