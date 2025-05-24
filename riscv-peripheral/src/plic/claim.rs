@@ -30,8 +30,8 @@ impl CLAIM {
 
 #[cfg(test)]
 mod test {
-    use super::super::test::Interrupt;
     use super::*;
+    use crate::test::Interrupt;
     use riscv_pac::InterruptNumber;
 
     #[test]

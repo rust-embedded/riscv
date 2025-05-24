@@ -177,6 +177,13 @@ bitwise_reg!(i128);
 bitwise_reg!(isize);
 
 /// Macro to provide atomic bit-wise operations to integer number registers.
+#[cfg(any(
+    target_has_atomic = "8",
+    target_has_atomic = "16",
+    target_has_atomic = "32",
+    target_has_atomic = "64",
+    target_has_atomic = "ptr"
+))]
 macro_rules! bitwise_atomic_reg {
     ($TYPE: ty, $ATOMIC: ty) => {
         impl<A: Read + Write> Reg<$TYPE, A> {

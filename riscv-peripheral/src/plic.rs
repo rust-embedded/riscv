@@ -11,6 +11,8 @@ pub mod threshold;
 // re-export useful riscv-pac traits
 pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
+use riscv::register::{mhartid, mie, mip};
+
 /// Trait for a PLIC peripheral.
 ///
 /// # Safety
@@ -43,26 +45,65 @@ impl<P: Plic> PLIC<P> {
 
     const PENDINGS_OFFSET: usize = 0x1000;
 
-    /// Returns the priorities register of the PLIC.
+    /// Creates a new `PLIC` peripheral.
+    #[inline]
+    pub const fn new() -> Self {
+        Self {
+            _marker: core::marker::PhantomData,
+        }
+    }
+
+    /// Returns `true` if a machine external interrupt is pending.
+    #[inline]
+    pub fn is_interrupting(self) -> bool {
+        mip::read().mext()
+    }
+
+    /// Returns true if machine external interrupts are enabled.
+    #[inline]
+    pub fn is_enabled(self) -> bool {
+        mie::read().mext()
+    }
+
+    /// Enables machine external interrupts to allow the PLIC to trigger interrupts.
+    ///
+    /// # Safety
+    ///
+    /// Enabling the `PLIC` may break mask-based critical sections.
+    #[inline]
+    pub unsafe fn enable(self) {
+        mie::set_mext();
+    }
+
+    /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.
+    #[inline]
+    pub fn disable(self) {
+        // SAFETY: it is safe to disable interrupts
+        unsafe { mie::clear_mext() };
+    }
+
+    /// Returns the [`PRIORITIES`](priorities::PRIORITIES) register of the PLIC.
+    ///
     /// This register allows to set the priority level of each interrupt source.
     /// The priority level of each interrupt source is shared among all the contexts.
     #[inline]
-    pub fn priorities() -> priorities::PRIORITIES {
+    pub const fn priorities(self) -> priorities::PRIORITIES {
         // SAFETY: valid address
         unsafe { priorities::PRIORITIES::new(P::BASE + Self::PRIORITIES_OFFSET) }
     }
 
-    /// Returns the pendings register of the PLIC.
+    /// Returns the [`PENDINGS`](pendings::PENDINGS) register of the PLIC.
+    ///
     /// This register allows to check if a particular interrupt source is pending.
     #[inline]
-    pub fn pendings() -> pendings::PENDINGS {
+    pub const fn pendings(self) -> pendings::PENDINGS {
         // SAFETY: valid address
         unsafe { pendings::PENDINGS::new(P::BASE + Self::PENDINGS_OFFSET) }
     }
 
     /// Returns a proxy to access to all the PLIC registers of a given HART context.
     #[inline]
-    pub fn ctx<H: HartIdNumber>(hart_id: H) -> CTX<P> {
+    pub fn ctx<H: HartIdNumber>(self, hart_id: H) -> CTX<P> {
         // SAFETY: valid context number
         unsafe { CTX::new(hart_id.number() as _) }
     }
@@ -71,11 +112,11 @@ impl<P: Plic> PLIC<P> {
     ///
     /// # Note
     ///
-    /// This function determines the current HART ID by reading the [`riscv::register::mhartid`] CSR.
+    /// This function determines the current HART ID by reading the [`mhartid`] CSR.
     /// Thus, it can only be used in M-mode. For S-mode, use [`PLIC::ctx`] instead.
     #[inline]
-    pub fn ctx_mhartid() -> CTX<P> {
-        let hart_id = riscv::register::mhartid::read();
+    pub fn ctx_mhartid(self) -> CTX<P> {
+        let hart_id = mhartid::read();
         // SAFETY: `hart_id` is valid for the target and is the current hart
         unsafe { CTX::new(hart_id as _) }
     }
@@ -145,155 +186,29 @@ impl<P: Plic> CTX<P> {
 
 #[cfg(test)]
 pub(crate) mod test {
-    use riscv_pac::result::{Error, Result};
-    use riscv_pac::{ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber};
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub(crate) enum Interrupt {
-        I1 = 1,
-        I2 = 2,
-        I3 = 3,
-        I4 = 4,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub(crate) enum Priority {
-        P0 = 0,
-        P1 = 1,
-        P2 = 2,
-        P3 = 3,
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub(crate) enum Context {
-        C0 = 0,
-        C1 = 1,
-        C2 = 2,
-    }
-
-    unsafe impl InterruptNumber for Interrupt {
-        const MAX_INTERRUPT_NUMBER: usize = Self::I4 as usize;
-
-        #[inline]
-        fn number(self) -> usize {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: usize) -> Result<Self> {
-            match number {
-                1 => Ok(Interrupt::I1),
-                2 => Ok(Interrupt::I2),
-                3 => Ok(Interrupt::I3),
-                4 => Ok(Interrupt::I4),
-                _ => Err(Error::InvalidVariant(number)),
-            }
-        }
-    }
-
-    unsafe impl ExternalInterruptNumber for Interrupt {}
-
-    unsafe impl PriorityNumber for Priority {
-        const MAX_PRIORITY_NUMBER: usize = Self::P3 as usize;
-
-        #[inline]
-        fn number(self) -> usize {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: usize) -> Result<Self> {
-            match number {
-                0 => Ok(Priority::P0),
-                1 => Ok(Priority::P1),
-                2 => Ok(Priority::P2),
-                3 => Ok(Priority::P3),
-                _ => Err(Error::InvalidVariant(number)),
-            }
-        }
-    }
-
-    unsafe impl HartIdNumber for Context {
-        const MAX_HART_ID_NUMBER: usize = Self::C2 as usize;
-
-        #[inline]
-        fn number(self) -> usize {
-            self as _
-        }
-
-        #[inline]
-        fn from_number(number: usize) -> Result<Self> {
-            match number {
-                0 => Ok(Context::C0),
-                1 => Ok(Context::C1),
-                2 => Ok(Context::C2),
-                _ => Err(Error::InvalidVariant(number)),
-            }
-        }
-    }
-
-    #[test]
-    fn check_interrupt_enum() {
-        assert_eq!(Interrupt::I1.number(), 1);
-        assert_eq!(Interrupt::I2.number(), 2);
-        assert_eq!(Interrupt::I3.number(), 3);
-        assert_eq!(Interrupt::I4.number(), 4);
-
-        assert_eq!(Interrupt::from_number(1), Ok(Interrupt::I1));
-        assert_eq!(Interrupt::from_number(2), Ok(Interrupt::I2));
-        assert_eq!(Interrupt::from_number(3), Ok(Interrupt::I3));
-        assert_eq!(Interrupt::from_number(4), Ok(Interrupt::I4));
-
-        assert_eq!(Interrupt::from_number(0), Err(Error::InvalidVariant(0)),);
-        assert_eq!(Interrupt::from_number(5), Err(Error::InvalidVariant(5)),);
-    }
-
-    #[test]
-    fn check_priority_enum() {
-        assert_eq!(Priority::P0.number(), 0);
-        assert_eq!(Priority::P1.number(), 1);
-        assert_eq!(Priority::P2.number(), 2);
-        assert_eq!(Priority::P3.number(), 3);
-
-        assert_eq!(Priority::from_number(0), Ok(Priority::P0));
-        assert_eq!(Priority::from_number(1), Ok(Priority::P1));
-        assert_eq!(Priority::from_number(2), Ok(Priority::P2));
-        assert_eq!(Priority::from_number(3), Ok(Priority::P3));
-
-        assert_eq!(Priority::from_number(4), Err(Error::InvalidVariant(4)),);
-    }
-
-    #[test]
-    fn check_context_enum() {
-        assert_eq!(Context::C0.number(), 0);
-        assert_eq!(Context::C1.number(), 1);
-        assert_eq!(Context::C2.number(), 2);
-
-        assert_eq!(Context::from_number(0), Ok(Context::C0));
-        assert_eq!(Context::from_number(1), Ok(Context::C1));
-        assert_eq!(Context::from_number(2), Ok(Context::C2));
-
-        assert_eq!(Context::from_number(3), Err(Error::InvalidVariant(3)),);
-    }
+    use crate::test::HartId;
+    use riscv_pac::HartIdNumber;
 
     #[allow(dead_code)]
     #[test]
     fn check_plic() {
         crate::plic_codegen!(
+            PLIC,
             base 0x0C00_0000,
-            ctxs [ctx0 = (Context::C0, "`C0`"), ctx1 = (Context::C1, "`C1`"), ctx2 = (Context::C2, "`C2`")],
+            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
         );
 
-        let priorities = PLIC::priorities();
-        let pendings = PLIC::pendings();
+        let plic = PLIC::new();
+        let priorities = plic.priorities();
+        let pendings = plic.pendings();
 
         assert_eq!(priorities.address(), 0x0C00_0000);
         assert_eq!(pendings.address(), 0x0C00_1000);
 
-        for i in 0..=Context::MAX_HART_ID_NUMBER {
-            let context = Context::from_number(i).unwrap();
+        for i in 0..=HartId::MAX_HART_ID_NUMBER {
+            let hart_id = HartId::from_number(i).unwrap();
 
-            let ctx = PLIC::ctx(context);
+            let ctx = plic.ctx(hart_id);
 
             assert_eq!(ctx.enables().address(), 0x0C00_0000 + 0x2000 + i * 0x80);
             assert_eq!(
@@ -306,8 +221,8 @@ pub(crate) mod test {
             );
         }
 
-        assert_eq!(PLIC::ctx0(), PLIC::ctx(Context::C0));
-        assert_eq!(PLIC::ctx1(), PLIC::ctx(Context::C1));
-        assert_eq!(PLIC::ctx2(), PLIC::ctx(Context::C2));
+        assert_eq!(plic.ctx0(), plic.ctx(HartId::H0));
+        assert_eq!(plic.ctx1(), plic.ctx(HartId::H1));
+        assert_eq!(plic.ctx2(), plic.ctx(HartId::H2));
     }
 }

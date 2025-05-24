@@ -35,8 +35,8 @@ impl THRESHOLD {
 
 #[cfg(test)]
 mod test {
-    use super::super::test::Priority;
     use super::*;
+    use crate::test::Priority;
 
     #[test]
     fn test_threshold() {
