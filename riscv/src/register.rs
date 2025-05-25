@@ -88,6 +88,7 @@ pub mod mcause;
 pub mod mepc;
 pub mod mip;
 pub mod mscratch;
+pub mod mtinst;
 pub mod mtval;
 
 // Machine Protection and Translation
