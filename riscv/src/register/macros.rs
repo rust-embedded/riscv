@@ -1007,13 +1007,13 @@ macro_rules! test_csr_field {
     // test a single bit field
     ($reg:ident, $field:ident) => {{
         $crate::paste! {
-            assert!(!$reg.$field());
+            let val = $reg.$field();
 
-            $reg.[<set_ $field>](true);
-            assert!($reg.$field());
+            $reg.[<set_ $field>](!val);
+            assert_eq!($reg.$field(), !val);
 
-            $reg.[<set_ $field>](false);
-            assert!(!$reg.$field());
+            $reg.[<set_ $field>](val);
+            assert_eq!($reg.$field(), val);
         }
     }};
 
@@ -1047,6 +1047,26 @@ macro_rules! test_csr_field {
             $reg.[<set_ $field>]($var);
             assert_eq!($reg.$field(), $var);
             assert_eq!($reg.[<try_ $field>](), Ok($var));
+        }
+    }};
+
+    // test a multi-bit bitfield
+    ($reg:ident, $field:ident: [$start:expr, $end:expr], $reset:expr) => {{
+        let bits = $reg.bits();
+
+        let shift = $end - $start + 1;
+        let mask = (1usize << shift) - 1;
+
+        let exp_val = (bits >> $start) & mask;
+
+        $crate::paste! {
+            assert_eq!($reg.$field(), exp_val);
+
+            $reg.[<set_ $field>]($reset);
+            assert_eq!($reg.$field(), $reset);
+
+            $reg.[<set_ $field>](exp_val);
+            assert_eq!($reg.$field(), exp_val);
         }
     }};
 }
