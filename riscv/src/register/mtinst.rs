@@ -64,3 +64,28 @@ read_write_csr_field! {
 
 set!(0x34a);
 clear!(0x34a);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mtinst() {
+        (1..=usize::BITS)
+            .map(|r| ((1u128 << r) - 1) as usize)
+            .for_each(|bits| {
+                let reset = 0;
+                let mut mtinst = Mtinst::from_bits(bits);
+
+                test_csr_field!(mtinst, opcode: [0, 6], reset);
+                test_csr_field!(mtinst, rd: [7, 11], reset);
+                test_csr_field!(mtinst, funct3: [12, 14], reset);
+                test_csr_field!(mtinst, address_offset: [15, 19], reset);
+                test_csr_field!(mtinst, rs2: [20, 24], reset);
+                test_csr_field!(mtinst, rl);
+                test_csr_field!(mtinst, aq);
+                test_csr_field!(mtinst, funct5: [27, 31], reset);
+                test_csr_field!(mtinst, funct7: [25, 31], reset);
+            });
+    }
+}

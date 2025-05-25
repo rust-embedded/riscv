@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Write utilities for `mcycle`, `minstret`
 - Add `senvcfg` CSR
 - Add `scontext` CSR
+- Add `mtinst` CSR
 
 ### Changed
 
