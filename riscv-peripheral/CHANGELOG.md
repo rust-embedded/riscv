@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.3.0] - 2025-06-10
+
 ### Changed
 
 - Rework of CLINT peripheral to use methods instead of associated functions.
