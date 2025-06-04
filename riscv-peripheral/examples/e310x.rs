@@ -1,36 +1,16 @@
 //! Peripheral definitions for the E310x chip.
+//!
 //! This is a simple example of how to use the `riscv-peripheral` crate to generate
 //! peripheral definitions for a target.
 
-use riscv_pac::{
-    result::{Error, Result},
-    ExternalInterruptNumber, HartIdNumber, InterruptNumber, PriorityNumber,
-};
-
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[riscv::pac_enum(unsafe HartIdNumber)]
 pub enum HartId {
     H0 = 0,
 }
 
-unsafe impl HartIdNumber for HartId {
-    const MAX_HART_ID_NUMBER: usize = Self::H0 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        match number {
-            0 => Ok(Self::H0),
-            _ => Err(Error::InvalidVariant(number)),
-        }
-    }
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(usize)]
+#[riscv::pac_enum(unsafe ExternalInterruptNumber)]
 pub enum Interrupt {
     WATCHDOG = 1,
     RTC = 2,
@@ -86,29 +66,8 @@ pub enum Interrupt {
     I2C0 = 52,
 }
 
-unsafe impl InterruptNumber for Interrupt {
-    const MAX_INTERRUPT_NUMBER: usize = Self::I2C0 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        if number == 0 || number > Self::MAX_INTERRUPT_NUMBER {
-            Err(Error::InvalidVariant(number))
-        } else {
-            // SAFETY: valid interrupt number
-            Ok(unsafe { core::mem::transmute::<usize, Interrupt>(number) })
-        }
-    }
-}
-
-unsafe impl ExternalInterruptNumber for Interrupt {}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(usize)]
+#[riscv::pac_enum(unsafe PriorityNumber)]
 pub enum Priority {
     P0 = 0,
     P1 = 1,
@@ -120,87 +79,30 @@ pub enum Priority {
     P7 = 7,
 }
 
-unsafe impl PriorityNumber for Priority {
-    const MAX_PRIORITY_NUMBER: usize = Self::P7 as usize;
-
-    #[inline]
-    fn number(self) -> usize {
-        self as _
-    }
-
-    #[inline]
-    fn from_number(number: usize) -> Result<Self> {
-        if number > Self::MAX_PRIORITY_NUMBER {
-            Err(Error::InvalidVariant(number))
-        } else {
-            // SAFETY: valid priority number
-            Ok(unsafe { core::mem::transmute::<usize, Priority>(number) })
-        }
-    }
-}
-
-#[cfg(feature = "aclint-hal-async")]
+// We can define CLINT::new() as a public, safe function
 riscv_peripheral::clint_codegen!(
+    pub CLINT,
     base 0x0200_0000,
-    freq 32_768,
-    async_delay,
-    mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
-    msips [msip0=(HartId::H0,"`H0`")],
+    mtime_freq 32_768,
+    harts [HartId::H0 => 0]
 );
 
-#[cfg(not(feature = "aclint-hal-async"))]
-riscv_peripheral::clint_codegen!(
-    base 0x0200_0000,
-    freq 32_768,
-    mtimecmps [mtimecmp0=(HartId::H0,"`H0`")],
-    msips [msip0=(HartId::H0,"`H0`")],
-);
-
+// We can define PLIC::new() as a private, safe function...
 riscv_peripheral::plic_codegen!(
+    PLIC,
     base 0x0C00_0000,
-    ctxs [ctx0=(HartId::H0,"`H0`")],
+    harts [HartId::H0 => 0]
 );
 
-#[cfg(feature = "aclint-hal-async")]
-/// extern functions needed by the `riscv-peripheral` crate for the `async` feature.
-///
-/// # Note
-///
-/// The functionality in this module is just to illustrate how to enable the `async` feature
-/// The timer queue used here, while functional, is unsound and should not be used in production.
-/// In this case, you should protect the timer queue with a mutex or critical section.
-/// For a more robust implementation, use proper timer queues such as the ones provided by `embassy-time`
-mod async_no_mangle {
-    use super::CLINT;
-    use heapless::binary_heap::{BinaryHeap, Min};
-    use riscv_peripheral::{aclint::mtimer::MTIMER, hal_async::aclint::Timer};
-
-    const N_TIMERS: usize = 16;
-    static mut TIMER_QUEUE: BinaryHeap<Timer, Min, N_TIMERS> = BinaryHeap::new();
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_mtimer() -> MTIMER {
-        CLINT::mtimer()
-    }
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_push_timer(t: Timer) -> Result<(), Timer> {
-        unsafe { TIMER_QUEUE.push(t) }
-    }
-
-    #[no_mangle]
-    fn _riscv_peripheral_aclint_wake_timers(current_tick: u64) -> Option<u64> {
-        let mut next_expires = None;
-        while let Some(t) = unsafe { TIMER_QUEUE.peek() } {
-            if t.expires() > current_tick {
-                next_expires = Some(t.expires());
-                break;
-            }
-            let t = unsafe { TIMER_QUEUE.pop() }.unwrap();
-            t.waker().wake_by_ref();
-        }
-        next_expires
+// ... and then implement a public, unsafe function to steal the PLIC instance
+// Usually, this function is implemented by svd2rust, but we do it manually here
+impl PLIC {
+    pub unsafe fn steal() -> Self {
+        PLIC::new()
     }
 }
 
-fn main() {}
+fn main() {
+    let _clint = CLINT::new();
+    let _plic = unsafe { PLIC::steal() };
+}

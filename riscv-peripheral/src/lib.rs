@@ -1,9 +1,4 @@
 //! Standard RISC-V peripherals for embedded systems written in Rust.
-//!
-//! ## Features
-//!
-//! - `aclint-hal-async`: enables the [`hal_async::delay::DelayNs`] implementation for the ACLINT peripheral.
-//!   This feature relies on external functions that must be provided by the user. See [`hal_async::aclint`] for more information.
 
 #![deny(missing_docs)]
 #![no_std]
@@ -13,9 +8,36 @@ pub use riscv_pac::result; // re-export the result module
 
 pub mod common; // common definitions for all peripherals
 pub mod hal; // trait implementations for embedded-hal
-#[cfg(feature = "embedded-hal-async")]
-pub mod hal_async; // async trait implementations for embedded-hal
 pub mod macros; // macros for easing the definition of peripherals in PACs
 
 pub mod aclint; // ACLINT and CLINT peripherals
 pub mod plic; // PLIC peripheral
+
+#[cfg(test)]
+mod test {
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[riscv::pac_enum(unsafe ExternalInterruptNumber)]
+    pub(crate) enum Interrupt {
+        I1 = 1,
+        I2 = 2,
+        I3 = 3,
+        I4 = 4,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[riscv::pac_enum(unsafe PriorityNumber)]
+    pub(crate) enum Priority {
+        P0 = 0,
+        P1 = 1,
+        P2 = 2,
+        P3 = 3,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    #[riscv::pac_enum(unsafe HartIdNumber)]
+    pub(crate) enum HartId {
+        H0 = 0,
+        H1 = 1,
+        H2 = 2,
+    }
+}
