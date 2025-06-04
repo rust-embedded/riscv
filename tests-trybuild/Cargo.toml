@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-riscv = { path = "../riscv", version = "0.13.0" }
-riscv-rt = { path = "../riscv-rt", version = "0.14.0", features = ["no-exceptions", "no-interrupts"]}
+riscv = { path = "../riscv" }
+riscv-rt = { path = "../riscv-rt", features = ["no-exceptions", "no-interrupts"] }
 trybuild = "1.0"
 
 [features]

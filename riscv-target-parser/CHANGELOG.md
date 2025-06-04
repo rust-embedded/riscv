@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.2] - 2025-06-04
+
 ### Fixed
 
 - Fix links to URLs in docs

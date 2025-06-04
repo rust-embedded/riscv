@@ -1,6 +1,6 @@
 [package]
 name = "riscv-peripheral"
-version = "0.3.0-rc.1"
+version = "0.3.0"
 edition = "2021"
 rust-version = "1.75"
 repository = "https://github.com/rust-embedded/riscv"
@@ -16,7 +16,7 @@ license = "ISC"
 [dependencies]
 embedded-hal = "1.0.0"
 paste = "1.0"
-riscv = { path = "../riscv", version = "0.13.0" }
+riscv = { path = "../riscv", version = "0.14.0" }
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 
 [package.metadata.docs.rs]

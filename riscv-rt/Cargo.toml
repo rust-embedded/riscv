@@ -1,7 +1,7 @@
 [package]
 name = "riscv-rt"
-version = "0.14.0"
-rust-version = "1.61"
+version = "0.15.0"
+rust-version = "1.67"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "no-std"]
@@ -21,12 +21,12 @@ targets = [
 ]
 
 [build-dependencies]
-riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.0" }
+riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
 
 [dependencies]
-riscv = { path = "../riscv", version = "0.13.0" }
+riscv = { path = "../riscv", version = "0.14.0" }
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
-riscv-rt-macros = { path = "macros", version = "0.4.0" }
+riscv-rt-macros = { path = "macros", version = "0.5.0" }
 
 [dev-dependencies]
 panic-halt = "1.0.0"
