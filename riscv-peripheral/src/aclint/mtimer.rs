@@ -56,6 +56,12 @@ impl<M: Mtimer> MTIMER<M> {
         M::MTIMECMP_BASE as *const u64
     }
 
+    /// Returns the clock frequency of the `MTIME` register.
+    #[inline]
+    pub const fn mtime_freq(self) -> usize {
+        M::MTIME_FREQ
+    }
+
     /// Returns `true` if a machine timer interrupt is pending.
     #[inline]
     pub fn is_interrupting(self) -> bool {
