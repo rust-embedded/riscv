@@ -90,6 +90,7 @@ pub mod mip;
 pub mod mscratch;
 pub mod mtinst;
 pub mod mtval;
+pub mod mtval2;
 
 // Machine Protection and Translation
 mod pmpcfgx;
