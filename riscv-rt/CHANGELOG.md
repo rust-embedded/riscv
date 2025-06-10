@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.15.0] - 2025-06-10
+
 ### Added
 
 - New `device` feature to include `device.x` in `link.x`. This feature is based
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Bump MSRV to 1.67
 - Linker file now refers to standard exceptions and interrupts only when the
   `no-exceptions` and `no-interrupts` features are disabled, respectively.
   This is achieved by substituting `${INCLUDE_LINKER_FILES}` with the contents

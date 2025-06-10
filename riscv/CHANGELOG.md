@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.14.0] - 2025-06-10
+
 ### Added
 
 - CSR helper macro `write_composite_csr` for writing 64-bit CSRs on 32-bit targets.
