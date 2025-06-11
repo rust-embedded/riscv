@@ -217,7 +217,8 @@ cfg_global_asm!(
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
     addi sp, sp, 8 * 4",
-    "jal zero, main
+    "la t0, main
+    jr t0
     .cfi_endproc",
 );
 

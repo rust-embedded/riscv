@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Main function no longer needs to be close to _start. A linker script may copy
+  all code to RAM and keep .init in flash/ROM.
+
 ## [v0.15.0] - 2025-06-10
 
 ### Added
