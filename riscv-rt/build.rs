@@ -11,6 +11,15 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
     let mut content = fs::read_to_string("link.x.in")?;
     content = content.replace("${ARCH_WIDTH}", &arch_width.to_string());
 
+    // Single core devices can use the entire stack, no need to limit it.
+    let hart_stack_size = if env::var_os("CARGO_FEATURE_SINGLE_HART").is_some() {
+        "SIZEOF(.stack)"
+    } else {
+        "2K"
+    };
+
+    content = content.replace("${HART_STACK_SIZE}", hart_stack_size);
+
     // Get target-dependent linker configuration and replace ${INCLUDE_LINKER_FILES} with it
     let mut include_content = String::new();
 
