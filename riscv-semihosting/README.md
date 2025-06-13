@@ -35,12 +35,12 @@ While `riscv-semihosting` is a good starting point for developing semihosted app
 
 # Minimum Supported Rust Version (MSRV)
 
-This crate is guaranteed to compile on stable Rust 1.60.0 and up. It **won't**
+This crate is guaranteed to compile on stable Rust 1.85.0 and up. It **won't**
 compile with older versions.
 
 ## License
 
-Copyright 2018-2023 [RISC-V team][team]
+Copyright 2018-2025 [RISC-V team][team]
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted, provided that the above copyright notice
