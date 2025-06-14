@@ -202,7 +202,7 @@ pub mod nr;
 /// [semihosting operation]: https://developer.arm.com/documentation/dui0471/i/semihosting/semihosting-operations?lang=en
 #[inline(always)]
 pub unsafe fn syscall<T>(nr: usize, arg: &T) -> usize {
-    syscall1(nr, arg as *const T as usize)
+    unsafe { syscall1(nr, arg as *const T as usize) }
 }
 
 /// Performs a semihosting operation, takes one integer as an argument
@@ -221,7 +221,8 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
             // it will be treated as a regular break, hence the norvc option.
             //
             // See https://github.com/riscv/riscv-semihosting-spec for more details.
-            asm!("
+            unsafe {
+                asm!("
                 .balign 16
                 .option push
                 .option norvc
@@ -230,10 +231,11 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
                 srai x0, x0, 0x7
                 .option pop
             ",
-            inout("a0") nr,
-            inout("a1") arg => _,
-            options(nostack, preserves_flags),
-            );
+                inout("a0") nr,
+                inout("a1") arg => _,
+                options(nostack, preserves_flags),
+                )
+            };
             nr
         }
         #[cfg(all(riscv, feature = "no-semihosting"))]
