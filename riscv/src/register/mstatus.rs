@@ -389,8 +389,8 @@ set_clear_csr!(
 #[inline]
 pub unsafe fn set_ube(endianness: Endianness) {
     match endianness {
-        Endianness::BigEndian => _set(1 << 6),
-        Endianness::LittleEndian => _clear(1 << 6),
+        Endianness::BigEndian => unsafe { _set(1 << 6) },
+        Endianness::LittleEndian => unsafe { _clear(1 << 6) },
     }
 }
 
@@ -398,36 +398,36 @@ pub unsafe fn set_ube(endianness: Endianness) {
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {
     match spp {
-        SPP::Supervisor => _set(1 << 8),
-        SPP::User => _clear(1 << 8),
+        SPP::Supervisor => unsafe { _set(1 << 8) },
+        SPP::User => unsafe { _clear(1 << 8) },
     }
 }
 
 /// Machine Previous Privilege Mode
 #[inline]
 pub unsafe fn set_mpp(mpp: MPP) {
-    let mut value = _read();
+    let mut value = unsafe { _read() };
     value &= !(0x3 << 11); // clear previous value
     value |= (mpp as usize) << 11;
-    _write(value);
+    unsafe { _write(value) };
 }
 
 /// Floating-point extension state
 #[inline]
 pub unsafe fn set_fs(fs: FS) {
-    let mut value = _read();
+    let mut value = unsafe { _read() };
     value &= !(0x3 << 13); // clear previous value
     value |= (fs as usize) << 13;
-    _write(value);
+    unsafe { _write(value) };
 }
 
 /// Vector extension state
 #[inline]
 pub unsafe fn set_vs(vs: VS) {
-    let mut value = _read();
+    let mut value = unsafe { _read() };
     value &= !(0x3 << 9); // clear previous value
     value |= (vs as usize) << 9;
-    _write(value);
+    unsafe { _write(value) };
 }
 
 /// Set S-mode non-instruction-fetch memory endianness
@@ -439,11 +439,11 @@ pub unsafe fn set_vs(vs: VS) {
 pub unsafe fn set_sbe(endianness: Endianness) {
     match () {
         #[cfg(riscv32)]
-        () => super::mstatush::set_sbe(endianness),
+        () => unsafe { super::mstatush::set_sbe(endianness) },
         #[cfg(not(riscv32))]
         () => match endianness {
-            Endianness::BigEndian => _set(1 << 36),
-            Endianness::LittleEndian => _clear(1 << 36),
+            Endianness::BigEndian => unsafe { _set(1 << 36) },
+            Endianness::LittleEndian => unsafe { _clear(1 << 36) },
         },
     }
 }
@@ -457,11 +457,11 @@ pub unsafe fn set_sbe(endianness: Endianness) {
 pub unsafe fn set_mbe(endianness: Endianness) {
     match () {
         #[cfg(riscv32)]
-        () => super::mstatush::set_mbe(endianness),
+        () => unsafe { super::mstatush::set_mbe(endianness) },
         #[cfg(not(riscv32))]
         () => match endianness {
-            Endianness::BigEndian => _set(1 << 37),
-            Endianness::LittleEndian => _clear(1 << 37),
+            Endianness::BigEndian => unsafe { _set(1 << 37) },
+            Endianness::LittleEndian => unsafe { _clear(1 << 37) },
         },
     }
 }
