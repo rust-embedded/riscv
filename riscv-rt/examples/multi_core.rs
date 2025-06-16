@@ -7,7 +7,7 @@ use riscv::asm::wfi;
 use riscv::register::{mie, mip};
 use riscv_rt::entry;
 
-#[export_name = "_mp_hook"]
+#[unsafe(export_name = "_mp_hook")]
 #[rustfmt::skip]
 pub extern "Rust" fn user_mp_hook(hartid: usize) -> bool {
     if hartid == 0 {
