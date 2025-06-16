@@ -265,7 +265,7 @@ macro_rules! peripheral {
             #[inline]
             pub const unsafe fn new(address: usize) -> Self {
                 Self {
-                    register: $crate::common::Reg::new(address as _),
+                    register: unsafe { $crate::common::Reg::new(address as _) },
                 }
             }
         }

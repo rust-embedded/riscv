@@ -81,7 +81,7 @@ impl<M: Mtimer> MTIMER<M> {
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable(self) {
-        mie::set_mtimer();
+        unsafe { mie::set_mtimer() };
     }
 
     /// Disables machine timer interrupts in the current HART.
