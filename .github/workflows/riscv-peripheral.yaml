@@ -11,8 +11,8 @@ jobs:
   build-riscv:
     strategy:
       matrix:
-        # All generated code should be running on stable now, MRSV is 1.75.0
-        toolchain: [ stable, nightly, 1.75.0 ]
+        # All generated code should be running on stable now, MRSV is 1.85.0
+        toolchain: [ stable, nightly, 1.85.0 ]
         target:
           - riscv32i-unknown-none-elf
           - riscv32imc-unknown-none-elf
