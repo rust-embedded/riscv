@@ -81,7 +81,7 @@ pub unsafe fn set<I: CoreInterruptNumber, E: ExceptionNumber>(cause: Trap<I, E>)
         }
         Trap::Exception(e) => e.number(),
     };
-    _write(bits);
+    unsafe { _write(bits) };
 }
 
 #[cfg(test)]

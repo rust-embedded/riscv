@@ -3,8 +3,8 @@ use crate::{
     register::{scause, sepc, sstatus},
 };
 use riscv_pac::{
-    result::{Error, Result},
     CoreInterruptNumber, ExceptionNumber, InterruptNumber,
+    result::{Error, Result},
 };
 
 /// Interrupt
@@ -102,7 +102,7 @@ pub fn disable() {
 /// Do not call this function inside a critical section.
 #[inline]
 pub unsafe fn enable() {
-    sstatus::set_sie()
+    unsafe { sstatus::set_sie() }
 }
 
 /// Retrieves the cause of a trap in the current hart (supervisor mode).
@@ -173,7 +173,7 @@ where
     let sepc = sepc::read();
 
     // enable interrupts to allow nested interrupts
-    enable();
+    unsafe { enable() };
 
     let r = f();
 
@@ -185,10 +185,12 @@ where
 
     // Restore SSTATUS.SPIE, SSTATUS.SPP, and SEPC
     if sstatus.spie() {
-        sstatus::set_spie();
+        unsafe { sstatus::set_spie() };
     }
-    sstatus::set_spp(sstatus.spp());
-    sepc::write(sepc);
+    unsafe {
+        sstatus::set_spp(sstatus.spp());
+        sepc::write(sepc);
+    }
 
     r
 }

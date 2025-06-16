@@ -6,5 +6,5 @@ write_csr!(0x143);
 /// Writes the CSR
 #[inline]
 pub unsafe fn write(bits: usize) {
-    _write(bits)
+    unsafe { _write(bits) }
 }
