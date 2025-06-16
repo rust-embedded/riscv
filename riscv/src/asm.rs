@@ -6,7 +6,7 @@ macro_rules! instruction {
         #[inline(always)]
         pub unsafe fn $fnname() {
             #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-            core::arch::asm!($asm, $($options)*);
+            unsafe { core::arch::asm!($asm, $($options)*) };
             #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
             unimplemented!();
         }

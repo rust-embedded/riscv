@@ -91,7 +91,7 @@ read_write_csr_field! {
 #[inline]
 #[cfg(target_pointer_width = "32")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    try_set(mode, asid, ppn).unwrap();
+    unsafe { try_set(mode, asid, ppn) }.unwrap();
 }
 
 /// Attempts to set the register to corresponding page table mode, physical page number and address space id.
@@ -112,7 +112,7 @@ pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
         })
     } else {
         let bits = (mode as usize) << 31 | (asid << 22) | ppn;
-        _try_write(bits)
+        unsafe { _try_write(bits) }
     }
 }
 
@@ -125,7 +125,7 @@ pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
 #[inline]
 #[cfg(target_pointer_width = "64")]
 pub unsafe fn set(mode: Mode, asid: usize, ppn: usize) {
-    try_set(mode, asid, ppn).unwrap()
+    unsafe { try_set(mode, asid, ppn) }.unwrap();
 }
 
 /// Attempts to set the register to corresponding page table mode, physical page number and address space id.
@@ -146,7 +146,7 @@ pub unsafe fn try_set(mode: Mode, asid: usize, ppn: usize) -> Result<()> {
         })
     } else {
         let bits = ((mode as usize) << 60) | (asid << 44) | ppn;
-        _try_write(bits)
+        unsafe { _try_write(bits) }
     }
 }
 

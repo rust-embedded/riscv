@@ -3,8 +3,8 @@ use crate::{
     register::{mcause, mepc, mstatus},
 };
 use riscv_pac::{
-    result::{Error, Result},
     CoreInterruptNumber, ExceptionNumber, InterruptNumber,
+    result::{Error, Result},
 };
 
 /// Standard M-mode RISC-V interrupts
@@ -110,7 +110,7 @@ pub fn disable() {
 /// Do not call this function inside a critical section.
 #[inline]
 pub unsafe fn enable() {
-    mstatus::set_mie()
+    unsafe { mstatus::set_mie() }
 }
 
 /// Retrieves the cause of a trap in the current hart (machine mode).
@@ -181,7 +181,7 @@ where
     let mepc = mepc::read();
 
     // enable interrupts to allow nested interrupts
-    enable();
+    unsafe { enable() };
 
     let r = f();
 
@@ -193,10 +193,12 @@ where
 
     // Restore MSTATUS.PIE, MSTATUS.MPP, and SEPC
     if mstatus.mpie() {
-        mstatus::set_mpie();
+        unsafe { mstatus::set_mpie() };
     }
-    mstatus::set_mpp(mstatus.mpp());
-    mepc::write(mepc);
+    unsafe {
+        mstatus::set_mpp(mstatus.mpp());
+        mepc::write(mepc);
+    };
 
     r
 }

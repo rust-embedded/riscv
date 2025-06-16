@@ -4,10 +4,10 @@ use quote::quote;
 use std::collections::HashMap;
 use std::str::FromStr;
 use syn::{
+    Data, DeriveInput, Ident, Token,
     parse::{Parse, ParseStream},
     parse_macro_input,
     spanned::Spanned,
-    Data, DeriveInput, Ident, Token,
 };
 
 /// Struct to represent a function parameter.
@@ -275,7 +275,7 @@ impl PacEnumItem {
             _ => {
                 return quote!(compile_error!(
                     "RISCV_MTVEC_ALIGN is not a power of 2 (minimum 4)"
-                ))
+                ));
             }
         };
         let mut asm = format!(
@@ -373,28 +373,28 @@ core::arch::global_asm!("
             // Push the interrupt handler functions and the interrupt array
             res.push(quote! {
                 #cfg_v_trap
-                extern "C" {
+                unsafe extern "C" {
                     #(#handlers;)*
                 }
 
                 #cfg_v_trap
                 #[doc(hidden)]
-                #[no_mangle]
+                #[unsafe(no_mangle)]
                 pub static #vector_table: [Option<unsafe extern "C" fn(#(#array_signature),*)>; #max_discriminant + 1] = [
                     #(#interrupt_array),*
                 ];
 
                 #cfg_v_trap
                 #[inline]
-                #[no_mangle]
+                #[unsafe(no_mangle)]
                 unsafe extern "C" fn #dispatch_fn_name(#(#dispatch_fn_args),*) {
-                    extern "C" {
+                    unsafe extern "C" {
                         fn #default_handler(#(#extern_signature),*);
                     }
 
                     match #vector_table.get(code) {
-                        Some(Some(handler)) => handler(#(#handler_input),*),
-                        _ => #default_handler(#(#handler_input),*),
+                        Some(Some(handler)) => unsafe { handler(#(#handler_input),*) },
+                        _ => unsafe { #default_handler(#(#handler_input),*) },
                     }
                 }
             });

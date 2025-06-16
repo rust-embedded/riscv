@@ -5,4 +5,4 @@
 //! S-mode is implemented or not
 
 read_csr_as_usize!(0xC02);
-read_composite_csr!(super::instreth::read(), read());
+read_composite_csr!(super::instreth::read, read);
