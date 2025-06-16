@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Update to Rust edition 2024 (MSRV 1.85)
+
 ## [v0.15.0] - 2025-06-10
 
 ### Added
