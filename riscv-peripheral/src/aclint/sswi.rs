@@ -55,7 +55,7 @@ impl<S: Sswi> SSWI<S> {
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable(self) {
-        sie::set_ssoft();
+        unsafe { sie::set_ssoft() };
     }
 
     /// Disables supervisor software interrupts in the current HART.

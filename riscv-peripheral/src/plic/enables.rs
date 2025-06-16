@@ -1,6 +1,6 @@
 //! Interrupt enables register of a PLIC context.
 
-use crate::common::{Reg, RW};
+use crate::common::{RW, Reg};
 use riscv_pac::ExternalInterruptNumber;
 
 /// Enables register of a PLIC context.
@@ -77,7 +77,7 @@ impl ENABLES {
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
-        reg.atomic_set_bit(source % u32::BITS as usize, order);
+        unsafe { reg.atomic_set_bit(source % u32::BITS as usize, order) };
     }
 
     /// Disables an interrupt source for the PLIC context.
@@ -115,7 +115,7 @@ impl ENABLES {
         let offset = (source / u32::BITS as usize) as _;
         // SAFETY: valid interrupt number
         let reg: Reg<u32, RW> = unsafe { Reg::new(self.ptr.offset(offset)) };
-        reg.atomic_clear_bit(source % u32::BITS as usize, order);
+        unsafe { reg.atomic_clear_bit(source % u32::BITS as usize, order) };
     }
 
     /// Enables all the external interrupt sources for the PLIC context.

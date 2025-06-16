@@ -78,8 +78,10 @@ impl<C: Clint> CLINT<C> {
     /// Enabling the `CLINT` may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable(self) {
-        self.mswi().enable();
-        self.mtimer().enable();
+        unsafe {
+            self.mswi().enable();
+            self.mtimer().enable();
+        }
     }
 
     /// Disables machine timer **AND** software interrupts to prevent the CLINT from triggering interrupts.
