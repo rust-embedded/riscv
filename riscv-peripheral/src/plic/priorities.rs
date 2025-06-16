@@ -1,6 +1,6 @@
 //! Interrupts Priorities register.
 
-use crate::common::{Reg, RW};
+use crate::common::{RW, Reg};
 use riscv_pac::{ExternalInterruptNumber, PriorityNumber};
 
 /// Interrupts priorities register.
