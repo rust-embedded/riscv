@@ -43,5 +43,5 @@ pub enum Exception {
 }
 
 #[cfg(feature = "pre-init")]
-#[cfg_attr(feature = "pre-init", riscv_rt::pre_init)]
+#[riscv_rt::pre_init]
 unsafe fn pre_init() {}
