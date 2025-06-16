@@ -37,6 +37,10 @@ jobs:
     strategy:
       matrix:
         toolchain: [ stable, nightly ]
+        include:
+          # Nightly is only for reference and allowed to fail
+          - toolchain: nightly
+            experimental: true
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
