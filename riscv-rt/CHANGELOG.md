@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Update to Rust edition 2024 (MSRV 1.85)
 - Main function no longer needs to be close to _start. A linker script may copy
   all code to RAM and keep .init in flash/ROM.
 - By default, the stack is now split into equal parts based on the number of
