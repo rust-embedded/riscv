@@ -1,4 +1,5 @@
 #![deny(warnings)]
+#![allow(clippy::collapsible_if)] // to avoid warnings in Nightly builds
 
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
