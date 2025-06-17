@@ -88,16 +88,22 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         };
     }
     #[cfg(feature = "u-boot")]
-    if let Some(argument) = f.sig.inputs.get(0) {
-        if let Some(message) = check_argument_type(argument, "c_int") {
-            return message;
-        }
+    if let Some(message) = f
+        .sig
+        .inputs
+        .get(0)
+        .and_then(|argument| check_argument_type(argument, "c_int"))
+    {
+        return message;
     }
     #[cfg(feature = "u-boot")]
-    if let Some(argument) = f.sig.inputs.get(1) {
-        if let Some(message) = check_argument_type(argument, "*const *const c_char") {
-            return message;
-        }
+    if let Some(message) = f
+        .sig
+        .inputs
+        .get(1)
+        .and_then(|argument| check_argument_type(argument, "*const *const c_char"))
+    {
+        return message;
     }
 
     // check the function signature
