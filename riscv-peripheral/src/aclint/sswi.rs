@@ -71,6 +71,19 @@ impl<S: Sswi> SSWI<S> {
         // SAFETY: `hart_id` is valid for the target
         unsafe { SETSSIP::new(self.as_ptr().add(hart_id.number()) as _) }
     }
+
+    /// Returns the `SETSSIP` register for HART 0.
+    ///
+    /// # Note
+    ///
+    /// According to the RISC-V specification, HART 0 is mandatory.
+    /// Thus, this function is specially useful in single-HART mode, where HART 0 is the only HART available.
+    /// In multi-HART mode, it is recommended to use [`SSWI::setssip`] instead.
+    #[inline]
+    pub const fn setssip0(self) -> SETSSIP {
+        // SAFETY: HART 0 is mandatory
+        unsafe { SETSSIP::new(S::BASE) }
+    }
 }
 
 unsafe_peripheral!(SETSSIP, u32, RW);

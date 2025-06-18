@@ -105,6 +105,19 @@ impl<M: Mtimer> MTIMER<M> {
         unsafe { MTIMECMP::new(self.mtimecmp_as_ptr().add(hart_id.number()) as _) }
     }
 
+    /// Returns the `MTIMECMP` register for HART 0.
+    ///
+    /// # Note
+    ///
+    /// According to the RISC-V specification, HART 0 is mandatory.
+    /// Thus, this function is specially useful in single-HART mode, where HART 0 is the only HART available.
+    /// In multi-HART mode, it is recommended to use [`MTIMER::mtimecmp`] or [`MTIMER::mtimecmp_mhartid`] instead.
+    #[inline]
+    pub const fn mtimecmp0(self) -> MTIMECMP {
+        // SAFETY: HART 0 is mandatory
+        unsafe { MTIMECMP::new(M::MTIMECMP_BASE) }
+    }
+
     /// Returns the `MTIMECMP` register for the current HART.
     ///
     /// # Note
