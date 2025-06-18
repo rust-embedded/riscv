@@ -72,7 +72,7 @@ impl<P: Plic> PLIC<P> {
     /// Enabling the `PLIC` may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable(self) {
-        mie::set_mext();
+        unsafe { mie::set_mext() };
     }
 
     /// Disables machine external interrupts to prevent the PLIC from triggering interrupts.

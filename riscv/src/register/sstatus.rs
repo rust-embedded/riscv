@@ -132,18 +132,18 @@ set_clear_csr!(
 #[inline]
 pub unsafe fn set_spp(spp: SPP) {
     match spp {
-        SPP::Supervisor => _set(1 << 8),
-        SPP::User => _clear(1 << 8),
+        SPP::Supervisor => unsafe { _set(1 << 8) },
+        SPP::User => unsafe { _clear(1 << 8) },
     }
 }
 
 /// The status of the floating-point unit
 #[inline]
 pub unsafe fn set_fs(fs: FS) {
-    let mut value = _read();
+    let mut value = unsafe { _read() };
     value &= !(0x3 << 13); // clear previous value
     value |= (fs as usize) << 13;
-    _write(value);
+    unsafe { _write(value) };
 }
 
 #[cfg(test)]

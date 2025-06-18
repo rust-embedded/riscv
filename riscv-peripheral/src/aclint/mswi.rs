@@ -64,7 +64,7 @@ impl<M: Mswi> MSWI<M> {
     /// Enabling interrupts may break mask-based critical sections.
     #[inline]
     pub unsafe fn enable(self) {
-        mie::set_msoft();
+        unsafe { mie::set_msoft() };
     }
 
     /// Disables machine software interrupts in the current HART.

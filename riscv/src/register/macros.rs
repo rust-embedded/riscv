@@ -14,7 +14,7 @@ macro_rules! read_csr {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline(always)]
         unsafe fn _read() -> usize {
-            _try_read().unwrap()
+            unsafe { _try_read() }.unwrap()
         }
 
         /// Attempts to read the CSR.
@@ -24,7 +24,7 @@ macro_rules! read_csr {
                 #[cfg($($cfg),*)]
                 () => {
                     let r: usize;
-                    core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r);
+                    unsafe { core::arch::asm!(concat!("csrrs {0}, ", stringify!($csr_number), ", x0"), out(reg) r) };
                     Ok(r)
                 }
                 #[cfg(not($($cfg),*))]
@@ -157,7 +157,7 @@ macro_rules! write_csr {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline(always)]
         unsafe fn _write(bits: usize) {
-            _try_write(bits).unwrap();
+            unsafe { _try_write(bits) }.unwrap();
         }
 
         /// Attempts to write the CSR.
@@ -167,7 +167,7 @@ macro_rules! write_csr {
             match () {
                 #[cfg($($cfg),*)]
                 () => {
-                    core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
+                    unsafe { core::arch::asm!(concat!("csrrw x0, ", stringify!($csr_number), ", {0}"), in(reg) bits) };
                     Ok(())
                 }
                 #[cfg(not($($cfg),*))]
@@ -206,13 +206,13 @@ macro_rules! write_csr_as {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
         pub unsafe fn write(value: $csr_type) {
-            _write(value.bits);
+            unsafe { _write(value.bits) };
         }
 
         /// Attempts to write the CSR.
         #[inline]
         pub unsafe fn try_write(value: $csr_type) -> $crate::result::Result<()> {
-            _try_write(value.bits)
+            unsafe { _try_write(value.bits) }
         }
     };
     (safe $csr_type:ty, $csr_number:literal, $($cfg:meta),*) => {
@@ -262,13 +262,13 @@ macro_rules! write_csr_as_usize {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
         pub unsafe fn write(bits: usize) {
-            _write(bits);
+            unsafe { _write(bits) };
         }
 
         /// Attempts to write the CSR.
         #[inline]
         pub unsafe fn try_write(bits: usize) -> $crate::result::Result<()> {
-            _try_write(bits)
+            unsafe { _try_write(bits) }
         }
     };
     (safe $csr_number:literal, $($cfg:meta),*) => {
@@ -315,7 +315,7 @@ macro_rules! set {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline(always)]
         unsafe fn _set(bits: usize) {
-            _try_set(bits).unwrap();
+            unsafe { _try_set(bits) }.unwrap();
         }
 
         /// Attempts to set the CSR.
@@ -325,7 +325,7 @@ macro_rules! set {
             match () {
                 #[cfg($($cfg),*)]
                 () => {
-                    core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
+                    unsafe { core::arch::asm!(concat!("csrrs x0, ", stringify!($csr_number), ", {0}"), in(reg) bits) };
                     Ok(())
                 }
                 #[cfg(not($($cfg),*))]
@@ -359,7 +359,7 @@ macro_rules! clear {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline(always)]
         unsafe fn _clear(bits: usize) {
-            _try_clear(bits).unwrap();
+            unsafe { _try_clear(bits) } .unwrap();
         }
 
         /// Attempts to clear the CSR.
@@ -369,7 +369,7 @@ macro_rules! clear {
             match () {
                 #[cfg($($cfg),*)]
                 () => {
-                    core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits);
+                    unsafe { core::arch::asm!(concat!("csrrc x0, ", stringify!($csr_number), ", {0}"), in(reg) bits) };
                     Ok(())
                 }
                 #[cfg(not($($cfg),*))]
@@ -396,7 +396,8 @@ macro_rules! set_csr {
         $(#[$attr])*
         #[inline]
         pub unsafe fn $set_field() {
-            _set($e);
+            let e = $e;
+            unsafe { _set(e) };
         }
     };
 }
@@ -408,7 +409,8 @@ macro_rules! clear_csr {
         $(#[$attr])*
         #[inline]
         pub unsafe fn $clear_field() {
-            _clear($e);
+            let e = $e;
+            unsafe { _clear(e) };
         }
     };
 }
@@ -428,22 +430,22 @@ macro_rules! set_clear_csr {
 /// - `RV64`: reads a 64-bit value from `lo`
 #[macro_export]
 macro_rules! read_composite_csr {
-    ($hi:expr, $lo:expr) => {
+    ($hi:path, $lo:path) => {
         /// Reads the CSR as a 64-bit value
         #[inline]
         pub fn read64() -> u64 {
             match () {
                 #[cfg(target_arch = "riscv32")]
                 () => loop {
-                    let hi = $hi;
-                    let lo = $lo;
-                    if hi == $hi {
+                    let hi = $hi();
+                    let lo = $lo();
+                    if hi == $hi() {
                         return ((hi as u64) << 32) | lo as u64;
                     }
                 },
 
                 #[cfg(not(target_arch = "riscv32"))]
-                () => $lo as u64,
+                () => $lo() as u64,
             }
         }
     };
@@ -455,19 +457,19 @@ macro_rules! read_composite_csr {
 /// - `RV64`: writes a 64-bit value into `lo`
 #[macro_export]
 macro_rules! write_composite_csr {
-    ($hi:expr, $lo:expr) => {
+    ($hi:path, $lo:path) => {
         /// Writes the CSR as a 64-bit value
         #[inline]
         pub unsafe fn write64(bits: u64) {
             match () {
                 #[cfg(target_arch = "riscv32")]
                 () => {
-                    $hi((bits >> 32) as usize);
-                    $lo(bits as usize);
+                    unsafe { $hi((bits >> 32) as usize) };
+                    unsafe { $lo(bits as usize) };
                 }
 
                 #[cfg(not(target_arch = "riscv32"))]
-                () => $lo(bits as usize),
+                () => unsafe { $lo(bits as usize) },
             }
         }
     };
@@ -480,7 +482,7 @@ macro_rules! set_pmp {
         /// **WARNING**: panics on non-`riscv` targets, and/or if `index` is out-of-bounds.
         #[inline]
         pub unsafe fn set_pmp(index: usize, range: Range, permission: Permission, locked: bool) {
-            try_set_pmp(index, range, permission, locked).unwrap()
+            unsafe { try_set_pmp(index, range, permission, locked) }.unwrap();
         }
 
         /// Attempts to set the pmp configuration corresponding to the index.
@@ -503,11 +505,11 @@ macro_rules! set_pmp {
             }?;
 
             if index < max {
-                let mut value = _try_read()?;
+                let mut value = unsafe { _try_read() }?;
                 value &= !(0xFF << (8 * index)); // clear previous value
                 let byte = (locked as usize) << 7 | (range as usize) << 3 | (permission as usize);
                 value |= byte << (8 * index);
-                _try_write(value)
+                unsafe { _try_write(value) }
             } else {
                 Err($crate::result::Error::IndexOutOfBounds {
                     index,
@@ -526,7 +528,7 @@ macro_rules! clear_pmp {
         /// **WARNING**: panics on non-`riscv` targets, and/or if `index` is out-of-bounds.
         #[inline]
         pub unsafe fn clear_pmp(index: usize) {
-            try_clear_pmp(index).unwrap();
+            unsafe { try_clear_pmp(index) }.unwrap();
         }
 
         /// Attempts to clear the pmp configuration corresponding to the index.
@@ -544,9 +546,9 @@ macro_rules! clear_pmp {
             }?;
 
             if index < max {
-                let mut value = _try_read()?;
+                let mut value = unsafe { _try_read() }?;
                 value &= !(0xFF << (8 * index)); // clear previous value
-                _try_write(value)
+                unsafe { _try_write(value) }
             } else {
                 Err($crate::result::Error::IndexOutOfBounds {
                     index,

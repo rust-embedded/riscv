@@ -35,19 +35,19 @@ enum HartId {
 }
 
 mod isr {
-    #[export_name = "DefaultHandler"]
+    #[unsafe(export_name = "DefaultHandler")]
     fn default_handler() {}
 
-    #[export_name = "I1"]
+    #[unsafe(export_name = "I1")]
     fn i1() {}
 
-    #[export_name = "I2"]
+    #[unsafe(export_name = "I2")]
     fn i2() {}
 
-    #[export_name = "I4"]
+    #[unsafe(export_name = "I4")]
     fn i4() {}
 
-    #[export_name = "I7"]
+    #[unsafe(export_name = "I7")]
     fn i7() {}
 }
 

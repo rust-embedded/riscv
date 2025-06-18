@@ -6,7 +6,7 @@ macro_rules! reg {
         pub mod $csrl {
             read_csr_as_usize!($addr);
             write_csr_as_usize!($addr);
-            read_composite_csr!(super::$csrh::read(), read());
+            read_composite_csr!(super::$csrh::read, read);
         }
     };
 }

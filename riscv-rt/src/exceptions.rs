@@ -13,7 +13,7 @@
 
 use crate::TrapFrame;
 
-extern "C" {
+unsafe extern "C" {
     fn InstructionMisaligned(trap_frame: &TrapFrame);
     fn InstructionFault(trap_frame: &TrapFrame);
     fn IllegalInstruction(trap_frame: &TrapFrame);
@@ -31,7 +31,7 @@ extern "C" {
 }
 
 /// Array with all the exception handlers sorted according to their exception source code.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
     Some(InstructionMisaligned),
     Some(InstructionFault),
@@ -57,13 +57,13 @@ pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
 ///
 /// This function must be called only from the [`crate::start_trap_rust`] function.
 /// Do **NOT** call this function directly.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn _dispatch_exception(trap_frame: &TrapFrame, code: usize) {
-    extern "C" {
-        fn ExceptionHandler(trap_frame: &TrapFrame);
+    unsafe extern "C" {
+        unsafe fn ExceptionHandler(trap_frame: &TrapFrame);
     }
     match __EXCEPTIONS.get(code) {
-        Some(Some(handler)) => handler(trap_frame),
-        _ => ExceptionHandler(trap_frame),
+        Some(Some(handler)) => unsafe { handler(trap_frame) },
+        _ => unsafe { ExceptionHandler(trap_frame) },
     }
 }

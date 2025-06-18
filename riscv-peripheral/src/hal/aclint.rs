@@ -1,6 +1,6 @@
 //! Delay trait implementation for (A)CLINT peripherals
 
-use crate::aclint::mtimer::{Mtimer, MTIMER};
+use crate::aclint::mtimer::{MTIMER, Mtimer};
 use crate::hal::delay::DelayNs;
 
 impl<M: Mtimer> DelayNs for MTIMER<M> {

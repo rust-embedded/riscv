@@ -29,8 +29,8 @@ clear_rv32!(0x310);
 #[inline]
 pub unsafe fn set_sbe(endianness: Endianness) {
     match endianness {
-        Endianness::BigEndian => _set(1 << 4),
-        Endianness::LittleEndian => _clear(1 << 4),
+        Endianness::BigEndian => unsafe { _set(1 << 4) },
+        Endianness::LittleEndian => unsafe { _clear(1 << 4) },
     }
 }
 
@@ -38,8 +38,8 @@ pub unsafe fn set_sbe(endianness: Endianness) {
 #[inline]
 pub unsafe fn set_mbe(endianness: Endianness) {
     match endianness {
-        Endianness::BigEndian => _set(1 << 5),
-        Endianness::LittleEndian => _clear(1 << 5),
+        Endianness::BigEndian => unsafe { _set(1 << 5) },
+        Endianness::LittleEndian => unsafe { _clear(1 << 5) },
     }
 }
 
