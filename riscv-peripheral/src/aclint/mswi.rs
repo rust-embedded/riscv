@@ -81,6 +81,19 @@ impl<M: Mswi> MSWI<M> {
         unsafe { MSIP::new(self.as_ptr().add(hart_id.number()) as _) }
     }
 
+    /// Returns the `MSIP` register for HART 0.
+    ///
+    /// # Note
+    ///
+    /// According to the RISC-V specification, HART 0 is mandatory.
+    /// Thus, this function is specially useful in single-HART mode, where HART 0 is the only HART available.
+    /// In multi-HART mode, it is recommended to use [`MSWI::msip`] or [`MSWI::msip_mhartid`] instead.
+    #[inline]
+    pub const fn msip0(self) -> MSIP {
+        // SAFETY: HART 0 is mandatory
+        unsafe { MSIP::new(M::BASE) }
+    }
+
     /// Returns the `MSIP` register for the current HART.
     ///
     /// # Note

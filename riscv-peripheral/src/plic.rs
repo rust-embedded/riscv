@@ -108,6 +108,19 @@ impl<P: Plic> PLIC<P> {
         unsafe { CTX::new(hart_id.number() as _) }
     }
 
+    /// Returns the PLIC HART context for HART 0.
+    ///
+    /// # Note
+    ///
+    /// According to the RISC-V specification, HART 0 is mandatory.
+    /// Thus, this function is specially useful in single-HART mode, where HART 0 is the only HART available.
+    /// In multi-HART mode, it is recommended to use [`PLIC::ctx`] or [`PLIC::ctx_mhartid`] instead.
+    #[inline]
+    pub const fn ctx0(self) -> CTX<P> {
+        // SAFETY: HART 0 is mandatory
+        unsafe { CTX::new(0) }
+    }
+
     /// Returns the PLIC HART context for the current HART.
     ///
     /// # Note
@@ -146,7 +159,7 @@ impl<P: Plic> CTX<P> {
     ///
     /// The context number must be valid for the target device.
     #[inline]
-    pub(crate) unsafe fn new(context: u16) -> Self {
+    const unsafe fn new(context: u16) -> Self {
         Self {
             context: context as _,
             _marker: core::marker::PhantomData,
@@ -195,8 +208,8 @@ pub(crate) mod test {
         crate::plic_codegen!(
             PLIC,
             base 0x0C00_0000,
-            harts [HartId::H0 => 0, HartId::H1 => 1, HartId::H2 => 2]
-        );
+            harts [HartId::H1 => 1, HartId::H2 => 2]
+        ); // We skip HART 0 to get advantage of const ctx0 method
 
         let plic = PLIC::new();
         let priorities = plic.priorities();

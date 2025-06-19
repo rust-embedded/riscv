@@ -130,6 +130,7 @@ pub(crate) mod test {
         assert_eq!(mtime.get_ptr() as usize, 0x0200_bff8);
 
         assert_eq!(clint.mtimecmp0(), mtimer.mtimecmp(HartId::H0));
+        assert_eq!(clint.mtimecmp0(), mtimer.mtimecmp0());
         assert_eq!(clint.mtimecmp1(), mtimer.mtimecmp(HartId::H1));
         assert_eq!(clint.mtimecmp2(), mtimer.mtimecmp(HartId::H2));
 
