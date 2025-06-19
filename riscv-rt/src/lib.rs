@@ -90,7 +90,10 @@
 //!
 //! This symbol defines stack area size for *one* hart.
 //!
-//! If omitted this symbol value will default to 2K.
+//! If omitted this symbol value will default to `SIZEOF(.stack) / (_max_hart_id + 1)`.
+//!
+//! Note that due to alignment, each individual stack may differ slightly in
+//! size.
 //!
 //! ### `_stack_start`
 //!
