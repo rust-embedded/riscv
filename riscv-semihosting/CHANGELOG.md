@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Use `cfg(any(target_arch = "riscv32", target_arch = "riscv64"))` instead of `cfg(riscv)`.
+
+### Removed
+
+- Removed custom build script, as `cfg(riscv)` is no longer necessary.
+
 ## [v0.2.0] - 2025-06-10
 
 ### Changed
