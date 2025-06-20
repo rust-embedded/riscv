@@ -180,9 +180,6 @@
 #![deny(missing_docs)]
 #![no_std]
 
-#[cfg(all(riscv, not(feature = "no-semihosting")))]
-use core::arch::asm;
-
 #[macro_use]
 mod macros;
 
@@ -213,7 +210,10 @@ pub unsafe fn syscall<T>(nr: usize, arg: &T) -> usize {
 #[inline(always)]
 pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
     match () {
-        #[cfg(all(riscv, not(feature = "no-semihosting")))]
+        #[cfg(all(
+            any(target_arch = "riscv32", target_arch = "riscv64"),
+            not(feature = "no-semihosting")
+        ))]
         () => {
             let mut nr = _nr;
             let arg = _arg;
@@ -221,7 +221,7 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
             // it will be treated as a regular break, hence the norvc option.
             //
             // See https://github.com/riscv/riscv-semihosting-spec for more details.
-            asm!("
+            core::arch::asm!("
                 .balign 16
                 .option push
                 .option norvc
@@ -236,9 +236,12 @@ pub unsafe fn syscall1(_nr: usize, _arg: usize) -> usize {
             );
             nr
         }
-        #[cfg(all(riscv, feature = "no-semihosting"))]
+        #[cfg(all(
+            any(target_arch = "riscv32", target_arch = "riscv64"),
+            feature = "no-semihosting"
+        ))]
         () => 0,
-        #[cfg(not(riscv))]
+        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
         () => unimplemented!(),
     }
 }
