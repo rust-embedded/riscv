@@ -438,9 +438,9 @@ pub unsafe fn set_vs(vs: VS) {
 #[inline]
 pub unsafe fn set_sbe(endianness: Endianness) {
     match () {
-        #[cfg(riscv32)]
+        #[cfg(target_arch = "riscv32")]
         () => super::mstatush::set_sbe(endianness),
-        #[cfg(not(riscv32))]
+        #[cfg(not(target_arch = "riscv32"))]
         () => match endianness {
             Endianness::BigEndian => _set(1 << 36),
             Endianness::LittleEndian => _clear(1 << 36),
@@ -456,9 +456,9 @@ pub unsafe fn set_sbe(endianness: Endianness) {
 #[inline]
 pub unsafe fn set_mbe(endianness: Endianness) {
     match () {
-        #[cfg(riscv32)]
+        #[cfg(target_arch = "riscv32")]
         () => super::mstatush::set_mbe(endianness),
-        #[cfg(not(riscv32))]
+        #[cfg(not(target_arch = "riscv32"))]
         () => match endianness {
             Endianness::BigEndian => _set(1 << 37),
             Endianness::LittleEndian => _clear(1 << 37),
