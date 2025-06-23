@@ -79,11 +79,11 @@ impl Pmpcsr {
     #[inline]
     pub fn try_into_config(&self, index: usize) -> Result<Pmp> {
         let max = match () {
-            #[cfg(riscv32)]
+            #[cfg(target_arch = "riscv32")]
             () => Ok(4usize),
-            #[cfg(riscv64)]
+            #[cfg(target_arch = "riscv64")]
             () => Ok(8usize),
-            #[cfg(not(any(riscv32, riscv64)))]
+            #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
             () => Err(Error::Unimplemented),
         }?;
 
@@ -122,7 +122,7 @@ pub mod pmpcfg0 {
 
 /// Physical memory protection configuration
 /// pmpcfg1 struct contains pmp4cfg - pmp7cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg1 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -147,7 +147,7 @@ pub mod pmpcfg2 {
 
 /// Physical memory protection configuration
 /// pmpcfg3 struct contains pmp12cfg - pmp15cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg3 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -172,7 +172,7 @@ pub mod pmpcfg4 {
 
 /// Physical memory protection configuration
 /// pmpcfg5 struct contains pmp20cfg - pmp23cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg5 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -197,7 +197,7 @@ pub mod pmpcfg6 {
 
 /// Physical memory protection configuration
 /// pmpcfg7 struct contains pmp28cfg - pmp31cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg7 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -222,7 +222,7 @@ pub mod pmpcfg8 {
 
 /// Physical memory protection configuration
 /// pmpcfg9 struct contains pmp36cfg - pmp39cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg9 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -247,7 +247,7 @@ pub mod pmpcfg10 {
 
 /// Physical memory protection configuration
 /// pmpcfg11 struct contains pmp44cfg - pmp47cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg11 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -272,7 +272,7 @@ pub mod pmpcfg12 {
 
 /// Physical memory protection configuration
 /// pmpcfg13 struct contains pmp52cfg - pmp55cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg13 {
     use super::{Permission, Pmpcsr, Range};
 
@@ -297,7 +297,7 @@ pub mod pmpcfg14 {
 
 /// Physical memory protection configuration
 /// pmpcfg15 struct contains pmp60cfg - pmp63cfg for RV32 only
-#[cfg(riscv32)]
+#[cfg(target_arch = "riscv32")]
 pub mod pmpcfg15 {
     use super::{Permission, Pmpcsr, Range};
 

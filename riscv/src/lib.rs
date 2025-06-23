@@ -53,7 +53,10 @@ pub use riscv_pac::*;
 #[macro_use]
 mod macros;
 
-#[cfg(all(riscv, feature = "critical-section-single-hart"))]
+#[cfg(all(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    feature = "critical-section-single-hart"
+))]
 mod critical_section;
 
 /// Used to reexport items for use in macros. Do not use directly.
