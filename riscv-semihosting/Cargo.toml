@@ -4,7 +4,7 @@ authors = [
     "Jorge Aparicio <japaricious@gmail.com>",
     "The RISC-V Team <risc-v@teams.rust-embedded.org>",
 ]
-description = "Semihosting for RISCV processors"
+description = "Semihosting for RISC-V processors"
 documentation = "https://docs.rs/riscv-semihosting"
 keywords = ["semihosting", "riscv"]
 categories = ["no-std", "embedded"]
@@ -13,8 +13,8 @@ name = "riscv-semihosting"
 readme = "README.md"
 repository = "https://github.com/riscv-rust/riscv"
 version = "0.2.0"
-edition = "2021"
-rust-version = "1.67"
+edition = "2024"
+rust-version = "1.85"
 
 [features]
 u-mode = []

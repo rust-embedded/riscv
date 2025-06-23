@@ -1,6 +1,6 @@
 //! Interrupt pending bits register.
 
-use crate::common::{Reg, RO};
+use crate::common::{RO, Reg};
 use riscv_pac::ExternalInterruptNumber;
 
 /// Interrupts pending bits register.

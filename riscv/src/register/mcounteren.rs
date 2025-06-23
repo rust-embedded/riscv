@@ -57,7 +57,7 @@ set_clear_csr!(
 /// - `index` out-of-bounds
 #[inline]
 pub unsafe fn set_hpm(index: usize) {
-    try_set_hpm(index).unwrap();
+    unsafe { try_set_hpm(index) }.unwrap();
 }
 
 /// Attempts to enable the "hpm\[X\]" counter.
@@ -66,7 +66,7 @@ pub unsafe fn set_hpm(index: usize) {
 #[inline]
 pub unsafe fn try_set_hpm(index: usize) -> Result<()> {
     if (3..32).contains(&index) {
-        _try_set(1 << index)
+        unsafe { _try_set(1 << index) }
     } else {
         Err(Error::IndexOutOfBounds {
             index,
@@ -86,7 +86,7 @@ pub unsafe fn try_set_hpm(index: usize) -> Result<()> {
 /// - `index` out-of-bounds
 #[inline]
 pub unsafe fn clear_hpm(index: usize) {
-    try_clear_hpm(index).unwrap();
+    unsafe { try_clear_hpm(index) }.unwrap();
 }
 
 /// Attempts to disable the "hpm\[X\]" counter.
@@ -95,7 +95,7 @@ pub unsafe fn clear_hpm(index: usize) {
 #[inline]
 pub unsafe fn try_clear_hpm(index: usize) -> Result<()> {
     if (3..32).contains(&index) {
-        _try_clear(1 << index)
+        unsafe { _try_clear(1 << index) }
     } else {
         Err(Error::IndexOutOfBounds {
             index,

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Update to Rust edition 2024 (MSRV 1.85)
+
 ### Added
 
 - Constant methods to access to PLIC and ACLINT registers for HART 0.

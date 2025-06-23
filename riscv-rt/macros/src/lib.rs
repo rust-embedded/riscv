@@ -1,14 +1,15 @@
 #![deny(warnings)]
+#![allow(clippy::collapsible_if)] // to avoid warnings in Nightly builds
 
 use proc_macro::TokenStream;
 use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{
+    FnArg, ItemFn, LitInt, LitStr, PatType, Path, ReturnType, Token, Type, Visibility,
     parse::{self, Parse},
     parse_macro_input, parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
-    FnArg, ItemFn, LitInt, LitStr, PatType, Path, ReturnType, Token, Type, Visibility,
 };
 
 /// Attribute to declare the entry point of the program
@@ -142,7 +143,7 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
 
     quote!(
         #[allow(non_snake_case)]
-        #[export_name = "main"]
+        #[unsafe(export_name = "main")]
         #(#attrs)*
         pub #unsafety fn __risc_v_rt__main(#args) -> ! {
             #(#stmts)*
@@ -254,7 +255,7 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
     let block = f.block;
 
     quote!(
-        #[export_name = "__pre_init"]
+        #[unsafe(export_name = "__pre_init")]
         #(#attrs)*
         pub unsafe fn #ident() #block
     )
@@ -457,7 +458,7 @@ fn store_trap<T: FnMut(&str) -> bool>(arch: RiscvArch, mut filter: T) -> String 
     arch.trap_frame()
         .iter()
         .enumerate()
-        .filter(|(_, &reg)| !reg.starts_with('_') && filter(reg))
+        .filter(|(_, reg)| !reg.starts_with('_') && filter(reg))
         .map(|(i, reg)| format!("{store} {reg}, {i}*{width}(sp)"))
         .collect::<Vec<_>>()
         .join("\n    ")
@@ -471,7 +472,7 @@ fn load_trap(arch: RiscvArch) -> String {
     arch.trap_frame()
         .iter()
         .enumerate()
-        .filter(|(_, &reg)| !reg.starts_with('_'))
+        .filter(|(_, reg)| !reg.starts_with('_'))
         .map(|(i, reg)| format!("{load} {reg}, {i}*{width}(sp)"))
         .collect::<Vec<_>>()
         .join("\n    ")
@@ -766,7 +767,7 @@ fn trap(
 
         #start_trap
 
-        #[export_name = #export_name]
+        #[unsafe(export_name = #export_name)]
         #f
     )
     .into()

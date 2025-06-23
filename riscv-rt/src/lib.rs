@@ -595,7 +595,7 @@ pub use riscv_rt_macros::pre_init;
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
 /// Cargo.toml which is the more modern way to solve the same problem, but we have to keep
 /// __ONCE__ around to prevent linking with versions before the links key was added.
-#[export_name = "error: riscv-rt appears more than once in the dependency graph"]
+#[unsafe(export_name = "error: riscv-rt appears more than once in the dependency graph")]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
 
@@ -675,11 +675,11 @@ pub struct TrapFrame {
 /// Do **NOT** call this function directly.
 #[cfg_attr(
     any(target_arch = "riscv32", target_arch = "riscv64"),
-    link_section = ".trap.rust"
+    unsafe(link_section = ".trap.rust")
 )]
-#[export_name = "_start_trap_rust"]
+#[unsafe(export_name = "_start_trap_rust")]
 pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
-    extern "C" {
+    unsafe extern "C" {
         #[cfg(not(feature = "v-trap"))]
         fn _dispatch_core_interrupt(code: usize);
         #[cfg(feature = "v-trap")]
@@ -689,10 +689,10 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
 
     match xcause::read().cause() {
         #[cfg(not(feature = "v-trap"))]
-        xcause::Trap::Interrupt(code) => _dispatch_core_interrupt(code),
+        xcause::Trap::Interrupt(code) => unsafe { _dispatch_core_interrupt(code) },
         #[cfg(feature = "v-trap")]
-        xcause::Trap::Interrupt(_) => DefaultHandler(),
-        xcause::Trap::Exception(code) => _dispatch_exception(&*trap_frame, code),
+        xcause::Trap::Interrupt(_) => unsafe { DefaultHandler() },
+        xcause::Trap::Exception(code) => unsafe { _dispatch_exception(&*trap_frame, code) },
     }
 }
 
@@ -701,7 +701,7 @@ pub unsafe extern "C" fn start_trap_rust(trap_frame: *const TrapFrame) {
 /// The returned pointer is guaranteed to be 4-byte aligned.
 #[inline]
 pub fn heap_start() -> *mut usize {
-    extern "C" {
+    unsafe extern "C" {
         static mut __sheap: usize;
     }
 
