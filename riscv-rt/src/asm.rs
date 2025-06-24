@@ -64,7 +64,8 @@ _abs_start:
     csrw sip, 0",
     #[cfg(not(feature = "s-mode"))]
     "csrw mie, 0
-    csrw mip, 0",
+    csrw mip, 0
+    csrr a0, mhartid", // Make sure that the hart ID is in a0 in M-mode
     // Set pre-init trap vector
     "la t0, _pre_init_trap",
     #[cfg(feature = "s-mode")]
@@ -89,11 +90,8 @@ cfg_global_asm!(
 );
 #[cfg(not(feature = "single-hart"))]
 cfg_global_asm!(
-    #[cfg(feature = "s-mode")]
-    "mv t2, a0 // the hartid is passed as parameter by SMODE",
-    #[cfg(not(feature = "s-mode"))]
-    "csrr t2, mhartid",
-    "lui t0, %hi(_max_hart_id)
+    "mv t2, a0
+    lui t0, %hi(_max_hart_id)
     add t0, t0, %lo(_max_hart_id)
     bgtu t2, t0, abort
     lui t0, %hi(_hart_stack_size)
@@ -131,18 +129,12 @@ cfg_global_asm!(
     sd a2, 8 * 2(sp)",
 );
 
-// SKIP RAM INITIALIZATION IF CURRENT HART IS NOT THE BOOT HART
-#[cfg(not(feature = "single-hart"))]
+// CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
 cfg_global_asm!(
-    #[cfg(not(feature = "s-mode"))]
-    "csrr a0, mhartid",
+    #[cfg(not(feature = "single-hart"))]
+    // Skip RAM initialization if current hart is not the boot hart
     "call _mp_hook
-    mv t0, a0
-
     beqz a0, 4f",
-);
-// IF CURRENT HART IS THE BOOT HART CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
-cfg_global_asm!(
     #[cfg(feature = "pre-init")]
     "call __pre_init",
     "// Copy .data from flash to RAM

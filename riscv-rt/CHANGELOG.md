@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   all code to RAM and keep .init in flash/ROM.
 - By default, the stack is now split into equal parts based on the number of
   harts.
+- In M-mode, the hart ID is moved to `a0` at the beginning of the runtime.
 
 ### Fixed
 
