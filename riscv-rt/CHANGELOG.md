@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Main function no longer needs to be close to _start. A linker script may copy
-  all code to RAM and keep .init in flash/ROM.
+- `main` function no longer needs to be close to `_start`. A linker script may copy
+  all code to RAM and keep `.init` in flash/ROM.
 - By default, the stack is now split into equal parts based on the number of
   harts.
 - In M-mode, the hart ID is moved to `a0` at the beginning of the runtime.
+- `abort` function no longer needs to be close to `_start`.
+- In multi-hart targets, the hart ID is now validated earlier in the boot process.
 
 ### Fixed
 

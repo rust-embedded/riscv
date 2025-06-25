@@ -72,6 +72,14 @@ _abs_start:
     "csrw stvec, t0",
     #[cfg(not(feature = "s-mode"))]
     "csrw mtvec, t0",
+    // If multi-hart, assert that hart ID is valid
+    #[cfg(not(feature = "single-hart"))]
+    "lui t0, %hi(_max_hart_id)
+    add t0, t0, %lo(_max_hart_id)
+    bgeu t0, a0, 1f
+    la t0, abort // If hart_id > _max_hart_id, jump to abort
+    jr t0
+1:", // only valid harts reach this point
 );
 
 // ZERO OUT GENERAL-PURPOSE REGISTERS
@@ -91,9 +99,6 @@ cfg_global_asm!(
 #[cfg(not(feature = "single-hart"))]
 cfg_global_asm!(
     "mv t2, a0
-    lui t0, %hi(_max_hart_id)
-    add t0, t0, %lo(_max_hart_id)
-    bgtu t2, t0, abort
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
     #[cfg(riscvm)]
