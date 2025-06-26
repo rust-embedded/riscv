@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - In M-mode, the hart ID is moved to `a0` at the beginning of the runtime.
 - `abort` function no longer needs to be close to `_start`.
 - In multi-hart targets, the hart ID is now validated earlier in the boot process.
+- General purpose registers are no longer zeroed, as this is not strictly necessary.
+  This aligns with the `cortex-m-rt` crate.
 
 ### Fixed
 

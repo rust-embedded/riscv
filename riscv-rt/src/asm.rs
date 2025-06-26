@@ -82,13 +82,6 @@ _abs_start:
 1:", // only valid harts reach this point
 );
 
-// ZERO OUT GENERAL-PURPOSE REGISTERS
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 1, 10);
-// a0..a2 (x10..x12) skipped
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 13, 16);
-#[cfg(riscvi)]
-riscv_rt_macros::loop_global_asm!("    li x{}, 0", 16, 32);
-
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
 cfg_global_asm!(
     ".option push
@@ -193,13 +186,6 @@ cfg_global_asm!(
     csrrs x0, mstatus, t2",
     "fscsr x0",
 );
-// ZERO OUT FLOATING POINT REGISTERS
-#[cfg(all(target_arch = "riscv32", riscvd))]
-riscv_rt_macros::loop_global_asm!("    fcvt.d.w f{}, x0", 32);
-#[cfg(all(target_arch = "riscv64", riscvd))]
-riscv_rt_macros::loop_global_asm!("    fmv.d.x f{}, x0", 32);
-#[cfg(all(riscvf, not(riscvd)))]
-riscv_rt_macros::loop_global_asm!("    fmv.w.x f{}, x0", 32);
 
 // SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
 cfg_global_asm!(
