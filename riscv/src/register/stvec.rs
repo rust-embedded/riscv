@@ -19,6 +19,25 @@ read_write_csr_field! {
 }
 
 impl Stvec {
+    /// Creates a new `Stvec` with the given address and trap mode.
+    ///
+    /// # Note
+    ///
+    /// Panics if the address is not aligned to 4-bytes.
+    #[inline]
+    pub fn new(address: usize, trap_mode: TrapMode) -> Self {
+        Self::try_new(address, trap_mode).unwrap()
+    }
+
+    /// Attempts to create a new `Stvec` with the given address and trap mode.
+    #[inline]
+    pub fn try_new(address: usize, trap_mode: TrapMode) -> Result<Self> {
+        let mut stvec = Stvec::from_bits(0);
+        stvec.try_set_address(address)?;
+        stvec.set_trap_mode(trap_mode);
+        Ok(stvec)
+    }
+
     /// Returns the trap-vector base-address
     #[inline]
     pub const fn address(&self) -> usize {

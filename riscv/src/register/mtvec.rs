@@ -28,6 +28,25 @@ read_write_csr_field! {
 }
 
 impl Mtvec {
+    /// Creates a new `Mtvec` with the given address and trap mode.
+    ///
+    /// # Note
+    ///
+    /// Panics if the address is not aligned to 4-bytes.
+    #[inline]
+    pub fn new(address: usize, trap_mode: TrapMode) -> Self {
+        Self::try_new(address, trap_mode).unwrap()
+    }
+
+    /// Attempts to create a new `Mtvec` with the given address and trap mode.
+    #[inline]
+    pub fn try_new(address: usize, trap_mode: TrapMode) -> Result<Self> {
+        let mut mtvec = Self::from_bits(0);
+        mtvec.try_set_address(address)?;
+        mtvec.set_trap_mode(trap_mode);
+        Ok(mtvec)
+    }
+
     /// Returns the trap-vector base-address
     #[inline]
     pub const fn address(&self) -> usize {
