@@ -389,7 +389,7 @@
 //!
 //! ## `ExceptionHandler`
 //!
-//! This function is called when exception without defined exception handler is occured.
+//! This function is called when exception without defined exception handler is occurred.
 //! The exception reason can be decoded from the `mcause`/`scause` register.
 //!
 //! This function can be redefined in the following way:
@@ -412,7 +412,7 @@
 //!
 //! ## Core interrupt handlers
 //!
-//! This functions are called when corresponding interrupt is occured.
+//! This functions are called when corresponding interrupt is occurred.
 //! You can define a core interrupt handler with the [`core_interrupt`] attribute.
 //! The attribute expects the path to the interrupt source as an argument.
 //!
@@ -441,7 +441,7 @@
 //!
 //! ## External interrupt handlers
 //!
-//! This functions are called when corresponding interrupt is occured.
+//! This functions are called when corresponding interrupt is occurred.
 //! You can define an external interrupt handler with the [`external_interrupt`] attribute.
 //! The attribute expects the path to the interrupt source as an argument.
 //!
@@ -453,7 +453,7 @@
 //!
 //! ## `DefaultHandler`
 //!
-//! This function is called when interrupt without defined interrupt handler is occured.
+//! This function is called when interrupt without defined interrupt handler is occurred.
 //! The interrupt reason can be decoded from the `mcause`/`scause` register.
 //! If it is an external interrupt, the interrupt reason can be decoded from a
 //! target-specific peripheral interrupt controller.

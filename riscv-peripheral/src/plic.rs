@@ -24,7 +24,7 @@ pub unsafe trait Plic: Copy {
     const BASE: usize;
 }
 
-/// Platform-Level Interrupt Controler (PLIC) peripheral.
+/// Platform-Level Interrupt Controller (PLIC) peripheral.
 ///
 /// The RISC-V standard does not specify a fixed location for the PLIC.
 /// Thus, each platform must specify the base address of the PLIC on the platform.
