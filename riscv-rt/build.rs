@@ -1,49 +1,19 @@
 // NOTE: Adapted from cortex-m/build.rs
 
-use riscv_target_parser::RiscvTarget;
-use std::{env, fs, io, path::PathBuf};
+use riscv_target_parser::{RiscvTarget, Width};
+use std::env;
 
 // List of all possible RISC-V configurations to check for in risv-rt
 const RISCV_CFG: [&str; 4] = ["riscvi", "riscvm", "riscvf", "riscvd"];
 
-fn add_linker_script(arch_width: u32) -> io::Result<()> {
-    // Read the file to a string and replace all occurrences of ${ARCH_WIDTH} with the arch width
-    let mut content = fs::read_to_string("link.x.in")?;
-    content = content.replace("${ARCH_WIDTH}", &arch_width.to_string());
-
-    // Get target-dependent linker configuration and replace ${INCLUDE_LINKER_FILES} with it
-    let mut include_content = String::new();
-
-    // If no-exceptions is disabled, include the exceptions.x files
-    if env::var_os("CARGO_FEATURE_NO_EXCEPTIONS").is_none() {
-        let exceptions_content = fs::read_to_string("exceptions.x")?;
-        include_content.push_str(&(exceptions_content + "\n"));
-    }
-    // If no-interrupts is disabled, include the interrupts.x files
-    if env::var_os("CARGO_FEATURE_NO_INTERRUPTS").is_none() {
-        let interrupts_content = fs::read_to_string("interrupts.x")?;
-        include_content.push_str(&(interrupts_content + "\n"));
-    }
-    // If device is enabled, include the device.x file (usually, provided by PACs)
-    if env::var_os("CARGO_FEATURE_DEVICE").is_some() {
-        include_content.push_str("/* Device-specific exception and interrupt handlers */\n");
-        include_content.push_str("INCLUDE device.x\n");
-    }
-    // If memory is enabled, include the memory.x file (usually, provided by BSPs)
-    if env::var_os("CARGO_FEATURE_MEMORY").is_some() {
-        include_content.push_str("/* Device-specific memory layout */\n");
-        include_content.push_str("INCLUDE memory.x\n");
+fn add_linker_script(arch_width: Width) {
+    // `CARGO_CFG_TARGET_POINTER_WIDTH` technically be used, but instruction
+    // alignment and pointer width aren't necessarily the same things.
+    unsafe {
+        std::env::set_var("CARGO_CFG_ARCH_WIDTH", arch_width.to_string());
     }
 
-    content = content.replace("${INCLUDE_LINKER_FILES}", &include_content);
-
-    // Put the linker script somewhere the linker can find it
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    fs::write(out_dir.join("link.x"), content)?;
-    println!("cargo:rustc-link-search={}", out_dir.display());
-    println!("cargo:rerun-if-changed=link.x");
-
-    Ok(())
+    minilink::register_template("./link.x.in", "link.x");
 }
 
 fn main() {
@@ -86,6 +56,7 @@ fn main() {
                 println!("cargo:rustc-cfg={flag}");
             }
         }
-        add_linker_script(width.into()).unwrap();
+
+        add_linker_script(width);
     }
 }

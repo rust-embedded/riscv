@@ -12,13 +12,9 @@
 
 - `PROVIDE` is used to provide default values that can be overridden by a user linker script
 
-- In this linker script, you may find symbols that look like `${...}` (e.g., `${ARCH_WIDTH}`).
-  These are wildcards used by the `build.rs` script to adapt to different target particularities.
-  Check `build.rs` for more details about these symbols.
-
 - On alignment: it's important for correctness that the VMA boundaries of both .bss and .data *and*
-  the LMA of .data are all `${ARCH_WIDTH}`-byte aligned. These alignments are assumed by the RAM
-  initialization routine. There's also a second benefit: `${ARCH_WIDTH}`-byte aligned boundaries
+  the LMA of .data are all `{{ cfg.arch_width }}`-byte aligned. These alignments are assumed by the RAM
+  initialization routine. There's also a second benefit: `{{ cfg.arch_width }}`-byte aligned boundaries
   means that you won't see "Address (..) is out of bounds" in the disassembly produced by `objdump`.
 */
 
@@ -67,7 +63,63 @@ PROVIDE(DefaultHandler = abort);
    to avoid compilation errors in direct mode, not to allow users to overwrite the symbol. */
 PROVIDE(_start_DefaultHandler_trap = _start_trap);
 
-${INCLUDE_LINKER_FILES}
+{% if not contains(cfg.feature, "no-exceptions") %}
+/* # EXCEPTION HANDLERS DESCRIBED IN THE STANDARD RISC-V ISA
+
+   It is possible to define a special handler for each exception type.
+   By default, all exceptions are handled by ExceptionHandler. However,
+   users can override these alias by defining the symbol themselves
+*/
+PROVIDE(InstructionMisaligned = ExceptionHandler);
+PROVIDE(InstructionFault = ExceptionHandler);
+PROVIDE(IllegalInstruction = ExceptionHandler);
+PROVIDE(Breakpoint = ExceptionHandler);
+PROVIDE(LoadMisaligned = ExceptionHandler);
+PROVIDE(LoadFault = ExceptionHandler);
+PROVIDE(StoreMisaligned = ExceptionHandler);
+PROVIDE(StoreFault = ExceptionHandler);
+PROVIDE(UserEnvCall = ExceptionHandler);
+PROVIDE(SupervisorEnvCall = ExceptionHandler);
+PROVIDE(MachineEnvCall = ExceptionHandler);
+PROVIDE(InstructionPageFault = ExceptionHandler);
+PROVIDE(LoadPageFault = ExceptionHandler);
+PROVIDE(StorePageFault = ExceptionHandler);
+{% endif %}
+
+{% if not contains(cfg.feature, "no-interrupts") %}
+/* # CORE INTERRUPT HANDLERS DESCRIBED IN THE STANDARD RISC-V ISA
+
+   It is possible to define a special handler for each interrupt type.
+   By default, all interrupts are handled by DefaultHandler. However, users can
+   override these alias by defining the symbol themselves
+*/
+PROVIDE(SupervisorSoft = DefaultHandler);
+PROVIDE(MachineSoft = DefaultHandler);
+PROVIDE(SupervisorTimer = DefaultHandler);
+PROVIDE(MachineTimer = DefaultHandler);
+PROVIDE(SupervisorExternal = DefaultHandler);
+PROVIDE(MachineExternal = DefaultHandler);
+
+/* When vectored trap mode is enabled, each interrupt source must implement its own
+   trap entry point. By default, all interrupts start in _DefaultHandler_trap.
+   However, users can override these alias by defining the symbol themselves */
+PROVIDE(_start_SupervisorSoft_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineSoft_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SupervisorTimer_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineTimer_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_SupervisorExternal_trap = _start_DefaultHandler_trap);
+PROVIDE(_start_MachineExternal_trap = _start_DefaultHandler_trap);
+{% endif %}
+
+{% if contains(cfg.feature, "device")%}
+/* Device-specific exception and interrupt handlers, usually provided by PACs */
+INCLUDE device.x
+{% endif %}
+
+{% if contains(cfg.feature, "memory")%}
+/* Device-specific memory layout, usually provided by BSPs */
+INCLUDE memory.x
+{% endif %}
 
 PROVIDE(_stext = ORIGIN(REGION_TEXT));
 PROVIDE(_stack_start = ORIGIN(REGION_STACK) + LENGTH(REGION_STACK));
@@ -114,16 +166,16 @@ SECTIONS
     *(.srodata .srodata.*);
     *(.rodata .rodata.*);
 
-    /* ${ARCH_WIDTH}-byte align the end (VMA) of this section.
+    /* {{ cfg.arch_width }}-byte align the end (VMA) of this section.
        This is required by LLD to ensure the LMA of the following .data
        section will have the correct alignment. */
-    . = ALIGN(${ARCH_WIDTH});
+    . = ALIGN({{ cfg.arch_width }});
     __erodata = .;
   } > REGION_RODATA
 
-  .data : ALIGN(${ARCH_WIDTH})
+  .data : ALIGN({{ cfg.arch_width }})
   {
-    . = ALIGN(${ARCH_WIDTH});
+    . = ALIGN({{ cfg.arch_width }});
     __sdata = .;
 
     /* Must be called __global_pointer$ for linker relaxations to work. */
@@ -136,15 +188,15 @@ SECTIONS
   /* Allow sections from user `memory.x` injected using `INSERT AFTER .data` to
    * use the .data loading mechanism by pushing __edata. Note: do not change
    * output region or load region in those user sections! */
-  . = ALIGN(${ARCH_WIDTH});
+  . = ALIGN({{ cfg.arch_width }});
   __edata = .;
   
   /* LMA of .data */
   __sidata = LOADADDR(.data);
 
-  .bss (NOLOAD) : ALIGN(${ARCH_WIDTH})
+  .bss (NOLOAD) : ALIGN({{ cfg.arch_width }})
   {
-    . = ALIGN(${ARCH_WIDTH});
+    . = ALIGN({{ cfg.arch_width }});
     __sbss = .;
 
     *(.sbss .sbss.* .bss .bss.*);
@@ -153,7 +205,7 @@ SECTIONS
   /* Allow sections from user `memory.x` injected using `INSERT AFTER .bss` to
    * use the .bss zeroing mechanism by pushing __ebss. Note: do not change
    * output region or load region in those user sections! */
-  . = ALIGN(${ARCH_WIDTH});
+  . = ALIGN({{ cfg.arch_width }});
   __ebss = .;
 
   /* fictitious region that represents the memory available for the heap */
@@ -190,8 +242,8 @@ ERROR(riscv-rt): the start of the REGION_TEXT must be 4-byte aligned");
 ASSERT(ORIGIN(REGION_RODATA) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_RODATA must be 4-byte aligned");
 
-ASSERT(ORIGIN(REGION_DATA) % ${ARCH_WIDTH} == 0, "
-ERROR(riscv-rt): the start of the REGION_DATA must be ${ARCH_WIDTH}-byte aligned");
+ASSERT(ORIGIN(REGION_DATA) % {{ cfg.arch_width }} == 0, "
+ERROR(riscv-rt): the start of the REGION_DATA must be {{ cfg.arch_width }}-byte aligned");
 
 ASSERT(ORIGIN(REGION_HEAP) % 4 == 0, "
 ERROR(riscv-rt): the start of the REGION_HEAP must be 4-byte aligned");
@@ -202,14 +254,14 @@ ERROR(riscv-rt): the start of the REGION_STACK must be 4-byte aligned");
 ASSERT(_stext % 4 == 0, "
 ERROR(riscv-rt): `_stext` must be 4-byte aligned");
 
-ASSERT(__sdata % ${ARCH_WIDTH} == 0 && __edata % ${ARCH_WIDTH} == 0, "
-BUG(riscv-rt): .data is not ${ARCH_WIDTH}-byte aligned");
+ASSERT(__sdata % {{ cfg.arch_width }} == 0 && __edata % {{ cfg.arch_width }} == 0, "
+BUG(riscv-rt): .data is not {{ cfg.arch_width }}-byte aligned");
 
-ASSERT(__sidata % ${ARCH_WIDTH} == 0, "
-BUG(riscv-rt): the LMA of .data is not ${ARCH_WIDTH}-byte aligned");
+ASSERT(__sidata % {{ cfg.arch_width }} == 0, "
+BUG(riscv-rt): the LMA of .data is not {{ cfg.arch_width }}-byte aligned");
 
-ASSERT(__sbss % ${ARCH_WIDTH} == 0 && __ebss % ${ARCH_WIDTH} == 0, "
-BUG(riscv-rt): .bss is not ${ARCH_WIDTH}-byte aligned");
+ASSERT(__sbss % {{ cfg.arch_width }} == 0 && __ebss % {{ cfg.arch_width }} == 0, "
+BUG(riscv-rt): .bss is not {{ cfg.arch_width }}-byte aligned");
 
 ASSERT(__sheap % 4 == 0, "
 BUG(riscv-rt): start of .heap is not 4-byte aligned");
