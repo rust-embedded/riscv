@@ -22,6 +22,7 @@ targets = [
 
 [build-dependencies]
 riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
+minilink = "0.2"
 
 [dependencies]
 riscv = { path = "../riscv", version = "0.14.0" }
