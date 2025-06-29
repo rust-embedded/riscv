@@ -58,7 +58,7 @@ fn main() {
     if let Ok(target) = RiscvTarget::build(&target, &cargo_flags) {
         let width = target.width();
 
-        // set environmet variable RISCV_RT_BASE_ISA to the base ISA of the target.
+        // set environment variable RISCV_RT_BASE_ISA to the base ISA of the target.
         println!(
             "cargo:rustc-env=RISCV_RT_BASE_ISA={}",
             target.llvm_base_isa()

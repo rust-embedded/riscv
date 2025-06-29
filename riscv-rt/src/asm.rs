@@ -168,7 +168,7 @@ cfg_global_asm!(
     addi t0, t0, 8
     bltu t0, t2, 3b",
     "
-4: // RAM initilized",
+4: // RAM initialized",
 );
 
 // INITIALIZE FLOATING POINT UNIT
