@@ -282,7 +282,7 @@ impl PacEnumItem {
             r#"
 #[cfg(all(feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
 core::arch::global_asm!("
-    .section .trap, \"ax\"
+    .section .trap.vector, \"ax\"
     .global _vector_table
     .type _vector_table, @function
     
