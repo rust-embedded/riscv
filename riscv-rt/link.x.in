@@ -127,6 +127,16 @@ PROVIDE(_max_hart_id = 0);
 PROVIDE(_hart_stack_size = SIZEOF(.stack) / (_max_hart_id + 1));
 PROVIDE(_heap_size = 0);
 
+{% set trap_regions %}
+. = ALIGN(4);
+KEEP(*(.trap.vector));   /* for _trap_vector (vectored mode only) */
+KEEP(*(.trap.start));    /* for _start_trap routine */
+KEEP(*(.trap.start.*));  /* for _start_INTERRUPT_trap routines (vectored mode only) */
+KEEP(*(.trap.continue)); /* for _continue_trap routine (vectored mode only) */
+KEEP(*(.trap.rust));     /* for _start_trap_rust Rust function */
+KEEP(*(.trap .trap.*));  /* Other .trap symbols at the end */
+{% endset %}
+
 SECTIONS
 {
   .text.dummy (NOLOAD) :
@@ -143,14 +153,9 @@ SECTIONS
     /* point of the program. */
     KEEP(*(.init));
     
-    . = ALIGN(4);
-    KEEP(*(.trap.vector));   /* for _trap_vector (vectored mode only) */
-    KEEP(*(.trap.start));    /* for _start_trap routine */
-    KEEP(*(.trap.start.*));  /* for _start_INTERRUPT_trap routines (vectored mode only) */
-    KEEP(*(.trap.continue)); /* for _continue_trap routine (vectored mode only) */
-    KEEP(*(.trap.rust));     /* for _start_trap_rust Rust function */
-    KEEP(*(.trap .trap.*));  /* Other .trap symbols at the end */
-
+    {% if not contains(cfg.feature, "trap-region") %}
+    {{ trap_regions }}
+    {% endif %}
     *(.text.abort);
     *(.text .text.*);
 
@@ -172,6 +177,13 @@ SECTIONS
     . = ALIGN({{ cfg.arch_width }});
     __erodata = .;
   } > REGION_RODATA
+
+  {% if contains(cfg.feature, "trap-region") %}
+  .trap : ALIGN(4)
+  {
+    {{ trap_regions }}
+  } > REGION_TRAP
+  {% endif %}
 
   .data : ALIGN({{ cfg.arch_width }})
   {

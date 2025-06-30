@@ -55,6 +55,8 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features device
       - name: Build (include memory.x)
         run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features memory
+      - name: Build (include memory.x, use trap region)
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features memory,trap-region
       - name: Build (include device.x and memory.x)
         run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features device,memory
       

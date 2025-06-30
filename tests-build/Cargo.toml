@@ -8,6 +8,9 @@ panic-halt = "1.0"
 riscv = { path = "../riscv" }
 riscv-rt = { path = "../riscv-rt" }
 
+[build-dependencies]
+minilink = "0.2"
+
 [features]
 pre-init = ["riscv-rt/pre-init"]
 single-hart = ["riscv-rt/single-hart"]
@@ -16,3 +19,4 @@ device = ["riscv-rt/device"]
 memory = ["riscv-rt/memory"]
 no-exceptions = ["riscv-rt/no-exceptions"]
 no-interrupts = ["riscv-rt/no-interrupts"]
+trap-region = ["riscv-rt/trap-region"]

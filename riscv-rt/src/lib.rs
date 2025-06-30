@@ -532,6 +532,17 @@
 //! because when booting from elf, U-boot passes `argc` and `argv`. This feature also implies `single-hart`.
 //! The only way to get boot-hart is through fdt, so other harts initialization is up to you.
 //!
+//! ## `trap-region`
+//!
+//! Adds a dedicated trap memory region, `REGION_TRAP`, for placing `.trap` sections into. Enabling
+//! this feature and adding `REGION_ALIAS("REGION_TRAP", RAM);` to `memory.x` would for example place
+//! it in `RAM`.
+//!
+//! `REGION_TEXT` is usually placed in flash memory with a cache in front. Having a separate trap
+//! memory region makes it possible to always store interrupt and exceptions handlers in RAM,
+//! effectively bypassing cache contention and variable trap latency at the cost of increased RAM
+//! usage.
+//!
 //! [attr-entry]: attr.entry.html
 //! [attr-exception]: attr.exception.html
 //! [attr-external-interrupt]: attr.external_interrupt.html
