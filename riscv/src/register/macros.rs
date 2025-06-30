@@ -721,7 +721,7 @@ macro_rules! write_only_csr {
     };
 }
 
-/// Defines field accesor functions for a read-write CSR type.
+/// Defines field accessor functions for a read-write CSR type.
 #[macro_export]
 macro_rules! read_write_csr_field {
     ($ty:ident,
@@ -804,7 +804,7 @@ macro_rules! read_write_csr_field {
     };
 }
 
-/// Defines field accesor functions for a read-only CSR type.
+/// Defines field accessor functions for a read-only CSR type.
 #[macro_export]
 macro_rules! read_only_csr_field {
     ($ty:ident,
@@ -899,7 +899,7 @@ macro_rules! read_only_csr_field {
     };
 }
 
-/// Defines field accesor functions for a write-only CSR type.
+/// Defines field accessor functions for a write-only CSR type.
 #[macro_export]
 macro_rules! write_only_csr_field {
     ($ty:ident,
