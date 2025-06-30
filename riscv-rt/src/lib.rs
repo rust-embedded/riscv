@@ -480,7 +480,7 @@
 //!
 //! Those unfamiliar with crate dependency features may want to first refer to
 //! [The Cargo Book](https://doc.rust-lang.org/cargo/reference/features.html#dependency-features)
-//! for a quick rundown on they work.
+//! for a quick rundown on they work. None are enabled by default.
 //!
 //! ## `pre-init`
 //!
