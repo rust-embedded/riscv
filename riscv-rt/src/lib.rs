@@ -478,9 +478,12 @@
 //!
 //! # Cargo Features
 //!
+//! Those unfamiliar with crate dependency features may want to first refer to
+//! [The Cargo Book](https://doc.rust-lang.org/cargo/reference/features.html#dependency-features)
+//! for a quick rundown on they work.
+//!
 //! ## `pre-init`
 //!
-//! The pre-init feature (`pre-init`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
 //! When enabled, the runtime will execute the `__pre_init` function to be run **before RAM is initialized**.
 //! If the feature is enabled, the `__pre_init` function must be defined in the user code (i.e., no default implementation is
 //! provided by this crate). If the feature is disabled, the `__pre_init` function is not required.
@@ -494,29 +497,13 @@
 //!
 //! ## `single-hart`
 //!
-//! The single hart feature (`single-hart) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
-//!
-//! For example:
-//! ``` text
-//! [dependencies]
-//! riscv-rt = {features=["single-hart"]}
-//! ```
-//!
-//! This feature saves a little code size if there is only one hart on the target.
+//! Saves a little code size if there is only one hart on the target.
 //!
 //! ## `s-mode`
 //!
-//! The supervisor mode feature (`s-mode`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
-//!
-//! For example:
-//! ``` text
-//! [dependencies]
-//! riscv-rt = {features=["s-mode"]}
-//! ```
-//!
-//! While most registers/instructions have variants for
-//! both `mcause` and `scause`, the `mhartid` hardware thread register is not available in supervisor
-//! mode. Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
+//! Supervisor mode. While most registers/instructions have variants for both `mcause` and
+//! `scause`, the `mhartid` hardware thread register is not available in supervisor mode.
+//! Instead, the hartid is passed as parameter by a bootstrapping firmware (i.e., SBI).
 //!
 //! Use case: QEMU supports [OpenSBI](https://github.com/riscv-software-src/opensbi) as default firmware.
 //! Using the SBI requires riscv-rt to be run in supervisor mode instead of machine mode.
@@ -535,28 +522,13 @@
 //!
 //! ## `v-trap`
 //!
-//! The vectored trap feature (`v-trap`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
-//!
-//! For example:
-//! ``` text
-//! [dependencies]
-//! riscv-rt = {features=["v-trap"]}
-//! ```
-//!
-//! When the vectored trap feature is enabled, the trap vector is set to `_vector_table` in vectored mode.
-//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the core interrupt.
+//! When vectored trap handling is enabled, the trap vector is set to `_vector_table` in vectored mode.
+//! This table is a list of `j _start_INTERRUPT_trap` instructions, where `INTERRUPT` is the name of the
+//! core interrupt.
 //!
 //! ## `u-boot`
 //!
-//! The U-boot support feature (`u-boot`) can be activated via [Cargo features](https://doc.rust-lang.org/cargo/reference/features.html).
-//!
-//! For example:
-//! ``` text
-//! [dependencies]
-//! riscv-rt = { features = ["u-boot"] }
-//! ```
-//!
-//! When the `u-boot` feature is enabled, acceptable signature for `#[entry]` macros is changed. This is required
+//! When the U-boot feature is enabled, acceptable signature for `#[entry]` macros is changed. This is required
 //! because when booting from elf, U-boot passes `argc` and `argv`. This feature also implies `single-hart`.
 //! The only way to get boot-hart is through fdt, so other harts initialization is up to you.
 //!
