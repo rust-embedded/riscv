@@ -518,8 +518,8 @@ pub fn default_start_trap(_input: TokenStream) -> TokenStream {
     format!(
         r#"
 core::arch::global_asm!(
-".section .trap, \"ax\"
-.align 4 /* Alignment required for xtvec */
+".section .trap.start, \"ax\"
+.balign 4 /* Alignment required for xtvec */
 .global _default_start_trap
 _default_start_trap:
     addi sp, sp, - {trap_size} * {width}
@@ -557,16 +557,15 @@ pub fn vectored_interrupt_trap(_input: TokenStream) -> TokenStream {
     let instructions = format!(
         r#"
 core::arch::global_asm!(
-".section .trap, \"ax\"
+".section .trap.continue, \"ax\"
 
-.align 4
+.balign 4
 .global _start_DefaultHandler_trap
 _start_DefaultHandler_trap:
     addi sp, sp, -{trap_size} * {width} // allocate space for trap frame
     {store_start}                       // store trap partially (only register a0)
     la a0, DefaultHandler               // load interrupt handler address into a0
 
-.align 4
 .global _continue_interrupt_trap
 _continue_interrupt_trap:
     {store_continue}                   // store trap partially (all registers except a0)
@@ -685,10 +684,11 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 /// }
 /// ```
 pub fn core_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = if cfg!(feature = "v-trap") {
-        RiscvArch::try_from_env()
-    } else {
-        None
+    let arch = match () {
+        #[cfg(feature = "v-trap")]
+        () => RiscvArch::try_from_env(),
+        #[cfg(not(feature = "v-trap"))]
+        () => None,
     };
     trap(args, input, RiscvPacItem::CoreInterrupt, arch)
 }
@@ -746,13 +746,14 @@ fn trap(
     let export_name = format!("{int_ident:#}");
 
     let start_trap = match arch {
+        #[cfg(feature = "v-trap")]
         Some(arch) => {
             let trap = start_interrupt_trap(int_ident, arch);
             quote! {
                 #trap
             }
         }
-        None => proc_macro2::TokenStream::new(),
+        _ => proc_macro2::TokenStream::new(),
     };
 
     let pac_trait = pac_item.impl_trait();
@@ -772,6 +773,7 @@ fn trap(
     .into()
 }
 
+#[cfg(feature = "v-trap")]
 fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::TokenStream {
     let interrupt = ident.to_string();
     let width = arch.width();
@@ -780,9 +782,10 @@ fn start_interrupt_trap(ident: &syn::Ident, arch: RiscvArch) -> proc_macro2::Tok
 
     let instructions = format!(
         r#"
+#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 core::arch::global_asm!(
-    ".section .trap, \"ax\"
-    .align 2
+    ".section .trap.start.{interrupt}, \"ax\"
+    .balign 4
     .global _start_{interrupt}_trap
     _start_{interrupt}_trap:
         addi sp, sp, -{trap_size} * {width} // allocate space for trap frame
