@@ -93,7 +93,7 @@ SECTIONS
     . = ALIGN(4);
     *(.trap);
     *(.trap.rust);
-    *(.text.abort); /* close to .init section to support j abort */
+    *(.text.abort);
     *(.text .text.*);
 
     . = ALIGN(4);
