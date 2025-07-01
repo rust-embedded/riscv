@@ -5,6 +5,12 @@ macro_rules! cfg_global_asm {
     {@inner, [$($x:tt)*], } => {
         global_asm!{$($x)*}
     };
+    (@inner, [$($x:tt)*], #[cfg($meta:meta)] { $($y:tt)* } $($rest:tt)*) => {
+        #[cfg($meta)]
+        cfg_global_asm!{@inner, [$($x)*], $($y)* $($rest)*}
+        #[cfg(not($meta))]
+        cfg_global_asm!{@inner, [$($x)*], $($rest)*}
+    };
     (@inner, [$($x:tt)*], #[cfg($meta:meta)] $asm:literal, $($rest:tt)*) => {
         #[cfg($meta)]
         cfg_global_asm!{@inner, [$($x)* $asm,], $($rest)*}
@@ -80,17 +86,14 @@ _abs_start:
     la t0, abort // If hart_id > _max_hart_id, jump to abort
     jr t0
 1:", // only valid harts reach this point
-);
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
-cfg_global_asm!(
     ".option push
     .option norelax
     la gp, __global_pointer$
     .option pop",
-);
 #[cfg(not(feature = "single-hart"))]
-cfg_global_asm!(
+{
     "mv t2, a0
     lui t0, %hi(_hart_stack_size)
     add t0, t0, %lo(_hart_stack_size)",
@@ -104,17 +107,13 @@ cfg_global_asm!(
     addi t2, t2, -1
     bnez t2, 1b
 2:  ",
-);
-cfg_global_asm!(
+}
     "la t1, _stack_start",
     #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
     "andi sp, t1, -16 // align stack to 16-bytes
     add s0, sp, zero",
-);
-
 // STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
-cfg_global_asm!(
     #[cfg(target_arch = "riscv32")]
     "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
     sw a0, 4 * 0(sp)
@@ -125,10 +124,8 @@ cfg_global_asm!(
     sd a0, 8 * 0(sp)
     sd a1, 8 * 1(sp)
     sd a2, 8 * 2(sp)",
-);
 
 // CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
-cfg_global_asm!(
     #[cfg(not(feature = "single-hart"))]
     // Skip RAM initialization if current hart is not the boot hart
     "call _mp_hook
@@ -169,11 +166,10 @@ cfg_global_asm!(
     bltu t0, t2, 3b",
     "
 4: // RAM initialized",
-);
 
 // INITIALIZE FLOATING POINT UNIT
 #[cfg(any(riscvf, riscvd))]
-cfg_global_asm!(
+{
     "
     li t0, 0x4000 // bit 14 is FS most significant bit
     li t2, 0x2000 // bit 13 is FS least significant bit
@@ -185,10 +181,9 @@ cfg_global_asm!(
     "csrrc x0, mstatus, t0
     csrrs x0, mstatus, t2",
     "fscsr x0",
-);
+}
 
 // SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
-cfg_global_asm!(
     "call _setup_interrupts",
     #[cfg(target_arch = "riscv32")]
     "lw a0, 4 * 0(sp)
@@ -203,9 +198,7 @@ cfg_global_asm!(
     "la t0, main
     jr t0
     .cfi_endproc",
-);
 
-cfg_global_asm!(
     #[cfg(not(feature = "single-hart"))]
     // Default implementation of `_mp_hook` wakes hart 0 and busy-loops all the other harts.
     // Users can override this function by defining their own `_mp_hook`.

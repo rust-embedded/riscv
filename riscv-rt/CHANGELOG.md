@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - `clippy` fixes
+- Merged `cfg_global_asm!` macro invocations to guarantee contiguous code generation.
 
 ## [v0.15.0] - 2025-06-10
 
