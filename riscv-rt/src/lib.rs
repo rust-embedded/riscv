@@ -359,6 +359,24 @@
 //! If the `v-trap` feature is enabled, the trap vector is set to `_vector_table`
 //! in vectored mode. Users can override this function by defining their own `_setup_interrupts`.
 //!
+//! This function can be redefined in the following way:
+//!
+//! ``` no_run
+//! #[export_name = "_setup_interrupts"]
+//! pub fn setup_interrupts() {
+//!    // ...
+//! }
+//! ```
+//!
+//! ## `hal_main`
+//!
+//! Internally, `riscv-rt` does not jump to the `main` function created by the user using the
+//! [`#[entry]`][attr-entry] attribute. Instead, it jumps to the `hal_main` function.
+//! The linker will map `hal_main` to `main` if the prior is not defined, which is the typical case.
+//! However, the `hal_main` function allows HALs to inject additional code before jumping to the
+//! user's `main` function. This might be useful for certain HALs that need to perform additional
+//! configuration before the main function is executed.
+//!
 //! # Attributes
 //!
 //! ## Core exception handlers
@@ -552,10 +570,16 @@ pub mod exceptions;
 pub mod interrupts;
 
 #[cfg(feature = "s-mode")]
-use riscv::register::scause as xcause;
+use riscv::register::{
+    scause as xcause,
+    stvec::{self as xtvec, Stvec as Xtvec, TrapMode},
+};
 
 #[cfg(not(feature = "s-mode"))]
-use riscv::register::mcause as xcause;
+use riscv::register::{
+    mcause as xcause,
+    mtvec::{self as xtvec, Mtvec as Xtvec, TrapMode},
+};
 
 pub use riscv_pac::*;
 pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt};
@@ -570,6 +594,60 @@ pub use riscv_rt_macros::pre_init;
 #[export_name = "error: riscv-rt appears more than once in the dependency graph"]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
+
+/// Rust entry point (_start_rust)
+///
+/// Configures interrupts and calls main. This function never returns.
+///
+/// # Safety
+///
+/// This function should not be called directly by the user, and should instead
+/// be invoked by the runtime implicitly.
+#[cfg_attr(
+    any(target_arch = "riscv32", target_arch = "riscv64"),
+    link_section = ".init.rust"
+)]
+#[export_name = "_start_rust"]
+pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
+    extern "Rust" {
+        fn _setup_interrupts();
+        fn hal_main(a0: usize, a1: usize, a2: usize) -> !;
+    }
+
+    _setup_interrupts();
+    hal_main(a0, a1, a2);
+}
+
+/// Default implementation of `_setup_interrupts`.
+///
+/// In direct mode (i.e., `v-trap` feature disabled), it sets the trap vector to `_start_trap`.
+/// In vectored mode (i.e., `v-trap` feature enabled), it sets the trap vector to `_vector_table`.
+///
+/// # Note
+///
+/// Users can override this function by defining their own `_setup_interrupts` function.
+///
+/// # Safety
+///
+/// This function should not be called directly by the user, and should instead
+/// be invoked by the runtime implicitly. It is expected to be called before the main function.
+#[export_name = "_default_setup_interrupts"]
+pub unsafe extern "Rust" fn setup_interrupts() {
+    extern "C" {
+        #[cfg(not(feature = "v-trap"))]
+        fn _start_trap();
+        #[cfg(feature = "v-trap")]
+        fn _vector_table();
+    }
+
+    let xtvec_val = match () {
+        #[cfg(not(feature = "v-trap"))]
+        _ => Xtvec::new(_start_trap as usize, TrapMode::Direct),
+        #[cfg(feature = "v-trap")]
+        _ => Xtvec::new(_vector_table as usize, TrapMode::Vectored),
+    };
+    xtvec::write(xtvec_val);
+}
 
 /// Registers saved in trap handler
 #[repr(C)]

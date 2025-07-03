@@ -113,7 +113,7 @@ _abs_start:
     "sub t1, t1, t0",
     "andi sp, t1, -16 // align stack to 16-bytes
     add s0, sp, zero",
-// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY main
+// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY _start_rust
     #[cfg(target_arch = "riscv32")]
     "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
     sw a0, 4 * 0(sp)
@@ -183,8 +183,7 @@ _abs_start:
     "fscsr x0",
 }
 
-// SET UP INTERRUPTS, RESTORE a0..a2, AND JUMP TO MAIN RUST FUNCTION
-    "call _setup_interrupts",
+// RESTORE a0..a2, AND JUMP TO _start_rust FUNCTION
     #[cfg(target_arch = "riscv32")]
     "lw a0, 4 * 0(sp)
     lw a1, 4 * 1(sp)
@@ -195,7 +194,7 @@ _abs_start:
     ld a1, 8 * 1(sp)
     ld a2, 8 * 2(sp)
     addi sp, sp, 8 * 4",
-    "la t0, main
+    "la t0, _start_rust
     jr t0
     .cfi_endproc",
 
@@ -210,21 +209,6 @@ _default_mp_hook:
     j 1b
 2:  li a0, 1
     ret",
-    // Default implementation of `_setup_interrupts` sets the trap vector to `_start_trap` in direct mode.
-    // In vectored mode, it sets the trap vector to `_vector_table`.
-    // Users can override this function by defining their own `_setup_interrupts`
-    ".global _default_setup_interrupts
-_default_setup_interrupts:",
-    #[cfg(not(feature = "v-trap"))]
-    "la t0, _start_trap", // _start_trap is 4-byte aligned, so it corresponds to the Direct trap mode
-    #[cfg(feature = "v-trap")]
-    "la t0, _vector_table
-    ori t0, t0, 0x1", // _vector_table is at least 4-byte aligned, so we must set the bit 0 to activate the Vectored trap mode
-    #[cfg(feature = "s-mode")]
-    "csrw stvec, t0",
-    #[cfg(not(feature = "s-mode"))]
-    "csrw mtvec, t0",
-    "ret",
 );
 
 riscv_rt_macros::default_start_trap!();
@@ -235,7 +219,7 @@ riscv_rt_macros::vectored_interrupt_trap!();
 #[rustfmt::skip]
 global_asm!(
     ".section .text.abort
-.align 4
+.balign 4
 .global _default_abort
 _default_abort:  // make sure there is an abort symbol when linking
     j _default_abort"
