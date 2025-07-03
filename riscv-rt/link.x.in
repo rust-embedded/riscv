@@ -90,9 +90,15 @@ SECTIONS
     /* Put reset handler first in .text section so it ends up as the entry */
     /* point of the program. */
     KEEP(*(.init));
+    
     . = ALIGN(4);
-    *(.trap);
-    *(.trap.rust);
+    KEEP(*(.trap.vector));   /* for _trap_vector (vectored mode only) */
+    KEEP(*(.trap.start));    /* for _start_trap routine */
+    KEEP(*(.trap.start.*));  /* for _start_INTERRUPT_trap routines (vectored mode only) */
+    KEEP(*(.trap.continue)); /* for _continue_trap routine (vectored mode only) */
+    KEEP(*(.trap.rust));     /* for _start_trap_rust Rust function */
+    KEEP(*(.trap .trap.*));  /* Other .trap symbols at the end */
+
     *(.text.abort);
     *(.text .text.*);
 

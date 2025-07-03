@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - In multi-hart targets, the hart ID is now validated earlier in the boot process.
 - General purpose registers are no longer zeroed, as this is not strictly necessary.
   This aligns with the `cortex-m-rt` crate.
+- Better organization of the `.trap` section:
+  1. `_trap_vector` (if `v-trap` is enabled).
+  2. `_start_trap` (defaults to `_default_start_trap`).
+  3. `_start_INTERRUPT_trap` routines (if `v-trap` is enabled).
+  4. `_start_DefaultHandler_trap` and `_continue_trap` (if `v-trap` is enabled).
+  5. `_start_trap_rust`.
+  6. Other code in `.trap` section (usually, none)
 
 ### Fixed
 
