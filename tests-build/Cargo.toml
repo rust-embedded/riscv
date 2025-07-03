@@ -8,6 +8,9 @@ panic-halt = "1.0"
 riscv = { path = "../riscv" }
 riscv-rt = { path = "../riscv-rt" }
 
+[build-dependencies]
+minilink = "0.2"
+
 [features]
 pre-init = ["riscv-rt/pre-init"]
 single-hart = ["riscv-rt/single-hart"]
