@@ -5,7 +5,7 @@
 //!
 //! # Features
 //!
-//! This crates takes care of:
+//! This crate takes care of:
 //!
 //! - The memory layout of the program.
 //!
@@ -327,21 +327,11 @@
 //! Furthermore, as this function is expected to behave like a trap handler, it is
 //! necessary to make it be 4-byte aligned.
 //!
-//! ## `_mp_hook`
+//! ## `_mp_hook` (for multi-core targets only)
 //!
 //! This function is called from all the harts and must return true only for one hart,
 //! which will perform memory initialization. For other harts it must return false
 //! and implement wake-up in platform-dependent way (e.g., after waiting for a user interrupt).
-//! The parameter `hartid` specifies the hartid of the caller.
-//!
-//! This function can be redefined in the following way:
-//!
-//! ``` no_run
-//! #[export_name = "_mp_hook"]
-//! pub extern "Rust" fn mp_hook(hartid: usize) -> bool {
-//!    // ...
-//! }
-//! ```
 //!
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
 //!
@@ -349,6 +339,37 @@
 //!
 //! `_mp_hook` is only necessary in multi-core targets. If the `single-hart` feature is enabled,
 //! `_mp_hook` is not included in the binary.
+//!
+//! ### Important implementation guidelines
+//!
+//! This function is called during the early boot process. Thus, when implementing it, you **MUST** follow these guidelines:
+//!
+//! - Implement it in assembly (no Rust code is allowed at this point).
+//! - Allocate this function within the `.init` section.
+//! - You can get the hart id from the `a0` register.
+//! - You must set the return value in the `a0` register.
+//! - Do **NOT** use callee-saved registers `s0-s2`, as they are used to preserve the initial values of `a0-a2` registers.
+//! - In RVE targets, do **NOT** use the `a5` register, as it is used to preserve the `a2` register.
+//!
+//! **Violating these constraints will result in incorrect arguments being passed to `main()`.**
+//!
+//! ### Implementation example
+//!
+//! The following example shows how to implement the `_mp_hook` function in assembly.
+//!
+//! ``` no_run
+//! core::arch::global_asm!(
+//!     r#".section .init.mp_hook, "ax"
+//!     .global _mp_hook
+//! _mp_hook:
+//!     beqz a0, 2f // check if hartid is 0
+//! 1:  wfi         // If not, wait for interrupt in a loop
+//!     j 1b
+//! 2:  li a0, 1    // Otherwise, return true
+//!     ret
+//!     "#
+//! );
+//! ```
 //!
 //! ## `_setup_interrupts`
 //!
@@ -506,12 +527,31 @@
 //! If the feature is enabled, the `__pre_init` function must be defined in the user code (i.e., no default implementation is
 //! provided by this crate). If the feature is disabled, the `__pre_init` function is not required.
 //!
-//! As `__pre_init` runs before RAM is initialised, it is not sound to use a Rust function for `__pre_init`, and
-//! instead it should typically be written in assembly using `global_asm` or an external assembly file.
+//! ### Important implementation guidelines
 //!
-//! Alternatively, you can use the [`#[pre_init]`][attr-pre-init] attribute to define a pre-init function with Rust.
-//! Note that using this macro is discouraged, as it may lead to undefined behavior.
-//! We left this option for backwards compatibility, but it is subject to removal in the future.
+//! This function is called during the early boot process. Thus, when implementing it, you **MUST** follow these guidelines:
+//!
+//! - Implement it in assembly (no Rust code is allowed at this point).
+//! - Allocate this function within the `.init` section.
+//! - Do **NOT** use callee-saved registers `s0-s2`, as they are used to preserve the initial values of `a0-a2` registers.
+//! - In RVE targets, do **NOT** use the `a5` register, as it is used to preserve the `a2` register.
+//!
+//! **Violating these constraints will result in incorrect arguments being passed to `main()`.**
+//!
+//! ### Implementation example
+//!
+//! The following example shows how to implement the `__pre_init` function in assembly.
+//!
+//! ``` no_run
+//! core::arch::global_asm!(
+//!     r#".section .init.pre_init, "ax"
+//!     .global __pre_init
+//! __pre_init:
+//!     // Do some pre-initialization work here and return
+//!     ret
+//!     "#
+//! );
+//! ```
 //!
 //! ## `single-hart`
 //!
