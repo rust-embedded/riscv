@@ -85,7 +85,7 @@ _abs_start:
     bgeu t0, a0, 1f
     la t0, abort // If hart_id > _max_hart_id, jump to abort
     jr t0
-1:", // only valid harts reach this point
+1:  mv s1, a0", // If hart ID is valid, preserve it in s1
 
 // INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
     ".option push
@@ -113,18 +113,6 @@ _abs_start:
     "sub t1, t1, t0",
     "andi sp, t1, -16 // align stack to 16-bytes
     add s0, sp, zero",
-// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY _start_rust
-    #[cfg(target_arch = "riscv32")]
-    "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
-    sw a0, 4 * 0(sp)
-    sw a1, 4 * 1(sp)
-    sw a2, 4 * 2(sp)",
-    #[cfg(target_arch = "riscv64")]
-    "addi sp, sp, -8 * 4 // we must keep stack aligned to 16-bytes
-    sd a0, 8 * 0(sp)
-    sd a1, 8 * 1(sp)
-    sd a2, 8 * 2(sp)",
-
 // CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
     #[cfg(not(feature = "single-hart"))]
     // Skip RAM initialization if current hart is not the boot hart
@@ -183,18 +171,9 @@ _abs_start:
     "fscsr x0",
 }
 
-// RESTORE a0..a2, AND JUMP TO _start_rust FUNCTION
-    #[cfg(target_arch = "riscv32")]
-    "lw a0, 4 * 0(sp)
-    lw a1, 4 * 1(sp)
-    lw a2, 4 * 2(sp)
-    addi sp, sp, 4 * 4",
-    #[cfg(target_arch = "riscv64")]
-    "ld a0, 8 * 0(sp)
-    ld a1, 8 * 1(sp)
-    ld a2, 8 * 2(sp)
-    addi sp, sp, 8 * 4",
-    "la t0, _start_rust
+// RESTORE a0 AND JUMP TO _start_rust FUNCTION
+    "mv a0, s1
+    la t0, _start_rust
     jr t0
     .cfi_endproc",
 
