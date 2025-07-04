@@ -31,6 +31,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Now, `_start_rust` jumps to `hal_main` instead of `main` directly. At linker level,
   `hal_main` maps to `main` if not defined. However, we now allow HALs to inject
   additional configuration code before jumping to the final user's `main` function.
+- Now, `a0` is preserved in `s1` during the startup process.
+
+### Removed
+
+- Removed usage of the stack before `_start_rust`. This was unsound, as in the `.init`
+  section RAM is still uninitialized.
+- Now, `a1` and `a2` are **not** preserved during the startup process. New documentation
+  of startup functions (`_mp_hook` and `__pre_init`) now provide additional implementation
+  guidelines to ensure a correct behavior of the runtime.
 
 ### Fixed
 
