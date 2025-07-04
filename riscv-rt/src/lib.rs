@@ -5,7 +5,7 @@
 //!
 //! # Features
 //!
-//! This crates takes care of:
+//! This crate takes care of:
 //!
 //! - The memory layout of the program.
 //!
@@ -337,10 +337,17 @@
 //! This function can be redefined in the following way:
 //!
 //! ``` no_run
-//! #[export_name = "_mp_hook"]
-//! pub extern "Rust" fn mp_hook(hartid: usize) -> bool {
-//!    // ...
-//! }
+//! core::arch::global_asm!(
+//!     r#".section .init.mp_hook, "ax"
+//!     .global _mp_hook
+//! _mp_hook:
+//!     beqz a0, 2f // check if hartid is 0
+//! 1:  wfi         // If not, wait for interrupt in a loop
+//!     j 1b
+//! 2:  li a0, 1    // Otherwise, return true
+//!     ret
+//!     "#
+//! );
 //! ```
 //!
 //! Default implementation of this function wakes hart 0 and busy-loops all the other harts.
@@ -349,6 +356,11 @@
 //!
 //! `_mp_hook` is only necessary in multi-core targets. If the `single-hart` feature is enabled,
 //! `_mp_hook` is not included in the binary.
+//!
+//! ### Important
+//!
+//! `_mp_hook` is a startup function that is called before RAM initialization. It must comply
+//! with all the [considerations for startup functions](#important-considerations-for-startup-functions).
 //!
 //! ## `_setup_interrupts`
 //!
@@ -513,6 +525,11 @@
 //! Note that using this macro is discouraged, as it may lead to undefined behavior.
 //! We left this option for backwards compatibility, but it is subject to removal in the future.
 //!
+//! ### Important
+//!
+//! `__pre_init` is a startup function that is called before RAM initialization. It must comply
+//! with all the [considerations for startup functions](#important-considerations-for-startup-functions).
+//!
 //! ## `single-hart`
 //!
 //! Saves a little code size if there is only one hart on the target.
@@ -555,6 +572,39 @@
 //! [attr-external-interrupt]: attr.external_interrupt.html
 //! [attr-core-interrupt]: attr.core_interrupt.html
 //! [attr-pre-init]: attr.pre_init.html
+//!
+//! # Important considerations for startup functions
+//!
+//! Currently, there are two startup functions that are called during the startup sequence before
+//! jumping to the Rust entry point ([`start_rust`]):
+//!
+//! - `_mp_hook`
+//! - `__pre_init`
+//!
+//! These functions **MUST**:
+//!
+//! - Be implemented in assembly.
+//! - Be placed within the `.init` section.
+//! - Follow specific calling conventions and register usage.
+//!
+//! Before calling these functions, the runtime uses callee-saved registers to preserve
+//! the initial argument values passed to `_start_rust`. Thus, the following registers are
+//! reserved and **MUST NOT** be used in any startup function:
+//!
+//! - `s0`: Contains the original value of `a0` (hart ID).
+//! - `s1`: Contains the original value of `a1` (usually a pointer to the device tree blob).
+//! - **IN RISCVI TARGETS `s2`**: Contains the original value of `a2` (usually reserved for future use).
+//! - **IN RISCVE TARGETS `a5`**: There are no more callee-saved registers, so `a2` is preserved in `a5`.
+//!
+//! As a general rule, when developing startup functions, use only these registers:
+//!
+//! - `**IN RISCVI TARGETS**: t0-t6` and `a0-a7`.
+//! - `**IN RISCVE TARGETS**: t0-t2` and `a0-a4` (note that `a5` is reserved).
+//!
+//! If possible, use only temporary registers, as they are always safe to modify.
+//! Note that, in `_mp_hook`, you are expected to modify `a0`, as it must hold the return value.
+//!
+//! **Violating these constraints will result in incorrect arguments being passed to `main()`.**
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]

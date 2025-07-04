@@ -87,7 +87,7 @@ _abs_start:
     jr t0
 1:", // only valid harts reach this point
 
-// INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
+// INITIALIZE GLOBAL POINTER (x3/gp) AND STACK POINTER (x2/sp)
     ".option push
     .option norelax
     la gp, __global_pointer$
@@ -111,20 +111,14 @@ _abs_start:
     "la t1, _stack_start",
     #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
-    "andi sp, t1, -16 // align stack to 16-bytes
-    add s0, sp, zero",
-// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY _start_rust
-    #[cfg(target_arch = "riscv32")]
-    "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
-    sw a0, 4 * 0(sp)
-    sw a1, 4 * 1(sp)
-    sw a2, 4 * 2(sp)",
-    #[cfg(target_arch = "riscv64")]
-    "addi sp, sp, -8 * 4 // we must keep stack aligned to 16-bytes
-    sd a0, 8 * 0(sp)
-    sd a1, 8 * 1(sp)
-    sd a2, 8 * 2(sp)",
-
+    "andi sp, t1, -16", // align stack to 16-bytes
+    // PRESERVE VALUES OF a0..a2, AS THEY WILL BE NEEDED LATER BY _start_rust
+    "mv s0, a0
+    mv s1, a1",
+    #[cfg(riscvi)]
+    "mv s2, a2",
+    #[cfg(not(riscvi))]
+    "mv a5, a2", // IN RISCVE TARGETS, s2 does not exist, so we use a5 instead
 // CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
     #[cfg(not(feature = "single-hart"))]
     // Skip RAM initialization if current hart is not the boot hart
@@ -165,7 +159,7 @@ _abs_start:
     addi t0, t0, 8
     bltu t0, t2, 3b",
     "
-4: // RAM initialized",
+4:", // From this point, RAM is initialized
 
 // INITIALIZE FLOATING POINT UNIT
 #[cfg(any(riscvf, riscvd))]
@@ -183,17 +177,14 @@ _abs_start:
     "fscsr x0",
 }
 
-// RESTORE a0..a2, AND JUMP TO _start_rust FUNCTION
-    #[cfg(target_arch = "riscv32")]
-    "lw a0, 4 * 0(sp)
-    lw a1, 4 * 1(sp)
-    lw a2, 4 * 2(sp)
-    addi sp, sp, 4 * 4",
-    #[cfg(target_arch = "riscv64")]
-    "ld a0, 8 * 0(sp)
-    ld a1, 8 * 1(sp)
-    ld a2, 8 * 2(sp)
-    addi sp, sp, 8 * 4",
+// RESTORE a0..a2, INITIALIZE FRAME POINTER (x8/s0/fp), AND JUMP TO _start_rust FUNCTION
+    "mv a0, s0
+    mv a1, s1",
+    #[cfg(riscvi)]
+    "mv a2, s2",
+    #[cfg(not(riscvi))]
+    "mv a2, a5",
+    "mv s0, sp", // From this point, it is safe to execute Rust code
     "la t0, _start_rust
     jr t0
     .cfi_endproc",
