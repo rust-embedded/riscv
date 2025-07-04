@@ -25,11 +25,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   4. `_start_DefaultHandler_trap` and `_continue_trap` (if `v-trap` is enabled).
   5. `_start_trap_rust`.
   6. Other code in `.trap` section (usually, none)
+- Now, `riscv-rt` jumps to `_start_rust` instead of `main` directly. This allows us
+  to leave input parameters preservation to the Rust compiler.
+- `_default_setup_interrupts` is now written in Rust and called from `_start_rust`.
+- Now, `_start_rust` jumps to `hal_main` instead of `main` directly. At linker level,
+  `hal_main` maps to `main` if not defined. However, we now allow HALs to inject
+  additional configuration code before jumping to the final user's `main` function.
 
 ### Fixed
 
 - `clippy` fixes
 - Merged `cfg_global_asm!` macro invocations to guarantee contiguous code generation.
+- Use `.balign` instead of `.align` in `_default_abort`
 
 ## [v0.15.0] - 2025-06-10
 
