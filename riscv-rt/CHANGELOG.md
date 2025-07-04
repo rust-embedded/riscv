@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `clippy` fixes
 - Merged `cfg_global_asm!` macro invocations to guarantee contiguous code generation.
 - Use `.balign` instead of `.align` in `_default_abort`
+- Use `s0`, `s1`, `s2` (in RVI), and `a5` (in RVE) to preserve the input arguments of
+  `_start_rust`. The previous implementation used the stack. This was unsound, as in
+  the `.init` section RAM is still uninitialized.
 
 ## [v0.15.0] - 2025-06-10
 
