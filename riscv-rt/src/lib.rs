@@ -553,6 +553,14 @@
 //! );
 //! ```
 //!
+//! ## `post-init`
+//!
+//! When enabled, the runtime will execute the `__post_init` function to be run before jumping to the main function.
+//! If the feature is enabled, the `__post_init` function must be defined in the user code (i.e., no default implementation
+//! is provided by this crate). If the feature is disabled, the `__post_init` function is not required.
+//!
+//! You can use the [`#[post_init]`][attr-post-init] attribute to define a post-init function with Rust.
+//!
 //! ## `single-hart`
 //!
 //! Saves a little code size if there is only one hart on the target.
@@ -595,6 +603,7 @@
 //! [attr-external-interrupt]: attr.external_interrupt.html
 //! [attr-core-interrupt]: attr.core_interrupt.html
 //! [attr-pre-init]: attr.pre_init.html
+//! [attr-post-init]: attr.post_init.html
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
@@ -624,6 +633,8 @@ use riscv::register::{
 pub use riscv_pac::*;
 pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt};
 
+#[cfg(feature = "post-init")]
+pub use riscv_rt_macros::post_init;
 #[cfg(feature = "pre-init")]
 pub use riscv_rt_macros::pre_init;
 
@@ -650,10 +661,14 @@ pub static __ONCE__: () = ();
 #[export_name = "_start_rust"]
 pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     extern "Rust" {
+        #[cfg(feature = "post-init")]
+        fn __post_init(a0: usize);
         fn _setup_interrupts();
         fn hal_main(a0: usize, a1: usize, a2: usize) -> !;
     }
 
+    #[cfg(feature = "post-init")]
+    __post_init(a0);
     _setup_interrupts();
     hal_main(a0, a1, a2);
 }

@@ -1,0 +1,5 @@
+error: `#[post_init]` function must have signature `[unsafe] fn([usize])`
+ --> tests/riscv-rt/post_init/fail_async.rs:2:1
+  |
+2 | async fn before_main() {}
+  | ^^^^^

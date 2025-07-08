@@ -1,0 +1,5 @@
+error: argument type must be usize
+ --> tests/riscv-rt/post_init/fail_arg_type.rs:2:26
+  |
+2 | fn before_main(_hart_id: String) {}
+  |                          ^^^^^^

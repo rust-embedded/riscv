@@ -63,26 +63,6 @@ pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
         .into();
     }
 
-    fn check_correct_type(argument: &PatType, ty: &str) -> Option<TokenStream> {
-        let inv_type_message = format!("argument type must be {ty}");
-
-        if !is_correct_type(&argument.ty, ty) {
-            let error = parse::Error::new(argument.ty.span(), inv_type_message);
-
-            Some(error.to_compile_error().into())
-        } else {
-            None
-        }
-    }
-    fn check_argument_type(argument: &FnArg, ty: &str) -> Option<TokenStream> {
-        let argument_error = parse::Error::new(argument.span(), "invalid argument");
-        let argument_error = argument_error.to_compile_error().into();
-
-        match argument {
-            FnArg::Typed(argument) => check_correct_type(argument, ty),
-            FnArg::Receiver(_) => Some(argument_error),
-        }
-    }
     #[cfg(not(feature = "u-boot"))]
     for argument in f.sig.inputs.iter() {
         if let Some(message) = check_argument_type(argument, "usize") {
@@ -181,6 +161,28 @@ fn is_correct_type(ty: &Type, name: &str) -> bool {
     }
 }
 
+fn check_correct_type(argument: &PatType, ty: &str) -> Option<TokenStream> {
+    let inv_type_message = format!("argument type must be {ty}");
+
+    if !is_correct_type(&argument.ty, ty) {
+        let error = parse::Error::new(argument.ty.span(), inv_type_message);
+
+        Some(error.to_compile_error().into())
+    } else {
+        None
+    }
+}
+
+fn check_argument_type(argument: &FnArg, ty: &str) -> Option<TokenStream> {
+    let argument_error = parse::Error::new(argument.span(), "invalid argument");
+    let argument_error = argument_error.to_compile_error().into();
+
+    match argument {
+        FnArg::Typed(argument) => check_correct_type(argument, ty),
+        FnArg::Receiver(_) => Some(argument_error),
+    }
+}
+
 /// Attribute to mark which function will be called at the beginning of the reset handler.
 /// You must enable the `pre_init` feature in the `riscv-rt` crate to use this macro.
 ///
@@ -259,6 +261,93 @@ pub fn pre_init(args: TokenStream, input: TokenStream) -> TokenStream {
         #[export_name = "__pre_init"]
         #(#attrs)*
         pub unsafe fn #ident() #block
+    )
+    .into()
+}
+
+/// Attribute to mark which function will be called before jumping to the entry point.
+/// You must enable the `post-init` feature in the `riscv-rt` crate to use this macro.
+///
+/// In contrast with `__pre_init`, this function is called after the static variables
+/// are initialized, so it is safe to access them. It is also safe to run Rust code.
+///
+/// The function must have the signature of `[unsafe] fn([usize])`, where the argument
+/// corresponds to the hart ID of the current hart. This is useful for multi-hart systems
+/// to perform hart-specific initialization.
+///
+/// # IMPORTANT
+///
+/// This attribute can appear at most *once* in the dependency graph.
+///
+/// # Examples
+///
+/// ```
+/// use riscv_rt_macros::post_init;
+/// #[post_init]
+/// unsafe fn before_main(hart_id: usize) {
+///     // do something here
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
+    let f = parse_macro_input!(input as ItemFn);
+
+    // check the function arguments
+    if f.sig.inputs.len() > 1 {
+        return parse::Error::new(
+            f.sig.inputs.last().unwrap().span(),
+            "`#[post_init]` function has too many arguments",
+        )
+        .to_compile_error()
+        .into();
+    }
+    for argument in f.sig.inputs.iter() {
+        if let Some(message) = check_argument_type(argument, "usize") {
+            return message;
+        };
+    }
+
+    // check the function signature
+    let valid_signature = f.sig.constness.is_none()
+        && f.sig.asyncness.is_none()
+        && f.vis == Visibility::Inherited
+        && f.sig.abi.is_none()
+        && f.sig.generics.params.is_empty()
+        && f.sig.generics.where_clause.is_none()
+        && f.sig.variadic.is_none()
+        && match f.sig.output {
+            ReturnType::Default => true,
+            ReturnType::Type(_, ref ty) => match **ty {
+                Type::Tuple(ref tuple) => tuple.elems.is_empty(),
+                _ => false,
+            },
+        };
+
+    if !valid_signature {
+        return parse::Error::new(
+            f.span(),
+            "`#[post_init]` function must have signature `[unsafe] fn([usize])`",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    if !args.is_empty() {
+        return parse::Error::new(Span::call_site(), "This attribute accepts no arguments")
+            .to_compile_error()
+            .into();
+    }
+
+    // XXX should we blacklist other attributes?
+    let attrs = f.attrs;
+    let ident = f.sig.ident;
+    let args = f.sig.inputs;
+    let block = f.block;
+
+    quote!(
+        #[export_name = "__post_init"]
+        #(#attrs)*
+        unsafe fn #ident(#args) #block
     )
     .into()
 }

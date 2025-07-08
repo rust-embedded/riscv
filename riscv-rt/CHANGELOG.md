@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New `post-init` feature to run a Rust `__post_init` function before jumping to `main`.
+- New `#[riscv_rt::post_init]` attribute to aid in the definition of the `__post_init` function. 
+
 ### Changed
 
 - `main` function no longer needs to be close to `_start`. A linker script may copy
