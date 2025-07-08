@@ -85,9 +85,18 @@ _abs_start:
     bgeu t0, a0, 1f
     la t0, abort // If hart_id > _max_hart_id, jump to abort
     jr t0
-1:", // only valid harts reach this point
-
-// INITIALIZE GLOBAL POINTER, STACK POINTER, AND FRAME POINTER
+1:", // Only valid hart IDs reach this point
+#[cfg(any(feature = "pre-init", not(feature = "single-hart")))]
+// If startup functions are expected, preserve a0-a2 in s0-s2
+{
+    "mv s0, a0
+    mv s1, a1",
+    #[cfg(riscvi)]
+    "mv s2, a2",
+    #[cfg(not(riscvi))]
+    "mv a5, a2", // RVE does not include s2, so we preserve a2 in a5
+}
+// INITIALIZE GLOBAL POINTER AND STACK POINTER
     ".option push
     .option norelax
     la gp, __global_pointer$
@@ -111,21 +120,8 @@ _abs_start:
     "la t1, _stack_start",
     #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
-    "andi sp, t1, -16 // align stack to 16-bytes
-    add s0, sp, zero",
-// STORE A0..A2 IN THE STACK, AS THEY WILL BE NEEDED LATER BY _start_rust
-    #[cfg(target_arch = "riscv32")]
-    "addi sp, sp, -4 * 4 // we must keep stack aligned to 16-bytes
-    sw a0, 4 * 0(sp)
-    sw a1, 4 * 1(sp)
-    sw a2, 4 * 2(sp)",
-    #[cfg(target_arch = "riscv64")]
-    "addi sp, sp, -8 * 4 // we must keep stack aligned to 16-bytes
-    sd a0, 8 * 0(sp)
-    sd a1, 8 * 1(sp)
-    sd a2, 8 * 2(sp)",
+    "andi sp, t1, -16", // align stack to 16-bytes
 
-// CALL __pre_init (IF ENABLED) AND INITIALIZE RAM
     #[cfg(not(feature = "single-hart"))]
     // Skip RAM initialization if current hart is not the boot hart
     "call _mp_hook
@@ -134,22 +130,22 @@ _abs_start:
     "call __pre_init",
     "// Copy .data from flash to RAM
     la t0, __sdata
-    la a0, __edata
+    la a3, __edata
     la t1, __sidata
-    bgeu t0, a0, 2f
+    bgeu t0, a3, 2f
 1:  ",
     #[cfg(target_arch = "riscv32")]
     "lw t2, 0(t1)
     addi t1, t1, 4
     sw t2, 0(t0)
     addi t0, t0, 4
-    bltu t0, a0, 1b",
+    bltu t0, a3, 1b",
     #[cfg(target_arch = "riscv64")]
     "ld t2, 0(t1)
     addi t1, t1, 8
     sd t2, 0(t0)
     addi t0, t0, 8
-    bltu t0, a0, 1b",
+    bltu t0, a3, 1b",
     "
 2:  // Zero out .bss
     la t0, __sbss
@@ -165,7 +161,7 @@ _abs_start:
     addi t0, t0, 8
     bltu t0, t2, 3b",
     "
-4: // RAM initialized",
+4:", // RAM initialized
 
 // INITIALIZE FLOATING POINT UNIT
 #[cfg(any(riscvf, riscvd))]
@@ -183,18 +179,18 @@ _abs_start:
     "fscsr x0",
 }
 
-// RESTORE a0..a2, AND JUMP TO _start_rust FUNCTION
-    #[cfg(target_arch = "riscv32")]
-    "lw a0, 4 * 0(sp)
-    lw a1, 4 * 1(sp)
-    lw a2, 4 * 2(sp)
-    addi sp, sp, 4 * 4",
-    #[cfg(target_arch = "riscv64")]
-    "ld a0, 8 * 0(sp)
-    ld a1, 8 * 1(sp)
-    ld a2, 8 * 2(sp)
-    addi sp, sp, 8 * 4",
-    "la t0, _start_rust
+#[cfg(any(feature = "pre-init", not(feature = "single-hart")))]
+// If startup functions are expected, restore a0-a2 from s0-s2
+{   "mv a0, s0
+    mv a1, s1",
+    #[cfg(riscvi)]
+    "mv a2, s2",
+    #[cfg(not(riscvi))]
+    "mv a2, a5", // RVE does not include s2, so we use a5 to preserve a2
+}
+    // INITIALIZE FRAME POINTER AND JUMP TO _start_rust FUNCTION
+    "mv s0, sp
+    la t0, _start_rust
     jr t0
     .cfi_endproc",
 
