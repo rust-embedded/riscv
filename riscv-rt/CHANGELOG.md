@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - New `post-init` feature to run a Rust `__post_init` function before jumping to `main`.
 - New `#[riscv_rt::post_init]` attribute to aid in the definition of the `__post_init` function. 
+- Added `.uninit` section to the linker file. Due to its similarities with `.bss`, the
+  linker will place this new section in `REGION_BSS`.
 
 ### Changed
 

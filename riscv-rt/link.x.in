@@ -161,6 +161,19 @@ SECTIONS
   . = ALIGN(${ARCH_WIDTH});
   __ebss = .;
 
+  /* Uninitialized data segment. In contrast with .bss, .uninit is not initialized to zero by
+   * the runtime, and might contain residual data from previous executions or random values
+   * if not explicitly initialized. While .bss and .uninit are different sections, they are
+   * both allocated at REGION_BSS, as their purpose is similar. */
+  .uninit (NOLOAD) : ALIGN(${ARCH_WIDTH})
+  {
+    . = ALIGN(${ARCH_WIDTH});
+    __suninit = .;
+    *(.uninit .uninit.*);
+    . = ALIGN(${ARCH_WIDTH});
+    __euninit = .;
+  } > REGION_BSS
+
   /* fictitious region that represents the memory available for the heap */
   .heap (NOLOAD) : ALIGN(4)
   {
