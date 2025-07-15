@@ -1,9 +1,11 @@
 //! mie register
 
+use riscv_pac::CoreInterruptNumber;
+
 read_write_csr! {
     /// `mie` register
     Mie: 0x304,
-    mask: 0xaaa,
+    mask: usize::MAX,
 }
 
 read_write_csr_field! {
@@ -42,6 +44,26 @@ read_write_csr_field! {
     mext: 11,
 }
 
+impl Mie {
+    /// Check if a specific core interrupt source is enabled.
+    #[inline]
+    pub fn is_enabled<I: CoreInterruptNumber>(&self, interrupt: I) -> bool {
+        (self.bits & (1 << interrupt.number())) != 0
+    }
+
+    /// Enable a specific core interrupt source.
+    #[inline]
+    pub fn enable<I: CoreInterruptNumber>(&mut self, interrupt: I) {
+        self.bits |= 1 << interrupt.number();
+    }
+
+    /// Disable a specific core interrupt source.
+    #[inline]
+    pub fn disable<I: CoreInterruptNumber>(&mut self, interrupt: I) {
+        self.bits &= !(1 << interrupt.number());
+    }
+}
+
 set!(0x304);
 clear!(0x304);
 
@@ -64,9 +86,28 @@ set_clear_csr!(
     /// Machine External Interrupt Enable
     , set_mext, clear_mext, 1 << 11);
 
+/// Disables a specific core interrupt source.
+#[inline]
+pub fn clear_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    // SAFETY: it is safe to disable an interrupt source
+    unsafe { _clear(1 << interrupt.number()) };
+}
+
+/// Enables a specific core interrupt source.
+///
+/// # Safety
+///
+/// Enabling interrupts might break critical sections or other synchronization mechanisms.
+/// Ensure that this is called in a safe context where interrupts can be enabled.
+#[inline]
+pub unsafe fn set_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    unsafe { _set(1 << interrupt.number()) };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interrupt::machine::Interrupt;
 
     #[test]
     fn test_mie() {
@@ -78,5 +119,40 @@ mod tests {
         test_csr_field!(m, mtimer);
         test_csr_field!(m, sext);
         test_csr_field!(m, mext);
+    }
+
+    #[test]
+    fn test_mie_interrupt() {
+        let mut m = Mie::from_bits(0);
+
+        m.enable(Interrupt::SupervisorSoft);
+        assert!(m.is_enabled(Interrupt::SupervisorSoft));
+        m.disable(Interrupt::SupervisorSoft);
+        assert!(!m.is_enabled(Interrupt::SupervisorSoft));
+
+        m.enable(Interrupt::MachineSoft);
+        assert!(m.is_enabled(Interrupt::MachineSoft));
+        m.disable(Interrupt::MachineSoft);
+        assert!(!m.is_enabled(Interrupt::MachineSoft));
+
+        m.enable(Interrupt::SupervisorTimer);
+        assert!(m.is_enabled(Interrupt::SupervisorTimer));
+        m.disable(Interrupt::SupervisorTimer);
+        assert!(!m.is_enabled(Interrupt::SupervisorTimer));
+
+        m.enable(Interrupt::MachineTimer);
+        assert!(m.is_enabled(Interrupt::MachineTimer));
+        m.disable(Interrupt::MachineTimer);
+        assert!(!m.is_enabled(Interrupt::MachineTimer));
+
+        m.enable(Interrupt::SupervisorExternal);
+        assert!(m.is_enabled(Interrupt::SupervisorExternal));
+        m.disable(Interrupt::SupervisorExternal);
+        assert!(!m.is_enabled(Interrupt::SupervisorExternal));
+
+        m.enable(Interrupt::MachineExternal);
+        assert!(m.is_enabled(Interrupt::MachineExternal));
+        m.disable(Interrupt::MachineExternal);
+        assert!(!m.is_enabled(Interrupt::MachineExternal));
     }
 }
