@@ -1,6 +1,6 @@
 use crate::{
     interrupt::Trap,
-    register::{mcause, mepc, mstatus},
+    register::{mcause, mepc, mie, mstatus},
 };
 use riscv_pac::{
     result::{Error, Result},
@@ -96,18 +96,42 @@ unsafe impl ExceptionNumber for Exception {
     }
 }
 
-/// Disables all interrupts in the current hart (machine mode).
+/// Disables interrupts for a specific core interrupt source in the current hart (machine mode).
+#[inline]
+pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    // SAFETY: it is safe to disable an interrupt source
+    mie::disable_interrupt(interrupt);
+}
+
+/// Enables interrupts for a specific core interrupt source in the current hart (machine mode).
+///
+/// # Note
+///
+/// Interrupts will only be triggered if interrupts are globally enabled in the hart.
+/// To do this, you must call [`enable`]  after enabling the interrupt.
+///
+/// # Safety
+///
+/// Enabling interrupts might break critical sections or other synchronization mechanisms.
+/// Ensure that this is called in a safe context where interrupts can be enabled.
+#[inline]
+pub unsafe fn enable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    mie::enable_interrupt(interrupt);
+}
+
+/// Disables interrupts globally in the current hart (machine mode).
 #[inline]
 pub fn disable() {
     // SAFETY: It is safe to disable interrupts
     unsafe { mstatus::clear_mie() }
 }
 
-/// Enables all the interrupts in the current hart (machine mode).
+/// Enables interrupts globally in the current hart (machine mode).
 ///
 /// # Safety
 ///
-/// Do not call this function inside a critical section.
+/// Enabling interrupts might break critical sections or other synchronization mechanisms.
+/// Ensure that this is called in a safe context where interrupts can be enabled.
 #[inline]
 pub unsafe fn enable() {
     mstatus::set_mie()

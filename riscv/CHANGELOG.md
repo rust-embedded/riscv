@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - New convenience  `try_new` and `new` associated functions for `Mtvec` and `Stvec`.
-- New methods and functions for enabling core interrupts in the `mie` register using
-  the `riscv_pac::CoreInterrupt` trait.
+- New methods and functions for enabling core interrupts in the `mie` and `sie` registers
+  using the `riscv_pac::CoreInterrupt` trait.
+- New `riscv::interrupt::{disable_interrupt, enable_interrupt}` functions.
 
 ### Changed
 
