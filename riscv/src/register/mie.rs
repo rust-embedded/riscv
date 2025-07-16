@@ -1,6 +1,7 @@
 //! mie register
 
 use riscv_pac::CoreInterruptNumber;
+use crate::bits::{bf_extract, bf_insert};
 
 read_write_csr! {
     /// `mie` register
@@ -48,19 +49,19 @@ impl Mie {
     /// Check if a specific core interrupt source is enabled.
     #[inline]
     pub fn is_enabled<I: CoreInterruptNumber>(&self, interrupt: I) -> bool {
-        (self.bits & (1 << interrupt.number())) != 0
+        bf_extract(self.bits, interrupt.number(), 1) != 0
     }
 
     /// Enable a specific core interrupt source.
     #[inline]
     pub fn enable<I: CoreInterruptNumber>(&mut self, interrupt: I) {
-        self.bits |= 1 << interrupt.number();
+        self.bits = bf_insert(self.bits, interrupt.number(), 1, 1);
     }
 
     /// Disable a specific core interrupt source.
     #[inline]
     pub fn disable<I: CoreInterruptNumber>(&mut self, interrupt: I) {
-        self.bits &= !(1 << interrupt.number());
+        self.bits = bf_insert(self.bits, interrupt.number(), 1, 0);
     }
 }
 
