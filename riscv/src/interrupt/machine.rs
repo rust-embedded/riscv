@@ -107,8 +107,7 @@ pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
 ///
 /// # Note
 ///
-/// Interrupts will only be triggered if interrupts are globally enabled in the hart.
-/// To do this, you must call [`enable`]  after enabling the interrupt.
+/// Interrupts will only be triggered if globally enabled in the hart. To do this, use [`enable`].
 ///
 /// # Safety
 ///
@@ -127,6 +126,11 @@ pub fn disable() {
 }
 
 /// Enables interrupts globally in the current hart (machine mode).
+///
+/// # Note
+///
+/// Only enabled interrupt sources will be triggered.
+/// To enable specific interrupt sources, use [`enable_interrupt`].
 ///
 /// # Safety
 ///
