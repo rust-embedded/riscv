@@ -62,7 +62,7 @@ set_clear_csr!(
 
 /// Disables a specific core interrupt source.
 #[inline]
-pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+pub fn disable<I: CoreInterruptNumber>(interrupt: I) {
     // SAFETY: it is safe to disable an interrupt source
     unsafe { _clear(1 << interrupt.number()) };
 }
@@ -74,7 +74,7 @@ pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
 /// Enabling interrupts might break critical sections or other synchronization mechanisms.
 /// Ensure that this is called in a safe context where interrupts can be enabled.
 #[inline]
-pub unsafe fn enable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+pub unsafe fn enable<I: CoreInterruptNumber>(interrupt: I) {
     unsafe { _set(1 << interrupt.number()) };
 }
 

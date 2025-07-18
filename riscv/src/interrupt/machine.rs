@@ -96,11 +96,16 @@ unsafe impl ExceptionNumber for Exception {
     }
 }
 
+/// Checks if a specific core interrupt source is enabled in the current hart (machine mode).
+#[inline]
+pub fn is_interrupt_enabled<I: CoreInterruptNumber>(interrupt: I) -> bool {
+    mie::read().is_enabled(interrupt)
+}
+
 /// Disables interrupts for a specific core interrupt source in the current hart (machine mode).
 #[inline]
 pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
-    // SAFETY: it is safe to disable an interrupt source
-    mie::disable_interrupt(interrupt);
+    mie::disable(interrupt);
 }
 
 /// Enables interrupts for a specific core interrupt source in the current hart (machine mode).
@@ -115,7 +120,7 @@ pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
 /// Ensure that this is called in a safe context where interrupts can be enabled.
 #[inline]
 pub unsafe fn enable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
-    mie::enable_interrupt(interrupt);
+    mie::enable(interrupt);
 }
 
 /// Disables interrupts globally in the current hart (machine mode).
