@@ -1,6 +1,6 @@
 use crate::{
     interrupt::Trap,
-    register::{mcause, mepc, mstatus},
+    register::{mcause, mepc, mie, mstatus},
 };
 use riscv_pac::{
     result::{Error, Result},
@@ -96,18 +96,51 @@ unsafe impl ExceptionNumber for Exception {
     }
 }
 
-/// Disables all interrupts in the current hart (machine mode).
+/// Checks if a specific core interrupt source is enabled in the current hart (machine mode).
+#[inline]
+pub fn is_interrupt_enabled<I: CoreInterruptNumber>(interrupt: I) -> bool {
+    mie::read().is_enabled(interrupt)
+}
+
+/// Disables interrupts for a specific core interrupt source in the current hart (machine mode).
+#[inline]
+pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    mie::disable(interrupt);
+}
+
+/// Enables interrupts for a specific core interrupt source in the current hart (machine mode).
+///
+/// # Note
+///
+/// Interrupts will only be triggered if globally enabled in the hart. To do this, use [`enable`].
+///
+/// # Safety
+///
+/// Enabling interrupts might break critical sections or other synchronization mechanisms.
+/// Ensure that this is called in a safe context where interrupts can be enabled.
+#[inline]
+pub unsafe fn enable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
+    mie::enable(interrupt);
+}
+
+/// Disables interrupts globally in the current hart (machine mode).
 #[inline]
 pub fn disable() {
     // SAFETY: It is safe to disable interrupts
     unsafe { mstatus::clear_mie() }
 }
 
-/// Enables all the interrupts in the current hart (machine mode).
+/// Enables interrupts globally in the current hart (machine mode).
+///
+/// # Note
+///
+/// Only enabled interrupt sources will be triggered.
+/// To enable specific interrupt sources, use [`enable_interrupt`].
 ///
 /// # Safety
 ///
-/// Do not call this function inside a critical section.
+/// Enabling interrupts might break critical sections or other synchronization mechanisms.
+/// Ensure that this is called in a safe context where interrupts can be enabled.
 #[inline]
 pub unsafe fn enable() {
     mstatus::set_mie()
