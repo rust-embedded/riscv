@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New `#[riscv_rt::post_init]` attribute to aid in the definition of the `__post_init` function. 
 - Added `.uninit` section to the linker file. Due to its similarities with `.bss`, the
   linker will place this new section in `REGION_BSS`.
-- Additional feature `no-mie-mip` to work on chips without the MIE and MIP CSRs (e.g. ESP32-C2, ESP32-C3)
+- Additional feature `no-xie-xip` to work on chips without the XIE and XIP CSRs (e.g. ESP32-C2, ESP32-C3)
 
 ### Changed
 
