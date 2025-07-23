@@ -65,10 +65,10 @@ _abs_start:
     .cfi_startproc
     .cfi_undefined ra",
     // Disable interrupts
-    #[cfg(feature = "s-mode")]
+    #[cfg(all(feature = "s-mode", not(feature = "no-xie-xip")))]
     "csrw sie, 0
     csrw sip, 0",
-    #[cfg(all(not(feature = "s-mode"), not(feature = "no-mie-mip")))]
+    #[cfg(all(not(feature = "s-mode"), not(feature = "no-xie-xip")))]
     "csrw mie, 0
     csrw mip, 0",
     #[cfg(not(feature = "s-mode"))]
