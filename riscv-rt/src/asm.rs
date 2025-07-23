@@ -65,13 +65,14 @@ _abs_start:
     .cfi_startproc
     .cfi_undefined ra",
     // Disable interrupts
-    #[cfg(feature = "s-mode")]
+    #[cfg(all(feature = "s-mode", not(feature = "no-xie-xip")))]
     "csrw sie, 0
     csrw sip, 0",
-    #[cfg(not(feature = "s-mode"))]
+    #[cfg(all(not(feature = "s-mode"), not(feature = "no-xie-xip")))]
     "csrw mie, 0
-    csrw mip, 0
-    csrr a0, mhartid", // Make sure that the hart ID is in a0 in M-mode
+    csrw mip, 0",
+    #[cfg(not(feature = "s-mode"))]
+    "csrr a0, mhartid", // Make sure that the hart ID is in a0 in M-mode
     // Set pre-init trap vector
     "la t0, _pre_init_trap",
     #[cfg(feature = "s-mode")]
