@@ -5,7 +5,7 @@ pub use crate::interrupt::Trap;
 read_only_csr! {
     /// `mcause` register
     Mcause: 0x342,
-    mask: 0xffff_ffff,
+    mask: usize::MAX,
 }
 
 #[cfg(target_arch = "riscv32")]

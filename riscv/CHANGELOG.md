@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use `cfg(any(target_arch = "riscv32", target_arch = "riscv64"))` instead of `cfg(riscv)`.
 - `riscv::pac_enum(unsafe CoreInterrupt)` now locates the vector table at the `.trap.vector`
   section instead of `.trap`.
+- Allow all bits to be set in Mcause::from_bits on 64-bit targets.
 
 ### Removed
 
