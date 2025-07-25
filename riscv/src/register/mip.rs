@@ -1,15 +1,15 @@
 //! mip register
 
-use crate::bits::{bf_extract, bf_insert};
+use crate::bits::bf_extract;
 use riscv_pac::CoreInterruptNumber;
 
-read_write_csr! {
+read_only_csr! {
     /// `mip` register
     Mip: 0x344,
     mask: usize::MAX,
 }
 
-read_write_csr_field! {
+read_only_csr_field! {
     Mip,
     /// Supervisor Software Interrupt Pending
     ssoft: 1,
@@ -21,7 +21,7 @@ read_only_csr_field! {
     msoft: 3,
 }
 
-read_write_csr_field! {
+read_only_csr_field! {
     Mip,
     /// Supervisor Timer Interrupt Pending
     stimer: 5,
@@ -33,7 +33,7 @@ read_only_csr_field! {
     mtimer: 7,
 }
 
-read_write_csr_field! {
+read_only_csr_field! {
     Mip,
     /// Supervisor External Interrupt Pending
     sext: 9,
@@ -50,18 +50,6 @@ impl Mip {
     #[inline]
     pub fn is_pending<I: CoreInterruptNumber>(&self, interrupt: I) -> bool {
         bf_extract(self.bits, interrupt.number(), 1) != 0
-    }
-
-    /// Clear the pending state of a specific core interrupt source.
-    ///
-    /// # Safety
-    ///
-    /// Not all interrupt sources allow clearing of pending interrupts via the `mip` register.
-    /// Instead, it may be necessary to perform an alternative action to clear the interrupt.
-    /// Check the specification of your target chip for details.
-    #[inline]
-    pub unsafe fn clear_pending<I: CoreInterruptNumber>(&mut self, interrupt: I) {
-        self.bits = bf_insert(self.bits, interrupt.number(), 1, 0);
     }
 }
 
@@ -85,6 +73,7 @@ set_clear_csr!(
 /// Not all interrupt sources allow clearing of pending interrupts via the `mip` register.
 /// Instead, it may be necessary to perform an alternative action to clear the interrupt.
 /// Check the specification of your target chip for details.
+#[inline]
 pub unsafe fn clear_pending<I: CoreInterruptNumber>(interrupt: I) {
     _clear(1 << interrupt.number());
 }

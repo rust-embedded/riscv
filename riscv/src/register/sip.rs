@@ -1,15 +1,15 @@
 //! sip register
 
-use crate::bits::{bf_extract, bf_insert};
+use crate::bits::bf_extract;
 use riscv_pac::CoreInterruptNumber;
 
-read_write_csr! {
+read_only_csr! {
     /// sip register
     Sip: 0x144,
     mask: usize::MAX,
 }
 
-read_write_csr_field! {
+read_only_csr_field! {
     Sip,
     /// Supervisor Software Interrupt Pending
     ssoft: 1,
@@ -33,18 +33,6 @@ impl Sip {
     pub fn is_pending<I: CoreInterruptNumber>(&self, interrupt: I) -> bool {
         bf_extract(self.bits, interrupt.number(), 1) != 0
     }
-
-    /// Clear the pending state of a specific core interrupt source.
-    ///
-    /// # Safety
-    ///
-    /// Not all interrupt sources allow clearing of pending interrupts via the `sip` register.
-    /// Instead, it may be necessary to perform an alternative action to clear the interrupt.
-    /// Check the specification of your target chip for details.
-    #[inline]
-    pub unsafe fn clear_pending<I: CoreInterruptNumber>(&mut self, interrupt: I) {
-        self.bits = bf_insert(self.bits, interrupt.number(), 1, 0);
-    }
 }
 
 set!(0x144);
@@ -61,6 +49,7 @@ set_clear_csr!(
 /// Not all interrupt sources allow clearing of pending interrupts via the `sip` register.
 /// Instead, it may be necessary to perform an alternative action to clear the interrupt.
 /// Check the specification of your specific core for details.
+#[inline]
 pub unsafe fn clear_pending<I: CoreInterruptNumber>(interrupt: I) {
     _clear(1 << interrupt.number());
 }
