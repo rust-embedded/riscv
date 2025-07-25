@@ -16,16 +16,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New methods and functions for dealing with pending interrupts in `mip` and `sip` registers
   using the `riscv_pac::CoreInterruptNumber` trait.
 - New `riscv::interrupt::is_interrupt_pending` function.
+- New `riscv::register::xip::clear_pending` atomic function for `mip` and `sip` registers.
+  This function is marked as `unsafe`, as its availability depends both on the target chip
+  and the target interrupt source.
 
 ### Changed
 
 - Use `cfg(any(target_arch = "riscv32", target_arch = "riscv64"))` instead of `cfg(riscv)`.
 - `riscv::pac_enum(unsafe CoreInterrupt)` now locates the vector table at the `.trap.vector`
-  section instead of `.trap`.
+  section instead of `.trap`
 
 ### Removed
 
 - Removed custom build script, as `cfg(riscv)` is no longer necessary.
+- All the fields of `Mip` and `Sip` CSR proxies are now read-only. This change is motivated
+  to avoid clearing unwanted interrupts triggered between CSR reads and CSR writes.
 
 ## [v0.14.0] - 2025-06-10
 
