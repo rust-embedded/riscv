@@ -1,6 +1,6 @@
 use crate::{
     interrupt::Trap,
-    register::{mcause, mepc, mie, mstatus},
+    register::{mcause, mepc, mie, mip, mstatus},
 };
 use riscv_pac::{
     result::{Error, Result},
@@ -121,6 +121,12 @@ pub fn disable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
 #[inline]
 pub unsafe fn enable_interrupt<I: CoreInterruptNumber>(interrupt: I) {
     mie::enable(interrupt);
+}
+
+/// Checks if a specific core interrupt source is pending in the current hart (machine mode).
+#[inline]
+pub fn is_interrupt_pending<I: CoreInterruptNumber>(interrupt: I) -> bool {
+    mip::read().is_pending(interrupt)
 }
 
 /// Disables interrupts globally in the current hart (machine mode).

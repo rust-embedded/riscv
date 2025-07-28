@@ -1,5 +1,6 @@
 Cargo.lock
 target/
 
+.idea/
 .vscode/
 .DS_Store
