@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added `.uninit` section to the linker file. Due to its similarities with `.bss`, the
   linker will place this new section in `REGION_BSS`.
 - Additional feature `no-xie-xip` to work on chips without the XIE and XIP CSRs (e.g. ESP32-C2, ESP32-C3)
+- Additional feature `defmt` which will implement `defmt::Format` on certain types
 
 ### Changed
 
