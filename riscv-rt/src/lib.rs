@@ -707,6 +707,7 @@ pub unsafe extern "Rust" fn setup_interrupts() {
 /// Registers saved in trap handler
 #[repr(C)]
 #[derive(Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct TrapFrame {
     /// `x1`: return address, stores the address to return to after a function call or interrupt.
     pub ra: usize,
