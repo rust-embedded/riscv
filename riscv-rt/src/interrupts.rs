@@ -20,6 +20,7 @@
 // In vectored mode, we also must provide a vector table
 #[riscv::pac_enum(unsafe CoreInterruptNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 enum Interrupt {
     SupervisorSoft = 1,
     MachineSoft = 3,
