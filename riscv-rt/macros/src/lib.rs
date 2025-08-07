@@ -688,8 +688,8 @@ impl RiscvPacItem {
 
     fn valid_signature(&self) -> &str {
         match self {
-            Self::Exception => "`[unsafe] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`",
-            _ => "`[unsafe] fn() [-> !]`",
+            Self::Exception => "`[unsafe] [extern \"C\"] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`",
+            _ => "`[unsafe] [extern \"C\"] fn() [-> !]`",
         }
     }
 
@@ -719,7 +719,15 @@ impl RiscvPacItem {
             && f.sig.constness.is_none()
             && f.sig.asyncness.is_none()
             && f.vis == Visibility::Inherited
-            && f.sig.abi.is_none()
+            && match &f.sig.abi {
+                None => true,
+                Some(syn::Abi {
+                    extern_token: _,
+                    name: Some(name),
+                }) if name.value() == "C" => true,
+                _ => false,
+            }
+            && f.sig.unsafety.is_none()
             && f.sig.generics.params.is_empty()
             && f.sig.generics.where_clause.is_none()
             && f.sig.variadic.is_none()
@@ -741,7 +749,7 @@ impl RiscvPacItem {
 #[proc_macro_attribute]
 /// Attribute to declare an exception handler.
 ///
-/// The function must have the signature `[unsafe] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`.
+/// The function must have the signature `[unsafe] [extern "C"] fn([&[mut] riscv_rt::TrapFrame]) [-> !]`.
 ///
 /// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::ExceptionNumber` trait.
 ///
@@ -760,7 +768,7 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 /// Attribute to declare a core interrupt handler.
 ///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// The function must have the signature `[unsafe] [extern "C"] fn() [-> !]`.
 ///
 /// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
 ///
@@ -787,7 +795,7 @@ pub fn core_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 /// Attribute to declare an external interrupt handler.
 ///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
+/// The function must have the signature `[unsafe] [extern "C"] fn() [-> !]`.
 ///
 /// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::ExternalInterruptNumber` trait.
 ///
