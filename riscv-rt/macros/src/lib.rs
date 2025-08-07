@@ -727,7 +727,6 @@ impl RiscvPacItem {
                 }) if name.value() == "C" => true,
                 _ => false,
             }
-            && f.sig.unsafety.is_none()
             && f.sig.generics.params.is_empty()
             && f.sig.generics.where_clause.is_none()
             && f.sig.variadic.is_none()
