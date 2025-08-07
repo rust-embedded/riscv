@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   linker will place this new section in `REGION_BSS`.
 - Additional feature `no-xie-xip` to work on chips without the XIE and XIP CSRs (e.g. ESP32-C2, ESP32-C3)
 - Additional feature `defmt` which will implement `defmt::Format` on certain types
-
+- Additional feature `pre-default-start-trap` to execute custom code before `_default_start_trap`
 ### Changed
 
 - `main` function no longer needs to be close to `_start`. A linker script may copy

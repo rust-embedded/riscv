@@ -600,7 +600,7 @@
 //!
 //! ## `pre-default-start-trap`
 //!
-//! This provides a mechanism to execute custom code prior to `default_start_trap`.
+//! This provides a mechanism to execute custom code prior to `_default_start_trap`.
 //!
 //! To use it, the user must define a symbol named `_pre_default_start_trap`, which the system will jump to.
 //! After executing the custom code, control should return by jumping to `_pre_default_start_trap_ret`.
