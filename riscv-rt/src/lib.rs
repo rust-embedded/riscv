@@ -598,6 +598,15 @@
 //! because when booting from elf, U-boot passes `argc` and `argv`. This feature also implies `single-hart`.
 //! The only way to get boot-hart is through fdt, so other harts initialization is up to you.
 //!
+//! ## `pre-default-start-trap`
+//!
+//! This provides a mechanism to execute custom code prior to `default_start_trap`.
+//!
+//! To use it, the user must define a symbol named `_pre_default_start_trap`, which the system will jump to.
+//! After executing the custom code, control should return by jumping to `_pre_default_start_trap_ret`.
+//!
+//! It is expected that the custom code does not clobber any registers.
+//!
 //! [attr-entry]: attr.entry.html
 //! [attr-exception]: attr.exception.html
 //! [attr-external-interrupt]: attr.external_interrupt.html
