@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `a2` is preserved in `a5`, as there are only two callee-saved registers.
   New documentation of startup functions (`_mp_hook` and `__pre_init`) now provide
   additional implementation guidelines to ensure a correct behavior of the runtime.
+- Allow `extern "C"` functions for exceptions, core-interrupts and external-interrupts.
 
 ### Removed
 
