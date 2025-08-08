@@ -612,29 +612,14 @@
 //! ```rust,no_run
 //! core::arch::global_asm!(
 //! r#"
-//! .section .trap.start, "ax"
-//! .extern _pre_default_start_trap_ret
-//! .global _pre_default_start_trap
+//!     .section .trap.start, "ax"
+//!     .extern _pre_default_start_trap_ret
+//!     .global _pre_default_start_trap
 //!
-//! // with the pre-default-start-trap feature enabled this code is executed before
-//! // the code in _default_start_trap
 //! _pre_default_start_trap:
-//!     // move SP to some save place if it's pointing below the RAM
-//!     // otherwise we won't be able to do anything reasonable
-//!     // (since we don't have a useable stack otherwise)
-//!     //
-//!     // most probably we will just print something and halt in this case
-//!     // we actually can't do anything else
-//!     csrw mscratch, t0
-//!     la t0, _dram_origin
-//!     bge sp, t0, 1f
 //!
-//!     // set SP to the start of the stack
-//!     la sp, _stack_start
-//!
-//!     1:
-//!     // remember to not clobber any registers, restore t0 from mscratch
-//!     csrr t0, mscratch
+//!     // your code goes here remember to not clobber any registers,
+//!     // use mscratch to retain a single register if needed
 //!
 //!     // jump back to continue with _default_start_trap
 //!     j _pre_default_start_trap_ret
