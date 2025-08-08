@@ -605,7 +605,11 @@
 //! To use it, the user must define a symbol named `_pre_default_start_trap`, which the system will jump to.
 //! After executing the custom code, control should return by jumping to `_pre_default_start_trap_ret`.
 //!
+//! It's recommended to place the code in the `.trap.start` section to make sure it's reachable from `_default_start_trap`.
+//!
 //! It is expected that the custom code does not clobber any registers.
+//!
+//! Please note that your code won't be run for interrupts in vectored mode.
 //!
 //! ### Example
 //!
