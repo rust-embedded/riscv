@@ -606,6 +606,16 @@ pub fn default_start_trap(_input: TokenStream) -> TokenStream {
     #[cfg(not(feature = "s-mode"))]
     let ret = "mret";
 
+    let pre_default_start_trap = if cfg!(feature = "pre-default-start-trap") {
+        r#"
+        j _pre_default_start_trap
+.global _pre_default_start_trap_ret
+_pre_default_start_trap_ret:
+        "#
+    } else {
+        ""
+    };
+
     format!(
         r#"
 core::arch::global_asm!(
@@ -613,6 +623,7 @@ core::arch::global_asm!(
 .balign 4 /* Alignment required for xtvec */
 .global _default_start_trap
 _default_start_trap:
+    {pre_default_start_trap}
     addi sp, sp, - {trap_size} * {width}
     {store}
     add a0, sp, zero

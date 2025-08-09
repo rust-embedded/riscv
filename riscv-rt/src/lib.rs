@@ -598,6 +598,38 @@
 //! because when booting from elf, U-boot passes `argc` and `argv`. This feature also implies `single-hart`.
 //! The only way to get boot-hart is through fdt, so other harts initialization is up to you.
 //!
+//! ## `pre-default-start-trap`
+//!
+//! This provides a mechanism to execute custom code prior to `_default_start_trap`.
+//!
+//! To use it, the user must define a symbol named `_pre_default_start_trap`, which the system will jump to.
+//! After executing the custom code, control should return by jumping to `_pre_default_start_trap_ret`.
+//!
+//! It's recommended to place the code in the `.trap.start` section to make sure it's reachable from `_default_start_trap`.
+//!
+//! It is expected that the custom code does not clobber any registers.
+//!
+//! Please note that your code won't be run for interrupts in vectored mode.
+//!
+//! ### Example
+//!
+//! ```rust,no_run
+//! core::arch::global_asm!(
+//! r#"
+//!     .section .trap.start, "ax"
+//!     .extern _pre_default_start_trap_ret
+//!     .global _pre_default_start_trap
+//!
+//! _pre_default_start_trap:
+//!
+//!     // your code goes here remember to not clobber any registers,
+//!     // use mscratch to retain a single register if needed
+//!
+//!     // jump back to continue with _default_start_trap
+//!     j _pre_default_start_trap_ret
+//! "#
+//! );
+//! ```
 //! [attr-entry]: attr.entry.html
 //! [attr-exception]: attr.exception.html
 //! [attr-external-interrupt]: attr.external_interrupt.html
