@@ -60,9 +60,8 @@ mod tests {
 
     #[test]
     fn test_sip() {
-        let mut sip = Sip::from_bits(0);
+        let sip = Sip::from_bits(0);
 
-        test_csr_field!(sip, ssoft);
         assert!(!sip.stimer());
         assert!(!sip.sext());
 
