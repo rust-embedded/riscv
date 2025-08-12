@@ -113,6 +113,7 @@ pub use self::mhpmeventx::*;
 
 // Machine configuration
 pub mod mconfigptr;
+pub mod mseccfg;
 
 #[cfg(test)]
 mod tests;
