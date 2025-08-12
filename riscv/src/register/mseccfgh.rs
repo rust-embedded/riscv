@@ -18,3 +18,17 @@ read_write_csr_field! {
     pmm,
     PMM: [0:1],
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mseccfgh() {
+        let mut mseccfgh = Mseccfgh::from_bits(0);
+
+        test_csr_field!(mseccfgh, pmm: PMM::Disabled);
+        test_csr_field!(mseccfgh, pmm: PMM::EnabledXlen57);
+        test_csr_field!(mseccfgh, pmm: PMM::EnabledXlen48);
+    }
+}
