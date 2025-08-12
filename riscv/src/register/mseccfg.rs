@@ -92,3 +92,27 @@ read_write_csr_field! {
     pmm,
     PMM: [32:33],
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mseccfg() {
+        let mut mseccfg = Mseccfg::from_bits(0);
+
+        test_csr_field!(mseccfg, mml);
+        test_csr_field!(mseccfg, mmwp);
+        test_csr_field!(mseccfg, rlb);
+        test_csr_field!(mseccfg, useed);
+        test_csr_field!(mseccfg, sseed);
+        test_csr_field!(mseccfg, mlpe);
+
+        #[cfg(not(target_arch = "riscv32"))]
+        {
+            test_csr_field!(mseccfg, pmm: PMM::Disabled);
+            test_csr_field!(mseccfg, pmm: PMM::EnabledXlen57);
+            test_csr_field!(mseccfg, pmm: PMM::EnabledXlen48);
+        }
+    }
+}
