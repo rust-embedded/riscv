@@ -114,6 +114,8 @@ pub use self::mhpmeventx::*;
 // Machine configuration
 pub mod mconfigptr;
 pub mod mseccfg;
+#[cfg(any(test, target_arch = "riscv32"))]
+pub mod mseccfgh;
 
 #[cfg(test)]
 mod tests;
