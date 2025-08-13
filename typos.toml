@@ -1,2 +1,2 @@
 [default]
-extend-ignore-re = ["[Ss][Ii][Ee]", "[Ss][Xx][Ll]"]
+extend-ignore-re = ["[Ss][Ii][Ee]", "[Ss][Xx][Ll]", "[.]?useed[.,:]?"]

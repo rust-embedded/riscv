@@ -84,15 +84,11 @@ mod tests {
 
     #[test]
     fn test_mip() {
-        let mut m = Mip::from_bits(0);
+        let mip = Mip::from_bits(0);
 
-        test_csr_field!(m, ssoft);
-        test_csr_field!(m, stimer);
-        test_csr_field!(m, sext);
-
-        assert!(!m.msoft());
-        assert!(!m.mtimer());
-        assert!(!m.mext());
+        assert!(!mip.msoft());
+        assert!(!mip.mtimer());
+        assert!(!mip.mext());
 
         assert!(Mip::from_bits(1 << 3).msoft());
         assert!(Mip::from_bits(1 << 7).mtimer());

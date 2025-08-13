@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New `riscv::register::xip::clear_pending` atomic function for `mip` and `sip` registers.
   This function is marked as `unsafe`, as its availability depends both on the target chip
   and the target interrupt source.
+- Add `mseccfg` CSR
+- Add `mseccfgh` CSR
 
 ### Changed
 
