@@ -5,8 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.2.1] - 2025-09-04
+
 ### Changed
 
+- Update riscv to 0.15.0.
 - Use `cfg(any(target_arch = "riscv32", target_arch = "riscv64"))` instead of `cfg(riscv)`.
 
 ### Removed
