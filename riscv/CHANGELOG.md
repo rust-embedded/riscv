@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.15.0] - 2025-09-08
+
 ### Added
 
 - New convenience  `try_new` and `new` associated functions for `Mtvec` and `Stvec`.

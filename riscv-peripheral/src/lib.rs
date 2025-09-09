@@ -3,7 +3,6 @@
 #![deny(missing_docs)]
 #![no_std]
 
-pub use riscv; // re-export riscv crate to allow macros to use it
 pub use riscv_pac::result; // re-export the result module
 
 pub mod common; // common definitions for all peripherals

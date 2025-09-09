@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.4.0] - 2025-09-08
+
 ### Added
 
 - Constant methods to access to PLIC and ACLINT registers for HART 0.
   These new methods are especially convenient for single-HART targets.
+
+### Removed
+
+- Removed `riscv` reexport.
 
 ## [v0.3.0] - 2025-06-10
 
