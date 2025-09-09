@@ -125,5 +125,5 @@ mod tests;
 
 // TODO: Debug/Trace Registers (shared with Debug Mode)
 
-// Debug Mode Registers
+// TODO: Debug Mode Registers
 pub mod dcsr;
