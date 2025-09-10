@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
+- Improved assembly macro handling in asm.rs
 
 ## [v0.15.0] - 2025-09-08
 
