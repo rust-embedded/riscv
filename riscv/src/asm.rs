@@ -20,45 +20,70 @@ macro_rules! instruction {
             #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
             unimplemented!();
         }
-    );
+    )
 }
 
 instruction!(
-    /// `nop` instruction wrapper
+    /// `NOP` instruction wrapper
     ///
     /// The `NOP` instruction does not change any architecturally visible state, except for
-    /// advancing the pc and incrementing any applicable performance counters.
+    /// advancing the PC and incrementing any applicable performance counters.
     ///
     /// This function generates a no-operation; it's useful to prevent delay loops from being
     /// optimized away.
-    , nop, "nop", options(nomem, nostack));
+    , nop, "nop", options(nomem, nostack, preserves_flags));
 
 instruction!(
     /// `WFI` instruction wrapper
     ///
-    /// Provides a hint to the implementation that the current hart can be stalled until an interrupt might need servicing.
-    /// The WFI instruction is just a hint, and a legal implementation is to implement WFI as a NOP.
-    , wfi, "wfi", options(nomem, nostack));
+    /// Provides a hint to the implementation that the current hart can be stalled until an
+    /// interrupt might need servicing. The WFI instruction is just a hint, and a legal
+    /// implementation is to implement WFI as a NOP.
+    ///
+    /// # Behavior
+    ///
+    /// - May cause the hart to enter a low-power state
+    /// - Will be interrupted by any enabled interrupt
+    /// - No guarantee of actual power savings (implementation-dependent)
+    ,wfi, "wfi", options(nomem, nostack, preserves_flags));
 
 instruction!(
     /// `EBREAK` instruction wrapper
     ///
-    /// Generates a breakpoint exception.
-    , unsafe ebreak, "ebreak", options(nomem, nostack));
+    /// Generates a breakpoint exception for use by debuggers.
+    ///
+    /// # Behavior
+    ///
+    /// When executed, this instruction causes a breakpoint exception to be raised,
+    /// which will typically be handled by a debugger or exception handler.
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because it unconditionally generates an exception,
+    /// which can disrupt normal program flow. Only call this when you intend to
+    /// trigger a breakpoint.
+    , unsafe ebreak, "ebreak", options(nomem, nostack, preserves_flags));
 
 instruction!(
     /// `ECALL` instruction wrapper
     ///
-    /// Generates an exception for a service request to the execution environment.
-    /// When executed in U-mode, S-mode, or M-mode, it generates an environment-call-from-U-mode
-    /// exception, environment-call-from-S-mode exception, or environment-call-from-M-mode exception,
-    /// respectively, and performs no other operation.
+    /// Generates an environment call exception for system services.
     ///
-    /// # Note
+    /// # Behavior
     ///
-    /// The ECALL instruction will **NOT** save and restore the stack pointer, as it triggers an exception.
-    /// The stack pointer must be saved and restored accordingly by the exception handler.
-    , unsafe ecall, "ecall", options(nomem, nostack));
+    /// When executed in different privilege modes:
+    /// - U-mode: Generates environment-call-from-U-mode exception
+    /// - S-mode: Generates environment-call-from-S-mode exception
+    /// - M-mode: Generates environment-call-from-M-mode exception
+    ///
+    /// # Safety
+    ///
+    /// This function is unsafe because:
+    /// - It unconditionally generates an exception
+    /// - The stack pointer is **NOT** automatically saved/restored
+    /// - The exception handler is responsible for proper context management
+    /// - Improper use can crash the system
+    , unsafe ecall, "ecall", options(nomem, nostack, preserves_flags));
 
 instruction!(
     /// `SFENCE.VMA` instruction wrapper (all address spaces and page table levels)
@@ -118,8 +143,8 @@ instruction!(
 pub fn sfence_vma(asid: usize, addr: usize) {
     #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
     unsafe {
-        core::arch::asm!("sfence.vma {0}, {1}", in(reg) addr, in(reg) asid, options(nostack));
-    };
+        core::arch::asm!("sfence.vma {}, {}", in(reg) addr, in(reg) asid, options(nostack));
+    }
     #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
     unimplemented!();
 }
@@ -139,21 +164,19 @@ pub fn sfence_vma(asid: usize, addr: usize) {
     allow(unused_variables)
 )]
 pub fn delay(cycles: u32) {
-    match () {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-        () => {
-            let real_cyc = 1 + cycles / 2;
-            unsafe {
-                core::arch::asm!(
+    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+    {
+        let real_cyc = 1 + cycles / 2;
+        unsafe {
+            core::arch::asm!(
                 "2:",
                 "addi {0}, {0}, -1",
                 "bne {0}, zero, 2b",
                 inout(reg) real_cyc => _,
                 options(nomem, nostack),
-                );
-            }
+            );
         }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-        () => unimplemented!(),
     }
+    #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+    unimplemented!();
 }
