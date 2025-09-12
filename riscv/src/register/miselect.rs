@@ -45,3 +45,20 @@ read_write_csr_field! {
     /// and the relevant `mireg*` value.
     value: [0:62],
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {
+        (0..=usize::BITS)
+            .map(|r| ((1u128 << r) - 1) as usize)
+            .for_each(|bits| {
+                let mut miselect = Miselect::from_bits(bits);
+
+                test_csr_field!(miselect, is_custom);
+                test_csr_field!(miselect, value: [0, usize::BITS - 2], 0);
+            });
+    }
+}
