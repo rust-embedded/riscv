@@ -275,7 +275,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Fixed MSRV by restricting the upper bound of `bare-metal` version
-- Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 
 [Unreleased]: https://github.com/rust-embedded/riscv/compare/v0.10.1...HEAD
 [v0.10.1]: https://github.com/rust-embedded/riscv/compare/v0.10.0...v0.10.1
