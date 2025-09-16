@@ -8,10 +8,24 @@ read_write_csr! {
     mask: 0xffff_ffff,
 }
 
+csr_field_enum! {
+    /// Operating privilege level.
+    Prv {
+        default: Machine,
+        /// User/Application.
+        User = 0b00,
+        /// Supervisor.
+        Supervisor = 0b01,
+        /// Machine.
+        Machine = 0b11,
+    }
+}
+
 read_write_csr_field! {
     Dcsr,
-    /// Previous privilege level when entering debug mode (bits 0..2)
-    prv: [0:1],
+    /// Previous privilege level when entering debug mode (bits 0..1).
+    prv,
+    Prv: [0:1],
 }
 
 read_write_csr_field! {
