@@ -21,6 +21,25 @@ csr_field_enum! {
     }
 }
 
+csr_field_enum! {
+    /// Cause for entering debug mode.
+    Cause {
+        default: None,
+        /// No cause.
+        None = 0,
+        /// EBREAK instruction.
+        Ebreak = 1,
+        /// Trigger module.
+        Trigger = 2,
+        /// External halt request.
+        HaltRequest = 3,
+        /// Single-step completed.
+        Step = 4,
+        /// Reset-halt request.
+        ResetHaltRequest = 5,
+    }
+}
+
 read_write_csr_field! {
     Dcsr,
     /// Previous privilege level when entering debug mode (bits 0..1).
@@ -49,7 +68,8 @@ read_write_csr_field! {
 read_only_csr_field! {
     Dcsr,
     /// Cause for entering debug mode (bits 6..8)
-    cause: [6:8],
+    cause,
+    Cause: [6:8],
 }
 
 read_write_csr_field! {
@@ -94,70 +114,27 @@ read_only_csr_field! {
     xdebugver: [28:31],
 }
 
-/// Cause for entering debug mode
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DcsrCause {
-    None = 0,
-    Ebreak = 1,
-    Trigger = 2,
-    HaltRequest = 3,
-    Step = 4,
-    ResetHaltRequest = 5,
-}
-
-impl DcsrCause {
-    pub fn from_usize(val: usize) -> Result<Self, usize> {
-        match val {
-            0 => Ok(Self::None),
-            1 => Ok(Self::Ebreak),
-            2 => Ok(Self::Trigger),
-            3 => Ok(Self::HaltRequest),
-            4 => Ok(Self::Step),
-            5 => Ok(Self::ResetHaltRequest),
-            other => Err(other),
-        }
-    }
-}
-
-/// Previous privilege level when entering debug mode
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DcsrPrv {
-    User = 0,
-    Supervisor = 1,
-    Machine = 3,
-}
-
-impl DcsrPrv {
-    pub fn from_usize(val: usize) -> Result<Self, usize> {
-        match val {
-            0 => Ok(Self::User),
-            1 => Ok(Self::Supervisor),
-            3 => Ok(Self::Machine),
-            other => Err(other),
-        }
-    }
-}
-
 impl Dcsr {
     /// Returns the debug cause as an enum
-    pub fn debug_cause(&self) -> Result<DcsrCause, usize> {
-        DcsrCause::from_usize(self.cause())
+    pub fn debug_cause(&self) -> crate::result::Result<Cause> {
+        self.try_cause()
     }
 
     /// Returns the previous privilege level as an enum
-    pub fn privilege_level(&self) -> Result<DcsrPrv, usize> {
-        DcsrPrv::from_usize(self.prv())
+    pub fn privilege_level(&self) -> crate::result::Result<Prv> {
+        self.try_prv()
     }
 
     /// Sets the previous privilege level
-    pub fn set_privilege_level(&mut self, level: DcsrPrv) {
-        self.set_prv(level as usize);
+    pub fn set_privilege_level(&mut self, level: Prv) {
+        self.set_prv(level);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::result::Error;
 
     #[test]
     fn test_dcsr_bitfields() {
@@ -200,29 +177,35 @@ mod tests {
 
     #[test]
     fn test_dcsr_enums() {
-        assert_eq!(DcsrCause::from_usize(0).unwrap(), DcsrCause::None);
-        assert_eq!(DcsrCause::from_usize(1).unwrap(), DcsrCause::Ebreak);
-        assert_eq!(DcsrCause::from_usize(2).unwrap(), DcsrCause::Trigger);
-        assert_eq!(DcsrCause::from_usize(3).unwrap(), DcsrCause::HaltRequest);
-        assert_eq!(DcsrCause::from_usize(4).unwrap(), DcsrCause::Step);
-        assert_eq!(
-            DcsrCause::from_usize(5).unwrap(),
-            DcsrCause::ResetHaltRequest
-        );
-        assert!(DcsrCause::from_usize(6).is_err());
+        let mut dcsr = Dcsr::from_bits(0);
 
-        assert_eq!(DcsrPrv::from_usize(0).unwrap(), DcsrPrv::User);
-        assert_eq!(DcsrPrv::from_usize(1).unwrap(), DcsrPrv::Supervisor);
-        assert_eq!(DcsrPrv::from_usize(3).unwrap(), DcsrPrv::Machine);
-        assert!(DcsrPrv::from_usize(2).is_err());
+        [
+            Cause::None,
+            Cause::Ebreak,
+            Cause::Trigger,
+            Cause::HaltRequest,
+            Cause::Step,
+            Cause::ResetHaltRequest,
+        ]
+        .into_iter()
+        .enumerate()
+        .for_each(|(val, variant)| {
+            dcsr = Dcsr::from_bits((val as usize) << 6);
+            assert_eq!(dcsr.cause(), variant);
+            assert_eq!(dcsr.debug_cause(), Ok(variant));
+        });
+
+        // invalid variant value 6
+        dcsr = Dcsr::from_bits(6 << 6);
+        assert_eq!(dcsr.try_cause(), Err(Error::InvalidVariant(6)));
     }
 
     #[test]
     fn test_dcsr_convenience_methods() {
         let mut dcsr = Dcsr::from_bits(0);
 
-        dcsr.set_privilege_level(DcsrPrv::Machine);
-        assert_eq!(dcsr.privilege_level().unwrap(), DcsrPrv::Machine);
-        assert_eq!(dcsr.prv(), 3);
+        dcsr.set_privilege_level(Prv::Machine);
+        assert_eq!(dcsr.privilege_level().unwrap(), Prv::Machine);
+        assert_eq!(dcsr.prv(), Prv::Machine);
     }
 }
