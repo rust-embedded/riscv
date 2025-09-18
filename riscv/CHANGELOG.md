@@ -7,25 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-- Improved assembly macro handling in asm.rs
-
 ### Added
-
-- Add `miselect` CSR
+- Improved assembly macro handling in asm.rs
 
 ## [v0.15.0] - 2025-09-08
 
-
 ### Added
 
 - Add `miselect` CSR
-- Improved assembly macro handling in asm.rs
-
-### Added
-
-- Add `miselect` CSR
-
-## [v0.15.0] - 2025-09-08
 
 ### Added
 
@@ -130,7 +119,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Export `riscv::register::macros` module macros for external use
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
 - Add `Mcounteren` in-memory update functions 
-- Add `Mcounteren` in-memory update functions
 - Add `Mstatus` vector extension support
 - Add fallible counterparts to all functions that `panic`
 - Add `riscv-pac` as a dependency
