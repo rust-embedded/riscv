@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add `miselect` CSR
+- Improved assembly macro handling in asm.rs
 
 ## [v0.15.0] - 2025-09-08
 
