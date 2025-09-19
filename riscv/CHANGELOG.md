@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
 
 ## [v0.15.0] - 2025-09-08
 
 ### Added
-
 - New convenience  `try_new` and `new` associated functions for `Mtvec` and `Stvec`.
 - New methods and functions for enabling core interrupts in the `mie` and `sie` registers
   using the `riscv_pac::CoreInterruptNumber` trait.
@@ -285,3 +285,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [v0.6.0]: https://github.com/rust-embedded/riscv/compare/v0.5.6...v0.6.0
 [v0.5.6]: https://github.com/rust-embedded/riscv/compare/v0.5.5...v0.5.6
 [v0.5.5]: https://github.com/rust-embedded/riscv/compare/v0.5.4...v0.5.5
+[v0.5.5]: https://github.com/rust-embedded/riscv/compare/v0.5.4...v0.5.5u
