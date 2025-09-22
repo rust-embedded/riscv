@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
 
+### Fixed
+
+- Fixed `riscv::pac_enum` macro. Now, it only generates `riscv-rt`-related code if feature `rt`
+  is enabled in the caller crate (presumably, a PAC).
+
 ## [v0.15.0] - 2025-09-08
 
 ### Added

@@ -280,7 +280,7 @@ impl PacEnumItem {
         };
         let mut asm = format!(
             r#"
-#[cfg(all(feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
+#[cfg(all(feature = "rt", feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
 core::arch::global_asm!("
     .section .trap.vector, \"ax\"
     .global _vector_table
@@ -366,8 +366,8 @@ core::arch::global_asm!("
             let handlers = self.handlers(&trap_config);
             let interrupt_array = self.handlers_array();
             let cfg_v_trap = match is_core_interrupt {
-                true => Some(quote!(#[cfg(not(feature = "v-trap"))])),
-                false => None,
+                true => quote!(#[cfg(all(feature = "rt", not(feature = "v-trap")))]),
+                false => quote!(#[cfg(feature = "rt")]),
             };
 
             // Push the interrupt handler functions and the interrupt array
