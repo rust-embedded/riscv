@@ -9,6 +9,7 @@ riscv = { path = "../riscv" }
 riscv-rt = { path = "../riscv-rt" }
 
 [features]
+rt = []
 pre-init = ["riscv-rt/pre-init"]
 single-hart = ["riscv-rt/single-hart"]
 v-trap = ["riscv-rt/v-trap"]

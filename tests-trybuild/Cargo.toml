@@ -9,4 +9,5 @@ riscv-rt = { path = "../riscv-rt", features = ["no-exceptions", "no-interrupts",
 trybuild = "1.0"
 
 [features]
+rt = []
 v-trap = ["riscv-rt/v-trap"]
