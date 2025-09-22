@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
+- New `rt` and `rt-v-trap` features to opt-in `riscv-rt`-related code in `riscv::pac_enum` macro.
+
+# Changed
+
+- Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.
 
 ## [v0.15.0] - 2025-09-08
 

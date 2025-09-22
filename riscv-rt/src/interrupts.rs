@@ -17,10 +17,10 @@
 //! you may need to opt out this module. To do so, activate the `no-interrupts` feature of the
 //! `riscv-rt` crate.
 
-// In vectored mode, we also must provide a vector table
 #[riscv::pac_enum(unsafe CoreInterruptNumber)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[allow(dead_code)] // otherwise compiler complains about Interrupt not being used
 enum Interrupt {
     SupervisorSoft = 1,
     MachineSoft = 3,
