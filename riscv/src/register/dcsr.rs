@@ -5,7 +5,7 @@
 read_write_csr! {
     /// Debug Control and Status Register
     Dcsr: 0x7b0,
-    mask: 0x8000_0fff,
+    mask: 0xf000_bfdf,
 }
 
 csr_field_enum! {
