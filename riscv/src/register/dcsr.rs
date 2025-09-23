@@ -5,7 +5,7 @@
 read_write_csr! {
     /// Debug Control and Status Register
     Dcsr: 0x7b0,
-    mask: 0xffff_ffff,
+    mask: 0x8000_0fff,
 }
 
 csr_field_enum! {
@@ -114,23 +114,6 @@ read_only_csr_field! {
     xdebugver: [28:31],
 }
 
-impl Dcsr {
-    /// Returns the debug cause as an enum
-    pub fn debug_cause(&self) -> crate::result::Result<Cause> {
-        self.try_cause()
-    }
-
-    /// Returns the previous privilege level as an enum
-    pub fn privilege_level(&self) -> crate::result::Result<Prv> {
-        self.try_prv()
-    }
-
-    /// Sets the previous privilege level
-    pub fn set_privilege_level(&mut self, level: Prv) {
-        self.set_prv(level);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -192,7 +175,7 @@ mod tests {
         .for_each(|(val, variant)| {
             dcsr = Dcsr::from_bits((val as usize) << 6);
             assert_eq!(dcsr.cause(), variant);
-            assert_eq!(dcsr.debug_cause(), Ok(variant));
+            assert_eq!(dcsr.try_cause(), Ok(variant));
         });
 
         // invalid variant value 6
@@ -204,8 +187,8 @@ mod tests {
     fn test_dcsr_convenience_methods() {
         let mut dcsr = Dcsr::from_bits(0);
 
-        dcsr.set_privilege_level(Prv::Machine);
-        assert_eq!(dcsr.privilege_level().unwrap(), Prv::Machine);
+        dcsr.set_prv(Prv::Machine);
+        assert_eq!(dcsr.try_prv().unwrap(), Prv::Machine);
         assert_eq!(dcsr.prv(), Prv::Machine);
     }
 }
