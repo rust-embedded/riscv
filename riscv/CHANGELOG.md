@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [v0.15.0] - 2025-09-08
 
 ### Added
+
 - New convenience  `try_new` and `new` associated functions for `Mtvec` and `Stvec`.
 - New methods and functions for enabling core interrupts in the `mie` and `sie` registers
   using the `riscv_pac::CoreInterruptNumber` trait.
@@ -116,7 +117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   the CSR
 - Export `riscv::register::macros` module macros for external use
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
-- Add `Mcounteren` in-memory update functions 
+- Add `Mcounteren` in-memory update functions
 - Add `Mstatus` vector extension support
 - Add fallible counterparts to all functions that `panic`
 - Add `riscv-pac` as a dependency
