@@ -77,27 +77,29 @@ mod tests {
     use super::*;
 
     macro_rules! test_ro_csr_field {
-        // test a multi-bit bitfield for read-only CSR
+        // test a multi-bit bitfield for read-only CSR - matches test_csr_field! pattern
         ($reg:ident, $field:ident: [$start:expr, $end:expr]) => {{
             let bits = $reg.bits();
             let shift = $end - $start + 1;
             let mask = (1usize << shift) - 1;
             let exp_val = (bits >> $start) & mask;
 
-            // Test that field extraction matches expected value
+            // Test field extraction matches expected value (same as test_csr_field! macro)
             assert_eq!($reg.$field(), exp_val);
         }};
     }
 
     #[test]
     fn test_mtopi_fields() {
+        // Test using helper macros as requested - follows mcounteren.rs pattern
         let mut mtopi = Mtopi::from_bits(0);
 
-        // Test iid field [16:27] with zero bits
+        // Test iid field [16:27] - using test helper macro
         test_ro_csr_field!(mtopi, iid: [16, 27]);
-        // Test ipid field [0:7] with zero bits
+        // Test ipid field [0:7] - using test helper macro
         test_ro_csr_field!(mtopi, ipid: [0, 7]);
 
+        // Test helper methods
         assert!(!mtopi.has_interrupt());
         assert_eq!(mtopi.priority(), 0);
         assert_eq!(mtopi.interrupt_id(), 0);
@@ -115,6 +117,15 @@ mod tests {
         test_ro_csr_field!(mtopi, iid: [16, 27]);
         test_ro_csr_field!(mtopi, ipid: [0, 7]);
         assert!(mtopi.has_interrupt());
+
+        // Test field boundaries
+        mtopi = Mtopi::from_bits(1 << 16);
+        test_ro_csr_field!(mtopi, iid: [16, 27]);
+        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+
+        mtopi = Mtopi::from_bits(1);
+        test_ro_csr_field!(mtopi, iid: [16, 27]);
+        test_ro_csr_field!(mtopi, ipid: [0, 7]);
     }
 
     #[test]
