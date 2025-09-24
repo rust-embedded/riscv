@@ -1,0 +1,58 @@
+name: QEMU CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+  merge_group:
+env:
+  RISCV_TOOLCHAIN: gcc-riscv64-linux-gnu
+  QEMU_PACKAGE: qemu-system-misc
+jobs:
+  build:
+    strategy:
+      matrix:
+        toolchain: [stable, nightly]
+        include:
+          - toolchain: nightly
+            experimental: true
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install RISCV toolchain & QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ env.RISCV_TOOLCHAIN }} ${{ env.QEMU_PACKAGE }}
+      - name: Build RISCV project
+        run: make -j$(nproc)
+  qemu-test:
+    needs: build
+    strategy:
+      matrix:
+        test_mode: [minimal, full]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install RISCV toolchain & QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ env.RISCV_TOOLCHAIN }} ${{ env.QEMU_PACKAGE }}
+
+      - name: Run QEMU tests
+        run: |
+          echo "Running QEMU in ${{ matrix.test_mode }} mode"
+          # Example QEMU run - replace with actual test binaries
+          qemu-system-riscv64 -nographic -machine virt -kernel path/to/kernel -append "console=ttyS0" &
+          sleep 5
+          # Add commands to run automated test scripts here
+  qemu-check:
+    needs:
+      - build
+      - qemu-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: |
+          echo "Checking results of build and QEMU tests"
+          echo '${{ toJson(needs) }}' | jq --exit-status 'all(.result == "success")'
