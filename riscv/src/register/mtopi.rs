@@ -13,8 +13,8 @@
 //! let mtopi_val = mtopi::read();
 //!
 //! if mtopi_val.has_interrupt() {
-//!     let interrupt_id = mtopi_val.interrupt_id();
-//!     let priority = mtopi_val.priority();
+//!     let interrupt_id = mtopi_val.iid();
+//!     let priority = mtopi_val.ipid();
 //!     println!("Highest priority interrupt: ID={}, Priority={}", interrupt_id, priority);
 //! } else {
 //!     println!("No interrupts pending");
@@ -53,23 +53,6 @@ impl Mtopi {
     pub fn has_interrupt(&self) -> bool {
         self.iid() != 0
     }
-
-    /// Returns the interrupt priority, with higher values indicating higher priority
-    ///
-    /// This value is only meaningful when `has_interrupt()` returns true.
-    #[inline]
-    pub fn priority(&self) -> usize {
-        self.ipid()
-    }
-
-    /// Returns the interrupt identifier
-    ///
-    /// A value of 0 indicates no interrupt is pending. Non-zero values identify
-    /// specific interrupt sources as defined by the interrupt controller configuration.
-    #[inline]
-    pub fn interrupt_id(&self) -> usize {
-        self.iid()
-    }
 }
 
 #[cfg(test)]
@@ -88,16 +71,12 @@ mod tests {
 
         // Test helper methods
         assert!(!mtopi.has_interrupt());
-        assert_eq!(mtopi.priority(), 0);
-        assert_eq!(mtopi.interrupt_id(), 0);
 
         // Test with some interrupt pending (IID = 11, IPID = 5)
         mtopi = Mtopi::from_bits((11 << 16) | 5);
         test_csr_field!(mtopi, iid: [16, 27]);
         test_csr_field!(mtopi, ipid: [0, 7]);
         assert!(mtopi.has_interrupt());
-        assert_eq!(mtopi.priority(), 5);
-        assert_eq!(mtopi.interrupt_id(), 11);
 
         // Test maximum values for each field
         mtopi = Mtopi::from_bits((0xFFF << 16) | 0xFF);
