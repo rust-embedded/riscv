@@ -1041,6 +1041,19 @@ macro_rules! test_csr_field {
         }
     }};
 
+    // test a multi-bit bitfield for read-only CSR (must come before enum pattern)
+    ($reg:ident, $field:ident: [$start:literal, $end:literal]) => {{
+        let bits = $reg.bits();
+
+        let shift = $end - $start + 1;
+        let mask = (1usize << shift) - 1;
+
+        let exp_val = (bits >> $start) & mask;
+
+        // Test field extraction matches expected value
+        assert_eq!($reg.$field(), exp_val);
+    }};
+
     // test an enum bit field
     ($reg:ident, $field:ident: $var:expr) => {{
         $crate::paste! {

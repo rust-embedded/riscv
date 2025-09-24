@@ -76,28 +76,15 @@ impl Mtopi {
 mod tests {
     use super::*;
 
-    macro_rules! test_ro_csr_field {
-        // test a multi-bit bitfield for read-only CSR - matches test_csr_field! pattern
-        ($reg:ident, $field:ident: [$start:expr, $end:expr]) => {{
-            let bits = $reg.bits();
-            let shift = $end - $start + 1;
-            let mask = (1usize << shift) - 1;
-            let exp_val = (bits >> $start) & mask;
-
-            // Test field extraction matches expected value (same as test_csr_field! macro)
-            assert_eq!($reg.$field(), exp_val);
-        }};
-    }
-
     #[test]
     fn test_mtopi_fields() {
         // Test using helper macros as requested - follows mcounteren.rs pattern
         let mut mtopi = Mtopi::from_bits(0);
 
         // Test iid field [16:27] - using test helper macro
-        test_ro_csr_field!(mtopi, iid: [16, 27]);
+        test_csr_field!(mtopi, iid: [16, 27]);
         // Test ipid field [0:7] - using test helper macro
-        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, ipid: [0, 7]);
 
         // Test helper methods
         assert!(!mtopi.has_interrupt());
@@ -106,26 +93,26 @@ mod tests {
 
         // Test with some interrupt pending (IID = 11, IPID = 5)
         mtopi = Mtopi::from_bits((11 << 16) | 5);
-        test_ro_csr_field!(mtopi, iid: [16, 27]);
-        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, iid: [16, 27]);
+        test_csr_field!(mtopi, ipid: [0, 7]);
         assert!(mtopi.has_interrupt());
         assert_eq!(mtopi.priority(), 5);
         assert_eq!(mtopi.interrupt_id(), 11);
 
         // Test maximum values for each field
         mtopi = Mtopi::from_bits((0xFFF << 16) | 0xFF);
-        test_ro_csr_field!(mtopi, iid: [16, 27]);
-        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, iid: [16, 27]);
+        test_csr_field!(mtopi, ipid: [0, 7]);
         assert!(mtopi.has_interrupt());
 
         // Test field boundaries
         mtopi = Mtopi::from_bits(1 << 16);
-        test_ro_csr_field!(mtopi, iid: [16, 27]);
-        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, iid: [16, 27]);
+        test_csr_field!(mtopi, ipid: [0, 7]);
 
         mtopi = Mtopi::from_bits(1);
-        test_ro_csr_field!(mtopi, iid: [16, 27]);
-        test_ro_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, iid: [16, 27]);
+        test_csr_field!(mtopi, ipid: [0, 7]);
     }
 
     #[test]
