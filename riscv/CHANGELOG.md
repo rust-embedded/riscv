@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
 
@@ -116,7 +117,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   the CSR
 - Export `riscv::register::macros` module macros for external use
 - Add `riscv::register::mcountinhibit` module for `mcountinhibit` CSR
-- Add `Mcounteren` in-memory update functions 
+- Add `Mcounteren` in-memory update functions
 - Add `Mstatus` vector extension support
 - Add fallible counterparts to all functions that `panic`
 - Add `riscv-pac` as a dependency
@@ -285,3 +286,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 [v0.6.0]: https://github.com/rust-embedded/riscv/compare/v0.5.6...v0.6.0
 [v0.5.6]: https://github.com/rust-embedded/riscv/compare/v0.5.5...v0.5.6
 [v0.5.5]: https://github.com/rust-embedded/riscv/compare/v0.5.4...v0.5.5
+[v0.5.5]: https://github.com/rust-embedded/riscv/compare/v0.5.4...v0.5.5u
