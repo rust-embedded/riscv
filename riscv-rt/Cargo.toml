@@ -24,7 +24,7 @@ targets = [
 riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
 
 [dependencies]
-riscv = { path = "../riscv", version = "0.15.0" }
+riscv = { path = "../riscv", version = "0.15.0", features = ["rt"] }
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 riscv-rt-macros = { path = "macros", version = "0.6.0" }
 
@@ -38,7 +38,7 @@ pre-init = []
 post-init = []
 s-mode = ["riscv-rt-macros/s-mode"]
 single-hart = []
-v-trap = ["riscv-rt-macros/v-trap"]
+v-trap = ["riscv-rt-macros/v-trap", "riscv/rt-v-trap"]
 u-boot = ["riscv-rt-macros/u-boot", "single-hart"]
 no-interrupts = []
 no-exceptions = []
