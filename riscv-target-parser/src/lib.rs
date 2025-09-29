@@ -106,6 +106,12 @@ pub struct RiscvTarget {
     extensions: Extensions,
 }
 
+// Returns whether a target feature _might_ be an ISA extension according to a non-exhaustive list
+// of known unrelated features flags.
+fn is_isa_extension(feature: &str) -> bool {
+    feature != "relax"
+}
+
 impl RiscvTarget {
     /// Builds a RISC-V target from a target triple and cargo flags.
     /// This function is expected to be called from a build script.
@@ -135,11 +141,15 @@ impl RiscvTarget {
             })
         {
             if let Some(feature) = target_feature.strip_prefix('+') {
-                let extension = Extension::try_from(feature)?;
-                target.extensions.insert(extension);
+                if is_isa_extension(feature) {
+                    let extension = Extension::try_from(feature)?;
+                    target.extensions.insert(extension);
+                }
             } else if let Some(feature) = target_feature.strip_prefix('-') {
-                let extension = Extension::try_from(feature)?;
-                target.extensions.remove(&extension);
+                if is_isa_extension(feature) {
+                    let extension = Extension::try_from(feature)?;
+                    target.extensions.remove(&extension);
+                }
             } else {
                 return Err(Error::UnknownTargetFeature(target_feature));
             }
@@ -246,7 +256,7 @@ mod test {
     #[test]
     fn test_parse_target() {
         let target = "riscv32imac-unknown-none-elf";
-        let cargo_flags = "target-feature=+m,-a,+f";
+        let cargo_flags = "target-feature=+m,-a,+f,+relax";
         let target = super::RiscvTarget::build(target, cargo_flags).unwrap();
         let rustc_flags = target.rustc_flags();
         assert_eq!(rustc_flags, vec!["riscvi", "riscvm", "riscvf", "riscvc"]);
