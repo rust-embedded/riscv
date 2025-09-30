@@ -31,6 +31,17 @@
 //! and may cause functional problems in systems where some interrupts must NOT be disabled
 //! or critical sections are managed as part of an RTOS. In these cases, you should use
 //! a target-specific implementation instead, typically provided by a HAL or RTOS crate.
+//!
+//! ## `rt`
+//!
+//! This feature enables code related to [`riscv-rt`](https://github.com/rust-embedded/riscv/tree/master/riscv-rt)
+//! runtime support in the `riscv::pac_enum` macro. Namely, it enables the generation of
+//! trap handler functions and dispatch functions.
+//!
+//! ## `rt-v-trap`
+//!
+//! This feature enables code related to vectored trap handling in addition to the `rt` feature.
+//! Namely, it enables the generation of a vector table and the corresponding assembly code for core interrupts.
 
 #![no_std]
 #![allow(clippy::missing_safety_doc)]
