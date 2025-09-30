@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.1.3] - 2025-09-29
+
 ### Fixed
 
 - Skip the 'relax' target feature when parsing extensions
