@@ -24,7 +24,7 @@
 read_only_csr! {
     /// Machine Top Priority Interrupt Register
     Mtopi: 0x7C0,
-    mask: usize::MAX,
+    mask: 0x0FFF_FFFF,
 }
 
 read_only_csr_field! {
@@ -41,8 +41,8 @@ read_only_csr_field! {
     /// Interrupt Priority ID (bits 0..7)
     ///
     /// Represents the priority level of the pending interrupt.
-    /// Higher numerical values indicate higher priority interrupts.
-    ipid: [0:7],
+    /// Lower numerical values indicate higher priority interrupts.
+    iprio: [0:7],
 }
 
 impl Mtopi {
