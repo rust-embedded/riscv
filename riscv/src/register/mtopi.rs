@@ -50,7 +50,7 @@ impl Mtopi {
     ///
     /// When this returns true, both `interrupt_id()` and `priority()` will return meaningful values.
     #[inline]
-    pub fn has_interrupt(&self) -> bool {
+    pub fn is_interrupt_pending(&self) -> bool {
         self.iid() != 0
     }
 }
