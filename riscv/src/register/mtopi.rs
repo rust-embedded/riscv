@@ -24,7 +24,7 @@
 read_only_csr! {
     /// Machine Top Priority Interrupt Register
     Mtopi: 0x7C0,
-    mask: 0x0FFF_FFFF,
+    mask: 0x0FFF_00FF,
 }
 
 read_only_csr_field! {
