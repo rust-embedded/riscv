@@ -25,7 +25,7 @@ riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
 
 [dependencies]
 riscv = { path = "../riscv", version = "0.15.0" }
-riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
+riscv-types = { path = "../riscv-types", version = "0.2.0" }
 riscv-rt-macros = { path = "macros", version = "0.6.0" }
 
 defmt = { version = "1.0.1", optional = true }

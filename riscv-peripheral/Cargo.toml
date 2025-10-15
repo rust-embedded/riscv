@@ -17,7 +17,7 @@ license = "ISC"
 embedded-hal = "1.0.0"
 paste = "1.0"
 riscv = { path = "../riscv", version = "0.15.0" }
-riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
+riscv-types = { path = "../riscv-types", version = "0.2.0" }
 
 [package.metadata.docs.rs]
 all-features = true
