@@ -15,10 +15,6 @@ edition = "2021"
 [lib]
 proc-macro = true
 
-[features]
-rt = []
-rt-v-trap = ["rt"]
-
 [dependencies]
 proc-macro2 = "1.0"
 quote = "1.0"

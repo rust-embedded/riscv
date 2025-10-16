@@ -11,7 +11,6 @@ use syn::{
 };
 
 /// Struct to represent a function parameter.
-#[cfg(feature = "rt")]
 struct FunctionParam {
     /// Name of the parameter.
     param_name: TokenStream2,
@@ -21,7 +20,6 @@ struct FunctionParam {
 
 /// Configuration parameters of a trap. It is useful to abstract the
 /// differences between exception handlers and core interrupt handlers.
-#[cfg(feature = "rt")]
 struct TrapConfig {
     /// Name of the default handler (e.g., `DefaultHandler` for core interrupts).
     default_handler: TokenStream2,
@@ -33,7 +31,6 @@ struct TrapConfig {
     handlers_array_name: TokenStream2,
 }
 
-#[cfg(feature = "rt")]
 impl TrapConfig {
     /// Vector with all the input parameters expected when declaring extern handler functions
     fn extern_signature(&self) -> Vec<TokenStream2> {
@@ -110,7 +107,6 @@ impl PacTrait {
     }
 
     /// For Exception or an Interrupt enums, it returns the trap configuration details.
-    #[cfg(feature = "rt")]
     fn trap_config(&self) -> Option<TrapConfig> {
         match self {
             Self::Exception => Some(TrapConfig {
@@ -167,7 +163,6 @@ impl InterruptType {
     }
 
     /// Returns a token stream representing the name of the array of interrupt service routines
-    #[cfg(feature = "rt")]
     fn isr_array_name(&self) -> TokenStream2 {
         match self {
             Self::Core => quote!(__CORE_INTERRUPTS),
@@ -176,7 +171,6 @@ impl InterruptType {
     }
 
     /// Returns a token stream representing the name of the interrupt dispatch function
-    #[cfg(feature = "rt")]
     fn dispatch_fn_name(&self) -> TokenStream2 {
         match self {
             Self::Core => quote!(_dispatch_core_interrupt),
@@ -245,7 +239,6 @@ impl PacEnumItem {
     }
 
     /// Returns a vector of token streams representing the interrupt handler functions
-    #[cfg(feature = "rt")]
     fn handlers(&self, trap_config: &TrapConfig) -> Vec<TokenStream2> {
         let signature = trap_config.extern_signature();
         self.numbers
@@ -259,7 +252,6 @@ impl PacEnumItem {
     /// Returns a sorted vector of token streams representing all the elements of the interrupt array.
     /// If an interrupt number is not present in the enum, the corresponding element is `None`.
     /// Otherwise, it is `Some(<interrupt_handler>)`.
-    #[cfg(feature = "rt")]
     fn handlers_array(&self) -> Vec<TokenStream2> {
         let mut vectors = vec![];
         for i in 0..=self.max_number {
@@ -272,7 +264,6 @@ impl PacEnumItem {
         vectors
     }
 
-    #[cfg(feature = "rt-v-trap")]
     fn vector_table(&self) -> TokenStream2 {
         let align = match std::env::var("RISCV_MTVEC_ALIGN") {
             Ok(x) => x.parse::<u32>().ok(),
@@ -289,7 +280,7 @@ impl PacEnumItem {
         };
         let mut asm = format!(
             r#"
-#[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+#[cfg(all(feature = "v-trap", any(target_arch = "riscv32", target_arch = "riscv64")))]
 core::arch::global_asm!("
     .section .trap.vector, \"ax\"
     .global _vector_table
@@ -337,6 +328,8 @@ core::arch::global_asm!("
         let max_discriminant = self.max_number;
         let valid_matches = self.valid_matches();
 
+        let is_core_interrupt = matches!(attr, PacTrait::Interrupt(InterruptType::Core));
+
         // Push the trait implementation
         res.push(quote! {
             unsafe impl riscv::#trait_name for #name {
@@ -361,51 +354,54 @@ core::arch::global_asm!("
             res.push(quote! { unsafe impl riscv::#marker_trait_name for #name {} });
         }
 
-        #[cfg(feature = "rt")]
         if let Some(trap_config) = attr.trap_config() {
-            match attr {
-                #[cfg(feature = "rt-v-trap")]
-                PacTrait::Interrupt(InterruptType::Core) => {
-                    res.push(self.vector_table());
+            let default_handler = &trap_config.default_handler;
+            let extern_signature = trap_config.extern_signature();
+            let handler_input = trap_config.handler_input();
+            let array_signature = trap_config.array_signature();
+            let dispatch_fn_name = &trap_config.dispatch_fn_name;
+            let dispatch_fn_args = &trap_config.dispatch_fn_signature();
+            let vector_table = &trap_config.handlers_array_name;
+
+            let handlers = self.handlers(&trap_config);
+            let interrupt_array = self.handlers_array();
+            let cfg_v_trap = match is_core_interrupt {
+                true => Some(quote!(#[cfg(not(feature = "v-trap"))])),
+                false => None,
+            };
+
+            // Push the interrupt handler functions and the interrupt array
+            res.push(quote! {
+                #cfg_v_trap
+                extern "C" {
+                    #(#handlers;)*
                 }
-                _ => {
-                    let default_handler = &trap_config.default_handler;
-                    let extern_signature = trap_config.extern_signature();
-                    let handler_input = trap_config.handler_input();
-                    let array_signature = trap_config.array_signature();
-                    let dispatch_fn_name = &trap_config.dispatch_fn_name;
-                    let dispatch_fn_args = &trap_config.dispatch_fn_signature();
-                    let vector_table = &trap_config.handlers_array_name;
 
-                    let handlers = self.handlers(&trap_config);
-                    let interrupt_array = self.handlers_array();
+                #cfg_v_trap
+                #[doc(hidden)]
+                #[no_mangle]
+                pub static #vector_table: [Option<unsafe extern "C" fn(#(#array_signature),*)>; #max_discriminant + 1] = [
+                    #(#interrupt_array),*
+                ];
 
-                    res.push(quote! {
-                        extern "C" {
-                            #(#handlers;)*
-                        }
+                #cfg_v_trap
+                #[inline]
+                #[no_mangle]
+                unsafe extern "C" fn #dispatch_fn_name(#(#dispatch_fn_args),*) {
+                    extern "C" {
+                        fn #default_handler(#(#extern_signature),*);
+                    }
 
-                        #[doc(hidden)]
-                        #[no_mangle]
-                        pub static #vector_table: [Option<unsafe extern "C" fn(#(#array_signature),*)>; #max_discriminant + 1] = [
-                            #(#interrupt_array),*
-                        ];
-
-                        #[inline]
-                        #[no_mangle]
-                        unsafe extern "C" fn #dispatch_fn_name(#(#dispatch_fn_args),*) {
-                            extern "C" {
-                                fn #default_handler(#(#extern_signature),*);
-                            }
-
-                            match #vector_table.get(code) {
-                                Some(Some(handler)) => handler(#(#handler_input),*),
-                                _ => #default_handler(#(#handler_input),*),
-                            }
-                        }
-                    });
+                    match #vector_table.get(code) {
+                        Some(Some(handler)) => handler(#(#handler_input),*),
+                        _ => #default_handler(#(#handler_input),*),
+                    }
                 }
-            }
+            });
+        }
+
+        if is_core_interrupt {
+            res.push(self.vector_table());
         }
 
         res
@@ -417,8 +413,8 @@ core::arch::global_asm!("
 /// As these traits are unsafe, the macro must be called with the `unsafe` keyword followed by the trait name.
 /// In this way, we warn callers that they must comply with the requirements of the trait.
 ///
-/// The trait name must be one of `ExceptionNumber`, `CoreInterruptNumber`, `ExternalInterruptNumber`,
-/// `PriorityNumber`, or `HartIdNumber`.
+/// The trait name must be one of `ExceptionNumber`, `InterruptNumber`, `PriorityNumber`, or `HartIdNumber`.
+/// Marker traits `CoreInterruptNumber` and `ExternalInterruptNumber` cannot be implemented using this macro.
 ///
 /// # Safety
 ///

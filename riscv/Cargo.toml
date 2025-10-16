@@ -23,8 +23,6 @@ targets = [
 default = ["riscv-macros"]
 s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
-rt = ["riscv-macros/rt"]
-rt-v-trap = ["rt", "riscv-macros/rt-v-trap"]
 
 [dependencies]
 critical-section = "1.2.0"
