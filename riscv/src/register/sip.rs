@@ -1,7 +1,7 @@
 //! sip register
 
 use crate::bits::bf_extract;
-use riscv_pac::CoreInterruptNumber;
+use riscv_types::CoreInterruptNumber;
 
 read_only_csr! {
     /// sip register

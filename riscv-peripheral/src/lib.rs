@@ -3,7 +3,7 @@
 #![deny(missing_docs)]
 #![no_std]
 
-pub use riscv_pac::result; // re-export the result module
+pub use riscv_types::result; // re-export the result module
 
 pub mod common; // common definitions for all peripherals
 pub mod hal; // trait implementations for embedded-hal

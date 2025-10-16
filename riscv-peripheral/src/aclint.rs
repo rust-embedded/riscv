@@ -7,7 +7,7 @@ pub mod mswi;
 pub mod mtimer;
 pub mod sswi;
 
-pub use riscv_pac::HartIdNumber; // re-export useful riscv-types traits
+pub use riscv_types::HartIdNumber; // re-export useful riscv-types traits
 
 /// Trait for a CLINT peripheral.
 ///

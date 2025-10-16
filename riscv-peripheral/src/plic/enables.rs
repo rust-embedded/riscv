@@ -1,7 +1,7 @@
 //! Interrupt enables register of a PLIC context.
 
 use crate::common::{Reg, RW};
-use riscv_pac::ExternalInterruptNumber;
+use riscv_types::ExternalInterruptNumber;
 
 /// Enables register of a PLIC context.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

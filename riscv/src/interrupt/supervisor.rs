@@ -2,7 +2,7 @@ use crate::{
     interrupt::Trap,
     register::{scause, sepc, sie, sip, sstatus},
 };
-use riscv_pac::{
+use riscv_types::{
     result::{Error, Result},
     CoreInterruptNumber, ExceptionNumber, InterruptNumber,
 };

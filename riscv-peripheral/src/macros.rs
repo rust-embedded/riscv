@@ -31,7 +31,7 @@ pub use paste::paste;
 /// ## Base address and per-HART mtimecmp registers, private `fn new()` function
 ///
 /// ```
-/// use riscv_pac::result::{Error, Result};
+/// use riscv_types::result::{Error, Result};
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -142,7 +142,7 @@ macro_rules! clint_codegen {
 /// ## Base address and per-HART context proxies, private `fn new()` function
 ///
 /// ```
-/// use riscv_pac::result::{Error, Result};
+/// use riscv_types::result::{Error, Result};
 ///
 /// /// HART IDs for the target CLINT peripheral
 /// #[derive(Clone, Copy, Debug, Eq, PartialEq)]

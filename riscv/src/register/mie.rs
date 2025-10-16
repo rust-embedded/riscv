@@ -1,7 +1,7 @@
 //! mie register
 
 use crate::bits::{bf_extract, bf_insert};
-use riscv_pac::CoreInterruptNumber;
+use riscv_types::CoreInterruptNumber;
 
 read_write_csr! {
     /// `mie` register
