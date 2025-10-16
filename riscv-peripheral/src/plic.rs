@@ -8,7 +8,7 @@ pub mod pendings;
 pub mod priorities;
 pub mod threshold;
 
-// re-export useful riscv-pac traits
+// re-export useful riscv-types traits
 pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
 
 use riscv::register::{mhartid, mie, mip};

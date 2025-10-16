@@ -1,5 +1,5 @@
 [package]
-name = "riscv-pac"
+name = "riscv-types"
 version = "0.2.0"
 edition = "2021"
 rust-version = "1.60"
@@ -7,7 +7,7 @@ repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
 description = "Low level access to RISC-V processors"
-documentation = "https://docs.rs/riscv-pac"
+documentation = "https://docs.rs/riscv-types"
 keywords = ["riscv", "register", "peripheral"]
 license = "ISC"
 

@@ -179,7 +179,7 @@ impl InterruptType {
     }
 }
 
-/// Struct containing the information needed to implement the `riscv-pac` traits for an enum
+/// Struct containing the information needed to implement the `riscv-types` traits for an enum
 struct PacEnumItem {
     /// The name of the enum
     name: Ident,
@@ -408,7 +408,7 @@ core::arch::global_asm!("
     }
 }
 
-/// Attribute-like macro that implements the traits of the `riscv-pac` crate for a given enum.
+/// Attribute-like macro that implements the traits of the `riscv-types` crate for a given enum.
 ///
 /// As these traits are unsafe, the macro must be called with the `unsafe` keyword followed by the trait name.
 /// In this way, we warn callers that they must comply with the requirements of the trait.

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Rename all instances of `riscv-pac` with `riscv-types`
+
 ## [v0.2.0] - 2024-10-19
 
 ### Added
