@@ -7,6 +7,7 @@ members = [
     "riscv-rt",
     "riscv-semihosting",
     "riscv-target-parser",
+    "riscv-types",
     "tests-build",
     "tests-trybuild",
 ]
@@ -17,4 +18,5 @@ default-members = [
     "riscv-peripheral",
     "riscv-rt",
     "riscv-semihosting",
+    "riscv-types",
 ]
