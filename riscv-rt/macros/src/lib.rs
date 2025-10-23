@@ -137,7 +137,7 @@ fn strip_type_path(ty: &Type) -> Option<Type> {
     match ty {
         Type::Ptr(ty) => {
             let mut ty = ty.clone();
-            ty.elem = Box::new(strip_type_path(&ty.elem)?);
+            *ty.elem = strip_type_path(&ty.elem)?;
             Some(Type::Ptr(ty))
         }
         Type::Path(ty) => {
