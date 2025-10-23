@@ -1048,6 +1048,11 @@ macro_rules! test_csr_field {
         assert_eq!($reg.$field(), exp_val);
     }};
 
+    // test a multi-bit bitfield for read-only CSR with expected value
+    ($reg:ident, $field:ident: [$start:expr, $end:expr], $expected:expr) => {{
+        assert_eq!($reg.$field(), $expected);
+    }};
+
     // test an enum bit field
     ($reg:ident, $field:ident: $var:expr) => {{
         $crate::paste! {

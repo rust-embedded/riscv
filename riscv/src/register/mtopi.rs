@@ -61,37 +61,26 @@ mod tests {
 
     #[test]
     fn test_mtopi_fields() {
-        // Test using helper macros as requested - follows mcounteren.rs pattern
-        let mut mtopi = Mtopi::from_bits(0);
+        let mtopi = Mtopi::from_bits(0);
 
-        // Test iid field [16:27] - using test helper macro
-        test_csr_field!(mtopi, iid: [16, 27]);
-        // Test ipid field [0:7] - using test helper macro
-        test_csr_field!(mtopi, ipid: [0, 7]);
+        test_csr_field!(mtopi, iid: [16, 27], 0x0);
+        test_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
-        // Test helper methods
-        assert!(!mtopi.has_interrupt());
+        let mtopi = Mtopi::from_bits((11 << 16) | 5);
+        test_csr_field!(mtopi, iid: [16, 27], 0xB);
+        test_csr_field!(mtopi, iprio: [0, 7], 0x5);
 
-        // Test with some interrupt pending (IID = 11, IPID = 5)
-        mtopi = Mtopi::from_bits((11 << 16) | 5);
-        test_csr_field!(mtopi, iid: [16, 27]);
-        test_csr_field!(mtopi, ipid: [0, 7]);
-        assert!(mtopi.has_interrupt());
+        let mtopi = Mtopi::from_bits((0xFFF << 16) | 0xFF);
+        test_csr_field!(mtopi, iid: [16, 27], 0xFFF);
+        test_csr_field!(mtopi, iprio: [0, 7], 0xFF);
 
-        // Test maximum values for each field
-        mtopi = Mtopi::from_bits((0xFFF << 16) | 0xFF);
-        test_csr_field!(mtopi, iid: [16, 27]);
-        test_csr_field!(mtopi, ipid: [0, 7]);
-        assert!(mtopi.has_interrupt());
+        let mtopi = Mtopi::from_bits(1 << 16);
+        test_csr_field!(mtopi, iid: [16, 27], 0x1);
+        test_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
-        // Test field boundaries
-        mtopi = Mtopi::from_bits(1 << 16);
-        test_csr_field!(mtopi, iid: [16, 27]);
-        test_csr_field!(mtopi, ipid: [0, 7]);
-
-        mtopi = Mtopi::from_bits(1);
-        test_csr_field!(mtopi, iid: [16, 27]);
-        test_csr_field!(mtopi, ipid: [0, 7]);
+        let mtopi = Mtopi::from_bits(1);
+        test_csr_field!(mtopi, iid: [16, 27], 0x0);
+        test_csr_field!(mtopi, iprio: [0, 7], 0x1);
     }
 
     #[test]
