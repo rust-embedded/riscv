@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 # Changed
 
+- Bump MSRV to 1.68 for latest version of syn 2.0
 - Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.
 
 ## [v0.15.0] - 2025-09-08
