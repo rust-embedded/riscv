@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added `mtopi` CSR support for the RISC-V Advanced Interrupt Architecture extension.
 - Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
