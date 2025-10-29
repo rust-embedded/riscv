@@ -40,7 +40,7 @@ jobs:
     - name: Build (all features)
       run: cargo build --package riscv --target ${{ matrix.target }} --all-features
 
-  # On MacOS, Ubuntu, and Windows, we at least make sure that the crate builds and links.
+  # On MacOS, Ubuntu, and Windows, we run tests.
   build-others:
     strategy:
       matrix:
@@ -49,10 +49,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build (no features)
-        run: cargo build --package riscv
-      - name: Build (all features)
-        run: cargo build --package riscv --all-features
+      - name: Test (no features)
+        run: cargo test --package riscv
+      - name: Test (all features)
+        run: cargo test --package riscv --all-features
 
   # Job to check that all the builds succeeded
   build-check:
