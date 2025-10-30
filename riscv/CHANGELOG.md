@@ -14,8 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Improved assembly macro handling in asm.rs
 - New `rt` and `rt-v-trap` features to opt-in `riscv-rt`-related code in `riscv::pac_enum` macro.
 
-# Changed
+### Changed
 
+- Moved macros from `./macros/` to `../riscv-macros/`
 - Bump MSRV to 1.68 for latest version of syn 2.0
 - Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.
 
