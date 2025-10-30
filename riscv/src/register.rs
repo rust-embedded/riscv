@@ -89,6 +89,7 @@ pub mod mepc;
 pub mod mip;
 pub mod mscratch;
 pub mod mtinst;
+pub mod mtopi;
 pub mod mtval;
 pub mod mtval2;
 
