@@ -4,7 +4,7 @@ authors = [
 ]
 categories = ["embedded", "no-std"]
 description = "Procedural macros re-exported in `riscv`"
-documentation = "https://docs.rs/riscv"
+documentation = "https://docs.rs/riscv-macros"
 keywords = ["riscv", "register", "peripheral"]
 license = "MIT OR Apache-2.0"
 name = "riscv-macros"
