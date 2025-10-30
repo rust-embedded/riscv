@@ -29,6 +29,8 @@ jobs:
               - 'riscv-semihosting/**'
             riscv-target-parser:
               - 'riscv-target-parser/**'
+            riscv-types:
+              - 'riscv-types/**'
 
       - name: Check for CHANGELOG.md (riscv)
         if: steps.changes.outputs.riscv == 'true'
@@ -77,3 +79,11 @@ jobs:
           changeLogPath: ./riscv-target-parser/CHANGELOG.md
           skipLabels: 'skip changelog'
           missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-target-parser/CHANGELOG.md file.'
+
+      - name: Check for CHANGELOG.md (riscv-types)
+        if: steps.changes.outputs.riscv-types == 'true'
+        uses: dangoslen/changelog-enforcer@v3
+        with:
+          changeLogPath: ./riscv-types/CHANGELOG.md
+          skipLabels: 'skip changelog'
+          missingUpdateErrorMessage: 'Please add a changelog entry in the riscv-types/CHANGELOG.md file.'
