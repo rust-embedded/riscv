@@ -12,9 +12,9 @@
 //! // Read the machine top priority interrupt register
 //! let mtopi_val = mtopi::read();
 //!
-//! if mtopi_val.has_interrupt() {
+//! if mtopi_val.is_interrupt_pending() {
 //!     let interrupt_id = mtopi_val.iid();
-//!     let priority = mtopi_val.ipid();
+//!     let priority = mtopi_val.iprio();
 //!     println!("Highest priority interrupt: ID={}, Priority={}", interrupt_id, priority);
 //! } else {
 //!     println!("No interrupts pending");
@@ -63,24 +63,24 @@ mod tests {
     fn test_mtopi_fields() {
         let mtopi = Mtopi::from_bits(0);
 
-        test_csr_field!(mtopi, iid: [16, 27], 0x0);
-        test_csr_field!(mtopi, iprio: [0, 7], 0x0);
+        test_ro_csr_field!(mtopi, iid: [16, 27], 0x0);
+        test_ro_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
         let mtopi = Mtopi::from_bits((11 << 16) | 5);
-        test_csr_field!(mtopi, iid: [16, 27], 0xB);
-        test_csr_field!(mtopi, iprio: [0, 7], 0x5);
+        test_ro_csr_field!(mtopi, iid: [16, 27], 0xB);
+        test_ro_csr_field!(mtopi, iprio: [0, 7], 0x5);
 
         let mtopi = Mtopi::from_bits((0xFFF << 16) | 0xFF);
-        test_csr_field!(mtopi, iid: [16, 27], 0xFFF);
-        test_csr_field!(mtopi, iprio: [0, 7], 0xFF);
+        test_ro_csr_field!(mtopi, iid: [16, 27], 0xFFF);
+        test_ro_csr_field!(mtopi, iprio: [0, 7], 0xFF);
 
         let mtopi = Mtopi::from_bits(1 << 16);
-        test_csr_field!(mtopi, iid: [16, 27], 0x1);
-        test_csr_field!(mtopi, iprio: [0, 7], 0x0);
+        test_ro_csr_field!(mtopi, iid: [16, 27], 0x1);
+        test_ro_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
         let mtopi = Mtopi::from_bits(1);
-        test_csr_field!(mtopi, iid: [16, 27], 0x0);
-        test_csr_field!(mtopi, iprio: [0, 7], 0x1);
+        test_ro_csr_field!(mtopi, iid: [16, 27], 0x0);
+        test_ro_csr_field!(mtopi, iprio: [0, 7], 0x1);
     }
 
     #[test]
