@@ -1070,3 +1070,11 @@ macro_rules! test_csr_field {
         }
     }};
 }
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_ro_csr_field {
+    ($reg:ident, $field:ident: [$start:expr, $end:expr], $expected:expr) => {{
+        assert_eq!($reg.$field(), $expected);
+    }};
+}
