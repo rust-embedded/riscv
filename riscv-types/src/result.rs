@@ -57,3 +57,5 @@ impl fmt::Display for Error {
         }
     }
 }
+
+impl core::error::Error for Error {}
