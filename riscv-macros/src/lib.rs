@@ -437,16 +437,14 @@ core::arch::global_asm!("
 ///     E3 = 3,
 /// }
 ///
-/// fn main() {
-///     assert_eq!(Exception::E1.number(), 1);
-///     assert_eq!(Exception::E3.number(), 3);
+/// assert_eq!(Exception::E1.number(), 1);
+/// assert_eq!(Exception::E3.number(), 3);
 ///
-///     assert_eq!(Exception::from_number(1), Ok(Exception::E1));
-///     assert_eq!(Exception::from_number(2), Err(2));
-///     assert_eq!(Exception::from_number(3), Ok(Exception::E3));
+/// assert_eq!(Exception::from_number(1), Ok(Exception::E1));
+/// assert_eq!(Exception::from_number(2), Err(2));
+/// assert_eq!(Exception::from_number(3), Ok(Exception::E3));
 ///
-///     assert_eq!(Exception::MAX_EXCEPTION_NUMBER, 3);
-/// }
+/// assert_eq!(Exception::MAX_EXCEPTION_NUMBER, 3);
 ///```
 #[proc_macro_attribute]
 pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
