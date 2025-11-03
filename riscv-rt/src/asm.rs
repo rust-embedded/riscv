@@ -105,13 +105,13 @@ _abs_start:
 #[cfg(not(feature = "single-hart"))]
 {
     "mv t2, a0
-    lui t0, %hi(_hart_stack_size)
-    add t0, t0, %lo(_hart_stack_size)",
+    lui t1, %hi(_hart_stack_size)
+    add t1, t1, %lo(_hart_stack_size)",
     #[cfg(riscvm)]
-    "mul t0, t2, t0",
+    "mul t0, t2, t1",
     #[cfg(not(riscvm))]
-    "beqz t2, 2f  // skip if hart ID is 0
-    mv t1, t0
+    "mv t0, x0
+    beqz t2, 2f  // skip if hart ID is 0
 1:
     add t0, t0, t1
     addi t2, t2, -1
