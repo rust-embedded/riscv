@@ -66,7 +66,7 @@ mod tests {
         test_ro_csr_field!(mtopi, iid: [16, 27], 0x0);
         test_ro_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
-        let mtopi = Mtopi::from_bits((11 << 16) | 5);
+        let mtopi = Mtopi::from_bits((0xB << 16) | 5);
         test_ro_csr_field!(mtopi, iid: [16, 27], 0xB);
         test_ro_csr_field!(mtopi, iprio: [0, 7], 0x5);
 
