@@ -62,7 +62,6 @@ mod tests {
     #[test]
     fn test_mtopi_fields() {
         let mtopi = Mtopi::from_bits(0);
-
         test_ro_csr_field!(mtopi, iid: [16, 27], 0x0);
         test_ro_csr_field!(mtopi, iprio: [0, 7], 0x0);
 
