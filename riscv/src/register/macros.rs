@@ -1078,8 +1078,6 @@ macro_rules! test_ro_csr_field {
         let bits = $reg.bits();
         let exp_val = $crate::bits::bf_extract(bits, $start, $end - $start + 1);
         let val = $reg.$field();
-        assert_eq!(val & !mask, 0);
-        assert_eq!($expected & !mask, 0);
         assert_eq!(val, exp_val);
         assert_eq!(val, $expected);
     }};
