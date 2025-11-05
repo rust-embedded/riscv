@@ -91,6 +91,9 @@ pub mod mscratch;
 pub mod mtinst;
 pub mod mtval;
 pub mod mtval2;
+pub mod mvien;
+#[cfg(any(test, target_arch = "riscv32"))]
+pub mod mvienh;
 
 // Machine Protection and Translation
 mod pmpcfgx;

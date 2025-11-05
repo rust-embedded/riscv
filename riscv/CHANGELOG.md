@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
 - New `rt` and `rt-v-trap` features to opt-in `riscv-rt`-related code in `riscv::pac_enum` macro.
+- Add `mvien` + `mvienh` CSR
 
 # Changed
 
