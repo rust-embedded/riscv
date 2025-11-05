@@ -1076,9 +1076,7 @@ macro_rules! test_csr_field {
 macro_rules! test_ro_csr_field {
     ($reg:ident, $field:ident: [$start:expr, $end:expr], $expected:expr) => {{
         let bits = $reg.bits();
-        let shift = $end - $start + 1;
-        let mask = (1usize << shift) - 1;
-        let exp_val = (bits >> $start) & mask;
+        let exp_val = $crate::bits::bf_extract(bits, $start, $end - $start + 1);
         let val = $reg.$field();
         assert_eq!(val & !mask, 0);
         assert_eq!($expected & !mask, 0);
