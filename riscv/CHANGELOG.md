@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Updated the license to `MIT or Apache-2.0`
 - Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
@@ -17,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 # Changed
 
+- Updated the license to `MIT or Apache-2.0`
 - Bump MSRV to 1.68 for latest version of syn 2.0
 - Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.
 
