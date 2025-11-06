@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Updated the license to `MIT or Apache-2.0`
 - Add `result` module for `Error` and `Result` types
 - Add `ExceptionNumber` trait.
 - Classify interrupt numbers in `CoreInterruptNumber` and `ExternalInterruptNumber`.
