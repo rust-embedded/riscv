@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add Mtopi
 - Added DCSR (Debug Control and Status Register) CSR support for the RISC-V
 - Add `miselect` CSR
 - Improved assembly macro handling in asm.rs
