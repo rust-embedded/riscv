@@ -8,5 +8,5 @@ categories = ["embedded", "no-std"]
 description = "Parser for RISC-V target specifications"
 documentation = "https://docs.rs/riscv-target-parser"
 keywords = ["riscv", "build"]
-license = "ISC"
+license = "MIT OR Apache-2.0"
 edition = "2021"
