@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+- Update license to `MIT or Apache-2.0`
+
 ### Changed
 
 - Renamed crate to `riscv-types` as per [#351](https://github.com/rust-embedded/riscv/issues/351)
