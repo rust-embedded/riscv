@@ -9,7 +9,7 @@ categories = ["embedded", "hardware-support", "no-std"]
 description = "Low level access to RISC-V processors"
 documentation = "https://docs.rs/riscv-pac"
 keywords = ["riscv", "register", "peripheral"]
-license = "ISC"
+license = "MIT OR Apache-2.0"
 
 [package.metadata.docs.rs]
 default-target = "riscv64imac-unknown-none-elf"

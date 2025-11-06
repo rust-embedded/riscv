@@ -8,7 +8,7 @@ categories = ["embedded", "no-std"]
 description = "Minimal runtime / startup for RISC-V CPU's"
 documentation = "https://docs.rs/riscv-rt"
 keywords = ["riscv", "runtime", "startup"]
-license = "ISC"
+license = "MIT OR Apache-2.0"
 edition = "2021"
 links = "riscv-rt" # Prevent multiple versions of riscv-rt being linked
 

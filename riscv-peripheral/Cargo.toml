@@ -9,7 +9,7 @@ categories = ["embedded", "hardware-support", "no-std"]
 description = "Interfaces for standard RISC-V peripherals"
 documentation = "https://docs.rs/riscv-peripheral"
 keywords = ["riscv", "peripheral", "clint", "plic"]
-license = "ISC"
+license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
