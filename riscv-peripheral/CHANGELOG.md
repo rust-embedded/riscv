@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
 - Update license to `MIT or Apache-2.0`
 
 ### Fixed
