@@ -131,3 +131,4 @@ mod tests;
 
 // TODO: Debug Mode Registers
 pub mod dcsr;
+pub mod dpc;
