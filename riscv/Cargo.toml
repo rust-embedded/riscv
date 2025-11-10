@@ -9,7 +9,7 @@ categories = ["embedded", "hardware-support", "no-std"]
 description = "Low level access to RISC-V processors"
 documentation = "https://docs.rs/riscv"
 keywords = ["riscv", "register", "peripheral"]
-license = "ISC"
+license = "MIT OR Apache-2.0"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -30,5 +30,5 @@ rt-v-trap = ["rt", "riscv-macros/rt-v-trap"]
 critical-section = "1.2.0"
 embedded-hal = "1.0.0"
 riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
-riscv-macros = { path = "macros", version = "0.3.0", optional = true }
+riscv-macros = { path = "../riscv-macros", version = "0.3.0", optional = true }
 paste = "1.0.15"

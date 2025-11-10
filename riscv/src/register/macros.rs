@@ -1070,3 +1070,15 @@ macro_rules! test_csr_field {
         }
     }};
 }
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_ro_csr_field {
+    ($reg:ident, $field:ident: [$start:expr, $end:expr], $expected:expr) => {{
+        let bits = $reg.bits();
+        let exp_val = $crate::bits::bf_extract(bits, $start, $end - $start + 1);
+        let val = $reg.$field();
+        assert_eq!(val, exp_val);
+        assert_eq!(val, $expected);
+    }};
+}
