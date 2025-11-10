@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Bump MSRV to 1.68 for latest syn 2.0 release
 - Adapted to new `riscv` version.
 
+### Fixed
+
+- Fix stack allocation algorithm for multi-core targets without M extension
+
 ## [v0.16.0] - 2025-09-08
 
 ### Added
