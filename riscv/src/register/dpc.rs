@@ -18,8 +18,12 @@ mod tests {
 
     #[test]
     fn test_dpc_bits_roundtrip() {
-        let dpc = Dpc::from_bits(0x12345);
-        assert_eq!(dpc.bits(), 0x12344);
-        assert_eq!(Dpc::from_bits(dpc.bits()).bits(), dpc.bits());
+        (0..=usize::BITS).map(|r| ((1u128 << r) - 1) as usize).for_each(|pc| {
+            // ensure lowest bit is cleared
+            let exp_pc = pc & !1usize;
+            let dpc = Dpc::from_bits(pc);
+            assert_eq!(dpc.bits(), exp_pc);
+            assert_eq!(Dpc::from_bits(dpc.bits()).bits(), dpc.bits());
+        });
     }
 }
