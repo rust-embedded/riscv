@@ -131,4 +131,9 @@ mod tests;
 
 // TODO: Debug Mode Registers
 pub mod dcsr;
+<<<<<<< HEAD
 pub mod dpc;
+=======
+pub mod dscratch0;
+pub mod dscratch1;
+>>>>>>> d078ccf (Implement dscratch0 and dscratch1 CSRs for RISC-V)
