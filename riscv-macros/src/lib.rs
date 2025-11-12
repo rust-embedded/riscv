@@ -339,7 +339,7 @@ core::arch::global_asm!("
 
         // Push the trait implementation
         res.push(quote! {
-            unsafe impl riscv::#trait_name for #name {
+            unsafe impl ::riscv::#trait_name for #name {
                 const #const_name: usize = #max_discriminant;
 
                 #[inline]
@@ -348,17 +348,17 @@ core::arch::global_asm!("
                 }
 
                 #[inline]
-                fn from_number(number: usize) -> riscv::result::Result<Self> {
+                fn from_number(number: usize) -> ::riscv::result::Result<Self> {
                     match number {
                         #(#valid_matches,)*
-                        _ => Err(riscv::result::Error::InvalidVariant(number)),
+                        _ => Err(::riscv::result::Error::InvalidVariant(number)),
                     }
                 }
             }
         });
 
         if let Some(marker_trait_name) = attr.marker_trait_name() {
-            res.push(quote! { unsafe impl riscv::#marker_trait_name for #name {} });
+            res.push(quote! { unsafe impl ::riscv::#marker_trait_name for #name {} });
         }
 
         #[cfg(feature = "rt")]
