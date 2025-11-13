@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New `no-mhartid` feature to load 0 to `a0` instead of reading `mhartid`.
+- New `no-xtvec` feature that removes interrupt stuff.
+
+
 ### Changed
 
 - Update license to `MIT or Apache-2.0`
