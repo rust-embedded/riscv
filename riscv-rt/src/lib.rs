@@ -565,6 +565,15 @@
 //!
 //! Saves a little code size if there is only one hart on the target.
 //!
+//! ## `no-mhartid`
+//!
+//! Skips reading `mhartid` and uses 0 instead. Useful for targets that doesn't implement this instruction.
+//! Automatically enables `single-hart`.
+//!
+//! ## `no-xtvec`
+//!
+//! Skips interrupts setup.
+//!
 //! ## `s-mode`
 //!
 //! Supervisor mode. While most registers/instructions have variants for both `mcause` and
