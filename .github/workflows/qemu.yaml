@@ -73,7 +73,8 @@ jobs:
           if [ -n "${{ matrix.features }}" ]; then
             FEATURES_ARG="--features=${{ matrix.features }}"
           fi
-          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --locked --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
+
+          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
       
       - name: Run example on QEMU (riscv32)
         if: startsWith(matrix.target, 'riscv32')
