@@ -1,0 +1,54 @@
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  merge_group:
+
+name: QEMU tests
+
+jobs:
+  qemu-tests:
+    strategy:
+      matrix:
+        target:
+          - riscv32i-unknown-none-elf
+          - riscv32im-unknown-none-elf
+          - riscv32imc-unknown-none-elf
+          - riscv32imac-unknown-none-elf
+          - riscv64imac-unknown-none-elf
+          - riscv64gc-unknown-none-elf
+        example:
+          - empty
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      
+      - name: Install QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-misc
+      
+      - name: Build example for QEMU
+        run: |
+          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release
+      
+      - name: Run example on QEMU (riscv32)
+        if: startsWith(matrix.target, 'riscv32')
+        run: |
+          timeout 5 qemu-system-riscv32 -machine sifive_u -nographic -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || true
+      
+      - name: Run example on QEMU (riscv64)
+        if: startsWith(matrix.target, 'riscv64')
+        run: |
+          timeout 5 qemu-system-riscv64 -machine sifive_u -nographic -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || true
+
+  qemu-tests-check:
+    needs:
+    - qemu-tests
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
