@@ -61,10 +61,10 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3; do
-            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-misc && break || sleep 5
+            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-riscv qemu-system-misc opensbi && break || sleep 5
           done
-          qemu-system-riscv64 --version || true
-          qemu-system-riscv32 --version || true
+          qemu-system-riscv64 --version
+          qemu-system-riscv32 --version
       
       - name: Build example for QEMU
         run: |
@@ -86,7 +86,16 @@ jobs:
           else
             FEATURES_LABEL=" (no features)"
           fi
-          timeout 30 qemu-system-riscv32 -machine sifive_u -nographic -serial mon:stdio -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
+
+          if [[ "${{ matrix.features }}" == *"s-mode"* ]]; then
+            echo "Skipping QEMU run for riscv32 S-mode${FEATURES_LABEL}"
+            exit 0
+          fi
+          QEMU_ARGS="-machine virt -nographic -serial mon:stdio -bios none"
+          if [ "${{ matrix.example }}" = "multi_core" ]; then
+            QEMU_ARGS="$QEMU_ARGS -smp 4"
+          fi
+          timeout 60 qemu-system-riscv32 $QEMU_ARGS -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
             exitcode=$?
             if [ $exitcode -eq 124 ]; then
               echo "ERROR: QEMU timeout${FEATURES_LABEL}"
@@ -105,7 +114,16 @@ jobs:
           else
             FEATURES_LABEL=" (no features)"
           fi
-          timeout 30 qemu-system-riscv64 -machine sifive_u -nographic -serial mon:stdio -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
+          QEMU_ARGS="-machine virt -nographic -serial mon:stdio"
+          if [[ "${{ matrix.features }}" == *"s-mode"* ]]; then
+            :
+          else
+            QEMU_ARGS="$QEMU_ARGS -bios none"
+          fi
+          if [ "${{ matrix.example }}" = "multi_core" ]; then
+            QEMU_ARGS="$QEMU_ARGS -smp 4"
+          fi
+          timeout 60 qemu-system-riscv64 $QEMU_ARGS -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
             exitcode=$?
             if [ $exitcode -eq 124 ]; then
               echo "ERROR: QEMU timeout${FEATURES_LABEL}"
