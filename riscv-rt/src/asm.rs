@@ -68,21 +68,26 @@ _abs_start:
     #[cfg(all(feature = "s-mode", not(feature = "no-xie-xip")))]
     "csrw sie, 0
     csrw sip, 0",
-    #[cfg(all(not(feature = "s-mode"), not(feature = "no-xie-xip")))]
-    "csrw mie, 0
-    csrw mip, 0",
-    // Make sure that the hart ID is in a0 in M-mode
-    #[cfg(all(not(feature = "s-mode"), not(feature = "no-mhartid")))]
-    "csrr a0, mhartid",
-    #[cfg(all(not(feature = "s-mode"), feature = "no-mhartid"))]
-    "li a0, 0",
+    #[cfg(not(feature = "s-mode"))]
+    {
+        #[cfg(not(feature = "no-xie-xip"))]
+        "csrw mie, 0
+        csrw mip, 0",
+        // Make sure that the hart ID is in a0 in M-mode
+        #[cfg(not(feature = "no-mhartid"))]
+        "csrr a0, mhartid",
+        #[cfg(feature = "no-mhartid")]
+        "li a0, 0",
+    },
     // Set pre-init trap vector
     #[cfg(not(feature = "no-xtvec"))]
-    "la t0, _pre_init_trap",
-    #[cfg(all(feature = "s-mode", not(feature = "no-xtvec")))]
-    "csrw stvec, t0",
-    #[cfg(all(not(feature = "s-mode"), not(feature = "no-xtvec")))]
-    "csrw mtvec, t0",
+    {
+        "la t0, _pre_init_trap",
+        #[cfg(feature = "s-mode")]
+        "csrw stvec, t0",
+        #[cfg(not(feature = "s-mode"))]
+        "csrw mtvec, t0",
+    },
     // If multi-hart, assert that hart ID is valid
     #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
