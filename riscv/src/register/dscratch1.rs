@@ -1,10 +1,6 @@
 //! dscratch1
 
-read_write_csr! {
-    /// Debug scratch register 1
-    Dscratch1: 0x7b3,
-    mask: usize::MAX,
-}
+read_write_csr_as_usize!(Dscratch1, 0x7b3);
 
 #[cfg(test)]
 mod tests {
