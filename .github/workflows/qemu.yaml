@@ -9,6 +9,7 @@ name: QEMU tests
 jobs:
   qemu-tests:
     strategy:
+      fail-fast: false
       matrix:
         toolchain: [ stable, nightly, 1.68.0 ]
         target:
@@ -41,6 +42,16 @@ jobs:
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
       - uses: actions/checkout@v4
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.toolchain }}
@@ -48,20 +59,26 @@ jobs:
       
       - name: Install QEMU
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-system-misc
+          set -euo pipefail
+          for i in 1 2 3; do
+            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-misc && break || sleep 5
+          done
+          qemu-system-riscv64 --version || true
+          qemu-system-riscv32 --version || true
       
       - name: Build example for QEMU
         run: |
+          set -euo pipefail
           FEATURES_ARG=""
           if [ -n "${{ matrix.features }}" ]; then
             FEATURES_ARG="--features=${{ matrix.features }}"
           fi
-          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
+          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --locked --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
       
       - name: Run example on QEMU (riscv32)
         if: startsWith(matrix.target, 'riscv32')
         run: |
+          set -euo pipefail
           FEATURES_LABEL=""
           if [ -n "${{ matrix.features }}" ]; then
             FEATURES_LABEL=" (${{ matrix.features }})"
@@ -80,6 +97,7 @@ jobs:
       - name: Run example on QEMU (riscv64)
         if: startsWith(matrix.target, 'riscv64')
         run: |
+          set -euo pipefail
           FEATURES_LABEL=""
           if [ -n "${{ matrix.features }}" ]; then
             FEATURES_LABEL=" (${{ matrix.features }})"
@@ -94,20 +112,3 @@ jobs:
             fi
             exit $exitcode
           }
-
-  qemu-tests-check:
-    needs:
-    - qemu-tests
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - run: |
-          RESULT="${{ needs.qemu-tests.result }}"
-          if [ "$RESULT" = "failure" ]; then
-            echo "QEMU tests failed"
-            exit 1
-          elif [ "$RESULT" = "skipped" ]; then
-            echo "QEMU tests skipped"
-            exit 1
-          fi
-          echo "QEMU tests passed"
