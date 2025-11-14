@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3; do
-            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-riscv qemu-system-misc opensbi && break || sleep 5
+            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-misc opensbi && break || sleep 5
           done
           qemu-system-riscv64 --version
           qemu-system-riscv32 --version
