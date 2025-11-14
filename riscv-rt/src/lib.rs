@@ -729,9 +729,9 @@ pub unsafe extern "Rust" fn setup_interrupts() {
 
     let xtvec_val = match () {
         #[cfg(not(feature = "v-trap"))]
-        _ => Xtvec::new(_start_trap as usize, TrapMode::Direct),
+        _ => Xtvec::new(_start_trap as *const () as usize, TrapMode::Direct),
         #[cfg(feature = "v-trap")]
-        _ => Xtvec::new(_vector_table as usize, TrapMode::Vectored),
+        _ => Xtvec::new(_vector_table as *const () as usize, TrapMode::Vectored),
     };
     xtvec::write(xtvec_val);
 }
