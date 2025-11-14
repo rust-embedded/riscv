@@ -10,20 +10,40 @@ jobs:
   qemu-tests:
     strategy:
       matrix:
+        toolchain: [ stable, nightly, 1.68.0 ]
         target:
           - riscv32i-unknown-none-elf
           - riscv32im-unknown-none-elf
           - riscv32imc-unknown-none-elf
           - riscv32imac-unknown-none-elf
+          - riscv32imafc-unknown-none-elf
           - riscv64imac-unknown-none-elf
           - riscv64gc-unknown-none-elf
         example:
           - empty
+          - multi_core
+        features:
+          - ""
+          - s-mode
+          - single-hart
+          - v-trap
+          - s-mode,single-hart,v-trap
+        include:
+          # Nightly is only for reference and allowed to fail
+          - toolchain: nightly
+            experimental: true
+        exclude:
+          - toolchain: 1.68.0
+            target: riscv32im-unknown-none-elf
+          - toolchain: 1.68.0
+            target: riscv32imafc-unknown-none-elf
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: ${{ matrix.toolchain }}
           targets: ${{ matrix.target }}
       
       - name: Install QEMU
@@ -33,17 +53,47 @@ jobs:
       
       - name: Build example for QEMU
         run: |
-          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release
+          FEATURES_ARG=""
+          if [ -n "${{ matrix.features }}" ]; then
+            FEATURES_ARG="--features=${{ matrix.features }}"
+          fi
+          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
       
       - name: Run example on QEMU (riscv32)
         if: startsWith(matrix.target, 'riscv32')
         run: |
-          timeout 5 qemu-system-riscv32 -machine sifive_u -nographic -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || true
+          FEATURES_LABEL=""
+          if [ -n "${{ matrix.features }}" ]; then
+            FEATURES_LABEL=" (${{ matrix.features }})"
+          else
+            FEATURES_LABEL=" (no features)"
+          fi
+          timeout 30 qemu-system-riscv32 -machine sifive_u -nographic -serial mon:stdio -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
+            exitcode=$?
+            if [ $exitcode -eq 124 ]; then
+              echo "ERROR: QEMU timeout${FEATURES_LABEL}"
+              exit 1
+            fi
+            exit $exitcode
+          }
       
       - name: Run example on QEMU (riscv64)
         if: startsWith(matrix.target, 'riscv64')
         run: |
-          timeout 5 qemu-system-riscv64 -machine sifive_u -nographic -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || true
+          FEATURES_LABEL=""
+          if [ -n "${{ matrix.features }}" ]; then
+            FEATURES_LABEL=" (${{ matrix.features }})"
+          else
+            FEATURES_LABEL=" (no features)"
+          fi
+          timeout 30 qemu-system-riscv64 -machine sifive_u -nographic -serial mon:stdio -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
+            exitcode=$?
+            if [ $exitcode -eq 124 ]; then
+              echo "ERROR: QEMU timeout${FEATURES_LABEL}"
+              exit 1
+            fi
+            exit $exitcode
+          }
 
   qemu-tests-check:
     needs:
@@ -51,4 +101,13 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+      - run: |
+          RESULT="${{ needs.qemu-tests.result }}"
+          if [ "$RESULT" = "failure" ]; then
+            echo "QEMU tests failed"
+            exit 1
+          elif [ "$RESULT" = "skipped" ]; then
+            echo "QEMU tests skipped"
+            exit 1
+          fi
+          echo "QEMU tests passed"
