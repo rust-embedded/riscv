@@ -78,7 +78,7 @@ _abs_start:
         "csrr a0, mhartid",
         #[cfg(feature = "no-mhartid")]
         "li a0, 0",
-    },
+    }
     // Set pre-init trap vector
     #[cfg(not(feature = "no-xtvec"))]
     {
@@ -87,7 +87,7 @@ _abs_start:
         "csrw stvec, t0",
         #[cfg(not(feature = "s-mode"))]
         "csrw mtvec, t0",
-    },
+    }
     // If multi-hart, assert that hart ID is valid
     #[cfg(not(feature = "single-hart"))]
     "lui t0, %hi(_max_hart_id)
