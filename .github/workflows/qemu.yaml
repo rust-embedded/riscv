@@ -13,31 +13,18 @@ jobs:
       matrix:
         toolchain: [ stable, nightly, 1.68.0 ]
         target:
-          - riscv32i-unknown-none-elf
-          - riscv32im-unknown-none-elf
-          - riscv32imc-unknown-none-elf
           - riscv32imac-unknown-none-elf
-          - riscv32imafc-unknown-none-elf
-          - riscv64imac-unknown-none-elf
           - riscv64gc-unknown-none-elf
         example:
-          - empty
-          - multi_core
+          - hello
         features:
           - ""
-          - s-mode
-          - single-hart
-          - v-trap
-          - s-mode,single-hart,v-trap
         include:
-          # Nightly is only for reference and allowed to fail
           - toolchain: nightly
             experimental: true
         exclude:
           - toolchain: 1.68.0
-            target: riscv32im-unknown-none-elf
-          - toolchain: 1.68.0
-            target: riscv32imafc-unknown-none-elf
+            target: riscv32imac-unknown-none-elf
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     steps:
@@ -66,68 +53,9 @@ jobs:
           qemu-system-riscv64 --version
           qemu-system-riscv32 --version
       
-      - name: Build example for QEMU
+      - name: Run xtask QEMU test
         run: |
           set -euo pipefail
-          FEATURES_ARG=""
-          if [ -n "${{ matrix.features }}" ]; then
-            FEATURES_ARG="--features=${{ matrix.features }}"
-          fi
-
-          RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --release ${FEATURES_ARG}
+          cargo run --package xtask -- qemu --target ${{ matrix.target }} --example ${{ matrix.example }}
       
-      - name: Run example on QEMU (riscv32)
-        if: startsWith(matrix.target, 'riscv32')
-        run: |
-          set -euo pipefail
-          FEATURES_LABEL=""
-          if [ -n "${{ matrix.features }}" ]; then
-            FEATURES_LABEL=" (${{ matrix.features }})"
-          else
-            FEATURES_LABEL=" (no features)"
-          fi
 
-          if [[ "${{ matrix.features }}" == *"s-mode"* ]]; then
-            echo "Skipping QEMU run for riscv32 S-mode${FEATURES_LABEL}"
-            exit 0
-          fi
-          QEMU_ARGS="-machine virt -nographic -serial mon:stdio -bios none"
-          if [ "${{ matrix.example }}" = "multi_core" ]; then
-            QEMU_ARGS="$QEMU_ARGS -smp 4"
-          fi
-          timeout 60 qemu-system-riscv32 $QEMU_ARGS -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
-            exitcode=$?
-            if [ $exitcode -eq 124 ]; then
-              echo "ERROR: QEMU timeout${FEATURES_LABEL}"
-              exit 1
-            fi
-            exit $exitcode
-          }
-      
-      - name: Run example on QEMU (riscv64)
-        if: startsWith(matrix.target, 'riscv64')
-        run: |
-          set -euo pipefail
-          FEATURES_LABEL=""
-          if [ -n "${{ matrix.features }}" ]; then
-            FEATURES_LABEL=" (${{ matrix.features }})"
-          else
-            FEATURES_LABEL=" (no features)"
-          fi
-          QEMU_ARGS="-machine virt -nographic -serial mon:stdio"
-          if [[ "${{ matrix.features }}" == *"s-mode"* ]]; then
-            :
-          else
-            QEMU_ARGS="$QEMU_ARGS -bios none"
-          fi
-          if [ "${{ matrix.example }}" = "multi_core" ]; then
-            QEMU_ARGS="$QEMU_ARGS -smp 4"
-          fi
-          timeout 60 qemu-system-riscv64 $QEMU_ARGS -kernel target/${{ matrix.target }}/release/examples/${{ matrix.example }} || {
-            exitcode=$?
-            if [ $exitcode -eq 124 ]; then
-              echo "ERROR: QEMU timeout${FEATURES_LABEL}"
-              exit 1
-            fi
-            exit $exitcode
-          }

@@ -11,6 +11,7 @@ members = [
     "riscv-types",
     "tests-build",
     "tests-trybuild",
+    "xtask",
 ]
 
 default-members = [
