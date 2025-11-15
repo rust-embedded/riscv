@@ -1,61 +1,66 @@
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-  merge_group:
-
 name: QEMU tests
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  qemu-tests:
+  # Verify the example output with run-pass tests
+  testexamples:
+    name: QEMU run
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [ stable, nightly, 1.68.0 ]
-        target:
-          - riscv32imac-unknown-none-elf
-          - riscv64gc-unknown-none-elf
-        example:
-          - hello
-        features:
-          - ""
-        include:
-          - toolchain: nightly
-            experimental: true
-        exclude:
-          - toolchain: 1.68.0
+        input:
+          - toolchain: stable
             target: riscv32imac-unknown-none-elf
-    runs-on: ubuntu-latest
-    continue-on-error: ${{ matrix.experimental || false }}
+            qemu-system: riscv32
+            example: hello
+
+          - toolchain: nightly
+            target: riscv32imac-unknown-none-elf
+            qemu-system: riscv32
+            example: hello
+
+          - toolchain: stable
+            target: riscv64gc-unknown-none-elf
+            qemu-system: riscv64
+            example: hello
+
+          - toolchain: nightly
+            target: riscv64gc-unknown-none-elf
+            qemu-system: riscv64
+            example: hello
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-${{ matrix.toolchain }}-
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          targets: ${{ matrix.target }}
-      
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Rust target ${{ matrix.input.target }}
+        run: |
+          rustup toolchain install ${{ matrix.input.toolchain }}
+          rustup default ${{ matrix.input.toolchain }}
+          rustup target add ${{ matrix.input.target }}
+
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+
       - name: Install QEMU
         run: |
-          set -euo pipefail
-          for i in 1 2 3; do
-            sudo apt-get update && sudo apt-get install -y --no-install-recommends qemu-system-misc opensbi && break || sleep 5
-          done
-          qemu-system-riscv64 --version
-          qemu-system-riscv32 --version
-      
-      - name: Run xtask QEMU test
+          sudo apt update
+          sudo apt install -y qemu-system-${{ matrix.input.qemu-system }}
+
+      - name: Check which QEMU is used
         run: |
-          set -euo pipefail
-          cargo run --package xtask -- qemu --target ${{ matrix.target }} --example ${{ matrix.example }}
+          which qemu-system-${{ matrix.input.qemu-system }}
+
+      - name: Run-pass tests
+        run: cargo run --package xtask -- qemu --target ${{ matrix.input.target }} --example ${{ matrix.input.example }}
       
 
