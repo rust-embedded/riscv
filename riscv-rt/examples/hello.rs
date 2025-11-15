@@ -11,8 +11,12 @@ const UART_LSR: usize = UART_BASE + 5;
 const LCR_DLAB: u8 = 1 << 7;
 const LCR_8N1: u8 = 0x03;
 const LSR_THRE: u8 = 1 << 5;
-unsafe fn uart_write_reg(off: usize, v: u8) { (off as *mut u8).write_volatile(v); }
-unsafe fn uart_read_reg(off: usize) -> u8 { (off as *const u8).read_volatile() }
+unsafe fn uart_write_reg(off: usize, v: u8) {
+    (off as *mut u8).write_volatile(v);
+}
+unsafe fn uart_read_reg(off: usize) -> u8 {
+    (off as *const u8).read_volatile()
+}
 fn uart_init() {
     unsafe {
         uart_write_reg(UART_LCR, LCR_DLAB);
@@ -23,9 +27,16 @@ fn uart_init() {
     }
 }
 fn uart_write_byte(b: u8) {
-    unsafe { while (uart_read_reg(UART_LSR) & LSR_THRE) == 0 {} uart_write_reg(UART_THR, b); }
+    unsafe {
+        while (uart_read_reg(UART_LSR) & LSR_THRE) == 0 {}
+        uart_write_reg(UART_THR, b);
+    }
 }
-fn uart_write_str(s: &str) { for &b in s.as_bytes() { uart_write_byte(b); } }
+fn uart_write_str(s: &str) {
+    for &b in s.as_bytes() {
+        uart_write_byte(b);
+    }
+}
 #[entry]
 fn main() -> ! {
     uart_init();
