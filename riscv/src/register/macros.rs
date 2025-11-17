@@ -301,6 +301,30 @@ macro_rules! write_csr_as_usize_rv32 {
     };
 }
 
+/// Convenience macro to provide combined read/write of a CSR as a `usize`.
+///
+/// This composes [`read_csr_as_usize`] and [`write_csr_as_usize`]. Use the
+/// `safe` form to get safe wrappers instead of unsafe.
+#[macro_export]
+macro_rules! read_write_csr_as_usize {
+    ($csr_number:literal) => {
+        $crate::read_csr_as_usize!($csr_number);
+        $crate::write_csr_as_usize!($csr_number);
+    };
+    (safe $csr_number:literal) => {
+        $crate::read_csr_as_usize!($csr_number);
+        $crate::write_csr_as_usize!(safe $csr_number);
+    };
+    ($csr_number:literal, $($cfg:meta),*) => {
+        $crate::read_csr_as_usize!($csr_number, $($cfg),*);
+        $crate::write_csr_as_usize!($csr_number, $($cfg),*);
+    };
+    (safe $csr_number:literal, $($cfg:meta),*) => {
+        $crate::read_csr_as_usize!($csr_number, $($cfg),*);
+        $crate::write_csr_as_usize!(safe $csr_number, $($cfg),*);
+    };
+}
+
 /// Convenience macro around the `csrrs` assembly instruction to set the CSR register.
 ///
 /// This macro is intended for use with the [set_csr](crate::set_csr) or [set_clear_csr](crate::set_clear_csr) macros.
