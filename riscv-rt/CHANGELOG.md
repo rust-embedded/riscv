@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- New `no-mhartid` feature to load 0 to `a0` instead of reading `mhartid`.
+- New `no-xtvec` feature that removes interrupt stuff.
+
 ### Changed
 
 - Update license to `MIT or Apache-2.0`
@@ -23,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - New `post-init` feature to run a Rust `__post_init` function before jumping to `main`.
-- New `#[riscv_rt::post_init]` attribute to aid in the definition of the `__post_init` function. 
+- New `#[riscv_rt::post_init]` attribute to aid in the definition of the `__post_init` function.
 - Added `.uninit` section to the linker file. Due to its similarities with `.bss`, the
   linker will place this new section in `REGION_BSS`.
 - Additional feature `no-xie-xip` to work on chips without the XIE and XIP CSRs (e.g. ESP32-C2, ESP32-C3)
@@ -78,7 +83,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - New `device` feature to include `device.x` in `link.x`. This feature is based
   on the current implementation of `cortex-m-rt`.
 - New `memory` feature to include `memory.x` in `link.x`. This feature is based
-  on the current implementation of `cortex-m-rt`. However, in contrast with 
+  on the current implementation of `cortex-m-rt`. However, in contrast with
   `cortex-m-rt`, including `memory.x` in the linker file is feature gated.
   The benefits of leaving this optional are backwards compatibility and
   allowing users to define less typical linker scripts that do not rely on a
