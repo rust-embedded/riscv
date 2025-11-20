@@ -63,6 +63,7 @@ pub mod sepc;
 pub mod sip;
 pub mod sscratch;
 pub mod stval;
+pub mod vstopi;
 
 // Supervisor Protection and Translation
 pub mod satp;
