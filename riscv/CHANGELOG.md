@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `vstopi` CSR
 - Add `dcsratch0` and `dscratch1` CSRs
 - Add new `read-write_csr_as_usize` macro for registers
 - Add `dpc` CSR support for RISC-V
