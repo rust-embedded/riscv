@@ -200,7 +200,7 @@ impl<P: Plic> CTX<P> {
 #[cfg(test)]
 pub(crate) mod test {
     use crate::test::HartId;
-    use riscv_pac::HartIdNumber;
+    use riscv::HartIdNumber;
 
     #[allow(dead_code)]
     #[test]

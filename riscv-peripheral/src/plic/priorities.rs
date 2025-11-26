@@ -71,7 +71,7 @@ impl PRIORITIES {
 mod test {
     use super::*;
     use crate::test::{Interrupt, Priority};
-    use riscv_pac::InterruptNumber;
+    use riscv::InterruptNumber;
 
     #[test]
     fn test_priorities() {
