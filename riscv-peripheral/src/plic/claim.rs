@@ -32,7 +32,7 @@ impl CLAIM {
 mod test {
     use super::*;
     use crate::test::Interrupt;
-    use riscv_pac::InterruptNumber;
+    use riscv::InterruptNumber;
 
     #[test]
     fn test_claim() {
