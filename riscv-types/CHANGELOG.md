@@ -9,8 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Bump MSRV to 1.81 due to `core::error::Error` trait
+- Mark `result::Error` as `#[non_exhaustive]` to allow non-breaking new variants
 - Update license to `MIT or Apache-2.0`
 - Renamed crate to `riscv-types` as per [#351](https://github.com/rust-embedded/riscv/issues/351)
+
+### Added
+
+- Implement `core::error::Error` for `result::Error`
 
 ## riscv-pac [v0.2.0] - 2024-10-19
 
