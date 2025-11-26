@@ -1,7 +1,6 @@
 //! scause register
 
-pub use crate::interrupt::Trap;
-pub use riscv_pac::{CoreInterruptNumber, ExceptionNumber, InterruptNumber}; // re-export useful riscv-pac traits
+pub use crate::{interrupt::Trap, CoreInterruptNumber, ExceptionNumber, InterruptNumber}; // re-export useful artifacts
 
 read_write_csr! {
     /// scause register

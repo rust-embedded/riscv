@@ -1,8 +1,6 @@
 use crate::{
     interrupt::Trap,
     register::{mcause, mepc, mie, mip, mstatus},
-};
-use riscv_pac::{
     result::{Error, Result},
     CoreInterruptNumber, ExceptionNumber, InterruptNumber,
 };

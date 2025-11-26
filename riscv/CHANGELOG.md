@@ -22,10 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Bump MSRV to 1.81 due to `riscv-types`
+- Use `riscv-types` instead of `riscv-pac`
+- Reexport only `pac_enum` macro from `riscv-macros`
 - Fix broken links in register macro doc string.
 - Moved macros from `./macros/` to `../riscv-macros/`
 - Updated the license to `MIT or Apache-2.0`
-- Bump MSRV to 1.68 for latest version of syn 2.0
 - Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.
 
 ## [v0.15.0] - 2025-09-08

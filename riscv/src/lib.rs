@@ -58,8 +58,8 @@ pub mod register;
 
 // Re-export crates of the RISC-V ecosystem
 #[cfg(feature = "riscv-macros")]
-pub use riscv_macros::*;
-pub use riscv_pac::*;
+pub use riscv_macros::pac_enum;
+pub use riscv_types::*;
 
 #[macro_use]
 mod macros;
