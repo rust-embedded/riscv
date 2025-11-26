@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Isolate code that depend on the `riscv` crate in a new `riscv` module.
 - Fix `cargo doc` errors.
 - Use fully qualified paths in generated code (i.e., `::riscv` instead of `riscv`)
 - Moved from `riscv/macros/` to `riscv-macros/`
