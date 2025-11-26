@@ -1,7 +1,7 @@
 //! Interrupt claim/complete register
 
 use crate::common::unsafe_peripheral;
-use riscv_pac::ExternalInterruptNumber;
+use riscv::ExternalInterruptNumber;
 
 unsafe_peripheral!(CLAIM, u32, RW);
 

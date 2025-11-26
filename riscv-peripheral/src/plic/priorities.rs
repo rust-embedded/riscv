@@ -1,7 +1,7 @@
 //! Interrupts Priorities register.
 
 use crate::common::{Reg, RW};
-use riscv_pac::{ExternalInterruptNumber, PriorityNumber};
+use riscv::{ExternalInterruptNumber, PriorityNumber};
 
 /// Interrupts priorities register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

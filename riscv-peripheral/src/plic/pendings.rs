@@ -1,7 +1,7 @@
 //! Interrupt pending bits register.
 
 use crate::common::{Reg, RO};
-use riscv_pac::ExternalInterruptNumber;
+use riscv::ExternalInterruptNumber;
 
 /// Interrupts pending bits register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
