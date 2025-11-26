@@ -2,7 +2,7 @@
 name = "riscv-peripheral"
 version = "0.4.0"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.81"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
 categories = ["embedded", "hardware-support", "no-std"]
@@ -17,7 +17,6 @@ license = "MIT OR Apache-2.0"
 embedded-hal = "1.0.0"
 paste = "1.0"
 riscv = { path = "../riscv", version = "0.15.0" }
-riscv-pac = { path = "../riscv-pac", version = "0.2.0" }
 
 [package.metadata.docs.rs]
 all-features = true
