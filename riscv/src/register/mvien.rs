@@ -1,8 +1,10 @@
 //! mvien register
 
-use crate::bits::{bf_extract, bf_insert};
-use riscv_pac::result::{Error, Result};
-use riscv_pac::InterruptNumber;
+use crate::{
+    bits::{bf_extract, bf_insert},
+    result::{Error, Result},
+    InterruptNumber,
+};
 
 #[cfg(target_arch = "riscv32")]
 const MASK: usize = 0xffff_e222;

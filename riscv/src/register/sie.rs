@@ -1,7 +1,9 @@
 //! sie register
 
-use crate::bits::{bf_extract, bf_insert};
-use riscv_pac::CoreInterruptNumber;
+use crate::{
+    bits::{bf_extract, bf_insert},
+    CoreInterruptNumber,
+};
 
 read_write_csr! {
 /// sie register
