@@ -95,7 +95,7 @@ fn main() -> anyhow::Result<()> {
     let raw_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stdout = raw_stdout
         .lines()
-        .filter(|l| !l.contains("QEMU") && !l.contains("monitor"))
+        .filter(|l| !l.starts_with("QEMU ") && !l.contains("monitor"))
         .collect::<Vec<_>>()
         .join("\n");
     let stdout = if stdout.is_empty() {
