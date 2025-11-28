@@ -18,25 +18,29 @@ jobs:
       fail-fast: false
       matrix:
         input:
+          # UART example (riscv32)
           - toolchain: stable
             target: riscv32imac-unknown-none-elf
             qemu-system: riscv32
             example: hello
 
-          - toolchain: nightly
+          # Semihosting example (riscv32)
+          - toolchain: stable
             target: riscv32imac-unknown-none-elf
             qemu-system: riscv32
-            example: hello
+            example: qemu_semihosting
 
+          # UART example (riscv64)
           - toolchain: stable
             target: riscv64gc-unknown-none-elf
             qemu-system: riscv64
             example: hello
 
-          - toolchain: nightly
+          # Semihosting example (riscv64)
+          - toolchain: stable
             target: riscv64gc-unknown-none-elf
             qemu-system: riscv64
-            example: hello
+            example: qemu_semihosting
 
     steps:
       - name: Checkout
@@ -56,11 +60,6 @@ jobs:
           sudo apt update
           sudo apt install -y qemu-system-${{ matrix.input.qemu-system }}
 
-      - name: Check which QEMU is used
-        run: |
-          which qemu-system-${{ matrix.input.qemu-system }}
-
       - name: Run-pass tests
         run: cargo run --package xtask -- qemu --target ${{ matrix.input.target }} --example ${{ matrix.input.example }}
-      
 
