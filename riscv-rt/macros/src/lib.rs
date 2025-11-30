@@ -783,6 +783,8 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 /// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
 ///
 /// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
+/// This feature relies on the `RISCV_RT_BASE_ISA` environment variable being set to one of
+/// `rv32i`, `rv32e`, `rv64i`, or `rv64e`. Otherwise, this will **panic**.
 ///
 /// # Example
 ///
@@ -795,7 +797,7 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn core_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
     let arch = match () {
         #[cfg(feature = "v-trap")]
-        () => RiscvArch::try_from_env(),
+        () => Some(RiscvArch::try_from_env().expect("RISCV_RT_BASE_ISA must be defined")),
         #[cfg(not(feature = "v-trap"))]
         () => None,
     };
