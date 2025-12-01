@@ -279,7 +279,7 @@
 //! fn main() {
 //!     unsafe {
 //!         let heap_bottom = riscv_rt::heap_start() as usize;
-//!         let heap_size = &_heap_size as *const u8 as usize;
+//!         let heap_size = core::ptr::addr_of!(_heap_size) as usize;
 //!         some_allocator::initialize(heap_bottom, heap_size);
 //!     }
 //! }
