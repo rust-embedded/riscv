@@ -8,8 +8,8 @@ pub mod pendings;
 pub mod priorities;
 pub mod threshold;
 
-// re-export useful riscv-pac traits
-pub use riscv_pac::{HartIdNumber, InterruptNumber, PriorityNumber};
+// re-export useful riscv-types traits
+pub use riscv::{HartIdNumber, InterruptNumber, PriorityNumber};
 
 use riscv::register::{mhartid, mie, mip};
 
@@ -200,7 +200,7 @@ impl<P: Plic> CTX<P> {
 #[cfg(test)]
 pub(crate) mod test {
     use crate::test::HartId;
-    use riscv_pac::HartIdNumber;
+    use riscv::HartIdNumber;
 
     #[allow(dead_code)]
     #[test]

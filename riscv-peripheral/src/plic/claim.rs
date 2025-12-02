@@ -1,7 +1,7 @@
 //! Interrupt claim/complete register
 
 use crate::common::unsafe_peripheral;
-use riscv_pac::ExternalInterruptNumber;
+use riscv::ExternalInterruptNumber;
 
 unsafe_peripheral!(CLAIM, u32, RW);
 
@@ -32,7 +32,7 @@ impl CLAIM {
 mod test {
     use super::*;
     use crate::test::Interrupt;
-    use riscv_pac::InterruptNumber;
+    use riscv::InterruptNumber;
 
     #[test]
     fn test_claim() {

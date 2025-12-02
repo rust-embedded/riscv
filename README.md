@@ -3,11 +3,11 @@
 This repository contains various crates useful for writing Rust programs on RISC-V microcontrollers:
 
 * [`riscv`]: CPU registers access and intrinsics
-* [`riscv-pac`]: Common traits to be implemented by RISC-V PACs
 * [`riscv-peripheral`]: Interfaces for standard RISC-V peripherals
 * [`riscv-rt`]: Startup code and interrupt handling
 * [`riscv-semihosting`]: Semihosting for RISC-V processors
 * [`riscv-target-parser`]: Utility crate for parsing RISC-V targets in build scripts
+* [`riscv-types`]: Common traits to be implemented by RISC-V PACs
 
 This project is developed and maintained by the [RISC-V team][team].
 
@@ -24,7 +24,7 @@ Conduct][CoC], the maintainer of this crate, the [RISC-V team][team], promises
 to intervene to uphold that code of conduct.
 
 [`riscv`]: https://crates.io/crates/riscv
-[`riscv-pac`]: https://crates.io/crates/riscv-pac
+[`riscv-types`]: https://crates.io/crates/riscv-types
 [`riscv-peripheral`]: https://crates.io/crates/riscv-peripheral
 [`riscv-rt`]: https://crates.io/crates/riscv-rt
 [`riscv-semihosting`]: https://crates.io/crates/riscv-semihosting
