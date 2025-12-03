@@ -87,7 +87,6 @@ fn main() -> anyhow::Result<()> {
         .stderr(Stdio::piped())
         .spawn()
         .context("running qemu")?;
-    thread::sleep(Duration::from_secs(3));
     let _ = child.kill();
     let output = child.wait_with_output()?;
     let raw_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
