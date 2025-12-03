@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added examples for CI tests using riscv-semihosting and UART
+- Added examples for CI tests using semihosting and UART
 - New `no-mhartid` feature to load 0 to `a0` instead of reading `mhartid`.
 - New `no-xtvec` feature that removes interrupt stuff.
 
