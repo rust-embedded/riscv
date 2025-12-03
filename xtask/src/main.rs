@@ -38,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     }
     let target = target.context("--target required")?;
     let example = example.context("--example required")?;
-    let mut rustflags = "-C link-arg=-Triscv-rt/examples/device_virt_m.x".to_string();
+    let mut rustflags = "-C link-arg=-Triscv-rt/examples/device_virt.x".to_string();
     if let Some(f) = &features {
         if f.contains("s-mode") {
             rustflags = "-C link-arg=-Triscv-rt/examples/device_virt_s.x".into();
@@ -67,13 +67,13 @@ fn main() -> anyhow::Result<()> {
     } else {
         "qemu-system-riscv64"
     };
-    let mut qemu_args = vec!["-machine", "virt", "-nographic"];
-    // Use semihosting for semihosting examples, serial for others
-    if example.contains("semihosting") {
-        qemu_args.extend(["-semihosting-config", "enable=on,target=native"]);
-    } else {
-        qemu_args.extend(["-serial", "stdio", "-monitor", "none"]);
-    }
+    let mut qemu_args = vec![
+        "-machine", "virt",
+        "-nographic",
+        "-serial", "stdio",
+        "-monitor", "none",
+        "-semihosting-config", "enable=on,target=native",
+    ];
     if !features.as_deref().unwrap_or("").contains("s-mode") {
         qemu_args.push("-bios");
         qemu_args.push("none");
@@ -87,6 +87,7 @@ fn main() -> anyhow::Result<()> {
         .stderr(Stdio::piped())
         .spawn()
         .context("running qemu")?;
+    thread::sleep(Duration::from_secs(3));
     let _ = child.kill();
     let output = child.wait_with_output()?;
     let raw_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
