@@ -68,11 +68,15 @@ fn main() -> anyhow::Result<()> {
         "qemu-system-riscv64"
     };
     let mut qemu_args = vec![
-        "-machine", "virt",
+        "-machine",
+        "virt",
         "-nographic",
-        "-serial", "stdio",
-        "-monitor", "none",
-        "-semihosting-config", "enable=on,target=native",
+        "-serial",
+        "stdio",
+        "-monitor",
+        "none",
+        "-semihosting-config",
+        "enable=on,target=native",
     ];
     if !features.as_deref().unwrap_or("").contains("s-mode") {
         qemu_args.push("-bios");
