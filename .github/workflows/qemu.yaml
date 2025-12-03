@@ -10,47 +10,49 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Verify the example output with run-pass tests
   testexamples:
     name: QEMU run
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        input:
-          # UART example (riscv32)
-          - toolchain: stable
-            target: riscv32imac-unknown-none-elf
+        toolchain: [stable]
+        target:
+          - riscv32i-unknown-none-elf
+          - riscv32im-unknown-none-elf
+          - riscv32imc-unknown-none-elf
+          - riscv32imac-unknown-none-elf
+          - riscv32imafc-unknown-none-elf
+          - riscv64imac-unknown-none-elf
+          - riscv64gc-unknown-none-elf
+        example:
+          - qemu_uart
+          - qemu_semihosting
+        include:
+          - target: riscv32i-unknown-none-elf
             qemu-system: riscv32
-            example: hello
-
-          # Semihosting example (riscv32)
-          - toolchain: stable
-            target: riscv32imac-unknown-none-elf
+          - target: riscv32im-unknown-none-elf
             qemu-system: riscv32
-            example: qemu_semihosting
-
-          # UART example (riscv64)
-          - toolchain: stable
-            target: riscv64gc-unknown-none-elf
+          - target: riscv32imc-unknown-none-elf
+            qemu-system: riscv32
+          - target: riscv32imac-unknown-none-elf
+            qemu-system: riscv32
+          - target: riscv32imafc-unknown-none-elf
+            qemu-system: riscv32
+          - target: riscv64imac-unknown-none-elf
             qemu-system: riscv64
-            example: hello
-
-          # Semihosting example (riscv64)
-          - toolchain: stable
-            target: riscv64gc-unknown-none-elf
+          - target: riscv64gc-unknown-none-elf
             qemu-system: riscv64
-            example: qemu_semihosting
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure Rust target ${{ matrix.input.target }}
+      - name: Configure Rust target ${{ matrix.target }}
         run: |
-          rustup toolchain install ${{ matrix.input.toolchain }}
-          rustup default ${{ matrix.input.toolchain }}
-          rustup target add ${{ matrix.input.target }}
+          rustup toolchain install ${{ matrix.toolchain }}
+          rustup default ${{ matrix.toolchain }}
+          rustup target add ${{ matrix.target }}
 
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
@@ -58,8 +60,8 @@ jobs:
       - name: Install QEMU
         run: |
           sudo apt update
-          sudo apt install -y qemu-system-${{ matrix.input.qemu-system }}
+          sudo apt install -y qemu-system-${{ matrix.qemu-system }}
 
       - name: Run-pass tests
-        run: cargo run --package xtask -- qemu --target ${{ matrix.input.target }} --example ${{ matrix.input.example }}
+        run: cargo run --package xtask -- qemu --target ${{ matrix.target }} --example ${{ matrix.example }}
 
