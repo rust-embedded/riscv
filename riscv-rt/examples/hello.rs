@@ -9,6 +9,7 @@
 extern crate panic_halt;
 
 use riscv_rt::entry;
+use riscv_semihosting::debug::{self, EXIT_SUCCESS};
 
 const UART_BASE: usize = 0x1000_0000;
 const UART_THR: usize = UART_BASE;
