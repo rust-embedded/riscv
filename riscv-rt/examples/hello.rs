@@ -56,5 +56,6 @@ fn uart_write_str(s: &str) {
 fn main() -> ! {
     uart_init();
     uart_write_str("Hello from UART!\n");
+    debug::exit(EXIT_SUCCESS);
     loop {}
 }
