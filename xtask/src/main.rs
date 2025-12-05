@@ -3,8 +3,6 @@ use std::{
     fs,
     path::PathBuf,
     process::{Command, Stdio},
-    thread,
-    time::Duration,
 };
 
 fn find_golden_file(target: &str, example: &str) -> Option<PathBuf> {
@@ -101,7 +99,7 @@ fn main() -> anyhow::Result<()> {
         qemu_args.push("none");
     }
     let kernel_path = format!("target/{}/release/examples/{}", target, example);
-    let mut child = Command::new(qemu)
+    let child = Command::new(qemu)
         .args(&qemu_args)
         .arg("-kernel")
         .arg(&kernel_path)
@@ -109,8 +107,6 @@ fn main() -> anyhow::Result<()> {
         .stderr(Stdio::piped())
         .spawn()
         .context("running qemu")?;
-    thread::sleep(Duration::from_secs(3));
-    let _ = child.kill();
     let output = child.wait_with_output()?;
     let raw_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stdout = raw_stdout
