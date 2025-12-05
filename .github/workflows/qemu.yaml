@@ -17,7 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         toolchain: [stable]
-<<<<<<< HEAD
         target-qemu:
           - target: riscv32i-unknown-none-elf
             qemu: riscv32
@@ -36,7 +35,6 @@ jobs:
         example:
           - qemu_uart
           - qemu_semihosting
-=======
         target:
           - riscv32i-unknown-none-elf
           - riscv32im-unknown-none-elf
@@ -63,25 +61,21 @@ jobs:
             qemu-system: riscv64
           - target: riscv64gc-unknown-none-elf
             qemu-system: riscv64
->>>>>>> f5a08ce0a33bcd5d9d529c549e972144b3a1faa3
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-<<<<<<< HEAD
       - name: Configure Rust target ${{ matrix.target-qemu.target }}
         run: |
           rustup toolchain install ${{ matrix.toolchain }}
           rustup default ${{ matrix.toolchain }}
           rustup target add ${{ matrix.target-qemu.target }}
-=======
       - name: Configure Rust target ${{ matrix.target }}
         run: |
           rustup toolchain install ${{ matrix.toolchain }}
           rustup default ${{ matrix.toolchain }}
           rustup target add ${{ matrix.target }}
->>>>>>> f5a08ce0a33bcd5d9d529c549e972144b3a1faa3
 
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
@@ -89,15 +83,12 @@ jobs:
       - name: Install QEMU
         run: |
           sudo apt update
-<<<<<<< HEAD
           sudo apt install -y qemu-system-${{ matrix.target-qemu.qemu }}
 
       - name: Run-pass tests
         run: cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example }}
-=======
           sudo apt install -y qemu-system-${{ matrix.qemu-system }}
 
       - name: Run-pass tests
         run: cargo run --package xtask -- qemu --target ${{ matrix.target }} --example ${{ matrix.example }}
->>>>>>> f5a08ce0a33bcd5d9d529c549e972144b3a1faa3
 
