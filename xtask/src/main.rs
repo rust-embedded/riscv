@@ -125,7 +125,7 @@ fn main() -> anyhow::Result<()> {
     };
 
     let expected_path = find_golden_file(&target, &example);
-    let expected_path = match expected_path {
+    let _expected_path = match expected_path {
         Some(p) => p,
         None => {
             let target_path: PathBuf = ["ci", "expected", &target, &format!("{}.run", example)]
