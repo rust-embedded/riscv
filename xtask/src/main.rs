@@ -124,8 +124,7 @@ fn main() -> anyhow::Result<()> {
         format!("{}\n", stdout.trim())
     };
 
-    let expected_path = find_golden_file(&target, &example);
-    let _expected_path = match expected_path {
+    let expected_path = match find_golden_file(&target, &example) {
         Some(p) => p,
         None => {
             let target_path: PathBuf = ["ci", "expected", &target, &format!("{}.run", example)]
@@ -141,14 +140,6 @@ fn main() -> anyhow::Result<()> {
             );
         }
     };
-    let expected_path: PathBuf = ["ci", "expected", &target, &format!("{}.run", example)]
-        .iter()
-        .collect();
-    if !expected_path.exists() {
-        fs::create_dir_all(expected_path.parent().unwrap())?;
-        fs::write(&expected_path, stdout.as_bytes())?;
-        bail!("expected output created; re-run CI");
-    }
     let expected = fs::read_to_string(&expected_path)?;
     if expected != stdout {
         bail!(
