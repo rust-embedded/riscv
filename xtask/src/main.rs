@@ -7,6 +7,24 @@ use std::{
     time::Duration,
 };
 
+fn find_golden_file(target: &str, example: &str) -> Option<PathBuf> {
+    let target_specific: PathBuf = ["ci", "expected", target, &format!("{}.run", example)]
+        .iter()
+        .collect();
+    if target_specific.exists() {
+        return Some(target_specific);
+    }
+
+    let generic: PathBuf = ["ci", "expected", &format!("{}.run", example)]
+        .iter()
+        .collect();
+    if generic.exists() {
+        return Some(generic);
+    }
+
+    None
+}
+
 fn main() -> anyhow::Result<()> {
     let mut args = std::env::args().skip(1).collect::<Vec<_>>();
     if args.is_empty() || args[0] != "qemu" {
@@ -106,14 +124,23 @@ fn main() -> anyhow::Result<()> {
         format!("{}\n", stdout.trim())
     };
 
-    let expected_path: PathBuf = ["ci", "expected", &target, &format!("{}.run", example)]
-        .iter()
-        .collect();
-    if !expected_path.exists() {
-        fs::create_dir_all(expected_path.parent().unwrap())?;
-        fs::write(&expected_path, stdout.as_bytes())?;
-        bail!("expected output created; re-run CI");
-    }
+    let expected_path = find_golden_file(&target, &example);
+    let expected_path = match expected_path {
+        Some(p) => p,
+        None => {
+            let target_path: PathBuf = ["ci", "expected", &target, &format!("{}.run", example)]
+                .iter()
+                .collect();
+            let generic_path: PathBuf = ["ci", "expected", &format!("{}.run", example)]
+                .iter()
+                .collect();
+            bail!(
+                "golden file not found. Expected one of:\n  - {}\n  - {}",
+                target_path.display(),
+                generic_path.display()
+            );
+        }
+    };
     let expected = fs::read_to_string(&expected_path)?;
     if expected != stdout {
         bail!(
