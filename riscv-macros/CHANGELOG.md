@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Fix `cargo doc` errors.
 - Use fully qualified paths in generated code (i.e., `::riscv` instead of `riscv`)
 - Moved from `riscv/macros/` to `riscv-macros/`
 - Now, `riscv::pac_enum` macro only includes trap-related code if `rt` or `rt-v-trap` features are enabled.

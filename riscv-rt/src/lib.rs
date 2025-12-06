@@ -156,7 +156,7 @@
 //!
 //! Our application would look like this:
 //!
-//! ```no_run
+//! ```ignore,no_run
 //! // src/main.rs
 //! #![no_main]
 //! #![no_std]
@@ -269,7 +269,7 @@
 //!
 //! ## Example
 //!
-//! ``` no_run
+//! ``` ignore,no_run
 //! extern crate some_allocator; // e.g., embedded_alloc::LlffHeap
 //!
 //! extern "C" {
@@ -357,7 +357,7 @@
 //!
 //! The following example shows how to implement the `_mp_hook` function in assembly.
 //!
-//! ``` no_run
+//! ``` ignore,no_run
 //! core::arch::global_asm!(
 //!     r#".section .init.mp_hook, "ax"
 //!     .global _mp_hook
@@ -433,7 +433,7 @@
 //!
 //! This function can be redefined in the following way:
 //!
-//! ``` no_run
+//! ``` ignore,no_run
 //! #[export_name = "ExceptionHandler"]
 //! fn custom_exception_handler(trap_frame: &riscv_rt::TrapFrame) -> ! {
 //!     // ...
@@ -542,7 +542,7 @@
 //!
 //! The following example shows how to implement the `__pre_init` function in assembly.
 //!
-//! ``` no_run
+//! ``` ignore,no_run
 //! core::arch::global_asm!(
 //!     r#".section .init.pre_init, "ax"
 //!     .global __pre_init
@@ -573,6 +573,20 @@
 //! ## `no-xtvec`
 //!
 //! Skips interrupts setup.
+//!
+//! ## `no-xie-xip`
+//!
+//! Skips disabling interrupts (to support chips without XIE/XIP CSRs).
+//!
+//! ## `no-interrupts`
+//!
+//! Opts out of the default implementation for `_dispatch_core_interrupt` to support platforms
+//! with custom core interrupt sources.
+//!
+//! ## `no-exceptions`
+//!
+//! Opts out of the default implementation for `_dispatch_exception` to support platforms
+//! with custom exception sources.
 //!
 //! ## `s-mode`
 //!
@@ -622,7 +636,7 @@
 //!
 //! ### Example
 //!
-//! ```rust,no_run
+//! ```rust,ignore,no_run
 //! core::arch::global_asm!(
 //! r#"
 //!     .section .trap.start, "ax"
@@ -639,6 +653,20 @@
 //! "#
 //! );
 //! ```
+//!
+//! ## `device`
+//!
+//! Automatically includes `device.x` (typically provided by PACs to provide weak aliases to interrupt handlers)
+//! in the linker script.
+//!
+//! ## `memory`
+//!
+//! Automatically includes [`memory.x`](#memoryx) (typically provided by BSPs) in the linker script.
+//!
+//! ## `defmt`
+//!
+//! Implements `defmt::Format` on certain types.
+//!
 //! [attr-entry]: attr.entry.html
 //! [attr-exception]: attr.exception.html
 //! [attr-external-interrupt]: attr.external_interrupt.html

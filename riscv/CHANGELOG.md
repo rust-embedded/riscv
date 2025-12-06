@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Fix broken links in register macro doc string.
 - Moved macros from `./macros/` to `../riscv-macros/`
 - Updated the license to `MIT or Apache-2.0`
 - Bump MSRV to 1.68 for latest version of syn 2.0

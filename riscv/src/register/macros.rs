@@ -303,7 +303,7 @@ macro_rules! write_csr_as_usize_rv32 {
 
 /// Convenience macro to provide combined read/write of a CSR as a `usize`.
 ///
-/// This composes [`read_csr_as_usize`] and [`write_csr_as_usize`]. Use the
+/// This composes [read_csr_as_usize](crate::read_csr_as_usize) and [write_csr_as_usize](crate::write_csr_as_usize). Use the
 /// `safe` form to get safe wrappers instead of unsafe.
 #[macro_export]
 macro_rules! read_write_csr_as_usize {
