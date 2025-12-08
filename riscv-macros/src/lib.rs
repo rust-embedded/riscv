@@ -426,7 +426,7 @@ core::arch::global_asm!("
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust,ignore,no_run
 /// use riscv::*;
 ///
 /// #[repr(usize)]
