@@ -1,0 +1,59 @@
+name: QEMU tests
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  testexamples:
+    name: QEMU run
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: [stable]
+        target-qemu:
+          - target: riscv32i-unknown-none-elf
+            qemu: riscv32
+          - target: riscv32im-unknown-none-elf
+            qemu: riscv32
+          - target: riscv32imc-unknown-none-elf
+            qemu: riscv32
+          - target: riscv32imac-unknown-none-elf
+            qemu: riscv32
+          - target: riscv32imafc-unknown-none-elf
+            qemu: riscv32
+          - target: riscv64imac-unknown-none-elf
+            qemu: riscv64
+          - target: riscv64gc-unknown-none-elf
+            qemu: riscv64
+        example:
+          - qemu_uart
+          - qemu_semihosting
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Rust target ${{ matrix.target-qemu.target }}
+        run: |
+          rustup toolchain install ${{ matrix.toolchain }}
+          rustup default ${{ matrix.toolchain }}
+          rustup target add ${{ matrix.target-qemu.target }}
+
+      - name: Cache Dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install QEMU
+        run: |
+          sudo apt update
+          sudo apt install -y qemu-system-${{ matrix.target-qemu.qemu }}
+
+      - name: Run-pass tests
+        run: cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example }}
+
