@@ -1,7 +1,7 @@
 //! Interrupts Priorities register.
 
 use crate::common::{Reg, RW};
-use riscv_pac::{ExternalInterruptNumber, PriorityNumber};
+use riscv::{ExternalInterruptNumber, PriorityNumber};
 
 /// Interrupts priorities register.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -71,7 +71,7 @@ impl PRIORITIES {
 mod test {
     use super::*;
     use crate::test::{Interrupt, Priority};
-    use riscv_pac::InterruptNumber;
+    use riscv::InterruptNumber;
 
     #[test]
     fn test_priorities() {

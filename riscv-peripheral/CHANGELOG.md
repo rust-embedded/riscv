@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Bump MSRV to 1.81 due to `riscv`
 - Update license to `MIT or Apache-2.0`
 
 ### Fixed

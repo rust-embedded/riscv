@@ -1,6 +1,10 @@
 [![crates.io](https://img.shields.io/crates/d/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
 [![crates.io](https://img.shields.io/crates/v/riscv-pac.svg)](https://crates.io/crates/riscv-pac)
 
+# Deprecation notice
+
+This crate has been deprecated. Use [`riscv-types`](https://crates.io/crates/riscv-types) instead.
+
 # `riscv-pac`
 
 > Target-specific traits to be implemented by PACs

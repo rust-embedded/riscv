@@ -1,8 +1,10 @@
 //! mvienh register
 
-use crate::bits::{bf_extract, bf_insert};
-use riscv_pac::result::{Error, Result};
-use riscv_pac::InterruptNumber;
+use crate::{
+    bits::{bf_extract, bf_insert},
+    result::{Error, Result},
+    InterruptNumber,
+};
 
 read_write_csr! {
     /// `mvienh` register

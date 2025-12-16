@@ -1,3 +1,7 @@
+//! # Deprecation notice
+//!
+//! This crate has been deprecated. Use [`riscv-types`](https://crates.io/crates/riscv-types) instead.
+
 #![no_std]
 
 pub mod result;

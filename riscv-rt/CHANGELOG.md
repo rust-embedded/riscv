@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Add features to documentation that were missing and fix `cargo doc` errors.
+- Bump MSRV to 1.81 due to `riscv-types`
+- Use `riscv-types` instead of `riscv-pac`
 - Update license to `MIT or Apache-2.0`
 - Fix clippy warnings in riscv_rt_macros::strip_type_path
 - Bump MSRV to 1.68 for latest syn 2.0 release

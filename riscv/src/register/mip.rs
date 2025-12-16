@@ -1,7 +1,6 @@
 //! mip register
 
-use crate::bits::bf_extract;
-use riscv_pac::CoreInterruptNumber;
+use crate::{bits::bf_extract, CoreInterruptNumber};
 
 read_only_csr! {
     /// `mip` register
