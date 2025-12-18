@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## v0.4.0 - 2025-12-19
+
 ### Added
 
 - New `rt` and `rt-v-trap` features to opt-in `riscv-rt`-related code in `riscv::pac_enum` macro.
