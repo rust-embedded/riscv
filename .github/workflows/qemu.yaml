@@ -35,12 +35,47 @@ jobs:
         example-features:
           - example: qemu_uart
             features: ""
-          - example: qemu_uart
-            features: "s-mode"
           - example: qemu_semihosting
             features: ""
+          - example: qemu_uart
+            features: "s-mode"
           - example: multi_hart
             features: "multi-hart"
+        exclude:
+          # multi_hart requires atomics extension ('a'), exclude targets without it
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32i-unknown-none-elf
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32im-unknown-none-elf
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32imc-unknown-none-elf
+          # s-mode on riscv32 requires OpenSBI which has issues with some targets
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              target: riscv32i-unknown-none-elf
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              target: riscv32im-unknown-none-elf
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              target: riscv32imc-unknown-none-elf
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              target: riscv32imac-unknown-none-elf
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              target: riscv32imafc-unknown-none-elf
 
     steps:
       - name: Checkout
