@@ -1,8 +1,3 @@
-//! UART example for QEMU virt machine
-//!
-//! This example demonstrates direct UART output on QEMU's virt machine.
-//! It writes to the NS16550-compatible UART at 0x1000_0000.
-
 #![no_std]
 #![no_main]
 

@@ -32,9 +32,15 @@ jobs:
             qemu: riscv64
           - target: riscv64gc-unknown-none-elf
             qemu: riscv64
-        example:
-          - qemu_uart
-          - qemu_semihosting
+        example-features:
+          - example: qemu_uart
+            features: ""
+          - example: qemu_uart
+            features: "s-mode"
+          - example: qemu_semihosting
+            features: ""
+          - example: multi_hart
+            features: "multi-hart"
 
     steps:
       - name: Checkout
@@ -55,5 +61,9 @@ jobs:
           sudo apt install -y qemu-system-${{ matrix.target-qemu.qemu }}
 
       - name: Run-pass tests
-        run: cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example }}
-
+        run: |
+          if [ -n "${{ matrix.example-features.features }}" ]; then
+            cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example-features.example }} --features ${{ matrix.example-features.features }}
+          else
+            cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example-features.example }}
+          fi
