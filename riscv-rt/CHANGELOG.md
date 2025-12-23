@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## v0.17.0 - 2025-12-19
+
 ### Added
 
 - Added examples for CI tests using semihosting and UART

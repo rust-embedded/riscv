@@ -1,6 +1,6 @@
 [package]
 name = "riscv-rt"
-version = "0.16.0"
+version = "0.17.0"
 rust-version = "1.81"
 repository = "https://github.com/rust-embedded/riscv"
 authors = ["The RISC-V Team <risc-v@teams.rust-embedded.org>"]
@@ -24,16 +24,16 @@ targets = [
 riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
 
 [dependencies]
-riscv = { path = "../riscv", version = "0.15.0", features = ["rt"] }
+riscv = { path = "../riscv", version = "0.16.0", features = ["rt"] }
 riscv-types = { path = "../riscv-types", version = "0.1.0" }
-riscv-rt-macros = { path = "macros", version = "0.6.0" }
+riscv-rt-macros = { path = "macros", version = "0.6.1" }
 
 defmt = { version = "1.0.1", optional = true }
 
 [dev-dependencies]
 panic-halt = "1.0.0"
 riscv-semihosting = { path = "../riscv-semihosting", version = "0.2.1" }
-riscv = { path = "../riscv", version = "0.15.0", features = ["critical-section-single-hart"] }
+riscv = { path = "../riscv", version = "0.16.0", features = ["critical-section-single-hart"] }
 
 [features]
 pre-init = []

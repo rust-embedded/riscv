@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## v0.5.0 - 2025-12-19
+
 ### Changed
 
 - Bump MSRV to 1.81 due to `riscv`
