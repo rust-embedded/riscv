@@ -4,7 +4,7 @@ use syn::{parse_macro_input, DeriveInput};
 
 mod riscv;
 
-/// Attribute-like macro that implements the traits of the `riscv-pac` crate for a given enum.
+/// Attribute-like macro that implements the traits of the `riscv-types` crate for a given enum.
 ///
 /// As these traits are unsafe, the macro must be called with the `unsafe` keyword followed by the trait name.
 /// In this way, we warn callers that they must comply with the requirements of the trait.
