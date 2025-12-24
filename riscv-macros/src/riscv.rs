@@ -81,7 +81,7 @@ impl InterruptType {
     }
 }
 
-/// Struct containing the information needed to implement the `riscv-pac` traits for an enum
+/// Struct containing the information needed to implement the `riscv-types` traits for an enum
 pub struct PacEnumItem {
     /// The name of the enum
     name: Ident,

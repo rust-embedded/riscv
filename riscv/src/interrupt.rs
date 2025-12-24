@@ -4,7 +4,7 @@
 
 use crate::result::Result;
 
-// re-export useful riscv-pac traits
+// re-export useful riscv-types traits
 pub use crate::{CoreInterruptNumber, ExceptionNumber, InterruptNumber};
 
 pub mod machine;
