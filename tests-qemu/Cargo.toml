@@ -12,8 +12,7 @@ riscv-rt = { path = "../riscv-rt" }
 riscv-semihosting = { path = "../riscv-semihosting" }
 
 [features]
-default = ["m-mode", "single-hart"]
+default = ["single-hart"]
 s-mode = ["riscv-rt/s-mode", "single-hart"]
-m-mode = []
 single-hart = ["riscv-rt/single-hart", "riscv/critical-section-single-hart"]
-multi-hart = ["m-mode"]
+multi-hart = []

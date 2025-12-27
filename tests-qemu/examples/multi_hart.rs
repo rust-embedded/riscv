@@ -1,3 +1,8 @@
+//! Multi-hart example demonstrating IPI-based hart synchronization.
+//!
+//! Hart 0 initializes UART and wakes Hart 1 via software interrupt (CLINT).
+//! Both harts print messages and synchronize before exit.
+
 #![no_std]
 #![no_main]
 
@@ -17,7 +22,6 @@ const LCR_8N1: u8 = 0x03;
 const LSR_THRE: u8 = 1 << 5;
 
 static UART_LOCK: AtomicBool = AtomicBool::new(false);
-static HART0_READY: AtomicBool = AtomicBool::new(false);
 static HART1_DONE: AtomicBool = AtomicBool::new(false);
 
 fn uart_lock() {
@@ -68,7 +72,7 @@ fn uart_print(s: &str) {
 
 // Custom _mp_hook implementation in assembly
 // Hart 0 returns 1 (true) to initialize RAM
-// Hart 1 waits for IPI via CLINT, then returns 0 (false) to skip RAM init
+// Hart 1 polls for IPI via CLINT, then returns 0 (false) to skip RAM init
 global_asm!(
     r#"
 .section .init.mp_hook, "ax"
@@ -76,24 +80,15 @@ global_asm!(
 _mp_hook:
     beqz a0, 2f         // if hart 0, return true
 
-    // Hart 1: Wait for IPI
+    // Hart 1: Poll for IPI (no interrupts, just polling)
     // Clear any pending software interrupt first
     li t0, 0x02000004   // CLINT msip address for hart 1
     sw zero, 0(t0)
 
-    // Enable machine software interrupts
-    li t0, 8            // MIE.MSIE bit
-    csrs mie, t0
-
-1:  wfi                 // Wait for interrupt
-    // Check if software interrupt pending
+1:  // Poll mip register for software interrupt pending
     csrr t0, mip
     andi t0, t0, 8      // Check MSIP bit
-    beqz t0, 1b         // If not set, keep waiting
-
-    // Disable machine software interrupts
-    li t0, 8
-    csrc mie, t0
+    beqz t0, 1b         // If not set, keep polling
 
     // Clear the software interrupt
     li t0, 0x02000004
@@ -114,13 +109,6 @@ fn main(hartid: usize) -> ! {
     if hartid == 0 {
         uart_init();
         uart_print("Hart 0: Initializing\n");
-        HART0_READY.store(true, Ordering::Release);
-
-        // Small delay to allow Hart 1 to reach wfi() in _mp_hook
-        // This is needed because we can't use atomics in assembly _mp_hook
-        for _ in 0..100000 {
-            core::hint::spin_loop();
-        }
 
         // Send IPI to Hart 1 (write to CLINT msip register for hart 1)
         unsafe {
@@ -134,9 +122,7 @@ fn main(hartid: usize) -> ! {
         uart_print("Hart 0: Both harts done\n");
         debug::exit(EXIT_SUCCESS);
     } else {
-        while !HART0_READY.load(Ordering::Acquire) {
-            core::hint::spin_loop();
-        }
+        // Hart 1 reaches here after _mp_hook detects IPI
         uart_print("Hart 1: Running\n");
         HART1_DONE.store(true, Ordering::Release);
     }

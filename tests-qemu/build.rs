@@ -6,10 +6,15 @@ fn main() {
     let s_mode = env::var_os("CARGO_FEATURE_S_MODE").is_some();
     let multi_hart = env::var_os("CARGO_FEATURE_MULTI_HART").is_some();
 
+    // Multi-hart is only supported in M-mode
+    if multi_hart && s_mode {
+        panic!("multi-hart feature is only compatible with M-mode, not S-mode");
+    }
+
     let memory_x = match (s_mode, multi_hart) {
         (true, _) => include_bytes!("memory-s-mode.x").as_slice(),
-        (false, true) => include_bytes!("memory-m-mode-multihart.x").as_slice(),
-        (false, false) => include_bytes!("memory-m-mode.x").as_slice(),
+        (_, true) => include_bytes!("memory-multihart.x").as_slice(),
+        _ => include_bytes!("memory.x").as_slice(),
     };
 
     File::create(out.join("memory.x"))
@@ -20,8 +25,8 @@ fn main() {
 
     println!("cargo:rustc-link-arg=-Tmemory.x");
 
-    println!("cargo:rerun-if-changed=memory-m-mode.x");
-    println!("cargo:rerun-if-changed=memory-m-mode-multihart.x");
+    println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rerun-if-changed=memory-multihart.x");
     println!("cargo:rerun-if-changed=memory-s-mode.x");
     println!("cargo:rerun-if-changed=build.rs");
 }
