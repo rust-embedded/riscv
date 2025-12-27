@@ -2,7 +2,6 @@
 //!
 //! This example uses RISC-V semihosting to print output and cleanly exit QEMU.
 //! Run with: `qemu-system-riscv32 -machine virt -nographic -semihosting-config enable=on,target=native -bios none -kernel <binary>`
-
 #![no_std]
 #![no_main]
 

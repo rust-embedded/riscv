@@ -1,0 +1,18 @@
+[package]
+name = "tests-qemu"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+
+[dependencies]
+panic-halt = "1.0"
+riscv = { path = "../riscv" }
+riscv-rt = { path = "../riscv-rt" }
+riscv-semihosting = { path = "../riscv-semihosting" }
+
+[features]
+default = ["single-hart"]
+s-mode = ["riscv-rt/s-mode", "single-hart"]
+single-hart = ["riscv-rt/single-hart", "riscv/critical-section-single-hart"]
+multi-hart = []
