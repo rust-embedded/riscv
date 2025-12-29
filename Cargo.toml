@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "riscv",
     "riscv-macros",
-    "riscv-pac",
     "riscv-peripheral",
     "riscv-rt",
     "riscv-semihosting",
@@ -17,7 +16,6 @@ members = [
 default-members = [
     "riscv",
     "riscv-macros",
-    "riscv-pac",
     "riscv-peripheral",
     "riscv-rt",
     "riscv-semihosting",
