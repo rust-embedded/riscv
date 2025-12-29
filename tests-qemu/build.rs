@@ -6,7 +6,11 @@ fn main() {
     let s_mode = env::var_os("CARGO_FEATURE_S_MODE").is_some();
     let multi_hart = env::var_os("CARGO_FEATURE_MULTI_HART").is_some();
 
-    // Multi-hart is only supported in M-mode; s-mode takes priority if both are enabled
+    // Multi-hart is only supported in M-mode
+    if s_mode && multi_hart {
+        panic!("multi-hart feature is not compatible with s-mode");
+    }
+
     let memory_x = match (s_mode, multi_hart) {
         (true, _) => include_bytes!("memory-s-mode.x").as_slice(),
         (_, true) => include_bytes!("memory-multihart.x").as_slice(),
