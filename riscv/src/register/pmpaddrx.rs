@@ -74,4 +74,3 @@ reg!(0x3EC, pmpaddr60);
 reg!(0x3ED, pmpaddr61);
 reg!(0x3EE, pmpaddr62);
 reg!(0x3EF, pmpaddr63);
-
