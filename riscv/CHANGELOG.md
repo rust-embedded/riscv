@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `pmpaddr16` ~ `pmpaddr63` CSRs
+
 ## v0.16.0 - 2025-12-19
 
 ### Added
