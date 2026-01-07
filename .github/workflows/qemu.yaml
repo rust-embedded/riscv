@@ -59,23 +59,7 @@ jobs:
           - example-features:
               features: "s-mode"
             target-qemu:
-              target: riscv32i-unknown-none-elf
-          - example-features:
-              features: "s-mode"
-            target-qemu:
-              target: riscv32im-unknown-none-elf
-          - example-features:
-              features: "s-mode"
-            target-qemu:
-              target: riscv32imc-unknown-none-elf
-          - example-features:
-              features: "s-mode"
-            target-qemu:
-              target: riscv32imac-unknown-none-elf
-          - example-features:
-              features: "s-mode"
-            target-qemu:
-              target: riscv32imafc-unknown-none-elf
+              qemu: riscv32
 
     steps:
       - name: Checkout

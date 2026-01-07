@@ -123,11 +123,9 @@ fn main() -> anyhow::Result<()> {
         qemu_args.push("-bios");
         qemu_args.push("none");
     }
-    let smp_arg;
     if multi_hart {
-        smp_arg = "2".to_string();
         qemu_args.push("-smp");
-        qemu_args.push(&smp_arg);
+        qemu_args.push("2");
     }
     let kernel_path = format!("target/{}/release/examples/{}", target, example);
     let child = Command::new(qemu)
