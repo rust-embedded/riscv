@@ -23,10 +23,32 @@ fn find_golden_file(target: &str, example: &str) -> Option<PathBuf> {
     None
 }
 
+fn filter_output(raw: &str, s_mode: bool) -> String {
+    let mut lines: Vec<&str> = raw.lines().collect();
+
+    if s_mode {
+        if let Some(pos) = lines.iter().position(|l| l.contains("Boot HART MEDELEG")) {
+            lines = lines.into_iter().skip(pos + 1).collect();
+        }
+    }
+
+    let filtered: Vec<&str> = lines
+        .into_iter()
+        .filter(|l| !l.starts_with("QEMU ") && !l.contains("monitor"))
+        .collect();
+
+    let result = filtered.join("\n");
+    if result.is_empty() {
+        String::new()
+    } else {
+        format!("{}\n", result.trim())
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     let mut args = std::env::args().skip(1).collect::<Vec<_>>();
     if args.is_empty() || args[0] != "qemu" {
-        bail!("usage: cargo run -p xtask -- qemu --target <triple> --example <name>");
+        bail!("usage: cargo run -p xtask -- qemu --target <triple> --example <name> [--features <features>]");
     }
     args.remove(0);
     let mut target = None;
@@ -54,24 +76,27 @@ fn main() -> anyhow::Result<()> {
     }
     let target = target.context("--target required")?;
     let example = example.context("--example required")?;
-    let mut rustflags = "-C link-arg=-Triscv-rt/examples/device_virt.x".to_string();
-    if let Some(f) = &features {
-        if f.contains("s-mode") {
-            rustflags = "-C link-arg=-Triscv-rt/examples/device_virt_s.x".into();
-        }
-    }
+
+    let feat = features.as_deref().unwrap_or("");
+    let s_mode = feat.contains("s-mode");
+    let multi_hart = feat.contains("multi-hart");
 
     let mut cmd = Command::new("cargo");
-    cmd.env("RUSTFLAGS", rustflags).args([
+    cmd.args([
         "build",
         "--package",
-        "riscv-rt",
+        "tests-qemu",
         "--release",
         "--target",
         &target,
         "--example",
         &example,
     ]);
+    // Disable default features when specifying s-mode or multi-hart
+    // since they are mutually exclusive configurations
+    if s_mode || multi_hart {
+        cmd.arg("--no-default-features");
+    }
     cmd.apply_features(features.as_deref());
     let status = cmd.status()?;
     if !status.success() {
@@ -94,9 +119,13 @@ fn main() -> anyhow::Result<()> {
         "-semihosting-config",
         "enable=on,target=native",
     ];
-    if !features.as_deref().unwrap_or("").contains("s-mode") {
+    if !s_mode {
         qemu_args.push("-bios");
         qemu_args.push("none");
+    }
+    if multi_hart {
+        qemu_args.push("-smp");
+        qemu_args.push("2");
     }
     let kernel_path = format!("target/{}/release/examples/{}", target, example);
     let child = Command::new(qemu)
@@ -109,16 +138,7 @@ fn main() -> anyhow::Result<()> {
         .context("running qemu")?;
     let output = child.wait_with_output()?;
     let raw_stdout = String::from_utf8_lossy(&output.stdout).into_owned();
-    let stdout = raw_stdout
-        .lines()
-        .filter(|l| !l.starts_with("QEMU ") && !l.contains("monitor"))
-        .collect::<Vec<_>>()
-        .join("\n");
-    let stdout = if stdout.is_empty() {
-        String::new()
-    } else {
-        format!("{}\n", stdout.trim())
-    };
+    let stdout = filter_output(&raw_stdout, s_mode);
 
     let expected_path = match find_golden_file(&target, &example) {
         Some(p) => p,

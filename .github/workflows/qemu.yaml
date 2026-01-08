@@ -32,9 +32,34 @@ jobs:
             qemu: riscv64
           - target: riscv64gc-unknown-none-elf
             qemu: riscv64
-        example:
-          - qemu_uart
-          - qemu_semihosting
+        example-features:
+          - example: qemu_uart
+            features: ""
+          - example: qemu_semihosting
+            features: ""
+          - example: qemu_uart
+            features: "s-mode"
+          - example: multi_hart
+            features: "multi-hart"
+        exclude:
+          # multi_hart requires atomics extension ('a'), exclude targets without it
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32i-unknown-none-elf
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32im-unknown-none-elf
+          - example-features:
+              example: multi_hart
+            target-qemu:
+              target: riscv32imc-unknown-none-elf
+          # s-mode on riscv32 requires OpenSBI which has issues with some targets
+          - example-features:
+              features: "s-mode"
+            target-qemu:
+              qemu: riscv32
 
     steps:
       - name: Checkout
@@ -55,5 +80,9 @@ jobs:
           sudo apt install -y qemu-system-${{ matrix.target-qemu.qemu }}
 
       - name: Run-pass tests
-        run: cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example }}
-
+        run: |
+          if [ -n "${{ matrix.example-features.features }}" ]; then
+            cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example-features.example }} --features ${{ matrix.example-features.features }}
+          else
+            cargo run --package xtask -- qemu --target ${{ matrix.target-qemu.target }} --example ${{ matrix.example-features.example }}
+          fi
