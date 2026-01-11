@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## v0.4.1 - Unreleased
+
+### Added
+
+- `post_init` macro for the `riscv-rt` crate (migrated from `riscv-rt-macros`).
 
 ## v0.4.0 - 2025-12-19
 

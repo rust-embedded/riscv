@@ -703,7 +703,7 @@ pub use riscv_rt_macros::{core_interrupt, entry, exception, external_interrupt};
 pub use riscv_types::*;
 
 #[cfg(feature = "post-init")]
-pub use riscv_rt_macros::post_init;
+pub use riscv_macros::post_init;
 #[cfg(feature = "pre-init")]
 pub use riscv_rt_macros::pre_init;
 
