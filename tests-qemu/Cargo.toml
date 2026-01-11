@@ -15,4 +15,4 @@ riscv-semihosting = { path = "../riscv-semihosting" }
 default = ["single-hart"]
 s-mode = ["riscv-rt/s-mode", "single-hart"]
 single-hart = ["riscv-rt/single-hart", "riscv/critical-section-single-hart"]
-multi-hart = []
+multi-hart = ["riscv-rt/post-init"]

@@ -10,7 +10,7 @@ extern crate panic_halt;
 
 use core::arch::global_asm;
 use core::sync::atomic::{AtomicBool, Ordering};
-use riscv_rt::entry;
+use riscv_rt::{entry, post_init};
 use riscv_semihosting::debug::{self, EXIT_SUCCESS};
 
 const UART_BASE: usize = 0x1000_0000;
@@ -104,21 +104,24 @@ _mp_hook:
 "#
 );
 
-#[entry]
-fn main(hartid: usize) -> ! {
+#[post_init]
+fn post_init(hartid: usize) {
     if hartid == 0 {
         uart_init();
         uart_print("Hart 0: Initializing\n");
 
         // Send IPI to Hart 1 (write to CLINT msip register for hart 1)
-        unsafe {
-            (0x02000004usize as *mut u32).write_volatile(1);
-        }
+        unsafe { (0x02000004usize as *mut u32).write_volatile(1) };
+    }
+}
 
+#[entry]
+fn main(hartid: usize) -> ! {
+    if hartid == 0 {
+        // Hart 0 reaches here after initializing UART and sending IPI
         while !HART1_DONE.load(Ordering::Acquire) {
             core::hint::spin_loop();
         }
-
         uart_print("Hart 0: Both harts done\n");
         debug::exit(EXIT_SUCCESS);
     } else {
