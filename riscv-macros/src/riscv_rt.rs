@@ -8,10 +8,19 @@ use syn::{
 
 /// Enum representing the supported runtime function attributes
 pub enum Fn {
+    Entry,
     PostInit,
 }
 
 impl Fn {
+    /// Convenience method to generate the token stream for the `entry` attribute
+    pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
+        match Self::Entry.check_args_empty(args) {
+            Ok(_) => Self::Entry.quote_fn(input),
+            Err(e) => e.to_compile_error().into(),
+        }
+    }
+
     /// Convenience method to generate the token stream for the `post_init` attribute
     pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
         match Self::PostInit.check_args_empty(args) {
@@ -83,6 +92,7 @@ impl Fn {
     const fn attr_name(&self) -> &'static str {
         // Use this match to specify attribute names for different functions in the future
         match self {
+            Self::Entry => "entry",
             Self::PostInit => "post_init",
         }
     }
@@ -91,6 +101,10 @@ impl Fn {
     const fn expected_signature(&self) -> &'static str {
         // Use this match to specify expected signatures for different functions in the future
         match self {
+            #[cfg(not(feature = "u-boot"))]
+            Self::Entry => "[unsafe] fn([usize[, usize[, usize]]]) -> !",
+            #[cfg(feature = "u-boot")]
+            Self::Entry => "[unsafe] fn([c_int[, *const *const c_char]]) -> !",
             Self::PostInit => "[unsafe] fn([usize])",
         }
     }
@@ -99,6 +113,10 @@ impl Fn {
     fn check_inputs(&self, inputs: &Punctuated<FnArg, Comma>) -> Result<()> {
         // Use this match to specify expected input arguments for different functions in the future
         match self {
+            #[cfg(not(feature = "u-boot"))]
+            Self::Entry => self.check_fn_args(inputs, &["usize", "usize", "usize"]),
+            #[cfg(feature = "u-boot")]
+            Self::Entry => self.check_fn_args(inputs, &["c_int", "*const *const c_char"]),
             Self::PostInit => self.check_fn_args(inputs, &["usize"]),
         }
     }
@@ -107,6 +125,7 @@ impl Fn {
     fn check_output(&self, output: &ReturnType) -> Result<()> {
         // Use this match to specify expected output types for different functions in the future
         match self {
+            Self::Entry => check_output_never(output),
             Self::PostInit => check_output_empty(output),
         }
     }
@@ -115,6 +134,7 @@ impl Fn {
     fn export_name(&self, _f: &ItemFn) -> Option<TokenStream2> {
         // Use this match to specify export names for different functions in the future
         let export_name = match self {
+            Self::Entry => Some("main".to_string()),
             Self::PostInit => Some("__post_init".to_string()),
         };
 
@@ -129,7 +149,7 @@ impl Fn {
     fn link_section(&self, _f: &ItemFn) -> Option<TokenStream2> {
         // Use this match to specify section names for different functions in the future
         let section_name: Option<String> = match self {
-            Self::PostInit => None,
+            Self::Entry | Self::PostInit => None,
         };
 
         section_name.map(|section| quote! {
@@ -234,5 +254,16 @@ fn check_output_empty(output: &ReturnType) -> Result<()> {
             }
             _ => Err(Error::new(ty.span(), "return type must be ()")),
         },
+    }
+}
+
+/// Make sure the output type is `!` (never)
+fn check_output_never(output: &ReturnType) -> Result<()> {
+    match output {
+        ReturnType::Type(_, ty) => match **ty {
+            Type::Never(_) => Ok(()),
+            _ => Err(Error::new(ty.span(), "return type must be !")),
+        },
+        ReturnType::Default => Err(Error::new(output.span(), "return type must be !")),
     }
 }

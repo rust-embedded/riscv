@@ -19,6 +19,7 @@ proc-macro = true
 rt = []
 rt-v-trap = ["rt"]
 riscv-rt = ["rt", "syn/extra-traits", "syn/full"]
+u-boot = []
 
 [dependencies]
 proc-macro2 = "1.0"

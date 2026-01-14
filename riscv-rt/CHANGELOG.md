@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Using `entry` from `riscv-macros` instead of `riscv-rt-macros`.
 - Using `post_init` from `riscv-macros` instead of `riscv-rt-macros`.
 
 ## v0.17.1 - 2026-01-13
