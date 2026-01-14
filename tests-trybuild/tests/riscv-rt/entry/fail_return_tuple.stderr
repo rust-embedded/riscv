@@ -1,0 +1,5 @@
+error: return type must be !
+ --> tests/riscv-rt/entry/fail_return_tuple.rs:2:21
+  |
+2 | fn entry_point() -> () {}
+  |                     ^^

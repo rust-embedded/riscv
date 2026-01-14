@@ -1,0 +1,5 @@
+error: `#[entry]` function must be private
+ --> tests/riscv-rt/entry/fail_public.rs:2:1
+  |
+2 | pub fn entry_point() -> ! {}
+  | ^^^

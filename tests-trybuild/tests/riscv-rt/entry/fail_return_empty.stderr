@@ -1,0 +1,7 @@
+error: return type must be !
+ --> tests/riscv-rt/entry/fail_return_empty.rs:1:1
+  |
+1 | #[riscv_rt::entry]
+  | ^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `riscv_rt::entry` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,0 +1,5 @@
+error: argument type must be usize
+ --> tests/riscv-rt/entry/fail_arg_type.rs:2:26
+  |
+2 | fn entry_point(_hart_id: String) {}
+  |                          ^^^^^^

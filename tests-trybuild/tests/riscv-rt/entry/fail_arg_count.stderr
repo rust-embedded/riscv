@@ -1,0 +1,5 @@
+error: `#[entry]` function has too many input arguments
+ --> tests/riscv-rt/entry/fail_arg_count.rs:2:61
+  |
+2 | fn entry_point(_hart_id: usize, _dtb: usize, _other: usize, _one_more: usize) {}
+  |                                                             ^^^^^^^^^
