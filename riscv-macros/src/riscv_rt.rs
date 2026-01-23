@@ -14,17 +14,15 @@ pub enum Fn {
 impl Fn {
     /// Convenience method to generate the token stream for the `post_init` attribute
     pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
-        match Self::PostInit.check_args_empty(args) {
-            Ok(_) => Self::PostInit.quote_fn(input),
-            Err(e) => e.to_compile_error().into(),
-        }
+        let errors = Self::PostInit.check_args_empty(args).err();
+        Self::PostInit.quote_fn(input, errors)
     }
 
     /// Generate the token stream for the function with the given attribute
-    fn quote_fn(&self, item: TokenStream) -> TokenStream {
+    fn quote_fn(&self, item: TokenStream, errors: Option<Error>) -> TokenStream {
         let mut func = parse_macro_input!(item as ItemFn);
 
-        if let Err(e) = self.check_fn(&func) {
+        if let Err(e) = self.check_fn(&func, errors) {
             return e.to_compile_error().into();
         }
 
@@ -47,67 +45,80 @@ impl Fn {
     }
 
     /// Check if the function signature is valid for the given attribute
-    fn check_fn(&self, f: &ItemFn) -> Result<()> {
+    fn check_fn(&self, f: &ItemFn, mut errors: Option<Error>) -> Result<()> {
         // First, check that the function is private
         if f.vis != Visibility::Inherited {
-            let attr = self.attr_name();
-            return Err(Error::new(
-                f.vis.span(),
-                format!("`#[{attr}]` function must be private"),
-            ));
+            combine_err(
+                &mut errors,
+                Error::new(f.vis.span(), "function must be private"),
+            );
         }
+
         let sig = &f.sig;
-
-        // Next, check common aspects of the signature (constness, asyncness, generics, etc.)
-        let valid_signature = sig.constness.is_none()
-            && sig.asyncness.is_none()
-            && sig.abi.is_none()
-            && sig.generics.params.is_empty()
-            && sig.generics.where_clause.is_none()
-            && sig.variadic.is_none();
-        if !valid_signature {
-            let attr = self.attr_name();
-            let expected = self.expected_signature();
-            return Err(Error::new(
-                sig.span(),
-                format!("`#[{attr}]` function signature must be `{expected}`"),
-            ));
+        // Next, check common aspects of the signature individually to accumulate errors
+        if let Some(constness) = sig.constness {
+            combine_err(
+                &mut errors,
+                Error::new(constness.span(), "function must not be const"),
+            );
+        }
+        if let Some(asyncness) = sig.asyncness {
+            combine_err(
+                &mut errors,
+                Error::new(asyncness.span(), "function must not be async"),
+            );
+        }
+        if let Some(abi) = &sig.abi {
+            combine_err(
+                &mut errors,
+                Error::new(abi.span(), "ABI must not be specified"),
+            );
+        }
+        if !sig.generics.params.is_empty() {
+            // Use to_token_stream to get a span covering the entire <...> block
+            let span = sig.generics.params.span();
+            combine_err(&mut errors, Error::new(span, "generics are not allowed"));
         }
 
-        // Finally, check that input arguments and output type are valid
-        self.check_inputs(&sig.inputs)?;
-        self.check_output(&sig.output)
-    }
-
-    /// Utility method for printing attribute name in error messages
-    const fn attr_name(&self) -> &'static str {
-        // Use this match to specify attribute names for different functions in the future
-        match self {
-            Self::PostInit => "post_init",
+        // Check input parameters...
+        self.check_inputs(&sig.inputs, &mut errors);
+        // ... and variadic arguments (they are at the end of input parameters)
+        if let Some(variadic) = &sig.variadic {
+            combine_err(
+                &mut errors,
+                Error::new(variadic.span(), "variadic arguments are not allowed"),
+            );
         }
-    }
 
-    /// Utility method for printing expected function signature in error messages
-    const fn expected_signature(&self) -> &'static str {
-        // Use this match to specify expected signatures for different functions in the future
-        match self {
-            Self::PostInit => "[unsafe] fn([usize])",
+        // Check output type...
+        self.check_output(&sig.output, &mut errors);
+        // ... and where clause (they are after output type)
+        if let Some(where_clause) = &sig.generics.where_clause {
+            combine_err(
+                &mut errors,
+                Error::new(where_clause.span(), "where clause is not allowed"),
+            );
+        }
+
+        match errors {
+            Some(e) => Err(e),
+            None => Ok(()),
         }
     }
 
     /// Check if the function has valid input arguments for the given attribute
-    fn check_inputs(&self, inputs: &Punctuated<FnArg, Comma>) -> Result<()> {
+    fn check_inputs(&self, inputs: &Punctuated<FnArg, Comma>, errors: &mut Option<Error>) {
         // Use this match to specify expected input arguments for different functions in the future
         match self {
-            Self::PostInit => self.check_fn_args(inputs, &["usize"]),
+            Self::PostInit => self.check_fn_args(inputs, &["usize"], errors),
         }
     }
 
     /// Check if the function has a valid output type for the given attribute
-    fn check_output(&self, output: &ReturnType) -> Result<()> {
+    fn check_output(&self, output: &ReturnType, errors: &mut Option<Error>) {
         // Use this match to specify expected output types for different functions in the future
         match self {
-            Self::PostInit => check_output_empty(output),
+            Self::PostInit => check_output_empty(output, errors),
         }
     }
 
@@ -120,7 +131,7 @@ impl Fn {
 
         export_name.map(|name| {
             quote! {
-                #[cfg_attr(any(target_arch = "riscv32", target_arch = "riscv64"), export_name = #name)]
+                #[export_name = #name]
             }
         })
     }
@@ -143,11 +154,7 @@ impl Fn {
             Ok(())
         } else {
             let args: TokenStream2 = args.into();
-            let attr = self.attr_name();
-            Err(Error::new(
-                args.span(),
-                format!("`#[{attr}]` function does not accept any arguments"),
-            ))
+            Err(Error::new(args.span(), "macro arguments are not allowed"))
         }
     }
 
@@ -156,21 +163,29 @@ impl Fn {
         &self,
         inputs: &Punctuated<FnArg, Comma>,
         expected_types: &[&str],
-    ) -> Result<()> {
+        errors: &mut Option<Error>,
+    ) {
         let mut expected_iter = expected_types.iter();
         for arg in inputs.iter() {
             match expected_iter.next() {
-                Some(expected) => check_arg_type(arg, expected)?,
+                Some(expected) => {
+                    if let Err(e) = check_arg_type(arg, expected) {
+                        combine_err(errors, e);
+                    }
+                }
                 None => {
-                    let attr = self.attr_name();
-                    return Err(Error::new(
-                        arg.span(),
-                        format!("`#[{attr}]` function has too many input arguments"),
-                    ));
+                    combine_err(errors, Error::new(arg.span(), "too many input arguments"));
                 }
             }
         }
-        Ok(())
+    }
+}
+
+/// Combine a new error into an optional accumulator
+fn combine_err(acc: &mut Option<Error>, err: Error) {
+    match acc {
+        Some(e) => e.combine(err),
+        None => *acc = Some(err),
     }
 }
 
@@ -181,7 +196,7 @@ fn check_arg_type(arg: &FnArg, expected: &str) -> Result<()> {
             if !is_correct_type(&argument.ty, expected) {
                 Err(Error::new(
                     argument.ty.span(),
-                    format!("argument type must be {expected}"),
+                    format!("argument type must be `{expected}`"),
                 ))
             } else {
                 Ok(())
@@ -221,18 +236,16 @@ fn strip_type_path(ty: &Type) -> Option<Type> {
 }
 
 /// Make sure the output type is either `()` or absent
-fn check_output_empty(output: &ReturnType) -> Result<()> {
+fn check_output_empty(output: &ReturnType, errors: &mut Option<Error>) {
     match output {
-        ReturnType::Default => Ok(()),
+        ReturnType::Default => {}
         ReturnType::Type(_, ty) => match **ty {
             Type::Tuple(ref tuple) => {
-                if tuple.elems.is_empty() {
-                    Ok(())
-                } else {
-                    Err(Error::new(tuple.span(), "return type must be ()"))
+                if !tuple.elems.is_empty() {
+                    combine_err(errors, Error::new(tuple.span(), "return type must be ()"));
                 }
             }
-            _ => Err(Error::new(ty.span(), "return type must be ()")),
+            _ => combine_err(errors, Error::new(ty.span(), "return type must be ()")),
         },
     }
 }

@@ -7,9 +7,16 @@ error[E0277]: the trait bound `riscv::interrupt::Interrupt: ExceptionNumber` is 
   | |                     the trait `ExceptionNumber` is not implemented for `riscv::interrupt::Interrupt`
   | required by a bound introduced by this call
   |
-  = help: the following other types implement trait `ExceptionNumber`:
-            riscv::interrupt::Exception
-            riscv::interrupt::supervisor::Exception
+help: the following other types implement trait `ExceptionNumber`
+ --> $WORKSPACE/riscv/src/interrupt/machine.rs
+  |
+  | unsafe impl ExceptionNumber for Exception {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::Exception`
+  |
+ ::: $WORKSPACE/riscv/src/interrupt/supervisor.rs
+  |
+  | unsafe impl ExceptionNumber for Exception {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::supervisor::Exception`
 note: required by a bound in `assert_impl`
  --> tests/riscv-rt/exception/fail_impl_exception_number.rs:1:1
   |

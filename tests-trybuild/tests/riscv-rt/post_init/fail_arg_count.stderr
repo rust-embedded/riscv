@@ -1,5 +1,0 @@
-error: `#[post_init]` function has too many input arguments
- --> tests/riscv-rt/post_init/fail_arg_count.rs:2:33
-  |
-2 | fn before_main(_hart_id: usize, _dtb: usize) {}
-  |                                 ^^^^

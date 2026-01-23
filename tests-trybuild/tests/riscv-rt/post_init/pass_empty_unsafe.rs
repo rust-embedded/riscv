@@ -1,4 +1,4 @@
 #[riscv_rt::post_init]
-async fn before_main() {}
+unsafe fn before_main() {}
 
 fn main() {}

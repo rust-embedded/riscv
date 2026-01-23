@@ -1,0 +1,65 @@
+error: macro arguments are not allowed
+ --> tests/riscv-rt/post_init/fail_full.rs:1:23
+  |
+1 | #[riscv_rt::post_init(arg)]
+  |                       ^^^
+
+error: function must be private
+ --> tests/riscv-rt/post_init/fail_full.rs:2:1
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  | ^^^
+
+error: function must not be const
+ --> tests/riscv-rt/post_init/fail_full.rs:2:5
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |     ^^^^^
+
+error: function must not be async
+ --> tests/riscv-rt/post_init/fail_full.rs:2:11
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |           ^^^^^
+
+error: ABI must not be specified
+ --> tests/riscv-rt/post_init/fail_full.rs:2:17
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                 ^^^^^^
+
+error: generics are not allowed
+ --> tests/riscv-rt/post_init/fail_full.rs:2:46
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                                              ^^
+
+error: argument type must be `usize`
+ --> tests/riscv-rt/post_init/fail_full.rs:2:57
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                                                         ^^^
+
+error: too many input arguments
+ --> tests/riscv-rt/post_init/fail_full.rs:2:62
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                                                              ^^
+
+error: variadic arguments are not allowed
+ --> tests/riscv-rt/post_init/fail_full.rs:2:73
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                                                                         ^^
+
+error: return type must be ()
+ --> tests/riscv-rt/post_init/fail_full.rs:2:85
+  |
+2 | pub const async extern "Rust" fn before_main<'a, T>(_h: u32, _d: &'a T, _v: ...) -> !
+  |                                                                                     ^
+
+error: where clause is not allowed
+ --> tests/riscv-rt/post_init/fail_full.rs:3:1
+  |
+3 | where
+  | ^^^^^
