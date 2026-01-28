@@ -1,0 +1,79 @@
+error: macro arguments are not allowed
+ --> tests/riscv-rt/entry/fail_full.rs:1:19
+  |
+1 | #[riscv_rt::entry(arg)]
+  |                   ^^^
+
+error: function must be private
+ --> tests/riscv-rt/entry/fail_full.rs:2:1
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  | ^^^
+
+error: function must not be const
+ --> tests/riscv-rt/entry/fail_full.rs:2:5
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |     ^^^^^
+
+error: function must not be async
+ --> tests/riscv-rt/entry/fail_full.rs:2:11
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |           ^^^^^
+
+error: ABI must not be specified
+ --> tests/riscv-rt/entry/fail_full.rs:2:17
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                 ^^^^^^
+
+error: generics are not allowed
+ --> tests/riscv-rt/entry/fail_full.rs:2:40
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                        ^^
+
+error: argument type must be `usize`
+ --> tests/riscv-rt/entry/fail_full.rs:2:51
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                                   ^^^
+
+error: argument type must be `usize`
+ --> tests/riscv-rt/entry/fail_full.rs:2:60
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                                            ^
+
+error: argument type must be `usize`
+ --> tests/riscv-rt/entry/fail_full.rs:2:71
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                                                       ^^^^^^
+
+error: too many input arguments
+ --> tests/riscv-rt/entry/fail_full.rs:2:79
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                                                               ^^
+
+error: variadic arguments are not allowed
+ --> tests/riscv-rt/entry/fail_full.rs:2:90
+  |
+2 | pub const async extern "Rust" fn entry<'a, T>(_a: u32, _b: &'a T, _c: String, _d: usize, _e: ...)
+  |                                                                                          ^^
+
+error: return type must be !
+ --> tests/riscv-rt/entry/fail_full.rs:1:1
+  |
+1 | #[riscv_rt::entry(arg)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the attribute macro `riscv_rt::entry` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: where clause is not allowed
+ --> tests/riscv-rt/entry/fail_full.rs:3:1
+  |
+3 | where
+  | ^^^^^
