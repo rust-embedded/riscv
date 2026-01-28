@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- `entry` macro for the `riscv-rt` crate (migrated from `riscv-rt-macros`).
 - `post_init` macro for the `riscv-rt` crate (migrated from `riscv-rt-macros`).
 
 ## v0.4.0 - 2025-12-19

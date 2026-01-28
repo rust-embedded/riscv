@@ -90,3 +90,48 @@ pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
 pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
     riscv_rt::Fn::post_init(args, input)
 }
+
+/// Attribute to declare the entry point of the program
+///
+/// The specified function will be called by the reset handler *after* RAM has been initialized.
+/// If present, the FPU will also be enabled before the function is called.
+///
+/// # Signature
+///
+/// ## Regular Usage
+///
+/// The type of the specified function must be `[unsafe] fn([usize[, usize[, usize]]]) -> !` (never ending function).
+/// The optional arguments correspond to the values passed in registers `a0`, `a1`, and `a2`.
+/// The first argument holds the hart ID of the current hart, which is useful for multi-hart systems.
+/// The other two arguments are currently unused and reserved for future use.
+///
+/// ## With U-Boot
+///
+/// This runtime supports being booted by U-Boot. In this case, the entry point function
+/// must have the signature `[unsafe] fn([c_int[, *const *const c_char]]) -> !`, where the first argument
+/// corresponds to the `argc` parameter and the second argument corresponds to the `argv` parameter passed by U-Boot.
+///
+/// Remember to enable the `u-boot` feature in the `riscv-rt` crate to use this functionality.
+///
+/// # IMPORTANT
+///
+/// This attribute can appear at most *once* in the dependency graph.
+///
+/// The entry point will be called by the reset handler. The program can't reference to the entry
+/// point, much less invoke it.
+///
+/// # Examples
+///
+/// ``` no_run
+/// #[riscv_macros::entry]
+/// fn main() -> ! {
+///     loop {
+///         /* .. */
+///     }
+/// }
+/// ```
+#[cfg(feature = "riscv-rt")]
+#[proc_macro_attribute]
+pub fn entry(args: TokenStream, input: TokenStream) -> TokenStream {
+    riscv_rt::Fn::entry(args, input)
+}
