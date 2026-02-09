@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 riscv = { path = "../riscv" }
+riscv-macros = { path = "../riscv-macros" }
 riscv-rt = { path = "../riscv-rt", features = ["no-exceptions", "no-interrupts", "post-init"] }
 trybuild = "1.0"
 
