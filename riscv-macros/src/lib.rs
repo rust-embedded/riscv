@@ -64,6 +64,7 @@ pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 /// Attribute to mark which function will be called before jumping to the entry point.
+///
 /// You must enable the `post-init` feature in the `riscv-rt` crate to use this macro.
 ///
 /// In contrast with `__pre_init`, this function is called after the static variables
@@ -89,6 +90,36 @@ pub fn pac_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
     riscv_rt::Fn::post_init(args, input)
+}
+
+/// Attribute to mark which function will set interrupts before jumping to the entry point.
+///
+/// The `riscv-rt` crates provides a default implementation that works for most cases.
+/// If you want to provide your own implementation, you must enable the `custom-setup-interrupts`
+/// feature in the `riscv-rt` crate and use this macro on your function.
+/// The `riscv-rt` crate re-exports this macro if the `custom-setup-interrupts` feature is enabled,
+/// so you can use it as `riscv_rt::setup_interrupts` without depending on `riscv-macros` directly.
+///
+/// The function must have the signature of `[unsafe] fn([usize])`, where the argument
+/// corresponds to the hart ID of the current hart. This is useful for multi-hart systems
+/// to perform hart-specific interrupt setup.
+///
+/// # IMPORTANT
+///
+/// This attribute can appear at most *once* in the dependency graph.
+///
+/// # Examples
+///
+/// ```
+/// #[riscv_macros::setup_interrupts]
+/// unsafe fn setup_interrupts(hart_id: usize) {
+///     // do something here
+/// }
+/// ```
+#[cfg(feature = "riscv-rt")]
+#[proc_macro_attribute]
+pub fn setup_interrupts(args: TokenStream, input: TokenStream) -> TokenStream {
+    riscv_rt::Fn::setup_interrupts(args, input)
 }
 
 /// Attribute to declare the entry point of the program

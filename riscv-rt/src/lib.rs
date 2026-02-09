@@ -687,22 +687,23 @@ pub mod exceptions;
 pub mod interrupts;
 
 #[cfg(feature = "s-mode")]
-use riscv::register::{
-    scause as xcause,
-    stvec::{self as xtvec, Stvec as Xtvec, TrapMode},
-};
+use riscv::register::scause as xcause;
+#[cfg(all(feature = "s-mode", not(feature = "custom-setup-interrupts")))]
+use riscv::register::stvec::{self as xtvec, Stvec as Xtvec, TrapMode};
 
 #[cfg(not(feature = "s-mode"))]
-use riscv::register::{
-    mcause as xcause,
-    mtvec::{self as xtvec, Mtvec as Xtvec, TrapMode},
-};
+use riscv::register::mcause as xcause;
+#[cfg(all(not(feature = "s-mode"), not(feature = "custom-setup-interrupts")))]
+use riscv::register::mtvec::{self as xtvec, Mtvec as Xtvec, TrapMode};
 
 pub use riscv_macros::{core_interrupt, entry, exception, external_interrupt};
 pub use riscv_types::*;
 
 #[cfg(feature = "post-init")]
 pub use riscv_macros::post_init;
+
+#[cfg(feature = "custom-setup-interrupts")]
+pub use riscv_macros::setup_interrupts;
 
 /// We export this static with an informative name so that if an application attempts to link
 /// two copies of riscv-rt together, linking will fail. We also declare a links key in
@@ -729,13 +730,13 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
     extern "Rust" {
         #[cfg(feature = "post-init")]
         fn __post_init(a0: usize);
-        fn _setup_interrupts();
+        fn _setup_interrupts(a0: usize);
         fn hal_main(a0: usize, a1: usize, a2: usize) -> !;
     }
 
     #[cfg(feature = "post-init")]
     __post_init(a0);
-    _setup_interrupts();
+    _setup_interrupts(a0);
     hal_main(a0, a1, a2);
 }
 
@@ -746,14 +747,18 @@ pub unsafe extern "C" fn start_rust(a0: usize, a1: usize, a2: usize) -> ! {
 ///
 /// # Note
 ///
-/// Users can override this function by defining their own `_setup_interrupts` function.
+/// You can define your own `_setup_interrupts` function to override the default implementation.
+/// To do so, you must enable the `custom-setup-interrupts` feature to opt-out the default implementation.
+/// Then, you can use the [`riscv_macros::setup_interrupts`] attribute on your custom function.
+/// This macro is re-exported by this crate if the `custom-setup-interrupts` feature is enabled.
 ///
 /// # Safety
 ///
 /// This function should not be called directly by the user, and should instead
 /// be invoked by the runtime implicitly. It is expected to be called before the main function.
-#[export_name = "_default_setup_interrupts"]
-pub unsafe extern "Rust" fn setup_interrupts() {
+#[cfg(not(feature = "custom-setup-interrupts"))]
+#[riscv_macros::setup_interrupts]
+unsafe fn default_setup_interrupts() {
     extern "C" {
         #[cfg(not(feature = "v-trap"))]
         fn _start_trap();

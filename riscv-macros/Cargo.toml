@@ -12,6 +12,9 @@ repository = "https://github.com/rust-embedded/riscv"
 version = "0.4.1"
 edition = "2021"
 
+[package.metadata.docs.rs]
+features = ["riscv-rt"]
+
 [lib]
 proc-macro = true
 
