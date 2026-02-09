@@ -371,24 +371,6 @@
 //! );
 //! ```
 //!
-//! ## `_setup_interrupts`
-//!
-//! This function is called right before the main function and is responsible for setting up
-//! the interrupt controller.
-//!
-//! Default implementation sets the trap vector to `_start_trap` in direct mode.
-//! If the `v-trap` feature is enabled, the trap vector is set to `_vector_table`
-//! in vectored mode. Users can override this function by defining their own `_setup_interrupts`.
-//!
-//! This function can be redefined in the following way:
-//!
-//! ``` no_run
-//! #[export_name = "_setup_interrupts"]
-//! pub fn setup_interrupts() {
-//!    // ...
-//! }
-//! ```
-//!
 //! ## `hal_main`
 //!
 //! Internally, `riscv-rt` does not jump to the `main` function created by the user using the
@@ -561,6 +543,28 @@
 //!
 //! You can use the [`#[post_init]`][attr-post-init] attribute to define a post-init function with Rust.
 //!
+//! ## `custom-setup-interrupts`
+//!
+//! The `riscv-rt` crate provides a default implementation for the `_setup_interrupts` function.
+//! This function is called right before the main function and is responsible for setting up the interrupt controller.
+//! Default implementation sets the trap vector to `_start_trap` in direct mode. If the `v-trap` feature is enabled,
+//! the trap vector is set to `_vector_table` in vectored mode.
+//!
+//! However, in some cases, users may want to provide their own implementation of this function to customize the interrupt
+//! setup process. Users can override this function by:
+//!
+//! 1. Enabling the `custom-setup-interrupts` feature to opt-out the default implementation.
+//! 2. Using the [`#[setup_interrupts]`][attr-setup-interrupts] attribute on their custom function.
+//!
+//! This function can be redefined in the following way:
+//!
+//! ``` no_run
+//! #[riscv_rt::setup_interrupts]
+//! fn setup_interrupts(hart_id: usize) {
+//!    // ...
+//! }
+//!```
+//!
 //! ## `single-hart`
 //!
 //! Saves a little code size if there is only one hart on the target.
@@ -672,6 +676,7 @@
 //! [attr-external-interrupt]: attr.external_interrupt.html
 //! [attr-core-interrupt]: attr.core_interrupt.html
 //! [attr-post-init]: attr.post_init.html
+//! [attr-setup-interrupts]: attr.setup_interrupts.html
 
 // NOTE: Adapted from cortex-m/src/lib.rs
 #![no_std]
