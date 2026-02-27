@@ -1,8 +1,20 @@
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
   merge_group:
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
 
 name: Lints compliance check
 

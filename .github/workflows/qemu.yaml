@@ -1,10 +1,22 @@
 name: QEMU tests
 on:
   merge_group:
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
   push:
     branches:
       - master
+    paths-ignore:
+      - "**/*.md"
+      - "README*"
+      - "LICENSE*"
 
 env:
   CARGO_TERM_COLOR: always
