@@ -621,9 +621,10 @@
 //!
 //! ## `u-boot`
 //!
-//! When the U-boot feature is enabled, acceptable signature for `#[entry]` macros is changed. This is required
-//! because when booting from elf, U-boot passes `argc` and `argv`. This feature also implies `single-hart`.
-//! The only way to get boot-hart is through fdt, so other harts initialization is up to you.
+//! When the U-boot feature is enabled, acceptable signature for `#[post_init]`, `#[setup_interrupts]`,
+//! and`#[entry]` macros is changed. This is required because when booting from elf, U-boot passes
+//! `argc` and `argv`. This feature also implies `single-hart`. The only way to get boot-hart is through
+//! fdt, so other harts initialization is up to you.
 //!
 //! ## `pre-default-start-trap`
 //!

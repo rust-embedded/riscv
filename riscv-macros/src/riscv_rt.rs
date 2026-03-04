@@ -149,7 +149,10 @@ impl Fn {
         // Use this match to specify expected input arguments for different functions in the future
         match self {
             Self::PostInit | Self::SetupInterrupts => {
-                self.check_fn_args(inputs, &["usize"], errors)
+                #[cfg(not(feature = "rvrt-u-boot"))]
+                self.check_fn_args(inputs, &["usize"], errors);
+                #[cfg(feature = "rvrt-u-boot")]
+                self.check_fn_args(inputs, &[], errors);
             }
             #[cfg(not(feature = "rvrt-u-boot"))]
             Self::Entry => self.check_fn_args(inputs, &["usize", "usize", "usize"], errors),
