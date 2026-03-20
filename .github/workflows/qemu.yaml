@@ -3,20 +3,20 @@ on:
   merge_group:
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
   pull_request:
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
   push:
     branches:
       - master
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
 
 env:
   CARGO_TERM_COLOR: always

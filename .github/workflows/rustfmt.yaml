@@ -3,18 +3,18 @@ on:
     branches: [ master ]
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
   pull_request:
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
   merge_group:
     paths-ignore:
       - "**/*.md"
-      - "README*"
-      - "LICENSE*"
+      - "*.md"
+      - "typos.toml"
 
 name: Code formatting check
 
