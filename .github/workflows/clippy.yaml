@@ -10,7 +10,28 @@ env:
   CLIPPY_PARAMS: -W clippy::all -W clippy::pedantic -W clippy::nursery -W clippy::cargo
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - '**/Cargo.lock'
+              - '.github/workflows/clippy.yaml'
+              - '.github/workflows/rustfmt.yaml'
+              - 'rust-toolchain*'
+              - 'typos.toml'
+
   clippy:
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     strategy:
       matrix:
         toolchain: [ stable, nightly ]
@@ -34,6 +55,8 @@ jobs:
   
   # Additonal clippy checks for riscv-rt
   clippy-riscv-rt:
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     strategy:
       matrix:
         toolchain: [ stable, nightly ]
@@ -57,9 +80,11 @@ jobs:
    # Job to check that all the lint checks succeeded
   clippy-check:
     needs:
+    - changes
     - clippy
     - clippy-riscv-rt
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+      - run: |
+          jq --exit-status '([.clippy, .["clippy-riscv-rt"]] | all(.result == "success" or .result == "skipped"))' <<< '${{ toJson(needs) }}'
