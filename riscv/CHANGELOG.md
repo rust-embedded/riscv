@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Add `pmpaddr16` ~ `pmpaddr63` CSRs
+- Add `siselect` CSR
+- Add `vsiselect` CSR
+- Add `stopi` CSR
 
 ## v0.16.0 - 2025-12-19
 
