@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- New `setup_interrupts` macro for custom interrupt setup routines.
 - New `exception`, `core_interrupt`, and `external_interrupt` macros for trap handlers.
 - New `entry` macro for the Rust entry point (for `riscv-rt`).
 - New `rvrt-u-boot` feature to adapt `entry` macro for U-Boot.

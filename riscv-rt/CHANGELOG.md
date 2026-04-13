@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## v0.19.0 - Unreleased
 
+### Added
+
+- New `custom-setup-interrupts` feature to opt-out default implementation of
+  `_setup_interrupts`. When this feature is active, the `riscv-rt` crate reexports
+  the `riscv_macros::setup_interrupts` attribute macro. 
+
 ### Changed
 
+- `_setup_interrupts` can now optionally receive an `usize` input argument
+  with the ID of the running hart. This allows users to implement hart-specific
+  interrupt setup in multi-hart targets.
 - Use macros from `riscv-macros` instead of `riscv-rt-macros`
 
 ### Removed

@@ -37,6 +37,7 @@ impl TrapType {
 /// Enum representing the supported runtime function attributes
 pub enum Fn {
     PostInit,
+    SetupInterrupts,
     Entry,
     Trap(Trap),
 }
@@ -46,6 +47,12 @@ impl Fn {
     pub fn post_init(args: TokenStream, input: TokenStream) -> TokenStream {
         let errors = Self::PostInit.check_args_empty(args).err();
         Self::PostInit.quote_fn(input, errors)
+    }
+
+    /// Convenience method to generate the token stream for the `setup_interrupts` attribute
+    pub fn setup_interrupts(args: TokenStream, input: TokenStream) -> TokenStream {
+        let errors = Self::SetupInterrupts.check_args_empty(args).err();
+        Self::SetupInterrupts.quote_fn(input, errors)
     }
 
     /// Convenience method to generate the token stream for the `entry` attribute
@@ -141,7 +148,12 @@ impl Fn {
     fn check_inputs(&self, inputs: &Punctuated<FnArg, Comma>, errors: &mut Option<Error>) {
         // Use this match to specify expected input arguments for different functions in the future
         match self {
-            Self::PostInit => self.check_fn_args(inputs, &["usize"], errors),
+            Self::PostInit | Self::SetupInterrupts => {
+                #[cfg(not(feature = "rvrt-u-boot"))]
+                self.check_fn_args(inputs, &["usize"], errors);
+                #[cfg(feature = "rvrt-u-boot")]
+                self.check_fn_args(inputs, &[], errors);
+            }
             #[cfg(not(feature = "rvrt-u-boot"))]
             Self::Entry => self.check_fn_args(inputs, &["usize", "usize", "usize"], errors),
             #[cfg(feature = "rvrt-u-boot")]
@@ -161,7 +173,7 @@ impl Fn {
     fn check_output(&self, output: &ReturnType, errors: &mut Option<Error>) {
         // Use this match to specify expected output types for different functions in the future
         match self {
-            Self::PostInit => check_output_empty(output, errors),
+            Self::PostInit | Self::SetupInterrupts => check_output_empty(output, errors),
             Self::Entry => check_output_never(output, errors),
             Self::Trap(_) => check_output_empty_or_never(output, errors),
         }
@@ -177,7 +189,7 @@ impl Fn {
 
         // Use this match to specify extra items for different functions in the future
         match self {
-            Self::PostInit | Self::Entry => None,
+            Self::PostInit | Self::SetupInterrupts | Self::Entry => None,
             Self::Trap(Trap { path, ty }) => {
                 let mut extras = vec![];
 
@@ -217,12 +229,13 @@ impl Fn {
         // Use this match to specify export names for different functions in the future
         let export_name = match self {
             Self::PostInit => Some("__post_init".to_string()),
+            Self::SetupInterrupts => Some("_setup_interrupts".to_string()),
             Self::Entry => Some("main".to_string()),
             Self::Trap(Trap { path, .. }) => Some(path.segments.last().unwrap().ident.to_string()),
         };
 
         export_name.map(|name| match self {
-            Self::PostInit | Self::Trap(_) => quote! {
+            Self::PostInit | Self::SetupInterrupts | Self::Trap(_) => quote! {
                 #[export_name = #name]
             },
             Self::Entry => quote! {
@@ -237,7 +250,7 @@ impl Fn {
         // Use this match to specify section names for different functions in the future
         let section_name: Option<String> = match self {
             // TODO: check if we want specific sections for these functions
-            Self::PostInit | Self::Entry | Self::Trap(_) => None,
+            Self::PostInit | Self::SetupInterrupts | Self::Entry | Self::Trap(_) => None,
         };
 
         section_name.map(|section| quote! {
