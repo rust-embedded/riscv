@@ -62,6 +62,7 @@ pub mod senvcfg;
 pub mod sepc;
 pub mod sip;
 pub mod sscratch;
+pub mod stopi;
 pub mod stval;
 pub mod vstopi;
 
@@ -124,6 +125,12 @@ pub mod mseccfgh;
 
 // Machine indirect access
 pub mod miselect;
+
+// Supervisor indirect access
+pub mod siselect;
+
+// Virtual supervisor indirect access
+pub mod vsiselect;
 
 #[cfg(test)]
 mod tests;
