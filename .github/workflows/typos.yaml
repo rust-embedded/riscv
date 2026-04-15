@@ -12,7 +12,6 @@ on:
     paths-ignore:
       - "**/*.md"
       - "*.md"
-      - "typos.toml"
 
 name: Spelling Check
 
