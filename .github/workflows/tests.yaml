@@ -1,8 +1,20 @@
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - "**/*.md"
+      - "*.md"
+      - "typos.toml"
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "*.md"
+      - "typos.toml"
   merge_group:
+    paths-ignore:
+      - "**/*.md"
+      - "*.md"
+      - "typos.toml"
 
 name: Run tests (build and trybuild)
 
