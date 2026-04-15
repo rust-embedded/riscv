@@ -14,7 +14,7 @@
 //!
 //! If your target has custom core interrupt sources, the target PAC might provide equivalent code
 //! to adapt for the target needs (and is responsible for any alignment constraint). In this case,
-//! you may need to opt out this module. To do so, activate the `no-interrupts` feature of the
+//! you may need to opt out this module. To do so, activate the `custom-interrupts` feature of the
 //! `riscv-rt` crate.
 
 #[riscv::pac_enum(unsafe CoreInterruptNumber)]

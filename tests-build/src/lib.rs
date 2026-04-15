@@ -9,10 +9,10 @@ pub enum ExternalInterrupt {
     I2c = 2,
 }
 
-#[cfg(not(feature = "no-interrupts"))]
+#[cfg(not(feature = "custom-interrupts"))]
 pub use riscv::interrupt::Interrupt as CoreInterrupt;
 
-#[cfg(feature = "no-interrupts")]
+#[cfg(feature = "custom-interrupts")]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[riscv::pac_enum(unsafe CoreInterruptNumber)]
 pub enum CoreInterrupt {
@@ -21,10 +21,10 @@ pub enum CoreInterrupt {
     MachineExternal = 11,
 }
 
-#[cfg(not(feature = "no-exceptions"))]
+#[cfg(not(feature = "custom-exceptions"))]
 pub use riscv::interrupt::Exception;
 
-#[cfg(feature = "no-exceptions")]
+#[cfg(feature = "custom-exceptions")]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 #[riscv::pac_enum(unsafe ExceptionNumber)]
 pub enum Exception {

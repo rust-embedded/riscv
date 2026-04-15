@@ -582,12 +582,12 @@
 //!
 //! Skips disabling interrupts (to support chips without XIE/XIP CSRs).
 //!
-//! ## `no-interrupts`
+//! ## `custom-interrupts`
 //!
 //! Opts out of the default implementation for `_dispatch_core_interrupt` to support platforms
 //! with custom core interrupt sources.
 //!
-//! ## `no-exceptions`
+//! ## `custom-exceptions`
 //!
 //! Opts out of the default implementation for `_dispatch_exception` to support platforms
 //! with custom exception sources.
@@ -683,13 +683,37 @@
 #![no_std]
 #![deny(missing_docs)]
 
+/// Backwards-compatibility deprecation warnings for renamed feature `no-interrupts`.
+/// If a user enables the old feature, emit a warning pointing them to the new `custom-interrupts`.
+#[cfg(feature = "no-interrupts")]
+#[deprecated(note = "feature `no-interrupts` is deprecated; use `custom-interrupts` instead")]
+pub const __RISCV_RT_DEPRECATED_NO_INTERRUPTS: () = ();
+
+#[cfg(feature = "no-interrupts")]
+#[allow(clippy::let_unit_value)]
+const _: () = {
+    let _ = __RISCV_RT_DEPRECATED_NO_INTERRUPTS;
+};
+
+/// Backwards-compatibility deprecation warnings for renamed feature `no-exceptions`.
+/// If a user enables the old feature, emit a warning pointing them to the new `custom-exceptions`.
+#[cfg(feature = "no-exceptions")]
+#[deprecated(note = "feature `no-exceptions` is deprecated; use `custom-exceptions` instead")]
+pub const __RISCV_RT_DEPRECATED_NO_EXCEPTIONS: () = ();
+
+#[cfg(feature = "no-exceptions")]
+#[allow(clippy::let_unit_value)]
+const _: () = {
+    let _ = __RISCV_RT_DEPRECATED_NO_EXCEPTIONS;
+};
+
 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 mod asm;
 
-#[cfg(not(feature = "no-exceptions"))]
+#[cfg(not(feature = "custom-exceptions"))]
 pub mod exceptions;
 
-#[cfg(not(feature = "no-interrupts"))]
+#[cfg(not(feature = "custom-interrupts"))]
 pub mod interrupts;
 
 #[cfg(feature = "s-mode")]
@@ -838,13 +862,13 @@ pub struct TrapFrame {
 /// Targets that comply with the RISC-V standard can use the implementation provided
 /// by this crate in the [`exceptions`] module. Targets with special exception sources
 /// may provide their custom implementation of the `_dispatch_exception` function. You may
-/// also need to enable the `no-exceptions` feature to op-out the default implementation.
+/// also need to enable the `custom-exceptions` feature to op-out the default implementation.
 ///
 /// In direct mode (i.e., `v-trap` feature disabled), interrupt dispatching is performed
 /// by an extern `_dispatch_core_interrupt` function. Targets that comply with the RISC-V
 /// standard can use the implementation provided by this crate in the [`interrupts`] module.
 /// Targets with special interrupt sources may provide their custom implementation of the
-/// `_dispatch_core_interrupt` function. You may also need to enable the `no-interrupts`
+/// `_dispatch_core_interrupt` function. You may also need to enable the `custom-interrupts`
 /// feature to op-out the default implementation.
 ///
 /// In vectored mode (i.e., `v-trap` feature enabled), interrupt dispatching is performed

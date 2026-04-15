@@ -1,7 +1,7 @@
 /* # CORE INTERRUPT HANDLERS DESCRIBED IN THE STANDARD RISC-V ISA
    
-   If the `no-interrupts` feature is DISABLED, this file will be included in link.x.in.
-   If the `no-interrupts` feature is ENABLED, this file will be ignored.
+   If the `custom-interrupts` feature is DISABLED, this file will be included in link.x.in.
+   If the `custom-interrupts` feature is ENABLED, this file will be ignored.
 */
 
 /* It is possible to define a special handler for each interrupt type.

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Deprecate `no-interrupts` feature in favor of `custom-interrupts`
+- Deprecate `no-exceptions` feature in favor of `custom-exceptions`
 - `_setup_interrupts` can now optionally receive an `usize` input argument
   with the ID of the running hart. This allows users to implement hart-specific
   interrupt setup in multi-hart targets.
