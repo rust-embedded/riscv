@@ -9,10 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `mstatus` and `sstatus` CSRs helpers for UBE, VS, UXL and SXL, and the corresponding tests
 - Add `pmpaddr16` ~ `pmpaddr63` CSRs
 - Add `siselect` CSR
 - Add `vsiselect` CSR
 - Add `stopi` CSR
+
+### Changed
+- Fix the CSR masks to preserve all legal status bits
+- Modify XS and SD bits to read-only summary fields instead of writable fields
 
 ## v0.16.0 - 2025-12-19
 

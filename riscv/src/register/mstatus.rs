@@ -8,14 +8,14 @@ use crate::bits::{bf_extract, bf_insert};
 read_write_csr! {
     /// mstatus register
     Mstatus: 0x300,
-    mask: 0x8000_0000_007f_fffe,
+    mask: 0x8000_003f_007f_ffea,
 }
 
 #[cfg(target_arch = "riscv32")]
 read_write_csr! {
     /// mstatus register
     Mstatus: 0x300,
-    mask: 0x807f_fffe,
+    mask: 0x807f_ffea,
 }
 
 csr_field_enum! {
@@ -153,12 +153,15 @@ read_write_csr_field! {
     FS: [13:14],
 }
 
-read_write_csr_field! {
+read_only_csr_field! {
     Mstatus,
     /// Additional extension state
     ///
-    /// Encodes the status of additional user-mode extensions and associated
-    /// state.
+    /// Encodes the status of additional user-mode extensions and associated state.
+    ///
+    /// This is a read-only field summarizing the status of all
+    /// user-mode extensions; it is set indirectly by writing individual
+    /// extension status CSRs.
     xs,
     XS: [15:16],
 }
@@ -218,16 +221,20 @@ read_write_csr_field! {
 }
 
 #[cfg(target_arch = "riscv32")]
-read_write_csr_field! {
+read_only_csr_field! {
     Mstatus,
-    /// Whether either the FS field or XS field signals the presence of some dirty state
+    /// Whether either the FS field or XS field signals the presence of some dirty state.
+    ///
+    /// This is a read-only bit computed by hardware as `(FS == Dirty) || (XS == Dirty) || (VS == Dirty)`.
     sd: 31,
 }
 
 #[cfg(not(target_arch = "riscv32"))]
-read_write_csr_field! {
+read_only_csr_field! {
     Mstatus,
-    /// Whether either the FS field or XS field signals the presence of some dirty state
+    /// Whether either the FS field or XS field signals the presence of some dirty state.
+    ///
+    /// This is a read-only bit computed by hardware as `(FS == Dirty) || (XS == Dirty) || (VS == Dirty)`.
     sd: 63,
 }
 
@@ -349,7 +356,11 @@ set!(0x300);
 clear!(0x300);
 
 set_clear_csr!(
-    /// User Interrupt Enable
+    /// User Interrupt Enable.
+    ///
+    /// This helper is kept for API compatibility with legacy code that still
+    /// targets the deprecated N-extension encoding. On systems that do not
+    /// implement these bits, writes may be ignored by hardware.
     , set_uie, clear_uie, 1 << 0);
 set_clear_csr!(
     /// Supervisor Interrupt Enable
@@ -358,7 +369,11 @@ set_clear_csr!(
     /// Machine Interrupt Enable
     , set_mie, clear_mie, 1 << 3);
 set_csr!(
-    /// User Previous Interrupt Enable
+    /// User Previous Interrupt Enable.
+    ///
+    /// This helper is kept for API compatibility with legacy code that still
+    /// targets the deprecated N-extension encoding. On systems that do not
+    /// implement these bits, writes may be ignored by hardware.
     , set_upie, 1 << 4);
 set_csr!(
     /// Supervisor Previous Interrupt Enable
@@ -466,6 +481,32 @@ pub unsafe fn set_mbe(endianness: Endianness) {
     }
 }
 
+/// Set effective xlen in U-mode (i.e., `UXLEN`).
+///
+/// # Note
+///
+/// In RISCV-32, `UXL` does not exist.
+#[inline]
+#[cfg(not(target_arch = "riscv32"))]
+pub unsafe fn set_uxl(uxl: XLEN) {
+    let mut value = _read();
+    value = bf_insert(value, 32, 2, uxl as usize);
+    _write(value);
+}
+
+/// Set effective xlen in S-mode (i.e., `SXLEN`).
+///
+/// # Note
+///
+/// In RISCV-32, `SXL` does not exist.
+#[inline]
+#[cfg(not(target_arch = "riscv32"))]
+pub unsafe fn set_sxl(sxl: XLEN) {
+    let mut value = _read();
+    value = bf_insert(value, 34, 2, sxl as usize);
+    _write(value);
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -491,10 +532,19 @@ mod test {
         test_csr_field!(mstatus, vs: VS::Clean);
         test_csr_field!(mstatus, vs: VS::Dirty);
 
-        test_csr_field!(mstatus, xs: XS::AllOff);
-        test_csr_field!(mstatus, xs: XS::NoneDirtyOrClean);
-        test_csr_field!(mstatus, xs: XS::NoneDirtySomeClean);
-        test_csr_field!(mstatus, xs: XS::SomeDirty);
+        // XS is read-only: it summarizes all user-mode extension states.
+        [
+            XS::AllOff,
+            XS::NoneDirtyOrClean,
+            XS::NoneDirtySomeClean,
+            XS::SomeDirty,
+        ]
+        .into_iter()
+        .for_each(|xs| {
+            let m = Mstatus::from_bits(xs.into_usize() << 15);
+            assert_eq!(m.xs(), xs);
+            assert_eq!(m.try_xs(), Ok(xs));
+        });
 
         test_csr_field!(mstatus, sie);
         test_csr_field!(mstatus, mie);
@@ -507,6 +557,40 @@ mod test {
         test_csr_field!(mstatus, tvm);
         test_csr_field!(mstatus, tw);
         test_csr_field!(mstatus, tsr);
-        test_csr_field!(mstatus, sd);
+
+        // SD is read-only: hardware sets it whenever FS, VS, or XS == Dirty.
+        assert!(!Mstatus::from_bits(0).sd());
+        assert!(Mstatus::from_bits(usize::MAX).sd());
+
+        #[cfg(not(target_arch = "riscv32"))]
+        {
+            [XLEN::XLEN32, XLEN::XLEN64, XLEN::XLEN128]
+                .into_iter()
+                .for_each(|xlen| {
+                    let mut m = Mstatus::from_bits(0);
+                    m.set_uxl(xlen);
+                    assert_eq!(m.uxl(), xlen);
+                });
+
+            [XLEN::XLEN32, XLEN::XLEN64, XLEN::XLEN128]
+                .into_iter()
+                .for_each(|xlen| {
+                    let mut m = Mstatus::from_bits(0);
+                    m.set_sxl(xlen);
+                    assert_eq!(m.sxl(), xlen);
+                });
+
+            [Endianness::LittleEndian, Endianness::BigEndian]
+                .into_iter()
+                .for_each(|endianness| {
+                    let mut m = Mstatus::from_bits(0);
+                    m.set_sbe(endianness);
+                    assert_eq!(m.sbe(), endianness);
+
+                    let mut m = Mstatus::from_bits(0);
+                    m.set_mbe(endianness);
+                    assert_eq!(m.mbe(), endianness);
+                });
+        }
     }
 }
