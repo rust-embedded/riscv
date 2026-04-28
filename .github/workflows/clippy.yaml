@@ -41,8 +41,8 @@ jobs:
       - name: Run clippy (no features)
         run: cargo clippy --all --no-default-features -- -D warnings
       - name: Run clippy (all features)
-        # We exclude riscv-peripheral because it's not yet stable-compliant (added -A deprecated for pre_init macro)
-        run: cargo clippy --exclude riscv-peripheral --all --all-features -- -D warnings -A deprecated
+        # Added -A deprecated for pre_init macro and no-interrupts and no-exceptions features
+        run: cargo clippy --all --all-features -- -D warnings -A deprecated
   
   # Additonal clippy checks for riscv-rt
   clippy-riscv-rt:

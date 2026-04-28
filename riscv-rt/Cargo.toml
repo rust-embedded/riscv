@@ -39,12 +39,14 @@ riscv = { path = "../riscv", version = "0.16.0", features = ["critical-section-s
 pre-init = []
 post-init = []
 custom-setup-interrupts = []
+custom-interrupts = []
+custom-exceptions = []
 s-mode = ["riscv-macros/s-mode"]
 single-hart = []
 v-trap = ["riscv/rt-v-trap", "riscv-macros/rt-v-trap"]
 u-boot = ["riscv-macros/rvrt-u-boot", "single-hart"]
-no-interrupts = []
-no-exceptions = []
+no-interrupts = ["custom-interrupts"] # deprecated, use `custom-interrupts` instead
+no-exceptions = ["custom-exceptions"] # deprecated, use `custom-exceptions` instead
 no-mhartid = ["single-hart"]
 no-xie-xip = []
 no-xtvec = []

@@ -9,7 +9,7 @@
 //!
 //! If your target has custom exception sources, the target PAC might provide equivalent
 //! code to adapt for the target needs. In this case, you may need to opt out this module.
-//! To do so, activate the `no-exceptions` feature of the `riscv-rt` crate.
+//! To do so, activate the `custom-exceptions` feature of the `riscv-rt` crate.
 
 use crate::TrapFrame;
 

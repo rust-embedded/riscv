@@ -14,13 +14,13 @@ fn add_linker_script(arch_width: u32) -> io::Result<()> {
     // Get target-dependent linker configuration and replace ${INCLUDE_LINKER_FILES} with it
     let mut include_content = String::new();
 
-    // If no-exceptions is disabled, include the exceptions.x files
-    if env::var_os("CARGO_FEATURE_NO_EXCEPTIONS").is_none() {
+    // If custom-exceptions is disabled, include the exceptions.x files
+    if env::var_os("CARGO_FEATURE_CUSTOM_EXCEPTIONS").is_none() {
         let exceptions_content = fs::read_to_string("exceptions.x")?;
         include_content.push_str(&(exceptions_content + "\n"));
     }
-    // If no-interrupts is disabled, include the interrupts.x files
-    if env::var_os("CARGO_FEATURE_NO_INTERRUPTS").is_none() {
+    // If custom-interrupts is disabled, include the interrupts.x files
+    if env::var_os("CARGO_FEATURE_CUSTOM_INTERRUPTS").is_none() {
         let interrupts_content = fs::read_to_string("interrupts.x")?;
         include_content.push_str(&(interrupts_content + "\n"));
     }
@@ -74,10 +74,10 @@ fn main() {
         println!("cargo:rerun-if-env-changed=RISCV_RT_BASE_ISA");
         println!("cargo:rerun-if-env-changed=RISCV_RT_LLVM_ARCH_PATCH");
         if env::var_os("CARGO_FEATURE_V_TRAP").is_some()
-            && env::var_os("CARGO_FEATURE_NO_INTERRUPTS").is_none()
+            && env::var_os("CARGO_FEATURE_CUSTOM_INTERRUPTS").is_none()
         {
             // This environment variable is used by the `#[riscv::pac_enum()]` call in
-            // `src/interrupts.rs` (when `v-trap` is enabled and `no-interrupts` disabled).
+            // `src/interrupts.rs` (when `v-trap` is enabled and `custom-interrupts` disabled).
             println!("cargo:rerun-if-env-changed=RISCV_MTVEC_ALIGN");
         }
 

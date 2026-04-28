@@ -66,13 +66,13 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features device,memory
       
       - name: Build (custom interrupts and exceptions)
-        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features custom-interrupts,custom-exceptions
       - name: Build (custom interrupts and exceptions, include device.x)
-        run: RUSTFLAGS="-C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,device
+        run: RUSTFLAGS="-C link-arg=-Tmemory.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features custom-interrupts,custom-exceptions,device
       - name: Build (custom interrupts and exceptions, include memory.x)
-        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,memory
+        run: RUSTFLAGS="-C link-arg=-Tdevice.x -C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features custom-interrupts,custom-exceptions,memory
       - name: Build (custom interrupts and exceptions, include device.x and memory.x)
-        run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features no-interrupts,no-exceptions,device,memory
+        run: RUSTFLAGS="-C link-arg=-Tlink.x" cargo build --package tests-build --target ${{ matrix.target }} --example ${{ matrix.example }} --features custom-interrupts,custom-exceptions,device,memory
         
   # Job to check that all the builds succeeded
   tests-check:
