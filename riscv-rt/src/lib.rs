@@ -683,6 +683,8 @@
 #![no_std]
 #![deny(missing_docs)]
 
+extern crate self as riscv_rt; // To use macros that refer to items in this crate.
+
 /// Backwards-compatibility deprecation warnings for renamed feature `no-interrupts`.
 /// If a user enables the old feature, emit a warning pointing them to the new `custom-interrupts`.
 #[cfg(feature = "no-interrupts")]
