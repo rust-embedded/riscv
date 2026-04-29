@@ -1,6 +1,6 @@
 //! Utility macros for generating standard peripherals-related code in RISC-V PACs.
 
-pub use paste::paste;
+pub use pastey::paste;
 
 /// Macro to create interfaces to CLINT peripherals in PACs.
 /// The resulting struct will provide safe access to the CLINT registers.
