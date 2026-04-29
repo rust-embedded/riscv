@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- replaced `paste` crate with `pastey` to fix RUSTSEC-2024-0436
+
 ## v0.5.0 - 2025-12-19
 
 ### Changed
