@@ -48,7 +48,7 @@
 #![allow(clippy::eq_op)]
 #![allow(clippy::identity_op)]
 
-pub use paste::paste;
+pub use pastey::paste;
 
 pub mod asm;
 pub mod bits;

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Fix the CSR masks to preserve all legal status bits
 - Modify XS and SD bits to read-only summary fields instead of writable fields
+- replaced `paste` crate with `pastey` to fix RUSTSEC-2024-0436
 
 ## v0.16.0 - 2025-12-19
 
