@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## v0.19.0 - Unreleased
+## v0.18.0 - Unreleased
 
 ### Added
 
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Use `riscv::pac_enum` macro for exceptions
 - Deprecate `no-interrupts` feature in favor of `custom-interrupts`
 - Deprecate `no-exceptions` feature in favor of `custom-exceptions`
 - `_setup_interrupts` can now optionally receive an `usize` input argument
@@ -26,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - We no longer re-export the `pre_init` macro. Use `core::arch::global_asm` instead.
 
-## v0.18.0 - 2026-01-13
+## v0.17.1 - 2026-01-13
 
 ### Fixed
 

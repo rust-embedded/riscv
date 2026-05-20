@@ -11,59 +11,23 @@
 //! code to adapt for the target needs. In this case, you may need to opt out this module.
 //! To do so, activate the `custom-exceptions` feature of the `riscv-rt` crate.
 
-use crate::TrapFrame;
-
-extern "C" {
-    fn InstructionMisaligned(trap_frame: &TrapFrame);
-    fn InstructionFault(trap_frame: &TrapFrame);
-    fn IllegalInstruction(trap_frame: &TrapFrame);
-    fn Breakpoint(trap_frame: &TrapFrame);
-    fn LoadMisaligned(trap_frame: &TrapFrame);
-    fn LoadFault(trap_frame: &TrapFrame);
-    fn StoreMisaligned(trap_frame: &TrapFrame);
-    fn StoreFault(trap_frame: &TrapFrame);
-    fn UserEnvCall(trap_frame: &TrapFrame);
-    fn SupervisorEnvCall(trap_frame: &TrapFrame);
-    fn MachineEnvCall(trap_frame: &TrapFrame);
-    fn InstructionPageFault(trap_frame: &TrapFrame);
-    fn LoadPageFault(trap_frame: &TrapFrame);
-    fn StorePageFault(trap_frame: &TrapFrame);
-}
-
-/// Array with all the exception handlers sorted according to their exception source code.
-#[no_mangle]
-pub static __EXCEPTIONS: [Option<unsafe extern "C" fn(&TrapFrame)>; 16] = [
-    Some(InstructionMisaligned),
-    Some(InstructionFault),
-    Some(IllegalInstruction),
-    Some(Breakpoint),
-    Some(LoadMisaligned),
-    Some(LoadFault),
-    Some(StoreMisaligned),
-    Some(StoreFault),
-    Some(UserEnvCall),
-    Some(SupervisorEnvCall),
-    None,
-    Some(MachineEnvCall),
-    Some(InstructionPageFault),
-    Some(LoadPageFault),
-    None,
-    Some(StorePageFault),
-];
-
-/// It calls the corresponding exception handler depending on the exception source code.
-///
-/// # Safety
-///
-/// This function must be called only from the [`crate::start_trap_rust`] function.
-/// Do **NOT** call this function directly.
-#[no_mangle]
-pub unsafe extern "C" fn _dispatch_exception(trap_frame: &TrapFrame, code: usize) {
-    extern "C" {
-        fn ExceptionHandler(trap_frame: &TrapFrame);
-    }
-    match __EXCEPTIONS.get(code) {
-        Some(Some(handler)) => handler(trap_frame),
-        _ => ExceptionHandler(trap_frame),
-    }
+#[riscv::pac_enum(unsafe ExceptionNumber)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[allow(dead_code)] // otherwise compiler complains about Exception not being used
+enum Exception {
+    InstructionMisaligned = 0,
+    InstructionFault = 1,
+    IllegalInstruction = 2,
+    Breakpoint = 3,
+    LoadMisaligned = 4,
+    LoadFault = 5,
+    StoreMisaligned = 6,
+    StoreFault = 7,
+    UserEnvCall = 8,
+    SupervisorEnvCall = 9,
+    MachineEnvCall = 11,
+    InstructionPageFault = 12,
+    LoadPageFault = 13,
+    StorePageFault = 15,
 }
