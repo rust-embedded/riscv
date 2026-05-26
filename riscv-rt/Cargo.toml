@@ -24,7 +24,7 @@ targets = [
 riscv-target-parser = { path = "../riscv-target-parser", version = "0.1.2" }
 
 [dependencies]
-riscv = { path = "../riscv", version = "0.16.0", features = ["rt"] }
+riscv = { path = "../riscv", version = "0.16.1", features = ["rt"] }
 riscv-types = { path = "../riscv-types", version = "0.1.0" }
 riscv-macros = { path = "../riscv-macros", version = "0.4.1", features = ["riscv-rt"] }
 
@@ -33,7 +33,7 @@ defmt = { version = "1.0.1", optional = true }
 [dev-dependencies]
 panic-halt = "1.0.0"
 riscv-semihosting = { path = "../riscv-semihosting", version = "0.2.1" }
-riscv = { path = "../riscv", version = "0.16.0", features = ["critical-section-single-hart"] }
+riscv = { path = "../riscv", version = "0.16.1", features = ["critical-section-single-hart"] }
 
 [features]
 pre-init = []
