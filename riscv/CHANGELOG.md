@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   (RV64) for the fields implemented outside the field macros.
 - Add `BASE_SHIFT`/`BASE_MASK` constants to `Mtvec`/`Stvec` for the
   trap-vector base address field (the `MODE` field consts come from the macros).
+- Add `R`/`W`/`X`/`PERMISSION`/`A`/`L` byte-layout constants to `Pmp` for the
+  `pmpXcfg` configuration byte.
 
 ## v0.16.1 - 2026-05-29
 

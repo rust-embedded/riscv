@@ -57,6 +57,42 @@ pub struct Pmp {
     pub locked: bool,
 }
 
+impl Pmp {
+    /// Bit shift of the `R` (read) permission within a `pmpXcfg` byte.
+    pub const R_SHIFT: usize = 0;
+    /// Field-shifted bitmask of the `R` (read) permission.
+    pub const R_MASK: u8 = 1 << Self::R_SHIFT;
+
+    /// Bit shift of the `W` (write) permission within a `pmpXcfg` byte.
+    pub const W_SHIFT: usize = 1;
+    /// Field-shifted bitmask of the `W` (write) permission.
+    pub const W_MASK: u8 = 1 << Self::W_SHIFT;
+
+    /// Bit shift of the `X` (execute) permission within a `pmpXcfg` byte.
+    pub const X_SHIFT: usize = 2;
+    /// Field-shifted bitmask of the `X` (execute) permission.
+    pub const X_MASK: u8 = 1 << Self::X_SHIFT;
+
+    /// Bit shift of the `R`/`W`/`X` permission ([`Permission`]) sub-field.
+    pub const PERMISSION_SHIFT: usize = 0;
+    /// Bit width of the permission sub-field.
+    pub const PERMISSION_WIDTH: usize = 3;
+    /// Field-shifted bitmask of the permission sub-field.
+    pub const PERMISSION_MASK: u8 = ((1 << Self::PERMISSION_WIDTH) - 1) << Self::PERMISSION_SHIFT;
+
+    /// Bit shift of the `A` (address-matching mode, [`Range`]) field.
+    pub const A_SHIFT: usize = 3;
+    /// Bit width of the `A` field.
+    pub const A_WIDTH: usize = 2;
+    /// Field-shifted bitmask of the `A` field.
+    pub const A_MASK: u8 = ((1 << Self::A_WIDTH) - 1) << Self::A_SHIFT;
+
+    /// Bit shift of the `L` (locked) field within a `pmpXcfg` byte.
+    pub const L_SHIFT: usize = 7;
+    /// Field-shifted bitmask of the `L` (locked) field.
+    pub const L_MASK: u8 = 1 << Self::L_SHIFT;
+}
+
 pub struct Pmpcsr {
     /// Holds the raw contents of a PMP CSR Register
     pub bits: usize,
@@ -306,4 +342,21 @@ pub mod pmpcfg15 {
 
     set_pmp!();
     clear_pmp!();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pmp() {
+        // The byte-layout consts must agree with the field positions used by the
+        // `try_into_config` decoder: permission in bits [2:0], addressing mode (A)
+        // in [4:3], lock (L) in bit 7.
+        let byte: u8 =
+            Pmp::R_MASK | Pmp::X_MASK | ((Range::NAPOT as u8) << Pmp::A_SHIFT) | Pmp::L_MASK;
+        assert_eq!(byte & Pmp::PERMISSION_MASK, Permission::RX as u8);
+        assert_eq!((byte & Pmp::A_MASK) >> Pmp::A_SHIFT, Range::NAPOT as u8);
+        assert_ne!(byte & Pmp::L_MASK, 0);
+    }
 }
