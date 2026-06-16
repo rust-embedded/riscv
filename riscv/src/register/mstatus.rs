@@ -352,6 +352,42 @@ impl Mstatus {
     }
 }
 
+/// Bitfield constants for the `mstatus` fields that are implemented manually
+/// (rather than via the field macros) because they only exist on 64-bit targets.
+///
+/// These complement the macro-generated `<FIELD>_SHIFT`/`_WIDTH`/`_MASK`
+/// constants for the remaining `mstatus` fields.
+#[cfg(not(target_arch = "riscv32"))]
+impl Mstatus {
+    /// Bit shift of the `uxl` (U-mode XLEN) field.
+    pub const UXL_SHIFT: usize = 32;
+    /// Bit width of the `uxl` field.
+    pub const UXL_WIDTH: usize = 2;
+    /// Field-shifted bitmask of the `uxl` field.
+    pub const UXL_MASK: usize = ((1 << Self::UXL_WIDTH) - 1) << Self::UXL_SHIFT;
+
+    /// Bit shift of the `sxl` (S-mode XLEN) field.
+    pub const SXL_SHIFT: usize = 34;
+    /// Bit width of the `sxl` field.
+    pub const SXL_WIDTH: usize = 2;
+    /// Field-shifted bitmask of the `sxl` field.
+    pub const SXL_MASK: usize = ((1 << Self::SXL_WIDTH) - 1) << Self::SXL_SHIFT;
+
+    /// Bit shift of the `sbe` (S-mode endianness) field.
+    pub const SBE_SHIFT: usize = 36;
+    /// Bit width of the `sbe` field.
+    pub const SBE_WIDTH: usize = 1;
+    /// Field-shifted bitmask of the `sbe` field.
+    pub const SBE_MASK: usize = ((1 << Self::SBE_WIDTH) - 1) << Self::SBE_SHIFT;
+
+    /// Bit shift of the `mbe` (M-mode endianness) field.
+    pub const MBE_SHIFT: usize = 37;
+    /// Bit width of the `mbe` field.
+    pub const MBE_WIDTH: usize = 1;
+    /// Field-shifted bitmask of the `mbe` field.
+    pub const MBE_MASK: usize = ((1 << Self::MBE_WIDTH) - 1) << Self::MBE_SHIFT;
+}
+
 set!(0x300);
 clear!(0x300);
 

@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add `Mcause`/`Scause` `from_interrupt` and `from_exception` constructors to
   build a cause value from a `CoreInterruptNumber`/`ExceptionNumber` without
   hand-computing the interrupt bit.
+- Add `UXL`/`SXL`/`SBE`/`MBE` `SHIFT`/`WIDTH`/`MASK` constants to `Mstatus`
+  (RV64) for the fields implemented outside the field macros.
 
 ## v0.16.1 - 2026-05-29
 
