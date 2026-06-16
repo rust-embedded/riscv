@@ -745,6 +745,48 @@ macro_rules! write_only_csr {
     };
 }
 
+/// Helper macro to emit `<FIELD>_SHIFT`, `<FIELD>_WIDTH`, and `<FIELD>_MASK`
+/// associated constants on a CSR type for a given bitfield.
+///
+/// - `<FIELD>_SHIFT`: the bit offset of the least-significant bit of the field.
+/// - `<FIELD>_WIDTH`: the number of bits in the field.
+/// - `<FIELD>_MASK`: the field-shifted bitmask (i.e. already shifted into
+///   position), suitable for masking a raw register value.
+///
+/// This is an implementation detail of the `*_csr_field!` macros and generally
+/// should not be called directly.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! csr_field_consts {
+    // single-bit field
+    ($ty:ident, $field:ident: $bit:literal) => {
+        $crate::paste! {
+            impl $ty {
+                #[doc = concat!("Bit shift of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _SHIFT>]: usize = $bit;
+                #[doc = concat!("Bit width of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _WIDTH>]: usize = 1;
+                #[doc = concat!("Field-shifted bitmask of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _MASK>]: usize = 1 << $bit;
+            }
+        }
+    };
+
+    // multi-bit field spanning bits `[start:end]` (inclusive)
+    ($ty:ident, $field:ident: [$start:literal : $end:literal]) => {
+        $crate::paste! {
+            impl $ty {
+                #[doc = concat!("Bit shift of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _SHIFT>]: usize = $start;
+                #[doc = concat!("Bit width of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _WIDTH>]: usize = $end - $start + 1;
+                #[doc = concat!("Field-shifted bitmask of the `", stringify!($field), "` field.")]
+                pub const [<$field:upper _MASK>]: usize = ((1 << ($end - $start + 1)) - 1) << $start;
+            }
+        }
+    };
+}
+
 /// Defines field accessor functions for a read-write CSR type.
 #[macro_export]
 macro_rules! read_write_csr_field {
@@ -836,6 +878,8 @@ macro_rules! read_only_csr_field {
      $field:ident: $bit:literal$(,)?) => {
         const _: () = assert!($bit < usize::BITS);
 
+        $crate::csr_field_consts!($ty, $field: $bit);
+
         impl $ty {
             $(#[$field_doc])+
             #[inline]
@@ -850,6 +894,8 @@ macro_rules! read_only_csr_field {
      $field:ident: $bit_start:literal..=$bit_end:literal$(,)?) => {
         const _: () = assert!($bit_end < usize::BITS);
         const _: () = assert!($bit_start < $bit_end);
+
+        $crate::csr_field_consts!($ty, $field: [$bit_start : $bit_end]);
 
         $crate::paste! {
             impl $ty {
@@ -882,6 +928,8 @@ macro_rules! read_only_csr_field {
         const _: () = assert!($bit_end < usize::BITS);
         const _: () = assert!($bit_start < $bit_end);
 
+        $crate::csr_field_consts!($ty, $field: [$bit_start : $bit_end]);
+
         impl $ty {
             $(#[$field_doc])+
             #[inline]
@@ -898,6 +946,8 @@ macro_rules! read_only_csr_field {
     ) => {
         const _: () = assert!($field_end < usize::BITS);
         const _: () = assert!($field_start <= $field_end);
+
+        $crate::csr_field_consts!($ty, $field: [$field_start : $field_end]);
 
         $crate::paste! {
             impl $ty {

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Auto-generate `<FIELD>_SHIFT`, `<FIELD>_WIDTH`, and `<FIELD>_MASK` associated
+  constants on CSR types for every bitfield defined via the `read_write_csr_field!`
+  and `read_only_csr_field!` macros, giving downstream code a single source of
+  truth for compile-time bit positions and field-shifted masks.
+
 ## v0.16.1 - 2026-05-29
 
 ### Added
