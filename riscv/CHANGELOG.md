@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   constants on CSR types for every bitfield defined via the `read_write_csr_field!`
   and `read_only_csr_field!` macros, giving downstream code a single source of
   truth for compile-time bit positions and field-shifted masks.
+- Add `Mcause`/`Scause` `from_interrupt` and `from_exception` constructors to
+  build a cause value from a `CoreInterruptNumber`/`ExceptionNumber` without
+  hand-computing the interrupt bit.
 
 ## v0.16.1 - 2026-05-29
 
