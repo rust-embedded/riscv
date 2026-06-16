@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   hand-computing the interrupt bit.
 - Add `UXL`/`SXL`/`SBE`/`MBE` `SHIFT`/`WIDTH`/`MASK` constants to `Mstatus`
   (RV64) for the fields implemented outside the field macros.
+- Add `BASE_SHIFT`/`BASE_MASK` constants to `Mtvec`/`Stvec` for the
+  trap-vector base address field (the `MODE` field consts come from the macros).
 
 ## v0.16.1 - 2026-05-29
 
