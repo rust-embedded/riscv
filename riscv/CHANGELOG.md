@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Auto-generate `<FIELD>_SHIFT`, `<FIELD>_WIDTH`, and `<FIELD>_MASK` associated
+  constants on CSR types for every bitfield defined via the `read_write_csr_field!`
+  and `read_only_csr_field!` macros, giving downstream code a single source of
+  truth for compile-time bit positions and field-shifted masks.
+- Add `Mcause`/`Scause` `from_interrupt` and `from_exception` constructors to
+  build a cause value from a `CoreInterruptNumber`/`ExceptionNumber` without
+  hand-computing the interrupt bit.
+- Add `UXL`/`SXL`/`SBE`/`MBE` `SHIFT`/`WIDTH`/`MASK` constants to `Mstatus`
+  (RV64) for the fields implemented outside the field macros.
+- Add `BASE_SHIFT`/`BASE_MASK` constants to `Mtvec`/`Stvec` for the
+  trap-vector base address field (the `MODE` field consts come from the macros).
+- Add `R`/`W`/`X`/`PERMISSION`/`A`/`L` byte-layout constants to `Pmp` for the
+  `pmpXcfg` configuration byte.
+
 ## v0.16.1 - 2026-05-29
 
 ### Added

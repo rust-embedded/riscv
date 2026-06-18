@@ -125,4 +125,27 @@ fn test_mtest_read_write() {
     // check that setting an invalid variant returns `None`
     mtest = Mtest::from_bits(0xbad << 8);
     assert_eq!(mtest.try_field_enum(), Err(Error::InvalidVariant(13)));
+
+    // the macro must generate consts satisfying MASK == ((1 << WIDTH) - 1) << SHIFT
+    // for every field shape (single-bit, range, multi-bit, enum).
+    for (shift, width, mask) in [
+        (Mtest::SINGLE_SHIFT, Mtest::SINGLE_WIDTH, Mtest::SINGLE_MASK),
+        (
+            Mtest::MULTI_RANGE_SHIFT,
+            Mtest::MULTI_RANGE_WIDTH,
+            Mtest::MULTI_RANGE_MASK,
+        ),
+        (
+            Mtest::MULTI_FIELD_SHIFT,
+            Mtest::MULTI_FIELD_WIDTH,
+            Mtest::MULTI_FIELD_MASK,
+        ),
+        (
+            Mtest::FIELD_ENUM_SHIFT,
+            Mtest::FIELD_ENUM_WIDTH,
+            Mtest::FIELD_ENUM_MASK,
+        ),
+    ] {
+        assert_eq!(mask, ((1 << width) - 1) << shift);
+    }
 }

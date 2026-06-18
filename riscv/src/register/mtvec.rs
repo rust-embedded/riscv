@@ -83,6 +83,17 @@ impl Mtvec {
     }
 }
 
+impl Mtvec {
+    /// Bit shift of the trap-vector base address (`BASE`) field.
+    ///
+    /// The `MODE` field consts (`TRAP_MODE_SHIFT`/`TRAP_MODE_WIDTH`/
+    /// `TRAP_MODE_MASK`) are generated from the [`trap_mode`](Self::trap_mode)
+    /// field.
+    pub const BASE_SHIFT: usize = 2;
+    /// Field-shifted bitmask of the trap-vector base address (`BASE`) field.
+    pub const BASE_MASK: usize = !((1 << Self::BASE_SHIFT) - 1);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

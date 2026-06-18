@@ -43,6 +43,24 @@ read_write_csr_field! {
 }
 
 impl Scause {
+    /// Creates an `Scause` value representing the given core interrupt source.
+    ///
+    /// The [interrupt bit](Self::INTERRUPT_MASK) is set and the `code` field is
+    /// set to the interrupt number.
+    #[inline]
+    pub fn from_interrupt<I: CoreInterruptNumber>(interrupt: I) -> Self {
+        Self::from_bits(Self::INTERRUPT_MASK | interrupt.number())
+    }
+
+    /// Creates an `Scause` value representing the given exception source.
+    ///
+    /// The interrupt bit is clear and the `code` field is set to the exception
+    /// number.
+    #[inline]
+    pub fn from_exception<E: ExceptionNumber>(exception: E) -> Self {
+        Self::from_bits(exception.number())
+    }
+
     /// Returns the trap cause represented by this register.
     ///
     /// # Note
@@ -86,6 +104,7 @@ pub unsafe fn set<I: CoreInterruptNumber, E: ExceptionNumber>(cause: Trap<I, E>)
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::interrupt::machine::{Exception, Interrupt};
 
     #[test]
     fn test_scause() {
@@ -135,5 +154,16 @@ mod tests {
                 assert_eq!(scause.code(), exp_code);
                 assert_eq!(scause.cause(), exp_cause);
             });
+
+        // check the `from_interrupt`/`from_exception` constructors.
+        let s = Scause::from_interrupt(Interrupt::SupervisorExternal);
+        assert!(s.is_interrupt());
+        assert!(!s.is_exception());
+        assert_eq!(s.code(), Interrupt::SupervisorExternal as usize);
+
+        let s = Scause::from_exception(Exception::Breakpoint);
+        assert!(s.is_exception());
+        assert!(!s.is_interrupt());
+        assert_eq!(s.code(), Exception::Breakpoint as usize);
     }
 }
