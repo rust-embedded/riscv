@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `mtopei` CSR
 - Add `mstatus` and `sstatus` CSRs helpers for UBE, VS, UXL and SXL, and the corresponding tests
 - Add `pmpaddr16` ~ `pmpaddr63` CSRs
 - Add `siselect` CSR
