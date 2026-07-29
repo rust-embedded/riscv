@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Add `mireg` CSR
+- Add `mireg` and `sireg` CSRs
 - Add `stopei` and `vstopei` CSRs (AIA supervisor/virtual-supervisor top external
   interrupt), completing the `*topei` set alongside `mtopei`.
 - Auto-generate `<FIELD>_SHIFT`, `<FIELD>_WIDTH`, and `<FIELD>_MASK` associated
