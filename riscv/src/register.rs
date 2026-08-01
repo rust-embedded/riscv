@@ -62,8 +62,10 @@ pub mod senvcfg;
 pub mod sepc;
 pub mod sip;
 pub mod sscratch;
+pub mod stopei;
 pub mod stopi;
 pub mod stval;
+pub mod vstopei;
 pub mod vstopi;
 
 // Supervisor Protection and Translation
