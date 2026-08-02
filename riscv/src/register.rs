@@ -91,6 +91,7 @@ pub mod mtvec;
 pub mod mcause;
 pub mod mepc;
 pub mod mip;
+pub mod mireg;
 pub mod mscratch;
 pub mod mtinst;
 pub mod mtopei;
