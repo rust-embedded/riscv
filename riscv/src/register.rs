@@ -131,6 +131,7 @@ pub mod mseccfgh;
 pub mod miselect;
 
 // Supervisor indirect access
+pub mod sireg;
 pub mod siselect;
 
 // Virtual supervisor indirect access
