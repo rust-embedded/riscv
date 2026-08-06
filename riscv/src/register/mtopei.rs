@@ -10,6 +10,8 @@ read_write_csr! {
     mask: 0x07FF_07FF,
 }
 
+read_clear_csr_as!(Mtopei, 0x35C);
+
 read_write_csr_field! {
     Mtopei,
     /// Interrupt ID (bits 16..26)

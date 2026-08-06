@@ -108,6 +108,52 @@ macro_rules! read_csr_as_rv32 {
     };
 }
 
+/// Convenience macro to atomically read and clear a CSR as a `register` type.
+///
+/// This macro should generally not be called directly.
+#[macro_export]
+macro_rules! read_clear_csr_as {
+    ($register:ident, $csr_number:literal) => {
+        $crate::read_clear_csr_as!($register, $csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($register:ident, $csr_number:literal, $($cfg:meta),*) => {
+        /// Atomically reads and clears the CSR.
+        ///
+        /// # Safety
+        ///
+        /// Clearing this CSR may have side effects.
+        #[inline]
+        pub unsafe fn read_clear() -> $register {
+            _try_read_clear().unwrap()
+        }
+
+        /// Attempts to atomically read and clear the CSR.
+        ///
+        /// # Safety
+        ///
+        /// Clearing this CSR may have side effects.
+        #[inline]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
+        pub unsafe fn try_read_clear() -> $crate::result::Result<$register> {
+            match () {
+                #[cfg($($cfg),*)]
+                () => {
+                    let bits: usize;
+                    core::arch::asm!(concat!("csrrw {0}, ", stringify!($csr_number), ", x0"), out(reg) bits);
+                    Ok($register { bits })
+                }
+                #[cfg(not($($cfg),*))]
+                () => Err($crate::result::Error::Unimplemented),
+            }
+        }
+
+        #[inline(always)]
+        unsafe fn _try_read_clear() -> $crate::result::Result<$register> {
+            try_read_clear()
+        }
+    };
+}
+
 /// Convenience macro to read a CSR register value as a [`usize`].
 #[macro_export]
 macro_rules! read_csr_as_usize {
