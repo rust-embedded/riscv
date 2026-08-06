@@ -66,9 +66,7 @@ macro_rules! read_csr_as {
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline]
         pub fn read() -> $register {
-            $register {
-                bits: unsafe { _read() },
-            }
+            $register::from_bits(unsafe { _read() })
         }
     };
 
@@ -78,9 +76,7 @@ macro_rules! read_csr_as {
         /// Attempts to reads the CSR.
         #[inline]
         pub fn try_read() -> $crate::result::Result<$register> {
-            Ok($register {
-                bits: unsafe { _try_read()? },
-            })
+            Ok($register::from_bits(unsafe { _try_read()? }))
         }
     };
 
@@ -92,7 +88,7 @@ macro_rules! read_csr_as {
         pub fn try_read() -> $crate::result::Result<$register> {
             match unsafe { _try_read()? } {
                 $sentinel => Err($crate::result::Error::Unimplemented),
-                bits => Ok($register { bits }),
+                bits => Ok($register::from_bits(bits)),
             }
         }
     };
