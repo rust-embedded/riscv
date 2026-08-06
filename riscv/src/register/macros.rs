@@ -621,6 +621,20 @@ macro_rules! csr {
                 Self::BITMASK
             }
         }
+
+        impl From<usize> for $ty {
+            #[inline]
+            fn from(bits: usize) -> Self {
+                Self::from_bits(bits)
+            }
+        }
+
+        impl From<$ty> for usize {
+            #[inline]
+            fn from(val: $ty) -> Self {
+                val.bits()
+            }
+        }
     };
 }
 
