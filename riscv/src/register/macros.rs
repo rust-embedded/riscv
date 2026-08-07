@@ -130,6 +130,23 @@ macro_rules! read_csr_as_usize {
         pub fn try_read() -> $crate::result::Result<usize> {
             unsafe { _try_read() }
         }
+
+        /// Reads the raw bits of the CSR.
+        ///
+        /// Alias of [read] for modules whose value is already a plain
+        /// [`usize`].
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub fn read_bits() -> usize {
+            unsafe { _read() }
+        }
+
+        /// Attempts to read the raw bits of the CSR.
+        #[inline]
+        pub fn try_read_bits() -> $crate::result::Result<usize> {
+            unsafe { _try_read() }
+        }
     };
 }
 
@@ -270,6 +287,23 @@ macro_rules! write_csr_as_usize {
         pub unsafe fn try_write(bits: usize) -> $crate::result::Result<()> {
             _try_write(bits)
         }
+
+        /// Writes the raw bits of the CSR.
+        ///
+        /// Alias of [write] for modules whose value is already a plain
+        /// [`usize`].
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub unsafe fn write_bits(bits: usize) {
+            _write(bits);
+        }
+
+        /// Attempts to write the raw bits of the CSR.
+        #[inline]
+        pub unsafe fn try_write_bits(bits: usize) -> $crate::result::Result<()> {
+            _try_write(bits)
+        }
     };
     (safe $csr_number:literal, $($cfg:meta),*) => {
         $crate::write_csr!($csr_number, $($cfg),*);
@@ -285,6 +319,23 @@ macro_rules! write_csr_as_usize {
         /// Attempts to write the CSR.
         #[inline]
         pub fn try_write(bits: usize) -> $crate::result::Result<()> {
+            unsafe { _try_write(bits) }
+        }
+
+        /// Writes the raw bits of the CSR.
+        ///
+        /// Alias of [write] for modules whose value is already a plain
+        /// [`usize`].
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub fn write_bits(bits: usize) {
+            unsafe { _write(bits) }
+        }
+
+        /// Attempts to write the raw bits of the CSR.
+        #[inline]
+        pub fn try_write_bits(bits: usize) -> $crate::result::Result<()> {
             unsafe { _try_write(bits) }
         }
     };
