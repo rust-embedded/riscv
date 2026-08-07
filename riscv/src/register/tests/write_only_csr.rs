@@ -53,6 +53,24 @@ pub fn _try_write_csr(csr: Mtest) -> Result<()> {
     unsafe { try_write(csr) }
 }
 
+#[allow(unused)]
+pub fn _write_csr_bits(bits: usize) {
+    unsafe { write_bits(bits) };
+}
+
+#[allow(unused)]
+pub fn _try_write_csr_bits(bits: usize) -> Result<()> {
+    unsafe { try_write_bits(bits) }
+}
+
+#[test]
+fn test_mtest_raw_bits() {
+    assert_eq!(
+        unsafe { try_write_bits(!Mtest::BITMASK) },
+        Err(Error::Unimplemented)
+    );
+}
+
 #[test]
 fn test_mtest_write_only() {
     let mut mtest = Mtest::from_bits(0);

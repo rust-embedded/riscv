@@ -53,6 +53,21 @@ pub fn _try_read_csr() -> Result<Mtest> {
     try_read()
 }
 
+#[allow(unused)]
+pub fn _read_csr_bits() -> usize {
+    read_bits()
+}
+
+#[allow(unused)]
+pub fn _try_read_csr_bits() -> Result<usize> {
+    try_read_bits()
+}
+
+#[test]
+fn test_mtest_raw_bits() {
+    assert_eq!(try_read_bits(), Err(Error::Unimplemented));
+}
+
 #[test]
 fn test_mtest_read_only() {
     let mut mtest = Mtest::from_bits(0);
