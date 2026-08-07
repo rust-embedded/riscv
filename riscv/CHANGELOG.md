@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `tselect`, `tdata1`, `tdata2` and `tcontrol` Sdtrig CSRs as raw `read_write_csr_as_usize!` accessors.
 - Add `mireg` CSR
 - Add `stopei` and `vstopei` CSRs (AIA supervisor/virtual-supervisor top external
   interrupt), completing the `*topei` set alongside `mtopei`.
