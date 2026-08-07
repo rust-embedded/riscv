@@ -16,6 +16,11 @@ read_only_csr! {
     sentinel: 0,
 }
 
+// `misa` is WARL: a hart may ignore the write entirely, and disabling an
+// extension while its state is live is up to the caller. Reading the register
+// back is the only way to learn what took effect.
+write_csr_as!(Misa, 0x301);
+
 csr_field_enum! {
     /// Base integer ISA width
     XLEN {
