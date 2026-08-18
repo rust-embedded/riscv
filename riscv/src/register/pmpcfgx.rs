@@ -93,9 +93,9 @@ impl Pmp {
     pub const L_MASK: u8 = 1 << Self::L_SHIFT;
 }
 
-pub struct Pmpcsr {
-    /// Holds the raw contents of a PMP CSR Register
-    pub bits: usize,
+csr! {
+    /// Holds the raw contents of a PMP CSR register
+    Pmpcsr, usize::MAX
 }
 
 impl Pmpcsr {
@@ -124,7 +124,7 @@ impl Pmpcsr {
         }?;
 
         if index < max {
-            let byte = (self.bits >> (8 * index)) as u8; // move config to LSB and drop the rest
+            let byte = (self.bits() >> (8 * index)) as u8; // move config to LSB and drop the rest
             let permission = byte & 0x7; // bits 0-2
             let range = (byte >> 3) & 0x3; // bits 3-4
 
@@ -358,5 +358,12 @@ mod tests {
         assert_eq!(byte & Pmp::PERMISSION_MASK, Permission::RX as u8);
         assert_eq!((byte & Pmp::A_MASK) >> Pmp::A_SHIFT, Range::NAPOT as u8);
         assert_ne!(byte & Pmp::L_MASK, 0);
+    }
+
+    #[test]
+    fn test_pmpcsr_bits_roundtrip() {
+        let raw = 0x0000_0000_0000_00ffusize;
+        let csr = Pmpcsr::from_bits(raw);
+        assert_eq!(csr.bits(), raw);
     }
 }
