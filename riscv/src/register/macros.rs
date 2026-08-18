@@ -147,10 +147,6 @@ macro_rules! read_clear_csr_as {
             }
         }
 
-        #[inline(always)]
-        unsafe fn _try_read_clear() -> $crate::result::Result<$register> {
-            try_read_clear()
-        }
     };
 }
 
