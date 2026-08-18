@@ -124,7 +124,7 @@ macro_rules! read_clear_csr_as {
         /// Clearing this CSR may have side effects.
         #[inline]
         pub unsafe fn read_clear() -> $register {
-            _try_read_clear().unwrap()
+            try_read_clear().unwrap()
         }
 
         /// Attempts to atomically read and clear the CSR.
