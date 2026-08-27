@@ -68,6 +68,17 @@ macro_rules! read_csr_as {
         pub fn read() -> $register {
             $register::from_bits(unsafe { _read() })
         }
+
+        /// Reads the raw bits of the CSR.
+        ///
+        /// Unlike [read], the value is not narrowed to the bitfields the
+        /// register type defines.
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub fn read_bits() -> usize {
+            unsafe { _read() }
+        }
     };
 
     ($register:ident, $csr_number:literal, $($cfg:meta),*) => {
@@ -77,6 +88,12 @@ macro_rules! read_csr_as {
         #[inline]
         pub fn try_read() -> $crate::result::Result<$register> {
             Ok($register::from_bits(unsafe { _try_read()? }))
+        }
+
+        /// Attempts to read the raw bits of the CSR.
+        #[inline]
+        pub fn try_read_bits() -> $crate::result::Result<usize> {
+            unsafe { _try_read() }
         }
     };
 
@@ -89,6 +106,15 @@ macro_rules! read_csr_as {
             match unsafe { _try_read()? } {
                 $sentinel => Err($crate::result::Error::Unimplemented),
                 bits => Ok($register::from_bits(bits)),
+            }
+        }
+
+        /// Attempts to read the raw bits of the CSR.
+        #[inline]
+        pub fn try_read_bits() -> $crate::result::Result<usize> {
+            match unsafe { _try_read()? } {
+                $sentinel => Err($crate::result::Error::Unimplemented),
+                bits => Ok(bits),
             }
         }
     };
@@ -252,6 +278,23 @@ macro_rules! write_csr_as {
         pub unsafe fn try_write(value: $csr_type) -> $crate::result::Result<()> {
             _try_write(value.bits)
         }
+
+        /// Writes raw bits to the CSR.
+        ///
+        /// Unlike [write()], the bits are not narrowed to the bitfields the
+        /// register type defines.
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub unsafe fn write_bits(bits: usize) {
+            _write(bits);
+        }
+
+        /// Attempts to write raw bits to the CSR.
+        #[inline]
+        pub unsafe fn try_write_bits(bits: usize) -> $crate::result::Result<()> {
+            _try_write(bits)
+        }
     };
     (safe $csr_type:ty, $csr_number:literal, $($cfg:meta),*) => {
         $crate::write_csr!($csr_number, $($cfg),*);
@@ -268,6 +311,23 @@ macro_rules! write_csr_as {
         #[inline]
         pub fn try_write(value: $csr_type) -> $crate::result::Result<()> {
             unsafe { _try_write(value.bits) }
+        }
+
+        /// Writes raw bits to the CSR.
+        ///
+        /// Unlike [write()], the bits are not narrowed to the bitfields the
+        /// register type defines.
+        ///
+        /// **WARNING**: panics on non-`riscv` targets.
+        #[inline]
+        pub fn write_bits(bits: usize) {
+            unsafe { _write(bits) }
+        }
+
+        /// Attempts to write raw bits to the CSR.
+        #[inline]
+        pub fn try_write_bits(bits: usize) -> $crate::result::Result<()> {
+            unsafe { _try_write(bits) }
         }
     };
 }
