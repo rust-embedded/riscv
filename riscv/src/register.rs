@@ -140,7 +140,12 @@ pub mod vsiselect;
 #[cfg(test)]
 mod tests;
 
-// TODO: Debug/Trace Registers (shared with Debug Mode)
+// Debug/Trace Registers
+pub mod tcontrol;
+pub mod tdata1;
+pub mod tdata2;
+pub mod tdata3;
+pub mod tselect;
 
 // TODO: Debug Mode Registers
 pub mod dcsr;
