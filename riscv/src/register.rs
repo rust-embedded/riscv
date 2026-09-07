@@ -134,6 +134,11 @@ pub mod miselect;
 pub mod sireg;
 pub mod siselect;
 
+// Supervisor timer interrupts
+pub mod stimecmp;
+#[cfg(any(test, target_arch = "riscv32"))]
+pub mod stimecmph;
+
 // Virtual supervisor indirect access
 pub mod vsiselect;
 
