@@ -852,6 +852,17 @@ macro_rules! read_write_csr {
         $crate::read_csr_as!($ty, $csr);
         $crate::write_csr_as!($ty, $csr);
     };
+
+    ($(#[$doc:meta])+
+     $ty:ident: $csr:expr,
+     mask: $mask:expr,
+     sentinel: $sentinel:tt$(,)?
+    ) => {
+        $crate::csr!($(#[$doc])+ $ty, $mask);
+
+        $crate::read_csr_as!($ty, $csr, $sentinel);
+        $crate::write_csr_as!($ty, $csr);
+    };
 }
 
 /// Helper macro to create a read-only CSR type.

@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   trap-vector base address field (the `MODE` field consts come from the macros).
 - Add `R`/`W`/`X`/`PERMISSION`/`A`/`L` byte-layout constants to `Pmp` for the
   `pmpXcfg` configuration byte.
+- `read_write_csr!` now accepts an optional `sentinel` value, like `read_only_csr!`.
 
 ### Changed
 
