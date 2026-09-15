@@ -1,7 +1,7 @@
 //! misa register
 
 #[cfg(target_arch = "riscv32")]
-read_only_csr! {
+read_write_csr! {
     /// `misa` register
     Misa: 0x301,
     mask: 0xc3ff_ffff,
@@ -9,7 +9,7 @@ read_only_csr! {
 }
 
 #[cfg(not(target_arch = "riscv32"))]
-read_only_csr! {
+read_write_csr! {
     /// `misa` register
     Misa: 0x301,
     mask: 0xc000_0000_03ff_ffff,
