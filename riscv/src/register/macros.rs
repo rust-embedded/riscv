@@ -474,7 +474,30 @@ macro_rules! read_write_csr_as_usize {
     };
 }
 
-/// Convenience macro around the `csrrs` assembly instruction to set the CSR register.
+/// Avoid using `asm_const` to ensure compatibility with versions of Rust prior to 1.82.0
+#[macro_export]
+#[doc(hidden)]
+macro_rules! csr_uimm5_asm {
+    ($inst:literal, $csr:literal, $bits:expr) => {
+        $crate::csr_uimm5_asm!(
+            $inst, $csr, $bits,
+            0, 1, 2, 3, 4, 5, 6, 7,
+            8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23,
+            24, 25, 26, 27, 28, 29, 30, 31
+        )
+    };
+    ($inst:literal, $csr:literal, $bits:expr, $($n:literal),+) => {
+        match $bits {
+            $($n => core::arch::asm!(concat!(
+                $inst, " x0, ", stringify!($csr), ", ", stringify!($n)
+            )),)+
+            _ => core::hint::unreachable_unchecked(),
+        }
+    };
+}
+
+/// Convenience macro around the `csrrs`/`csrrsi` assembly instruction to set the CSR register.
 ///
 /// This macro is intended for use with the [set_csr](crate::set_csr) or [set_clear_csr](crate::set_clear_csr) macros.
 #[macro_export]
@@ -505,6 +528,20 @@ macro_rules! set {
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
+
+        /// Set the CSR using a 5-bit unsigned immediate `uimm` (`csrrsi`).
+        ///
+        /// **WARNING**: panics on non-`riscv` targets. `BITS` must be in `0..=31`.
+        #[inline(always)]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
+        unsafe fn _set_imm<const BITS: usize>() {
+            match () {
+                #[cfg($($cfg),*)]
+                () => $crate::csr_uimm5_asm!("csrrsi", $csr_number, BITS),
+                #[cfg(not($($cfg),*))]
+                () => Err($crate::result::Error::Unimplemented).unwrap()
+            }
+        }
     };
 }
 
@@ -518,7 +555,7 @@ macro_rules! set_rv32 {
     };
 }
 
-/// Convenience macro around the `csrrc` assembly instruction to clear the CSR register.
+/// Convenience macro around the `csrrc`/`csrrci` assembly instruction to clear the CSR register.
 ///
 /// This macro is intended for use with the [clear_csr](crate::clear_csr) or [set_clear_csr](crate::set_clear_csr) macros.
 #[macro_export]
@@ -549,6 +586,20 @@ macro_rules! clear {
                 () => Err($crate::result::Error::Unimplemented),
             }
         }
+
+        /// Clear the CSR using a 5-bit unsigned immediate `uimm` (`csrrci`).
+        ///
+        /// **WARNING**: panics on non-`riscv` targets. `BITS` must be in `0..=31`.
+        #[inline(always)]
+        #[cfg_attr(not($($cfg),*), allow(unused_variables))]
+        unsafe fn _clear_imm<const BITS: usize>() {
+            match () {
+                #[cfg($($cfg),*)]
+                () => $crate::csr_uimm5_asm!("csrrci", $csr_number, BITS),
+                #[cfg(not($($cfg),*))]
+                () => Err($crate::result::Error::Unimplemented).unwrap()
+            }
+        }
     };
 }
 
@@ -563,25 +614,39 @@ macro_rules! clear_rv32 {
 }
 
 /// Convenience macro to define field setter functions for a CSR type.
+///
+/// Masks in `0..=31` use `csrrsi`; larger masks use `csrrs`.
 #[macro_export]
 macro_rules! set_csr {
     ($(#[$attr:meta])*, $set_field:ident, $e:expr) => {
         $(#[$attr])*
         #[inline]
         pub unsafe fn $set_field() {
-            _set($e);
+            const BITS: usize = $e;
+            if BITS < 32 {
+                _set_imm::<BITS>();
+            } else {
+                _set(BITS);
+            }
         }
     };
 }
 
 /// Convenience macro to define field clear functions for a CSR type.
+///
+/// Masks in `0..=31` use `csrrci`; larger masks use `csrrc`.
 #[macro_export]
 macro_rules! clear_csr {
     ($(#[$attr:meta])*, $clear_field:ident, $e:expr) => {
         $(#[$attr])*
         #[inline]
         pub unsafe fn $clear_field() {
-            _clear($e);
+            const BITS: usize = $e;
+            if BITS < 32 {
+                _clear_imm::<BITS>();
+            } else {
+                _clear(BITS);
+            }
         }
     };
 }
