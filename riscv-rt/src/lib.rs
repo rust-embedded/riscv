@@ -685,30 +685,6 @@
 
 extern crate self as riscv_rt; // To use macros that refer to items in this crate.
 
-/// Backwards-compatibility deprecation warnings for renamed feature `no-interrupts`.
-/// If a user enables the old feature, emit a warning pointing them to the new `custom-interrupts`.
-#[cfg(feature = "no-interrupts")]
-#[deprecated(note = "feature `no-interrupts` is deprecated; use `custom-interrupts` instead")]
-pub const __RISCV_RT_DEPRECATED_NO_INTERRUPTS: () = ();
-
-#[cfg(feature = "no-interrupts")]
-#[allow(clippy::let_unit_value)]
-const _: () = {
-    let _ = __RISCV_RT_DEPRECATED_NO_INTERRUPTS;
-};
-
-/// Backwards-compatibility deprecation warnings for renamed feature `no-exceptions`.
-/// If a user enables the old feature, emit a warning pointing them to the new `custom-exceptions`.
-#[cfg(feature = "no-exceptions")]
-#[deprecated(note = "feature `no-exceptions` is deprecated; use `custom-exceptions` instead")]
-pub const __RISCV_RT_DEPRECATED_NO_EXCEPTIONS: () = ();
-
-#[cfg(feature = "no-exceptions")]
-#[allow(clippy::let_unit_value)]
-const _: () = {
-    let _ = __RISCV_RT_DEPRECATED_NO_EXCEPTIONS;
-};
-
 #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
 mod asm;
 
