@@ -142,6 +142,9 @@ pub mod stimecmph;
 // Virtual supervisor indirect access
 pub mod vsiselect;
 
+// Entropy source
+pub mod seed;
+
 #[cfg(test)]
 mod tests;
 
