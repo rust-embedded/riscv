@@ -7,6 +7,7 @@ use crate::{
 
 /// Interrupt
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(usize)]
 pub enum Interrupt {
     SupervisorSoft = 1,
@@ -39,6 +40,7 @@ unsafe impl CoreInterruptNumber for Interrupt {}
 
 /// Exception
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(usize)]
 pub enum Exception {
     InstructionMisaligned = 0,

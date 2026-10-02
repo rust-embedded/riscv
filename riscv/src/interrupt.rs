@@ -54,6 +54,7 @@ pub enum Trap<I, E> {
 
 /// Trap Error
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum TrapError {
     InvalidInterrupt(usize),
     InvalidException(usize),

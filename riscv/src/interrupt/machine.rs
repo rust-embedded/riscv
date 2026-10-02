@@ -7,6 +7,7 @@ use crate::{
 
 /// Standard M-mode RISC-V interrupts
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(usize)]
 pub enum Interrupt {
     SupervisorSoft = 1,
@@ -45,6 +46,7 @@ unsafe impl CoreInterruptNumber for Interrupt {}
 
 /// Standard M-mode RISC-V exceptions
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(usize)]
 pub enum Exception {
     InstructionMisaligned = 0,
