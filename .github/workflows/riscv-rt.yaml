@@ -59,6 +59,8 @@ jobs:
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example ${{ matrix.example }} --features=s-mode,single-hart,v-trap
       - name : Build (u-boot)
         run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example empty --features=u-boot
+      - name : Build (defmt)
+        run: RUSTFLAGS="-C link-arg=-Triscv-rt/examples/device.x" cargo build --package riscv-rt --target ${{ matrix.target }} --example empty --features=defmt
   
   build-others:
     strategy:
