@@ -6,6 +6,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 /// Represents error variants for the library.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Error {
     /// Attempted out-of-bounds access.
     IndexOutOfBounds {
