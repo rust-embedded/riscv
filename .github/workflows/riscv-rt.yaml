@@ -73,7 +73,7 @@ jobs:
       - name: Build (no features)
         run: cargo build --package riscv-rt
       - name: Build (all features but u-boot)
-        run: cargo build --package riscv-rt --features=s-mode,single-hart,v-trap
+        run: cargo build --package riscv-rt --features=s-mode,single-hart,v-trap,defmt
       - name: Build (u-boot)
         run: cargo build --package riscv-rt --features=u-boot
         
