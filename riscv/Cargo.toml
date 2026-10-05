@@ -30,7 +30,7 @@ defmt = ["dep:defmt", "riscv-types/defmt"]
 [dependencies]
 critical-section = "1.2.0"
 embedded-hal = "1.0.0"
-defmt = { version = "1.1.1", optional = true }
+defmt = { workspace = true, optional = true }
 riscv-types = { path = "../riscv-types", version = "0.1.0" }
 riscv-macros = { path = "../riscv-macros", version = "0.4.1", optional = true }
 pastey = "0.2.2"

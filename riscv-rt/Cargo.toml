@@ -28,7 +28,7 @@ riscv = { path = "../riscv", version = "0.16.1", features = ["rt"] }
 riscv-types = { path = "../riscv-types", version = "0.1.0" }
 riscv-macros = { path = "../riscv-macros", version = "0.4.1", features = ["riscv-rt"] }
 
-defmt = { version = "1.1.1", optional = true }
+defmt = { workspace = true, optional = true }
 
 [dev-dependencies]
 panic-halt = "1.0.0"
