@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `seed` CSR
 - Add new feature `defmt` which will optionally derive `defmt::Format` on certain types.
 - Add `stimecmp`/`stimecmph` CSRs
 - Add `tselect`, `tdata2` and `tdata3` Sdtrig CSRs as raw `read_write_csr_as_usize!` accessors, and `tdata1` and `tcontrol` as typed CSRs with field accessors.
