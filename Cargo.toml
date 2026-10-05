@@ -22,3 +22,6 @@ default-members = [
     "riscv-semihosting",
     "riscv-types",
 ]
+
+[workspace.dependencies]
+defmt = "1.1.1"

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Add new feature `defmt` which will optionally derive `defmt::Format` on `result::Error`.
+
 ## v0.1.0 - 2025-12-19
 
 ### Changed
@@ -29,7 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Classify interrupt numbers in `CoreInterruptNumber` and `ExternalInterruptNumber`.
 - Added simple tests to illustrate how to implement all the provided traits.
 
-### Changed 
+### Changed
 
 - All traits now work with `usize` data type.
 

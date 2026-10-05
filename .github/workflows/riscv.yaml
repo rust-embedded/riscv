@@ -63,8 +63,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Test (no features)
         run: cargo test --package riscv
+      # defmt linking fails if not on an ELF platform (https://defmt.ferrous-systems.com/#current-limitations)
       - name: Test (all features)
+        if: matrix.os == 'ubuntu-latest'
         run: cargo test --package riscv --all-features
+      - name: Test (all features except defmt)
+        if: matrix.os != 'ubuntu-latest'
+        run: cargo test --package riscv --no-default-features --features riscv-macros,s-mode,critical-section-single-hart,rt,rt-v-trap
 
   # Job to check that all the builds succeeded
   build-check:

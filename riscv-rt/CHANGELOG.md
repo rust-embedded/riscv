@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   with the ID of the running hart. This allows users to implement hart-specific
   interrupt setup in multi-hart targets.
 - Use macros from `riscv-macros` instead of `riscv-rt-macros`
+- Updated minimum defmt to `1.1.1`, which fixes an FCW
 
 ### Removed
 

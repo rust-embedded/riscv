@@ -25,10 +25,12 @@ s-mode = []
 critical-section-single-hart = ["critical-section/restore-state-bool"]
 rt = ["riscv-macros/rt"]
 rt-v-trap = ["rt", "riscv-macros/rt-v-trap"]
+defmt = ["dep:defmt", "riscv-types/defmt"]
 
 [dependencies]
 critical-section = "1.2.0"
 embedded-hal = "1.0.0"
+defmt = { workspace = true, optional = true }
 riscv-types = { path = "../riscv-types", version = "0.1.0" }
 riscv-macros = { path = "../riscv-macros", version = "0.4.1", optional = true }
 pastey = "0.2.2"
