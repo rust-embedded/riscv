@@ -27,9 +27,9 @@ read_only_csr_field! {
 csr_field_enum! {
     /// Guest Virtual Address
     GVA {
-        default: GuestVirtual,
-        GuestVirtual = 0,
-        Hypervisor = 1,
+        default: NoTranslation,
+        NoTranslation = 0,
+        GuestAddress = 1,
     }
 }
 
