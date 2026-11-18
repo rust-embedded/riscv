@@ -503,21 +503,24 @@ macro_rules! csr_uimm5_asm {
 #[macro_export]
 macro_rules! set {
     ($csr_number:literal) => {
-        $crate::set!($csr_number, any(target_arch = "riscv32", target_arch = "riscv64"));
+        $crate::set!($csr_number, _set _try_set _set_imm, any(target_arch = "riscv32", target_arch = "riscv64"));
     };
-    ($csr_number:literal, $($cfg:meta),*) => {
+    ($set_name:ident $try_set_name:ident $set_imm_name:ident $csr_number:literal) => {
+        $crate::set!($csr_number, $set_name $try_set_name $set_imm_name, any(target_arch = "riscv32", target_arch = "riscv64"));
+    };
+    ($csr_number:literal, $set_name:ident $try_set_name:ident $set_imm_name:ident, $($cfg:meta),*) => {
         /// Set the CSR.
         ///
         /// **WARNING**: panics on non-`riscv` targets.
         #[inline(always)]
-        unsafe fn _set(bits: usize) {
+        unsafe fn $set_name(bits: usize) {
             _try_set(bits).unwrap();
         }
 
         /// Attempts to set the CSR.
         #[inline(always)]
         #[cfg_attr(not($($cfg),*), allow(unused_variables))]
-        unsafe fn _try_set(bits: usize) -> $crate::result::Result<()> {
+        unsafe fn $try_set_name(bits: usize) -> $crate::result::Result<()> {
             match () {
                 #[cfg($($cfg),*)]
                 () => {
@@ -534,7 +537,7 @@ macro_rules! set {
         /// **WARNING**: panics on non-`riscv` targets. `BITS` must be in `0..=31`.
         #[inline(always)]
         #[cfg_attr(not($($cfg),*), allow(unused_variables))]
-        unsafe fn _set_imm<const BITS: usize>() {
+        unsafe fn $set_imm_name<const BITS: usize>() {
             match () {
                 #[cfg($($cfg),*)]
                 () => $crate::csr_uimm5_asm!("csrrsi", $csr_number, BITS),
@@ -551,7 +554,7 @@ macro_rules! set {
 #[macro_export]
 macro_rules! set_rv32 {
     ($csr_number:literal) => {
-        $crate::set!($csr_number, target_arch = "riscv32");
+        $crate::set!($csr_number, _set _try_set _set_imm, target_arch = "riscv32");
     };
 }
 

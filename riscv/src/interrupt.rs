@@ -9,11 +9,14 @@ pub use crate::{CoreInterruptNumber, ExceptionNumber, InterruptNumber};
 
 pub mod machine;
 pub mod supervisor;
+pub mod hypervisor;
 
 #[cfg(not(feature = "s-mode"))]
 pub use machine::*;
-#[cfg(feature = "s-mode")]
+#[cfg(all(feature = "s-mode", not(feature = "h-mode")))]
 pub use supervisor::*;
+#[cfg(feature = "h-mode")]
+pub use hypervisor::*;
 
 /// Trap Cause.
 ///
