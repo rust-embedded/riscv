@@ -3,10 +3,43 @@
 pub use super::mstatus::Endianness;
 
 read_write_csr! {
-    /// mstatus register
+    /// mstatush register
     Mstatush: 0x310,
     mask: 0x30,
 }
+
+csr_field_enum! {
+    /// Machine Previous Virtual Mode
+    MPV {
+        default: VirtualizationDisabled,
+        VirtualizationDisabled = 0,
+        VirtualizationEnabled = 1,
+    }
+}
+
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mstatush,
+    /// Machine Previous Virtualization
+    mpv: 7,
+}
+
+csr_field_enum! {
+    /// Guest Virtual Address
+    GVA {
+        default: GuestVirtual,
+        GuestVirtual = 0,
+        Hypervisor = 1,
+    }
+}
+
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mstatush,
+    /// Guest Virtual Address
+    gva: 6,
+}
+
 
 read_write_csr_field! {
     Mstatush,

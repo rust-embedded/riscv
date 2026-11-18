@@ -66,11 +66,29 @@ csr_field_enum! {
 }
 
 csr_field_enum! {
+    /// Machine Previous Virtualization Mode
+    MPV {
+        default: VirtualizationDisabled,
+        VirtualizationDisabled = 0,
+        VirtualizationEnabled = 1,
+    }
+}
+
+csr_field_enum! {
     /// Supervisor Previous Privilege Mode
     SPP {
         default: User,
         User = 0,
         Supervisor = 1,
+    }
+}
+
+csr_field_enum! {
+    /// Guest Virtual Address
+    GVA {
+        default: GuestVirtual,
+        GuestVirtual = 0,
+        Hypervisor = 1,
     }
 }
 
@@ -90,6 +108,20 @@ impl From<bool> for Endianness {
             true => Self::BigEndian,
         }
     }
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mstatus,
+    /// Guest Virtual Address
+    gva: 38,
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mstatus,
+    /// Machine Previous Virtualization
+    mpv: 39,
 }
 
 read_write_csr_field! {
