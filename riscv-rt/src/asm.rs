@@ -43,25 +43,7 @@ riscv_macros::rvrt_llvm_arch_patch!();
 cfg_global_asm!(
     ".section .init, \"ax\"
     .global _start
-
-_start:",
-    #[cfg(target_arch = "riscv32")]
-    "lui ra, %hi(_abs_start)
-     jr %lo(_abs_start)(ra)",
-    #[cfg(target_arch = "riscv64")]
-    ".option push
-    .option norelax // to prevent an unsupported R_RISCV_ALIGN relocation from being generated
-1:
-    auipc ra, %pcrel_hi(1f)
-    ld ra, %pcrel_lo(1b)(ra)
-    jr ra
-    .align  3
-1:
-    .dword _abs_start
-    .option pop",
-    "
-_abs_start:
-    .option norelax
+_start:
     .cfi_startproc
     .cfi_undefined ra",
     // Disable interrupts
@@ -79,6 +61,11 @@ _abs_start:
         #[cfg(feature = "no-mhartid")]
         "li a0, 0",
     }
+    // Initialize global pointer so relaxations can be used before la instruction is used
+    ".option push
+    .option norelax
+    la gp, __global_pointer$
+    .option pop",
     // Set pre-init trap vector
     #[cfg(not(feature = "no-xtvec"))]
     {
@@ -106,11 +93,7 @@ _abs_start:
     #[cfg(not(riscvi))]
     "mv a5, a2", // RVE does not include s2, so we preserve a2 in a5
 }
-// INITIALIZE GLOBAL POINTER AND STACK POINTER
-    ".option push
-    .option norelax
-    la gp, __global_pointer$
-    .option pop",
+// Initialize stack pointer
 #[cfg(not(feature = "single-hart"))]
 {
     "mv t2, a0
@@ -131,11 +114,10 @@ _abs_start:
     #[cfg(not(feature = "single-hart"))]
     "sub t1, t1, t0",
     "andi sp, t1, -16", // align stack to 16-bytes
-
+// Initialize RAM (copy .data and zero .bss, only for the boot hart)
     #[cfg(not(feature = "single-hart"))]
-    // Skip RAM initialization if current hart is not the boot hart
     "call _mp_hook
-    beqz a0, 4f",
+    beqz a0, 4f", // If _mp_hook returns false, skip RAM initialization
     #[cfg(feature = "pre-init")]
     "call __pre_init",
     "// Copy .data from flash to RAM
@@ -171,9 +153,8 @@ _abs_start:
     addi t0, t0, 8
     bltu t0, t2, 3b",
     "
-4:", // RAM initialized
-
-// INITIALIZE FLOATING POINT UNIT
+4:",
+// Initialize FPU (if present) and clear FS bits in mstatus/sstatus
 #[cfg(any(riscvf, riscvd))]
 {
     "
@@ -188,7 +169,6 @@ _abs_start:
     csrrs x0, mstatus, t2",
     "fscsr x0",
 }
-
 #[cfg(any(feature = "pre-init", not(feature = "single-hart")))]
 // If startup functions are expected, restore a0-a2 from s0-s2
 {   "mv a0, s0
@@ -198,10 +178,10 @@ _abs_start:
     #[cfg(not(riscvi))]
     "mv a2, a5", // RVE does not include s2, so we use a5 to preserve a2
 }
-    // INITIALIZE FRAME POINTER AND JUMP TO _start_rust FUNCTION
+    // Initialize frame pointer and jump to _start_rust
     "mv s0, sp
-    la t0, _start_rust
-    jr t0
+    call _start_rust
+    unimp // If _start_rust returns, trap to unimplemented instruction
     .cfi_endproc",
 
     #[cfg(not(feature = "single-hart"))]

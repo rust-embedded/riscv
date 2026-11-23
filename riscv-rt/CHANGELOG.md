@@ -9,12 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Simplified mermaid workflow in `README.md` t better understand the runtime behavior.
 - New `custom-setup-interrupts` feature to opt-out default implementation of
   `_setup_interrupts`. When this feature is active, the `riscv-rt` crate reexports
   the `riscv_macros::setup_interrupts` attribute macro. 
 
 ### Changed
 
+- Now, the global pointer is initialized at the beginning of the startup routine.
+  This will allow using linker relaxations in the rest of the startup code.
+- Now, `riscv-rt` executes `call _start_rust` followed by an `unimp` instruction,
+  following the same structure as `cortex-m-rt`.
 - Use `riscv::pac_enum` macro for exceptions
 - Deprecate `no-interrupts` feature in favor of `custom-interrupts`
 - Deprecate `no-exceptions` feature in favor of `custom-exceptions`
@@ -26,6 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+- Removed `_start` to `_abs_start` trampoline. Now, only `_start` exists.
 - We no longer re-export the `pre_init` macro. Use `core::arch::global_asm` instead.
 
 ## v0.17.1 - 2026-01-13

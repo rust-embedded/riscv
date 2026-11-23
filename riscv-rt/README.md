@@ -9,6 +9,40 @@ This project is developed and maintained by the [RISC-V team][team].
 
 ## [Documentation](https://docs.rs/crate/riscv-rt)
 
+## Startup sequence
+
+The following chart is a simplified view of how `_start` (defined in [`src/asm.rs`](src/asm.rs))
+initializes the target before handing control to Rust code. Dashed nodes depend on Cargo features
+or on the target ISA extensions.
+
+```mermaid
+flowchart TD
+    A([Reset: _start]) --> B["Disable interrupts"]
+    B --> C["Store hart ID in a0<br/>(0 with no-mhartid)"]
+    C --> D[Initialize global pointer gp]
+    D --> E["mtvec/stvec = _pre_init_trap"]
+    E --> F{"hart ID <= _max_hart_id?"}
+    F -- No --> X([abort])
+    F -- Yes --> G["Save a0-a2<br/>(if pre-init or multi-hart)"]
+    G --> H["sp = _stack_start - hart_id * _hart_stack_size"]
+    H --> I{"_mp_hook(hart_id)?"}
+    I -- false --> M
+    I -- true --> J["__pre_init()<br/>(pre-init feature)"]
+    J --> K[Copy .data from flash to RAM]
+    K --> L[Zero .bss]
+    L --> M["Initialize FPU<br/>(F/D extensions)"]
+    M --> N[Restore a0-a2]
+    N --> O["Set frame pointer and<br/>call _start_rust"]
+    O --> P(["_start_rust: __post_init (post-init feature),<br/>_setup_interrupts, hal_main / main"])
+
+    classDef optional stroke-dasharray: 5 5
+    class B,E,F,G,I,J,M,N optional
+```
+
+In single-hart builds, the hart ID check and `_mp_hook` are skipped and the stack pointer
+is set to `_stack_start`. The default `_mp_hook` returns `true` for hart 0 and parks all
+other harts in a `wfi` loop.
+
 ## Minimum Supported Rust Version (MSRV)
 
 This crate is guaranteed to compile on stable Rust 1.61 and up. It *might*
