@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Add `hstatus` CSR and support for `hs-mode`
 - Add `seed` CSR
 - Add new feature `defmt` which will optionally derive `defmt::Format` on certain types.
 - Add `stimecmp`/`stimecmph` CSRs
