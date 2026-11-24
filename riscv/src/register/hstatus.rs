@@ -223,7 +223,7 @@ clear!(0x600);
 
 set_clear_csr!(
     /// Virtual Trap Virtual Memory
-    , set_vtvm, clear_tvm, 1 << 20);
+    , set_vtvm, clear_vtvm, 1 << 20);
 set_clear_csr!(
     /// Virtual Timeout Wait
     , set_vtw, clear_vtw, 1 << 21);
@@ -270,6 +270,7 @@ mod test {
         test_csr_field!(hstatus, spvp);
         test_csr_field!(hstatus, hu);
         test_csr_field!(hstatus, vtvm);
+        test_csr_field!(hstatus, vtw);
         test_csr_field!(hstatus, vtsr);
 
         #[cfg(not(target_arch = "riscv32"))]
