@@ -13,6 +13,11 @@ help: the following other types implement trait `ExceptionNumber`
   | unsafe impl ExceptionNumber for Exception {
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::Exception`
   |
+ ::: $WORKSPACE/riscv/src/interrupt/hypervisor.rs
+  |
+  | unsafe impl ExceptionNumber for Exception {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::hypervisor::Exception`
+  |
  ::: $WORKSPACE/riscv/src/interrupt/supervisor.rs
   |
   | unsafe impl ExceptionNumber for Exception {

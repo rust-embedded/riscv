@@ -142,6 +142,9 @@ pub mod stimecmph;
 // Virtual supervisor indirect access
 pub mod vsiselect;
 
+// Hypervisor Trap Setup
+pub mod hstatus;
+
 // Entropy source
 pub mod seed;
 
