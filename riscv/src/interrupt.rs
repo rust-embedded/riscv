@@ -15,7 +15,7 @@ pub mod supervisor;
 pub use hypervisor::*;
 #[cfg(all(not(feature = "s-mode"), not(feature = "hs-mode")))]
 pub use machine::*;
-#[cfg(all(feature = "s-mode", not(feature = "hs-mode")))]
+#[cfg(feature = "s-mode")]
 pub use supervisor::*;
 
 /// Trap Cause.
