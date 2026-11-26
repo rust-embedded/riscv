@@ -185,6 +185,7 @@ impl Hstatus {
     }
 
     /// VS-mode non-instruction-fetch memory endianness.
+    #[inline]
     pub fn vsbe(&self) -> Endianness {
         Endianness::from(bf_extract(self.bits, 5, 1) != 0)
     }
