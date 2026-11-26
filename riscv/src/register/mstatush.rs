@@ -1,43 +1,11 @@
 //! mstatush register (RISCV-32 only)
 
-pub use super::mstatus::Endianness;
+pub use super::mstatus::{Endianness, GVA, MPV};
 
 read_write_csr! {
     /// mstatush register
     Mstatush: 0x310,
     mask: 0x30,
-}
-
-csr_field_enum! {
-    /// Machine Previous Virtual Mode
-    MPV {
-        default: VirtualizationDisabled,
-        VirtualizationDisabled = 0,
-        VirtualizationEnabled = 1,
-    }
-}
-
-#[cfg(target_arch = "riscv32")]
-read_only_csr_field! {
-    Mstatush,
-    /// Machine Previous Virtualization
-    mpv: 7,
-}
-
-csr_field_enum! {
-    /// Guest Virtual Address
-    GVA {
-        default: NoTranslation,
-        NoTranslation = 0,
-        GuestAddress = 1,
-    }
-}
-
-#[cfg(target_arch = "riscv32")]
-read_only_csr_field! {
-    Mstatush,
-    /// Guest Virtual Address
-    gva: 6,
 }
 
 read_write_csr_field! {
@@ -52,6 +20,22 @@ read_write_csr_field! {
     /// M-mode non-instruction-fetch memory endianness
     mbe,
     Endianness: [5:5],
+}
+
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mstatush,
+    /// Guest Virtual Address
+    gva,
+    GVA: [6:6]
+}
+
+#[cfg(target_arch = "riscv32")]
+read_only_csr_field! {
+    Mstatush,
+    /// Machine Previous Virtualization
+    mpv,
+    MPV: [7:7]
 }
 
 set_rv32!(0x310);

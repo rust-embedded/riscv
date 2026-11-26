@@ -1,10 +1,9 @@
 //! hstatus register
 
 pub use super::misa::XLEN;
+pub use super::mstatus::{Endianness, GVA};
 
-use crate::bits::bf_extract;
-#[cfg(not(target_arch = "riscv32"))]
-use crate::bits::bf_insert;
+use crate::bits::{bf_extract, bf_insert};
 
 #[cfg(not(target_arch = "riscv32"))]
 read_write_csr! {
@@ -18,15 +17,6 @@ read_write_csr! {
     /// hstatus register
     Hstatus: 0x600,
     mask: 0x0073_F3E0,
-}
-
-csr_field_enum! {
-    /// Guest Virtual Address
-    GVA {
-        default: NoTranslation,
-        NoTranslation = 0,
-        GuestAddress = 1,
-    }
 }
 
 csr_field_enum! {
@@ -83,28 +73,11 @@ csr_field_enum! {
     }
 }
 
-csr_field_enum! {
-    /// Non-instruction-fetch memory endianness
-    Endianness {
-        default: LittleEndian,
-        LittleEndian = 0,
-        BigEndian = 1,
-    }
-}
-
-impl From<bool> for Endianness {
-    fn from(val: bool) -> Self {
-        match val {
-            false => Self::LittleEndian,
-            true => Self::BigEndian,
-        }
-    }
-}
-
 read_only_csr_field! {
     Hstatus,
     /// Guest Virtual Address
-    gva: 6,
+    gva,
+    GVA: [6:6],
 }
 
 read_write_csr_field! {
@@ -288,6 +261,14 @@ mod test {
                     let mut h = Hstatus::from_bits(0);
                     h.set_vsbe(endianness);
                     assert_eq!(h.vsbe(), endianness);
+                });
+
+            [GVA::NoTranslation, GVA::GuestAddress]
+                .into_iter()
+                .for_each(|gva| {
+                    let m = Hstatus::from_bits(gva.into_usize() << 6);
+                    assert_eq!(m.gva(), gva);
+                    assert_eq!(m.try_gva(), Ok(gva));
                 });
         }
     }
