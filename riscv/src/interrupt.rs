@@ -13,7 +13,7 @@ pub mod supervisor;
 
 #[cfg(all(feature = "hs-mode", not(feature = "s-mode")))]
 pub use hypervisor::*;
-#[cfg(all(not(feature = "s-mode"), not(feature = "hs-mode")))]
+#[cfg(not(any(feature = "s-mode", feature = "hs-mode")))]
 pub use machine::*;
 #[cfg(feature = "s-mode")]
 pub use supervisor::*;
