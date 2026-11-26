@@ -10,7 +10,7 @@ use crate::bits::bf_insert;
 read_write_csr! {
     /// hstatus register
     Hstatus: 0x600,
-    mask: 0x0000_0003_0073_F3E0,
+    mask: 0x0003_0003_0073_F3E0,
 }
 
 #[cfg(target_arch = "riscv32")]
