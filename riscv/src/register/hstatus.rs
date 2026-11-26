@@ -2,10 +2,9 @@
 
 pub use super::misa::XLEN;
 
-#[cfg(target_arch = "riscv32")]
 use crate::bits::bf_extract;
 #[cfg(not(target_arch = "riscv32"))]
-use crate::bits::{bf_extract, bf_insert};
+use crate::bits::bf_insert;
 
 #[cfg(not(target_arch = "riscv32"))]
 read_write_csr! {
