@@ -122,7 +122,8 @@ read_only_csr_field! {
 read_only_csr_field! {
     Mstatus,
     /// Machine Previous Virtualization
-    mpv: 39,
+    mpv,
+    MPV: [39:39],
 }
 
 read_write_csr_field! {
