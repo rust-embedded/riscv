@@ -196,7 +196,6 @@ impl Hstatus {
     /// affect the hstatus CSR itself. See [`set_vsbe`] to directly update the
     /// CSR.
     #[inline]
-    #[cfg(not(target_arch = "riscv32"))]
     pub fn set_vsbe(&mut self, endianness: Endianness) {
         self.bits = bf_insert(self.bits, 5, 1, endianness as usize);
     }
