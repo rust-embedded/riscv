@@ -114,7 +114,8 @@ impl From<bool> for Endianness {
 read_only_csr_field! {
     Mstatus,
     /// Guest Virtual Address
-    gva: 38,
+    gva,
+    GVA: [38:38],
 }
 
 #[cfg(not(target_arch = "riscv32"))]
