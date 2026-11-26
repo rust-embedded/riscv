@@ -17,7 +17,7 @@ read_write_csr! {
 read_write_csr! {
     /// hstatus register
     Hstatus: 0x600,
-    mask: 0x0073F3E0,
+    mask: 0x0073_F3E0,
 }
 
 csr_field_enum! {
