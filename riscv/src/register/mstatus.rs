@@ -8,7 +8,7 @@ use crate::bits::{bf_extract, bf_insert};
 read_write_csr! {
     /// mstatus register
     Mstatus: 0x300,
-    mask: 0x8000_003f_007f_ffea,
+    mask: 0x8000_00ff_007f_ffea,
 }
 
 #[cfg(target_arch = "riscv32")]
@@ -66,11 +66,29 @@ csr_field_enum! {
 }
 
 csr_field_enum! {
+    /// Machine Previous Virtualization Mode
+    MPV {
+        default: VirtualizationDisabled,
+        VirtualizationDisabled = 0,
+        VirtualizationEnabled = 1,
+    }
+}
+
+csr_field_enum! {
     /// Supervisor Previous Privilege Mode
     SPP {
         default: User,
         User = 0,
         Supervisor = 1,
+    }
+}
+
+csr_field_enum! {
+    /// Guest Virtual Address
+    GVA {
+        default: NoTranslation,
+        NoTranslation = 0,
+        GuestAddress = 1,
     }
 }
 
@@ -168,7 +186,7 @@ read_only_csr_field! {
 
 read_write_csr_field! {
     Mstatus,
-    /// Modify Memory PRiVilege
+    /// Modify Memory Privilege
     mprv: 17,
 }
 
@@ -180,7 +198,7 @@ read_write_csr_field! {
 
 read_write_csr_field! {
     Mstatus,
-    /// Make eXecutable Readable
+    /// Make Executable Readable
     mxr: 19,
 }
 
@@ -227,6 +245,22 @@ read_only_csr_field! {
     ///
     /// This is a read-only bit computed by hardware as `(FS == Dirty) || (XS == Dirty) || (VS == Dirty)`.
     sd: 31,
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mstatus,
+    /// Guest Virtual Address
+    gva,
+    GVA: [38:38],
+}
+
+#[cfg(not(target_arch = "riscv32"))]
+read_only_csr_field! {
+    Mstatus,
+    /// Machine Previous Virtualization
+    mpv,
+    MPV: [39:39]
 }
 
 #[cfg(not(target_arch = "riscv32"))]
@@ -581,7 +615,6 @@ mod test {
             assert_eq!(m.xs(), xs);
             assert_eq!(m.try_xs(), Ok(xs));
         });
-
         test_csr_field!(mstatus, sie);
         test_csr_field!(mstatus, mie);
         test_csr_field!(mstatus, spie);
@@ -626,6 +659,22 @@ mod test {
                     let mut m = Mstatus::from_bits(0);
                     m.set_mbe(endianness);
                     assert_eq!(m.mbe(), endianness);
+                });
+            // MPV is read-only: it contains previous mode virtualization state
+            [MPV::VirtualizationDisabled, MPV::VirtualizationEnabled]
+                .into_iter()
+                .for_each(|mpv| {
+                    let m = Mstatus::from_bits(mpv.into_usize() << 39);
+                    assert_eq!(m.mpv(), mpv);
+                    assert_eq!(m.try_mpv(), Ok(mpv));
+                });
+            // GVA is read-only: it indicates the trap address in mtval is from a guest
+            [GVA::NoTranslation, GVA::GuestAddress]
+                .into_iter()
+                .for_each(|gva| {
+                    let m = Mstatus::from_bits(gva.into_usize() << 38);
+                    assert_eq!(m.gva(), gva);
+                    assert_eq!(m.try_gva(), Ok(gva));
                 });
         }
     }

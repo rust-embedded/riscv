@@ -47,6 +47,8 @@ jobs:
       run: cargo build --package riscv --target ${{ matrix.target }}
     - name: Build (M-mode, critical section)
       run: cargo build --package riscv --target ${{ matrix.target }} --features=critical-section-single-hart
+    - name: Build (HS-mode)
+      run: cargo build --package riscv --target ${{ matrix.target }} --features=hs-mode
     - name: Build (S-mode)
       run: cargo build --package riscv --target ${{ matrix.target }} --features=s-mode
     - name: Build (all features)

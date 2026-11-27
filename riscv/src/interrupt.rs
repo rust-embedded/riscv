@@ -7,10 +7,13 @@ use crate::result::Result;
 // re-export useful riscv-types traits
 pub use crate::{CoreInterruptNumber, ExceptionNumber, InterruptNumber};
 
+pub mod hypervisor;
 pub mod machine;
 pub mod supervisor;
 
-#[cfg(not(feature = "s-mode"))]
+#[cfg(all(feature = "hs-mode", not(feature = "s-mode")))]
+pub use hypervisor::*;
+#[cfg(not(any(feature = "s-mode", feature = "hs-mode")))]
 pub use machine::*;
 #[cfg(feature = "s-mode")]
 pub use supervisor::*;

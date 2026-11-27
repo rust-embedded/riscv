@@ -13,6 +13,11 @@ help: the following other types implement trait `CoreInterruptNumber`
   | unsafe impl CoreInterruptNumber for Interrupt {}
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::Interrupt`
   |
+ ::: $WORKSPACE/riscv/src/interrupt/hypervisor.rs
+  |
+  | unsafe impl CoreInterruptNumber for Interrupt {}
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `riscv::interrupt::hypervisor::Interrupt`
+  |
  ::: $WORKSPACE/riscv/src/interrupt/supervisor.rs
   |
   | unsafe impl CoreInterruptNumber for Interrupt {}

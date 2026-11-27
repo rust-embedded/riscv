@@ -11,11 +11,15 @@ use crate::{
 #[repr(usize)]
 pub enum Interrupt {
     SupervisorSoft = 1,
+    VirtSupervisorSoft = 2,
     MachineSoft = 3,
     SupervisorTimer = 5,
+    VirtSupervisorTimer = 6,
     MachineTimer = 7,
     SupervisorExternal = 9,
+    VirtSupervisorExternal = 10,
     MachineExternal = 11,
+    SupervisorGuestExternal = 12,
 }
 
 /// SAFETY: `Interrupt` represents the standard RISC-V interrupts
@@ -31,11 +35,15 @@ unsafe impl InterruptNumber for Interrupt {
     fn from_number(value: usize) -> Result<Self> {
         match value {
             1 => Ok(Self::SupervisorSoft),
+            2 => Ok(Self::VirtSupervisorSoft),
             3 => Ok(Self::MachineSoft),
             5 => Ok(Self::SupervisorTimer),
+            6 => Ok(Self::VirtSupervisorTimer),
             7 => Ok(Self::MachineTimer),
             9 => Ok(Self::SupervisorExternal),
+            10 => Ok(Self::VirtSupervisorExternal),
             11 => Ok(Self::MachineExternal),
+            12 => Ok(Self::SupervisorGuestExternal),
             _ => Err(Error::InvalidVariant(value)),
         }
     }
@@ -57,17 +65,29 @@ pub enum Exception {
     LoadFault = 5,
     StoreMisaligned = 6,
     StoreFault = 7,
+    // User or Virtual User Environment Call
     UserEnvCall = 8,
     SupervisorEnvCall = 9,
+    // Virtual Supervisor Environment Call
+    GuestSupervisorEnvCall = 10,
     MachineEnvCall = 11,
     InstructionPageFault = 12,
     LoadPageFault = 13,
     StorePageFault = 15,
+    SoftwareCheck = 18,
+    HardwareError = 19,
+    // 2 stage translation fault on instruction fetch
+    InstructionGuestFault = 20,
+    // 2 stage translation fault on memory load
+    LoadGuestFault = 21,
+    VirtualInstructionGuest = 22,
+    // 2 stage translation fault on memory store or atomic op
+    StoreGuestPageFault = 23,
 }
 
 /// SAFETY: `Exception` represents the standard RISC-V exceptions
 unsafe impl ExceptionNumber for Exception {
-    const MAX_EXCEPTION_NUMBER: usize = Self::StorePageFault as usize;
+    const MAX_EXCEPTION_NUMBER: usize = Self::StoreGuestPageFault as usize;
 
     #[inline]
     fn number(self) -> usize {
@@ -87,10 +107,17 @@ unsafe impl ExceptionNumber for Exception {
             7 => Ok(Self::StoreFault),
             8 => Ok(Self::UserEnvCall),
             9 => Ok(Self::SupervisorEnvCall),
+            10 => Ok(Self::GuestSupervisorEnvCall),
             11 => Ok(Self::MachineEnvCall),
             12 => Ok(Self::InstructionPageFault),
             13 => Ok(Self::LoadPageFault),
             15 => Ok(Self::StorePageFault),
+            18 => Ok(Self::SoftwareCheck),
+            19 => Ok(Self::HardwareError),
+            20 => Ok(Self::InstructionGuestFault),
+            21 => Ok(Self::LoadGuestFault),
+            22 => Ok(Self::VirtualInstructionGuest),
+            23 => Ok(Self::StoreGuestPageFault),
             _ => Err(Error::InvalidVariant(value)),
         }
     }
@@ -249,17 +276,17 @@ mod test {
     #[test]
     fn test_interrupt() {
         assert_eq!(Interrupt::from_number(1), Ok(SupervisorSoft));
-        assert_eq!(Interrupt::from_number(2), Err(Error::InvalidVariant(2)));
+        assert_eq!(Interrupt::from_number(2), Ok(VirtSupervisorSoft));
         assert_eq!(Interrupt::from_number(3), Ok(MachineSoft));
         assert_eq!(Interrupt::from_number(4), Err(Error::InvalidVariant(4)));
         assert_eq!(Interrupt::from_number(5), Ok(SupervisorTimer));
-        assert_eq!(Interrupt::from_number(6), Err(Error::InvalidVariant(6)));
+        assert_eq!(Interrupt::from_number(6), Ok(VirtSupervisorTimer));
         assert_eq!(Interrupt::from_number(7), Ok(MachineTimer));
         assert_eq!(Interrupt::from_number(8), Err(Error::InvalidVariant(8)));
         assert_eq!(Interrupt::from_number(9), Ok(SupervisorExternal));
-        assert_eq!(Interrupt::from_number(10), Err(Error::InvalidVariant(10)));
+        assert_eq!(Interrupt::from_number(10), Ok(VirtSupervisorExternal));
         assert_eq!(Interrupt::from_number(11), Ok(MachineExternal));
-        assert_eq!(Interrupt::from_number(12), Err(Error::InvalidVariant(12)));
+        assert_eq!(Interrupt::from_number(12), Ok(SupervisorGuestExternal));
 
         assert_eq!(SupervisorSoft.number(), 1);
         assert_eq!(MachineSoft.number(), 3);
@@ -283,13 +310,20 @@ mod test {
         assert_eq!(Exception::from_number(7), Ok(StoreFault));
         assert_eq!(Exception::from_number(8), Ok(UserEnvCall));
         assert_eq!(Exception::from_number(9), Ok(SupervisorEnvCall));
-        assert_eq!(Exception::from_number(10), Err(Error::InvalidVariant(10)));
+        assert_eq!(Exception::from_number(10), Ok(GuestSupervisorEnvCall));
         assert_eq!(Exception::from_number(11), Ok(MachineEnvCall));
         assert_eq!(Exception::from_number(12), Ok(InstructionPageFault));
         assert_eq!(Exception::from_number(13), Ok(LoadPageFault));
         assert_eq!(Exception::from_number(14), Err(Error::InvalidVariant(14)));
         assert_eq!(Exception::from_number(15), Ok(StorePageFault));
         assert_eq!(Exception::from_number(16), Err(Error::InvalidVariant(16)));
+        assert_eq!(Exception::from_number(17), Err(Error::InvalidVariant(17)));
+        assert_eq!(Exception::from_number(18), Ok(SoftwareCheck));
+        assert_eq!(Exception::from_number(19), Ok(HardwareError));
+        assert_eq!(Exception::from_number(20), Ok(InstructionGuestFault));
+        assert_eq!(Exception::from_number(21), Ok(LoadGuestFault));
+        assert_eq!(Exception::from_number(22), Ok(VirtualInstructionGuest));
+        assert_eq!(Exception::from_number(23), Ok(StoreGuestPageFault));
 
         assert_eq!(InstructionMisaligned.number(), 0);
         assert_eq!(InstructionFault.number(), 1);
@@ -306,6 +340,9 @@ mod test {
         assert_eq!(LoadPageFault.number(), 13);
         assert_eq!(StorePageFault.number(), 15);
 
-        assert_eq!(StorePageFault.number(), Exception::MAX_EXCEPTION_NUMBER)
+        assert_eq!(
+            StoreGuestPageFault.number(),
+            Exception::MAX_EXCEPTION_NUMBER
+        )
     }
 }
