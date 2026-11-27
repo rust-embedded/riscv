@@ -63,7 +63,7 @@ pub enum Exception {
     StoreMisaligned = 6,
     StoreFault = 7,
     // User or Virtual User Environment Call
-    UserVEnvCall = 8,
+    UserEnvCall = 8,
     SupervisorEnvCall = 9,
     // Virtual Supervisor Environment Call
     GuestSupervisorEnvCall = 10,
@@ -101,7 +101,7 @@ unsafe impl ExceptionNumber for Exception {
             5 => Ok(Self::LoadFault),
             6 => Ok(Self::StoreMisaligned),
             7 => Ok(Self::StoreFault),
-            8 => Ok(Self::UserVEnvCall),
+            8 => Ok(Self::UserEnvCall),
             9 => Ok(Self::SupervisorEnvCall),
             10 => Ok(Self::GuestSupervisorEnvCall),
             12 => Ok(Self::InstructionPageFault),
@@ -308,7 +308,7 @@ mod test {
         assert_eq!(Exception::from_number(5), Ok(LoadFault));
         assert_eq!(Exception::from_number(6), Ok(StoreMisaligned));
         assert_eq!(Exception::from_number(7), Ok(StoreFault));
-        assert_eq!(Exception::from_number(8), Ok(UserVEnvCall));
+        assert_eq!(Exception::from_number(8), Ok(UserEnvCall));
         assert_eq!(Exception::from_number(9), Ok(SupervisorEnvCall));
         assert_eq!(Exception::from_number(10), Ok(GuestSupervisorEnvCall));
         assert_eq!(Exception::from_number(11), Err(Error::InvalidVariant(11)));
@@ -326,7 +326,7 @@ mod test {
         assert_eq!(LoadFault.number(), 5);
         assert_eq!(StoreMisaligned.number(), 6);
         assert_eq!(StoreFault.number(), 7);
-        assert_eq!(UserVEnvCall.number(), 8);
+        assert_eq!(UserEnvCall.number(), 8);
         assert_eq!(SupervisorEnvCall.number(), 9);
         assert_eq!(InstructionPageFault.number(), 12);
         assert_eq!(LoadPageFault.number(), 13);
